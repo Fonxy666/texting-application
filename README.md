@@ -1,3 +1,3 @@
 # Texting application
-This project will be a pet project for myself, which include Nagular frontend and c# 8.0 backend.
-The project functional will be a texting application.
+This project will be a pet project for myself, which include Angular frontend, c# 8.0 backend, and MSSQL for database.
+The project will be functionally a texting application.
