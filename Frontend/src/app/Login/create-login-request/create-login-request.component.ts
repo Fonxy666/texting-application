@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { LoginRequest } from '../../Model/LoginRequest';
+import { LoginRequest } from '../../model/LoginRequest';
 
 @Component({
   selector: 'app-create-login-request',

@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { LoginRequest } from '../Model/LoginRequest';
+import { LoginRequest } from '../model/LoginRequest';
 import { HttpClient } from '@angular/common/http';
 
 @Component({

@@ -10,17 +10,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="68fd98b0-d1cf-4f13-b2e3-e3aeff7a2b7d" name="Changes" comment="Add backend skeleton with registration and with token service, users now can register and login succesfully">
-      <change beforePath="$PROJECT_DIR$/../Frontend/angular.json" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/angular.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/app/app-routing.module.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/app/app-routing.module.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/app/app.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/app/app.component.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/app/app.module.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/app/app.module.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/styles.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Server/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Server/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MessageAppServer/Services/Authentication/TokenService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MessageAppServer/Services/Authentication/TokenService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MessageAppServer/Startup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MessageAppServer/Startup.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MessageAppServer/Services/Authentication/AuthRequest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MessageAppServer/Services/Authentication/AuthRequest.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,6 +28,7 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d8d9726f3deb1bbf671f5b791e4dc3e0338219a996f439ad2a69024b825c60/UserManager.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/MessageAppServer/Database/UsersContext.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/MessageAppServer/Program.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock://D:/after codecool/texting-application/Server/MessageAppServer/Services/Authentication/AuthRequest.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/MessageAppServer/Services/Authentication/TokenService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/MessageAppServer/Startup.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
@@ -129,6 +120,7 @@
       <workItem from="1705505674823" duration="305000" />
       <workItem from="1705506100033" duration="3197000" />
       <workItem from="1705596378884" duration="689000" />
+      <workItem from="1705611057081" duration="2565000" />
     </task>
     <task id="LOCAL-00001" summary="Add backend skeleton with registration and with token service, users now can register and login succesfully">
       <option name="closed" value="true" />
