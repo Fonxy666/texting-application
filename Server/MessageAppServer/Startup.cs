@@ -104,7 +104,7 @@ public class Startup(IConfiguration configuration)
 
         app.Use(async (context, next) =>
         {
-            context.Response.Headers.Add("Access-Control-Allow-Origin", "http://localhost:3000");
+            context.Response.Headers.Add("Access-Control-Allow-Origin", "http://localhost:4200");
             context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
             context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
 

@@ -22,8 +22,8 @@ public class TokenService(IConfiguration configuration) : ITokenService
     private JwtSecurityToken CreateJwtToken(List<Claim> claims, SigningCredentials credentials, DateTime expiration)
     {
         return new JwtSecurityToken(
-            "haha",
-            "haha",
+            configuration["IssueAudience"],
+            configuration["IssueAudience"],
             claims,
             expires: expiration,
             signingCredentials: credentials
@@ -36,7 +36,7 @@ public class TokenService(IConfiguration configuration) : ITokenService
         {
             var claims = new List<Claim>
             {
-                new(JwtRegisteredClaimNames.Sub, "haha"),
+                new(JwtRegisteredClaimNames.Sub, configuration["IssueAudience"]!),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)),
                 new(ClaimTypes.NameIdentifier, user.Id)
@@ -68,6 +68,6 @@ public class TokenService(IConfiguration configuration) : ITokenService
 
     private SigningCredentials CreateSigningCredentials()
     {
-        return new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes("haha")), SecurityAlgorithms.HmacSha256);
+        return new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["IssueSign"]!)), SecurityAlgorithms.HmacSha256);
     }
 }
