@@ -10,6 +10,7 @@ import { CreateLoginRequestComponent } from './Login/create-login-request/create
 import { HttpClientModule } from '@angular/common/http';
 import { RegistrationComponent } from './registration/registration.component';
 import { CreateRegistrationRequestComponent } from './registration/create-registration-request/create-registration-request.component';
+import { CookieService } from 'ngx-cookie-service';
 
 @NgModule({
   declarations: [
@@ -27,7 +28,7 @@ import { CreateRegistrationRequestComponent } from './registration/create-regist
     FormsModule,
     HttpClientModule
   ],
-  providers: [],
+  providers: [CookieService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
