@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Server.Database;
+using Server.Hub;
+using Server.Model;
 using Server.Services.Authentication;
 
 namespace Server;
@@ -47,6 +49,9 @@ public class Startup(IConfiguration configuration)
         
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddSignalR();
+        services.AddSingleton<IDictionary<string, UserRoomConnection>>(opt => 
+            new Dictionary<string, UserRoomConnection>());
 
         var connection = configuration["ConnectionString"];
         var iS = configuration["IssueSign"];
@@ -101,6 +106,10 @@ public class Startup(IConfiguration configuration)
 
         app.UseHttpsRedirection();
         app.UseRouting();
+        app.UseEndpoints(endpoint =>
+        {
+            endpoint.MapHub<ChatHub>("/chat");
+        });
 
         app.Use(async (context, next) =>
         {
