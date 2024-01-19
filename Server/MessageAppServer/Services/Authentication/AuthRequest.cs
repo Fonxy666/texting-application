@@ -1,3 +1,5 @@
-﻿namespace Server.Services.Authentication;
+﻿using System.ComponentModel.DataAnnotations;
 
-public record AuthRequest(string UserName, string Password);
+namespace Server.Services.Authentication;
+
+public record AuthRequest([Required]string UserName, [Required]string Password);
