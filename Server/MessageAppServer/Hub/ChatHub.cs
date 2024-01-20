@@ -28,19 +28,6 @@ public class ChatHub : Microsoft.AspNetCore.SignalR.Hub
         }
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
-    {
-        if (!_connection.TryGetValue(Context.ConnectionId, out UserRoomConnection roomConnection))
-        {
-            return base.OnDisconnectedAsync(exception);
-        }
-
-        Clients.Group(roomConnection.Room!).SendAsync("ReceivedMessage", "Textinger bot",
-            $"{roomConnection.User} has left the room!");
-        SendConnectedUser(roomConnection.Room!);
-        return base.OnDisconnectedAsync(exception);
-    }
-
     public Task SendConnectedUser(string room)
     {
         var users = _connection.Values.Where(user => user.Room == room).Select(connection => connection.User);

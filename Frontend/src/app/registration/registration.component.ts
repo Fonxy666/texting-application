@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { RegistrationRequest } from '../model/RegistrationRequest';
 import { HttpClient } from '@angular/common/http';
 
@@ -9,7 +9,7 @@ import { HttpClient } from '@angular/common/http';
 })
 
 export class RegistrationComponent {
-    http: HttpClient = inject(HttpClient);
+    constructor(public http: HttpClient) { }
 
     SendRegistration(data: RegistrationRequest) {
         this.http.post('http://localhost:5003/Auth/Register', data)
