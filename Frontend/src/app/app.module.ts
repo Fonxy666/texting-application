@@ -4,7 +4,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { NavComponent } from './NavBar/nav.component';
 import { LoginComponent } from './Login/login.component';
-import { HomeComponent } from './Home/home.component';
+import { HomeComponent } from './home/home.component';
 import { FormsModule } from '@angular/forms';
 import { CreateLoginRequestComponent } from './Login/create-login-request/create-login-request.component';
 import { HttpClientModule } from '@angular/common/http';
