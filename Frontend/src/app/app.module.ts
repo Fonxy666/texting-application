@@ -13,6 +13,7 @@ import { CreateRegistrationRequestComponent } from './registration/create-regist
 import { ChatComponent } from './chat-folder/chat/chat.component';
 import { JoinRoomComponent } from './chat-folder/join-room/join-room.component';
 import { ChatWelcomeComponent } from './chat-folder/chat-welcome/chat-welcome.component';
+import { CookieService } from 'ngx-cookie-service';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,7 @@ import { ChatWelcomeComponent } from './chat-folder/chat-welcome/chat-welcome.co
     FormsModule,
     HttpClientModule
   ],
-  providers: [],
+  providers: [CookieService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -10,8 +10,13 @@
                     <a class="nav-link active text-white" aria-current="page" routerLink="/">Home</a>
                 </li>
             </ul>
-            <a class="nav-link active text-white p-2" aria-current="page" routerLink="/registration">Registration</a>
-            <a class="nav-link active text-white" aria-current="page" routerLink="/login">Login</a>
+            <ng-container *ngIf="!isLoggedIn(); else loggedIn">
+                <a class="nav-link active text-white p-2" aria-current="page" routerLink="/registration">Registration</a>
+                <a class="nav-link active text-white" aria-current="page" routerLink="/login">Login</a>
+            </ng-container>
+            <ng-template #loggedIn>
+                <a class="nav-link active text-white" (click)="logout()">Logout</a>
+            </ng-template>
         </div>
     </div>
 </nav>

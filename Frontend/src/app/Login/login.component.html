@@ -1,5 +1,7 @@
 <div>
     <app-nav></app-nav>
-    <app-create-login-request
-    (SendLoginRequest)="CreateTask($event)"></app-create-login-request>
+    <ng-container *ngIf="!isLoggedIn();">
+        <app-create-login-request
+            (SendLoginRequest)="CreateTask($event)"/>
+    </ng-container>
 </div>
