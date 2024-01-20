@@ -17,6 +17,7 @@ public class ChatHub : Microsoft.AspNetCore.SignalR.Hub
         await Groups.AddToGroupAsync(Context.ConnectionId, userConnection.Room!);
         _connection[Context.ConnectionId] = userConnection;
         await Clients.Group(userConnection.Room!).SendAsync("ReceivedMessage", "Textinger bot", $"{userConnection.User} has joined the room!");
+        await SendConnectedUser(userConnection.Room!);
     }
 
     public async Task SendMessage(string message)
@@ -25,6 +26,19 @@ public class ChatHub : Microsoft.AspNetCore.SignalR.Hub
         {
             await Clients.Group(userRoomConnection.Room!).SendAsync("Received message", userRoomConnection.User, message, DateTime.Now);
         }
+    }
+
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        if (!_connection.TryGetValue(Context.ConnectionId, out UserRoomConnection roomConnection))
+        {
+            return base.OnDisconnectedAsync(exception);
+        }
+
+        Clients.Group(roomConnection.Room!).SendAsync("ReceivedMessage", "Textinger bot",
+            $"{roomConnection.User} has left the room!");
+        SendConnectedUser(roomConnection.Room!);
+        return base.OnDisconnectedAsync(exception);
     }
 
     public Task SendConnectedUser(string room)

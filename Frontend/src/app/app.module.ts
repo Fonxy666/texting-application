@@ -10,6 +10,9 @@ import { CreateLoginRequestComponent } from './Login/create-login-request/create
 import { HttpClientModule } from '@angular/common/http';
 import { RegistrationComponent } from './registration/registration.component';
 import { CreateRegistrationRequestComponent } from './registration/create-registration-request/create-registration-request.component';
+import { ChatComponent } from './chat-folder/chat/chat.component';
+import { JoinRoomComponent } from './chat-folder/join-room/join-room.component';
+import { ChatWelcomeComponent } from './chat-folder/chat-welcome/chat-welcome.component';
 
 @NgModule({
   declarations: [
@@ -19,7 +22,10 @@ import { CreateRegistrationRequestComponent } from './registration/create-regist
     HomeComponent,
     CreateLoginRequestComponent,
     RegistrationComponent,
-    CreateRegistrationRequestComponent
+    CreateRegistrationRequestComponent,
+    ChatComponent,
+    JoinRoomComponent,
+    ChatWelcomeComponent
   ],
   imports: [
     BrowserModule,

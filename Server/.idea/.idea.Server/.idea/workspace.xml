@@ -9,14 +9,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="68fd98b0-d1cf-4f13-b2e3-e3aeff7a2b7d" name="Changes" comment="Add backend skeleton with registration and with token service, users now can register and login succesfully">
-      <change afterPath="$PROJECT_DIR$/MessageAppServer/Hub/ChatHub.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/MessageAppServer/Model/UserRoomConnection.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/app/Home/home.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/app/Home/home.component.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Server/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Server/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MessageAppServer/MessageAppServer.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/MessageAppServer/MessageAppServer.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MessageAppServer/Startup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MessageAppServer/Startup.cs" afterDir="false" />
-    </list>
+    <list default="true" id="68fd98b0-d1cf-4f13-b2e3-e3aeff7a2b7d" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -136,7 +129,15 @@
       <option name="project" value="LOCAL" />
       <updated>1705508711618</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="do Chathub, install SignalR">
+      <option name="closed" value="true" />
+      <created>1705665920627</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1705665920627</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -157,6 +158,7 @@
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="Add backend skeleton with registration and with token service, users now can register and login succesfully" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add backend skeleton with registration and with token service, users now can register and login succesfully" />
+    <MESSAGE value="do Chathub, install SignalR" />
+    <option name="LAST_COMMIT_MESSAGE" value="do Chathub, install SignalR" />
   </component>
 </project>
