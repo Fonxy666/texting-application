@@ -14,8 +14,8 @@
                         <div class="mb-3">
                             <input type="text" formControlName="room" class="form-control" id="roomname" placeholder="Room name"/>
                         </div>
-                        <div (click)="joinRoom()" class="text-center">
-                            <button [disabled]="joinRoomForm.invalid" class="btn btn-color px-5 mb-5 w-100">Join</button>
+                        <div class="text-center">
+                            <button [disabled]="joinRoomForm.invalid" (click)="joinRoom()" class="btn btn-color px-5 mb-5 w-100">Join</button>
                         </div>
                     </form>
                 </div>

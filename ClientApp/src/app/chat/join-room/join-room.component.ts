@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 
 @Component({
@@ -9,7 +10,7 @@ import { CookieService } from 'ngx-cookie-service';
 })
 
 export class JoinRoomComponent implements OnInit {
-    constructor(private fb: FormBuilder, private cookieService: CookieService) { }
+    constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router) { }
 
     joinRoomForm!: FormGroup;
 
@@ -21,7 +22,6 @@ export class JoinRoomComponent implements OnInit {
     };
 
     joinRoom() {
-        console.log(this.cookieService.get('Username'));
-        console.log(this.joinRoomForm.value);
+        this.router.navigate(['/chat']);
     }
 }
