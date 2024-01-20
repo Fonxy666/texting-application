@@ -9,6 +9,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
+    <list default="true" id="68fd98b0-d1cf-4f13-b2e3-e3aeff7a2b7d" name="Changes" comment="do Chathub in backend" />
     <list default="true" id="68fd98b0-d1cf-4f13-b2e3-e3aeff7a2b7d" name="Changes" comment="Add backend skeleton with registration and with token service, users now can register and login succesfully">
       <change beforePath="$PROJECT_DIR$/../Frontend/src/app/Login/login.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/app/Login/login.component.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Server/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Server/.idea/workspace.xml" afterDir="false" />
@@ -22,15 +23,15 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$/.." value="main" />
+        <entry key="$PROJECT_DIR$/.." value="frontend" />
       </map>
     </option>
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/2d2c32983069f4ac8d99ff64291dc347b7714478e0c4daf7386e35e9bd71/Hub.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d8d9726f3deb1bbf671f5b791e4dc3e0338219a996f439ad2a69024b825c60/UserManager.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/MessageAppServer/Database/UsersContext.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/MessageAppServer/Program.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock://D:/after codecool/texting-application/Server/MessageAppServer/Services/Authentication/AuthRequest.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/MessageAppServer/Services/Authentication/TokenService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/MessageAppServer/Startup.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
@@ -43,6 +44,18 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;D:\\Programming\\JetBrains Rider 2023.2.2\\plugins\\javascript-impl\\jsLanguageServicesImpl\\external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
@@ -124,6 +137,7 @@
       <workItem from="1705506100033" duration="3197000" />
       <workItem from="1705596378884" duration="689000" />
       <workItem from="1705611057081" duration="2565000" />
+      <workItem from="1705706242146" duration="1898000" />
       <workItem from="1705619273992" duration="321000" />
       <workItem from="1705651288136" duration="1028000" />
     </task>
@@ -135,7 +149,23 @@
       <option name="project" value="LOCAL" />
       <updated>1705508711618</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="do Chathub, install SignalR">
+      <option name="closed" value="true" />
+      <created>1705665920627</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1705665920627</updated>
+    </task>
+    <task id="LOCAL-00003" summary="do Chathub in backend">
+      <option name="closed" value="true" />
+      <created>1705708874925</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1705708874925</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -168,6 +198,8 @@
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="Add backend skeleton with registration and with token service, users now can register and login succesfully" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add backend skeleton with registration and with token service, users now can register and login succesfully" />
+    <MESSAGE value="do Chathub, install SignalR" />
+    <MESSAGE value="do Chathub in backend" />
+    <option name="LAST_COMMIT_MESSAGE" value="do Chathub in backend" />
   </component>
 </project>
