@@ -9,6 +9,9 @@
                 <li class="nav-item">
                     <a class="nav-link active text-white" aria-current="page" routerLink="/">Home</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link active text-white" aria-current="page" routerLink="/join-room">Connect to a room</a>
+                </li>
             </ul>
             <ng-container *ngIf="!isLoggedIn(); else loggedIn">
                 <a class="nav-link active text-white p-2" aria-current="page" routerLink="/registration">Registration</a>

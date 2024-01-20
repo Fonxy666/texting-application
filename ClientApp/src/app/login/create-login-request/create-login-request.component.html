@@ -1,12 +1,12 @@
 <section class="container">
-    <form #taskForm="ngForm" (ngSubmit)="OnFormSubmit(taskForm)">
+    <form [formGroup]="registrationRequest" (ngSubmit)="OnFormSubmit()">
         <div class="form-group">
             <label for="username">Username</label>
-            <input type="email" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Username" required name="username" ngModel>
+            <input formControlName="username" type="email" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Username" required>
         </div>
         <div class="form-group">
             <label for="password">Password</label>
-            <input type="password" class="form-control" id="password" placeholder="Password" required name="password" ngModel>
+            <input formControlName="password" type="password" class="form-control" id="password" placeholder="Password" required>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>

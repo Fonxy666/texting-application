@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 
 @Component({
@@ -7,13 +8,15 @@ import { CookieService } from 'ngx-cookie-service';
   styleUrl: './nav-bar.component.css'
 })
 export class NavBarComponent {
-    constructor(private cookieService : CookieService) {}
+    constructor(private cookieService : CookieService, private router: Router) {}
 
     isLoggedIn() : boolean {
-        return this.cookieService.check('Token');
+        return this.cookieService.check('Token') && this.cookieService.check('Username');
     }
 
     logout() {
         this.cookieService.delete('Token');
+        this.cookieService.delete('Username');
+        this.router.navigate(['/']);
     }
 }

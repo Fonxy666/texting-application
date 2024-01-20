@@ -1,0 +1,25 @@
+<div>
+    <app-nav-bar />
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <h2 class="text-center mt-5 text-dark">Welcome to Textinger</h2>
+                <div class="text-center mb-5 text-dark">Here you can join to a desired room with your friends.</div>
+                <div class="card my-5">
+                    <form [formGroup]="joinRoomForm" class="card-body cardbody-color p-lg 5">
+                        <div class="text-center">
+                            <img src="https://cdn.pixabay.com/photo/2023/07/24/23/30/chat-8147986_1280.jpg"
+                                class="img-fluid profile-image-pic img-thumbnail rounded0circle my-3" width="200px" alt="image"/>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" formControlName="room" class="form-control" id="roomname" placeholder="Room name"/>
+                        </div>
+                        <div (click)="joinRoom()" class="text-center">
+                            <button [disabled]="joinRoomForm.invalid" class="btn btn-color px-5 mb-5 w-100">Join</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
