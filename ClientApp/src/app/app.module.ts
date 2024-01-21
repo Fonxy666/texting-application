@@ -14,7 +14,6 @@ import { CreateRegistrationRequestComponent } from './registration/create-regist
 import { RegistrationComponent } from './registration/registration.component';
 import { ChatComponent } from './chat/chat/chat.component';
 import { JoinRoomComponent } from './chat/join-room/join-room.component';
-import { WelcomeComponent } from './chat/welcome/welcome.component';
 
 @NgModule({
   declarations: [
@@ -27,7 +26,6 @@ import { WelcomeComponent } from './chat/welcome/welcome.component';
     RegistrationComponent,
     ChatComponent,
     JoinRoomComponent,
-    WelcomeComponent
   ],
   imports: [
     BrowserModule,

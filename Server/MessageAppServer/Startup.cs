@@ -113,7 +113,8 @@ namespace Server
             {
                 builder.WithOrigins("http://localhost:4200")
                        .AllowAnyMethod()
-                       .AllowAnyHeader();
+                       .AllowAnyHeader()
+                       .AllowCredentials();
             });
 
             app.UseEndpoints(endpoint =>
