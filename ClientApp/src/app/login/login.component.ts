@@ -24,7 +24,7 @@ export class LoginComponent {
     }
     
     CreateTask(data: LoginRequest) {
-        this.http.post('http://localhost:5003/Auth/Login', data)
+        this.http.post('http://localhost:5000/Auth/Login', data)
         .subscribe((response: any) => {
             this.cookieService.set('Token', response.token, {expires: 1});
             this.cookieService.set('Username', response.username, {expires: 1});
