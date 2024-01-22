@@ -1,0 +1,132 @@
+@keyframes dayTime {
+    0% {
+        background-color: rgb(114, 69, 50);
+    }
+    25% {
+        background-color: rgb(26, 26, 51);
+    }
+    50% {
+        background-color: rgb(114, 69, 50);
+    }
+    65% {
+        background-color: rgb(242, 231, 176);
+    }
+    85% {
+        background-color: rgb(242, 231, 176);
+    }
+    100% {
+        background-color: rgb(114, 69, 50);
+    }
+}
+
+@keyframes sunStandingInTheMiddle {
+    0% {
+        background-color: rgb(114, 69, 50);
+    }
+    100% {
+        background-color: rgb(242, 231, 176);
+    }
+}
+
+@keyframes SunToLeftAfterStayingMiddle {
+    0% {
+        background-color: rgb(242, 231, 176);
+    }
+    100% {
+        background-color: rgb(114, 69, 50);
+    }
+}
+
+@keyframes moveLeft {
+    0% {
+        right: -10%;
+    }
+    100% {
+        right: 100%;
+    }
+}
+
+@keyframes sunToMiddle {
+    0% {
+        right: -10%;
+    }
+    100% {
+        right: 50%;
+    }
+}
+
+@keyframes sunToLeft {
+    0% {
+        right: 50%;
+    }
+    100% {
+        right: 100%;
+    }
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+    }
+}
+
+.cont {
+    position: relative;
+    min-width: 100vh;
+    min-height: 100vh;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+  
+.background-image {
+    min-width: 100vh;
+    min-height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    object-position: top center;
+    z-index: -2;
+    animation: 
+        sunStandingInTheMiddle 5s linear forwards,
+        SunToLeftAfterStayingMiddle 5s linear forwards 9.5s,
+        dayTime 20s linear 14.5s infinite;
+}
+
+.sun_img,
+.moon_img {
+    right: 0;
+    width: 10%;
+    position: absolute;
+    animation: 
+        sunToMiddle 5s linear forwards,
+        sunToLeft 5s linear forwards 9.5s,
+        moveLeft 10s linear infinite 14.5s;
+    z-index: -1;
+}
+
+.chat_bubble {
+    top: 15%;
+    width: 14%;
+    position: absolute;
+    right: 39%;
+    opacity: 0;
+    animation: 
+        fadeIn 0s linear 5s forwards,
+        fadeOut 0s linear 9.5s forwards;
+    z-index: -1;
+}
+
+.home-text {
+    margin: 75px 0 0 50%;
+    animation: fadeOut 0s linear 9.5s forwards;
+}

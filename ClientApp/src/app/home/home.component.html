@@ -1,4 +1,9 @@
-<div>
+<div class="cont">
     <app-nav-bar />
-    <h1 class="p-5">Welcome to Textinger!</h1>
+    <img src="assets/images/chatbubble.png" alt="chat_bubble" class="chat_bubble">
+    <img [src]="isSunActive ? 'assets/images/sun.png' : 'assets/images/moon.png'" 
+       alt="{{ isSunActive ? 'sun' : 'moon' }}" 
+       class="sun_img" >
+    <div class="home-text" [innerHTML]="displayHomeText"></div>
+    <img [src]="myImage" class="background-image">
 </div>

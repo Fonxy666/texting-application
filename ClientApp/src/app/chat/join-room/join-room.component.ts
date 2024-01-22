@@ -13,6 +13,7 @@ import { ChatService } from '../../chat.service';
 export class JoinRoomComponent implements OnInit {
     constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private chatService: ChatService) { }
 
+    myImage: string = "./assets/images/6217297.jpg"
     joinRoomForm!: FormGroup;
 
     ngOnInit() : void {

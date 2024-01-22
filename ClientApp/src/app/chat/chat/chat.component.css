@@ -2,7 +2,7 @@
     max-width: 1170px;
     margin: auto;
     background-color: #52ACFF;
-    background-image: linear-gradient(180deg, #52ACFF 25%, #FFE32C);
+    background-image: linear-gradient(180deg, #52ACFF 25%, #FFE32C 100%);
 }
 
 .chat_header {
@@ -13,7 +13,7 @@
 }
 
 .no_chat {
-    height: calc(100vh-70px);
+    height: calc(100vh - 70px);
     text-align: center;
     display: flex;
     align-items: center;
@@ -39,7 +39,7 @@ img {
 
 .inbox_people {
     background-color: #52ACFF;
-    background-image: linear-gradient(180deg, #52ACFF 25%, #FFE32C);
+    background-image: linear-gradient(180deg, #52ACFF 25%, #FFE32C 100%);
     float: left;
     overflow: hidden;
     width: 40%;
@@ -162,7 +162,7 @@ img {
     display: inline-block;
     padding: 0 0 0 10px;
     vertical-align: top;
-    width: 92%;
+    width: 57%;
 }
 
 .received_withd_msg p {
@@ -176,7 +176,6 @@ img {
 }
 
 .time_date {
-    background: #747474;
     display: block;
     font-size: 12px;
     margin: 8px 0 0;
@@ -205,12 +204,22 @@ img {
 
 .outgoing_msg {
     overflow: hidden;
-    margin: 8px 0;
+    margin: 8px 0 8px;
 }
 
 .sent_msg {
     float: right;
-    width: 46%;
+    width: 57%;
+}
+
+.sent_withd_msg p {
+    background: #585bb4 none repeat scroll 0 0;
+    border-radius: 3px;
+    color: #ffffff;
+    font-size: 14px;
+    margin: 0;
+    padding: 5px 10px 5px 10px;
+    width: 100%;
 }
 
 .input_msg_write input {
