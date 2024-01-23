@@ -13,15 +13,25 @@ import { ChatService } from '../../chat.service';
 export class JoinRoomComponent implements OnInit {
     constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private chatService: ChatService) { }
 
-    myImage: string = "./assets/images/6217297.jpg"
+    myImage: string = "./assets/images/mountains-3270710.svg";
     joinRoomForm!: FormGroup;
+    isSunActive: boolean = true;
+    isMoonActive: boolean = false;
 
     ngOnInit() : void {
         this.joinRoomForm = this.fb.group({
             user: [this.cookieService.get('Username'), Validators.required],
             room: ['', Validators.required]
         });
+
+        setInterval(() => {
+            this.toggleImageClasses();
+        }, 10000);
     };
+
+    toggleImageClasses() {
+        this.isSunActive = !this.isSunActive;
+    }
 
     joinRoom() {
         const {user, room} = this.joinRoomForm.value;

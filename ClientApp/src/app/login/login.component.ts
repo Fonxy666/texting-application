@@ -26,8 +26,12 @@ export class LoginComponent {
     CreateTask(data: LoginRequest) {
         this.http.post('http://localhost:5000/Auth/Login', data)
         .subscribe((response: any) => {
-            this.cookieService.set('Token', response.token, {expires: 1});
-            this.cookieService.set('Username', response.username, {expires: 1});
+            const expirationTime = new Date();
+            expirationTime.setTime(expirationTime.getTime() + (1 * 60 * 60 * 1000));
+
+            this.cookieService.set('Token', response.token, {expires: expirationTime});
+            this.cookieService.set('Username', response.username, {expires: expirationTime});
+            
             this.router.navigate(['/']);
         }, 
         (error) => {

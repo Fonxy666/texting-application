@@ -39,27 +39,57 @@
 
 @keyframes moveLeft {
     0% {
+        top: 20%;
         right: -10%;
     }
+    30% {
+        top: 12%;
+    }
+    45% {
+        top: 8%;
+    }
+    55% {
+        top: 8%;
+    }
+    70% {
+        top: 12%;
+    }
     100% {
+        top: 20%;
         right: 100%;
     }
 }
 
 @keyframes sunToMiddle {
     0% {
+        top: 20%;
         right: -10%;
     }
+    60% {
+        top: 12%;
+    }
+    90% {
+        top: 8%;
+    }
     100% {
+        top: 8%;
         right: 50%;
     }
 }
 
 @keyframes sunToLeft {
     0% {
+        top: 8%;
         right: 50%;
     }
+    10% {
+        top: 8%;
+    }
+    40% {
+        top: 12%;
+    }
     100% {
+        top: 20%;
         right: 100%;
     }
 }
@@ -98,20 +128,30 @@
     z-index: -2;
     animation: 
         sunStandingInTheMiddle 5s linear forwards,
-        SunToLeftAfterStayingMiddle 5s linear forwards 9.5s,
-        dayTime 20s linear 14.5s infinite;
+        SunToLeftAfterStayingMiddle 5s linear forwards 10.5s,
+        dayTime 20s linear 15.5s infinite;
 }
 
-.sun_img,
 .moon_img {
-    right: 0;
+    width: 8%;
+    position: absolute;
+    animation: 
+        sunToMiddle 5s linear forwards,
+        sunToLeft 5s linear forwards 10.5s,
+        moveLeft 10s linear infinite 15.5s;
+    z-index: -1;
+    animation-timing-function: cubic-bezier(0.47, 0.03, 0.49, 1);
+}
+
+.sun_img {
     width: 10%;
     position: absolute;
     animation: 
         sunToMiddle 5s linear forwards,
-        sunToLeft 5s linear forwards 9.5s,
-        moveLeft 10s linear infinite 14.5s;
+        sunToLeft 5s linear forwards 10.5s,
+        moveLeft 10s linear infinite 15.5s;
     z-index: -1;
+    animation-timing-function: cubic-bezier(0.47, 0.03, 0.49, 1);
 }
 
 .chat_bubble {
@@ -122,11 +162,23 @@
     opacity: 0;
     animation: 
         fadeIn 0s linear 5s forwards,
-        fadeOut 0s linear 9.5s forwards;
+        fadeOut 0s linear 10.5s forwards;
     z-index: -1;
 }
 
 .home-text {
     margin: 75px 0 0 50%;
-    animation: fadeOut 0s linear 9.5s forwards;
+    animation: fadeOut 0s linear 10.5s forwards;
+    height: 96px;
+}
+
+.sunToMiddle {
+    animation-name: sunToMiddle;
+    animation-duration: 5s;
+    animation-timing-function: cubic-bezier(0.47, 0.03, 0.49, 1.35);
+    animation-fill-mode: forwards;
+}
+
+.welcome-text {
+    margin-top: 50px;
 }

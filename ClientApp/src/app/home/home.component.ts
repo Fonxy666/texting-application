@@ -18,7 +18,7 @@ export class HomeComponent implements OnInit {
             setInterval(() => {
                 this.toggleImageClasses();
             }, 10000);
-        }, 14500);
+        }, 15500);
 
         setTimeout(() => {
             this.animateText();
