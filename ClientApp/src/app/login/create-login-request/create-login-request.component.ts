@@ -29,7 +29,7 @@ export class CreateLoginRequestComponent implements OnInit {
             this.loginRequest.get('username')?.value,
             this.loginRequest.get('password')?.value,
             this.loginRequest.get('rememberme')?.value
-        );
+            );
         this.SendLoginRequest.emit(loginRequest);
     }
 }

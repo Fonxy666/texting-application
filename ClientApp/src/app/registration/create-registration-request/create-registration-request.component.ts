@@ -34,8 +34,7 @@ export class CreateRegistrationRequestComponent {
             this.registrationRequest.get('username')?.value,
             this.registrationRequest.get('password')?.value
         );
-        console.log(registrationRequest);
-        // this.SendRegistrationRequest.emit(registrationRequest);
+        this.SendRegistrationRequest.emit(registrationRequest);
     }
 
     passwordMatchValidator(group: FormGroup): { [key: string]: boolean } | null {

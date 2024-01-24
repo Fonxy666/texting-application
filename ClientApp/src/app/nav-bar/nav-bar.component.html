@@ -9,9 +9,11 @@
                     <li class="nav-item ">
                         <a class="nav-link active text-white px-5 text-style" aria-current="page" routerLink="/">Home</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link active text-white px-3 text-style" aria-current="page" routerLink="/join-room">Connect to a room</a>
-                    </li>
+                    <ng-container *ngIf="isLoggedIn()">
+                        <li class="nav-item">
+                            <a class="nav-link active text-white px-3 text-style" aria-current="page" routerLink="/join-room">Connect to a room</a>
+                        </li>
+                    </ng-container>
                 </ul>
                 <ng-container *ngIf="!isLoggedIn(); else loggedIn">
                     <a class="nav-link active text-white px-3 text-style" aria-current="page" routerLink="/login">Sign up</a>

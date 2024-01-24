@@ -11,7 +11,7 @@ export class RegistrationComponent {
     constructor(public http: HttpClient) { }
 
     SendRegistration(data: RegistrationRequest) {
-        this.http.post('http://localhost:5003/Auth/Register', data)
+        this.http.post('http://localhost:5000/Auth/Register', data)
         .subscribe((response) => {
             console.log(response);
         });

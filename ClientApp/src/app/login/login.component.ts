@@ -26,12 +26,13 @@ export class LoginComponent {
     CreateTask(data: LoginRequest) {
         this.http.post('http://localhost:5000/Auth/Login', data)
         .subscribe((response: any) => {
-            console.log(data);
-            const expirationTime = new Date();
-            expirationTime.setTime(expirationTime.getTime() + (1 * 60 * 60 * 1000));
-
-            this.cookieService.set('Token', response.token, {expires: expirationTime});
-            this.cookieService.set('Username', response.username, {expires: expirationTime});
+            if (data.rememberme) {
+                this.cookieService.set('Token', response.token);
+                this.cookieService.set('Username', response.username);
+            } else {
+                sessionStorage.setItem('Token', response.token);
+                sessionStorage.setItem('Username', response.username);
+            }
             
             this.router.navigate(['/']);
         }, 
