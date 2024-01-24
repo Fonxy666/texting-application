@@ -5,4 +5,9 @@
 .navbar {
     border-radius: 15px;
     opacity: 0.8;
+    background: rgb(0, 9, 36);
+}
+
+.text-style {
+    font-family: Cursive;
 }

@@ -1,26 +1,37 @@
 <div class="nav-placement">
-    <nav class="navbar navbar-expand-lg bg-dark">
+    <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
-            <button class="navbar-toggler navbar-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="true" aria-label="Toggle navigation">
+            <button class="navbar-toggler navbar-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="true" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <div class="collapse navbar-collapse" id="navbarContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item ">
-                        <a class="nav-link active text-white px-5" aria-current="page" routerLink="/">Home</a>
+                        <a class="nav-link active text-white px-5 text-style" aria-current="page" routerLink="/">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active text-white px-3" aria-current="page" routerLink="/join-room">Connect to a room</a>
+                        <a class="nav-link active text-white px-3 text-style" aria-current="page" routerLink="/join-room">Connect to a room</a>
                     </li>
                 </ul>
                 <ng-container *ngIf="!isLoggedIn(); else loggedIn">
-                    <a class="nav-link active text-white p-2" aria-current="page" routerLink="/registration">Registration</a>
-                    <a class="nav-link active text-white" aria-current="page" routerLink="/login">Login</a>
+                    <a class="nav-link active text-white px-3 text-style" aria-current="page" routerLink="/login">Sign up</a>
                 </ng-container>
                 <ng-template #loggedIn>
-                    <a class="nav-link active text-white" (click)="logout()">Logout</a>
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Profile
+                        </button>
+                        <ul class="dropdown-menu">
+                          <li><a class="dropdown-item text-style" href="/profile">Profile</a></li>
+                          <li><a class="dropdown-item text-style" href="/settings">Settings</a></li>
+                          <li><button class="dropdown-item text-style" (click)="logout()">Logout</button></li>
+                        </ul>
+                      </div>
                 </ng-template>
             </div>
         </div>
     </nav>
 </div>
+
+
+

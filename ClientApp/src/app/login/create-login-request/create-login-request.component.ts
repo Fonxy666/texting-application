@@ -10,13 +10,14 @@ import { LoginRequest } from '../../model/LoginRequest';
 
 export class CreateLoginRequestComponent implements OnInit {
     constructor(private fb: FormBuilder) { }
-
-    registrationRequest!: FormGroup;
+    
+    loginRequest!: FormGroup;
     
     ngOnInit(): void {
-        this.registrationRequest = this.fb.group({
+        this.loginRequest = this.fb.group({
             username: ['', Validators.required],
-            password: ['', Validators.required]
+            password: ['', Validators.required],
+            rememberme: [false, Validators.required]
         });
     }
 
@@ -25,8 +26,9 @@ export class CreateLoginRequestComponent implements OnInit {
 
     OnFormSubmit() {
         const loginRequest = new LoginRequest(
-            this.registrationRequest.get('username')?.value,
-            this.registrationRequest.get('password')?.value
+            this.loginRequest.get('username')?.value,
+            this.loginRequest.get('password')?.value,
+            this.loginRequest.get('rememberme')?.value
         );
         this.SendLoginRequest.emit(loginRequest);
     }

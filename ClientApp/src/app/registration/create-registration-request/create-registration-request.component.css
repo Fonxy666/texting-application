@@ -1,0 +1,49 @@
+.cont {
+    min-height: 100vh;
+    min-width: 100vw;
+    display: flex;
+    flex-direction: column;
+    background: rgb(90, 148, 225);
+    font-family: Cursive;
+}
+
+.signup-card {
+    border-radius: 15px;
+    margin: 5vh 30vh 15vh 30vh;
+    background: rgb(255, 255, 255);
+    min-height: 70vh;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 1fr;
+    grid-column-gap: 0px;
+    grid-row-gap: 0px;
+}
+
+.left-side {
+    grid-area: 1 / 1 / 2 / 2;
+    overflow: hidden;
+}
+
+.right-side {
+    grid-area: 1 / 2 / 2 / 3;
+    margin: 100px;
+}
+
+.image {
+    margin: 15%;
+    width: 70%;
+    object-fit: cover;
+}
+
+a {
+    text-decoration: none; 
+}
+
+.password-input {
+    display: flex;
+    align-items: center;
+}
+
+.show-button {
+    margin-left: 10px;
+}

@@ -26,6 +26,7 @@ export class LoginComponent {
     CreateTask(data: LoginRequest) {
         this.http.post('http://localhost:5000/Auth/Login', data)
         .subscribe((response: any) => {
+            console.log(data);
             const expirationTime = new Date();
             expirationTime.setTime(expirationTime.getTime() + (1 * 60 * 60 * 1000));
 
