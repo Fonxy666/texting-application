@@ -2,4 +2,4 @@
 
 namespace Server.Contracts;
 
-public record RegistrationRequest([Required]string Email, [Required]string Username, [Required]string Password);
+public record RegistrationRequest([Required]string Email, [Required]string Username, [Required]string Password, string Image);

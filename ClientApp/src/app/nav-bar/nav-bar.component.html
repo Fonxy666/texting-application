@@ -19,13 +19,13 @@
                     <a class="nav-link active text-white px-3 text-style" aria-current="page" routerLink="/login">Sign up</a>
                 </ng-container>
                 <ng-template #loggedIn>
-                    <div class="dropdown">
+                    <div class="dropdown mx-3">
                         <button class="btn text-white dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Profile
+                            <img [src]="profilePic" alt="Profile Image" class="profile-pic">
                         </button>
                         <ul class="dropdown-menu">
-                          <li><a class="dropdown-item text-style" href="/profile">Profile</a></li>
-                          <li><a class="dropdown-item text-style" href="/settings">Settings</a></li>
+                          <li><a class="dropdown-item text-style" href="/profile/profile">Profile</a></li>
+                          <li><a class="dropdown-item text-style" href="/profile/settings">Settings</a></li>
                           <li><button class="dropdown-item text-style" (click)="logout()">Logout</button></li>
                         </ul>
                       </div>

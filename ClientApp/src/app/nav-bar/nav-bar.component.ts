@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 
 @Component({
@@ -8,20 +9,35 @@ import { CookieService } from 'ngx-cookie-service';
   styleUrl: './nav-bar.component.css'
 })
 
-export class NavBarComponent {
-    constructor(private cookieService : CookieService, private router: Router) {}
+export class NavBarComponent implements OnInit {
+    constructor(private cookieService : CookieService, private router: Router, private http: HttpClient) {}
 
-    isDropdownOpen = false;
-
-    toggleDropdown() {
-        this.isDropdownOpen = !this.isDropdownOpen;
+    ngOnInit(): void {
+        this.loadProfileData();
     }
 
-    isLoggedIn() : boolean {
-        if (this.cookieService.check('Token') && this.cookieService.check('Username') || sessionStorage.getItem('Token') && sessionStorage.getItem('Username')) {
-            return true;
-        } else {
-            return false;
+    profilePic: string = "";
+
+    isLoggedIn(): boolean {
+        return !!((this.cookieService.check('Token') && this.cookieService.check('Username')) ||
+                   (sessionStorage.getItem('Token') && sessionStorage.getItem('Username')));
+    }
+
+    loadProfileData() {
+        const username = this.cookieService.get('Username') || sessionStorage.getItem('Username');
+        if (username) {
+            const params = { username };
+            this.http.get('http://localhost:5000/User/getProfilePic', { params, responseType: 'text' })
+                .subscribe(
+                    (response: any) => {
+                        if (response) {
+                            this.profilePic = response;
+                        }
+                    },
+                    (error) => {
+                        console.error('Error fetching profile picture:', error);
+                    }
+                );
         }
     }
 

@@ -122,7 +122,7 @@
     top: 0;
     left: 0;
     width: 100%;
-    z-index: -2;
+    z-index: -3;
     animation: 
         sunStandingInTheMiddle 5s linear forwards,
         SunToLeftAfterStayingMiddle 5s linear forwards 10s,

@@ -77,7 +77,7 @@ namespace Server
                     };
                 });
 
-            services.AddIdentityCore<IdentityUser>(ConfigureIdentityOptions)
+            services.AddIdentity<ApplicationUser, IdentityRole>(ConfigureIdentityOptions)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<UsersContext>();
         }
@@ -137,7 +137,7 @@ namespace Server
         {
             using var scope = app.ApplicationServices.CreateScope();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
             var roleList = new List<string> { "User", "Admin" };
 
@@ -157,14 +157,14 @@ namespace Server
             }
         }
 
-        private async Task CreateAdminIfNotExistAsync(UserManager<IdentityUser> userManager)
+        private async Task CreateAdminIfNotExistAsync(UserManager<ApplicationUser> userManager)
         {
             var adminEmail = configuration["AdminEmail"];
 
             var adminInDb = await userManager.FindByEmailAsync(adminEmail!);
             if (adminInDb == null)
             {
-                var admin = new IdentityUser
+                var admin = new ApplicationUser("-")
                 {
                     UserName = configuration["AdminUserName"],
                     Email = adminEmail

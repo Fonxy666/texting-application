@@ -14,6 +14,9 @@ import { CreateRegistrationRequestComponent } from './registration/create-regist
 import { RegistrationComponent } from './registration/registration.component';
 import { ChatComponent } from './chat/chat/chat.component';
 import { JoinRoomComponent } from './chat/join-room/join-room.component';
+import { ProfileComponent } from './profile/profile/profile.component';
+import { SettingsComponent } from './profile/settings/settings.component';
+import { ImageCropperModule } from 'ngx-image-cropper';
 
 @NgModule({
   declarations: [
@@ -26,13 +29,16 @@ import { JoinRoomComponent } from './chat/join-room/join-room.component';
     RegistrationComponent,
     ChatComponent,
     JoinRoomComponent,
+    ProfileComponent,
+    SettingsComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     FormsModule,
     HttpClientModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    ImageCropperModule
   ],
   providers: [
     CookieService

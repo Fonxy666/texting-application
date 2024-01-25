@@ -1,6 +1,8 @@
-﻿namespace Server.Model;
+﻿using Microsoft.AspNetCore.Identity;
 
-public class ApplicationUser
+namespace Server.Model;
+
+public class ApplicationUser(string imageUrl) : IdentityUser
 {
-    
+    public string ImageUrl { get; private set; } = imageUrl;
 }
