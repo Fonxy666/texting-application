@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { FormBuilder, FormGroup,  Validators } from '@angular/forms';
 import { RegistrationRequest } from '../../model/RegistrationRequest';
-import { ImageCroppedEvent, LoadedImage } from 'ngx-image-cropper';
+import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
@@ -54,33 +54,26 @@ export class CreateRegistrationRequestComponent {
         this.showPassword = !this.showPassword;
     }
 
-    onProfilePicChange(event: any) {
-        const selectedFile = event.target.files[0];
-    
-        if (selectedFile) {
-            const reader = new FileReader();
-            reader.onload = (e: any) => {
-                const previewUrl = e.target.result;
-                this.profilePic = previewUrl;
-            };
-            reader.readAsDataURL(selectedFile);
-        }
-    }
-
     fileChangeEvent(event: any): void {
         this.imageChangedEvent = event;
     }
+
     imageCropped(event: ImageCroppedEvent) {
-      this.croppedImage = this.sanitizer.bypassSecurityTrustUrl(event.objectUrl!);
-      // event.blob can be used to upload the cropped image
+        this.croppedImage = this.sanitizer.bypassSecurityTrustUrl(event.base64!!);
+        this.onProfilePicChange(event);
     }
-    imageLoaded(image: LoadedImage) {
-        // show cropper
+
+    async onProfilePicChange(event: ImageCroppedEvent) {
+        const base64data = event.blob instanceof Blob ? await this.getBase64FromBlob(event.blob) : '';
+        this.profilePic = base64data;
     }
-    cropperReady() {
-        // cropper ready
-    }
-    loadImageFailed() {
-        // show message
+    
+    getBase64FromBlob(blob: Blob): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = (error) => reject(error);
+        });
     }
 }

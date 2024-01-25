@@ -28,16 +28,18 @@ export class NavBarComponent implements OnInit {
         if (username) {
             const params = { username };
             this.http.get('http://localhost:5000/User/getProfilePic', { params, responseType: 'text' })
-                .subscribe(
-                    (response: any) => {
-                        if (response) {
-                            this.profilePic = response;
-                        }
-                    },
-                    (error) => {
-                        console.error('Error fetching profile picture:', error);
+            .subscribe (
+                (response: any) => {
+                    if (response.length > 1) {
+                        this.profilePic = response;
+                    } else {
+                        this.profilePic = "https://ptetutorials.com/images/user-profile.png";
                     }
-                );
+                },
+                () => {
+                    console.log("There is no Avatar for this user.");
+                }
+            );
         }
     }
 
