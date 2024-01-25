@@ -18,12 +18,21 @@ export class NavBarComponent {
     }
 
     isLoggedIn() : boolean {
-        return this.cookieService.check('Token') && this.cookieService.check('Username');
+        if (this.cookieService.check('Token') && this.cookieService.check('Username') || sessionStorage.getItem('Token') && sessionStorage.getItem('Username')) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     logout() {
-        this.cookieService.delete('Token');
-        this.cookieService.delete('Username');
+        if (this.cookieService.check('Token') && this.cookieService.check('Username')) {
+            this.cookieService.delete('Token');
+            this.cookieService.delete('Username');
+        } else {
+            sessionStorage.removeItem('Token');
+            sessionStorage.removeItem('Username');
+        }
         this.router.navigate(['/']);
     }
 }
