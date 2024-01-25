@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
+
 export class LoginComponent {
     constructor(private http: HttpClient, private cookieService: CookieService, private router: Router) { }
 
@@ -19,13 +20,20 @@ export class LoginComponent {
     }
 
     isLoggedIn() : boolean {
-        return this.cookieService.check('Token');
+        return this.cookieService.check('Token') && this.cookieService.check('Username');
     }
     
     CreateTask(data: LoginRequest) {
-        this.http.post('http://localhost:5003/Auth/Login', data)
+        this.http.post('http://localhost:5000/Auth/Login', data)
         .subscribe((response: any) => {
-            this.cookieService.set('Token', response.token, {expires: 1});
+            if (data.rememberme) {
+                this.cookieService.set('Token', response.token);
+                this.cookieService.set('Username', response.username);
+            } else {
+                sessionStorage.setItem('Token', response.token);
+                sessionStorage.setItem('Username', response.username);
+            }
+            
             this.router.navigate(['/']);
         }, 
         (error) => {

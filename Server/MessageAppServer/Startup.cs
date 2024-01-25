@@ -1,76 +1,88 @@
-﻿﻿using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Server.Database;
+using Server.Hub;
+using Server.Model;
 using Server.Services.Authentication;
 
-namespace Server;
-
-public class Startup(IConfiguration configuration)
+namespace Server
 {
-    #region ConfigureServices
-    public void ConfigureServices(IServiceCollection services)
+    public class Startup(IConfiguration configuration)
     {
-        services.AddControllers(options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(options =>
+        public void ConfigureServices(IServiceCollection services)
         {
-            options.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo API", Version = "v1" });
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                In = ParameterLocation.Header,
-                Description = "Please enter a valid token",
-                Name = "Authorization",
-                Type = SecuritySchemeType.Http,
-                BearerFormat = "JWT",
-                Scheme = "Bearer"
-            });
+            var connection = configuration["ConnectionString"];
+            var issueSign = configuration["IssueSign"];
+            var issueAudience = configuration["IssueAudience"];
 
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            services.AddControllers(options =>
+                options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
+
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen(options =>
             {
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo API", Version = "v1" });
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    new OpenApiSecurityScheme
+                    In = ParameterLocation.Header,
+                    Description = "Please enter a valid token",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = "Bearer"
+                });
+
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
                     {
-                        Reference = new OpenApiReference
+                        new OpenApiSecurityScheme
                         {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    Array.Empty<string>()
-                }
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
             });
-        });
-        
-        services.AddScoped<ITokenService, TokenService>();
-        services.AddScoped<IAuthService, AuthService>();
 
-        var connection = configuration["ConnectionString"];
-        var iS = configuration["IssueSign"];
-        var iA = configuration["IssueAudience"];
-        
-        services.AddDbContext<UsersContext>(options => options.UseSqlServer(connection));
-        
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
+            services.AddSignalR();
+
+            services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddSingleton<IDictionary<string, UserRoomConnection>>(opt =>
+                new Dictionary<string, UserRoomConnection>());
+
+            services.AddDbContext<UsersContext>(options => options.UseSqlServer(connection));
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
                 {
-                    ClockSkew = TimeSpan.Zero,
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = iA,
-                    ValidAudience = iA,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(iS))
-                };
-            });
-        
-        services.AddIdentityCore<IdentityUser>(options =>
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ClockSkew = TimeSpan.Zero,
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = issueAudience,
+                        ValidAudience = issueAudience,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(issueSign))
+                    };
+                });
+
+            services.AddIdentity<ApplicationUser, IdentityRole>(ConfigureIdentityOptions)
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<UsersContext>();
+        }
+
+        private static void ConfigureIdentityOptions(IdentityOptions options)
         {
             options.SignIn.RequireConfirmedAccount = false;
             options.User.RequireUniqueEmail = true;
@@ -83,91 +95,93 @@ public class Startup(IConfiguration configuration)
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
             options.Lockout.MaxFailedAccessAttempts = 5;
             options.Lockout.AllowedForNewUsers = true;
-        })
-        .AddRoles<IdentityRole>()
-        .AddEntityFrameworkStores<UsersContext>(); 
-    }
-    #endregion
-
-    #region Configure
-    public async void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-    {
-        if (env.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-            app.UseSwagger();
-            app.UseSwaggerUI();
         }
 
-        app.UseHttpsRedirection();
-        app.UseRouting();
-
-        app.Use(async (context, next) =>
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            context.Response.Headers.Add("Access-Control-Allow-Origin", "http://localhost:4200");
-            context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
-            context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
-            if (context.Request.Method == "OPTIONS")
+            if (env.IsDevelopment())
             {
-                context.Response.StatusCode = 200;
+                app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
-            else
+
+            app.UseHttpsRedirection();
+            app.UseRouting();
+
+            app.UseCors(builder =>
             {
-                await next();
-            }
-        });
+                builder.WithOrigins("http://localhost:4200")
+                       .AllowAnyMethod()
+                       .AllowAnyHeader()
+                       .AllowCredentials();
+            });
 
-        app.UseAuthentication();
-        app.UseAuthorization();
+            app.UseEndpoints(endpoint =>
+            {
+                endpoint.MapHub<ChatHub>("/chat");
+            });
 
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapControllers();
-        });
+            app.UseAuthentication();
+            app.UseAuthorization();
 
-        await AddRolesAndAdmin(app);
-    }
-    #endregion
-
-    #region Admin
-
-    private async Task AddRolesAndAdmin(IApplicationBuilder app)
-    {
-        using var scope = app.ApplicationServices.CreateScope();
-        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-
-        var roleList = new List<string> { "User", "Admin" };
-        
-        foreach (var role in roleList)
-        {
-            await roleManager.CreateAsync(new IdentityRole(role));
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
+            
+            AddRolesAndAdminAsync(app).Wait();
         }
 
-        await CreateAdminIfNotExist(userManager);
-    }
-
-    private async Task CreateAdminIfNotExist(UserManager<IdentityUser> userManager)
-    {
-        var adminEmail = configuration["AdminEmail"];
-
-        var adminInDb = await userManager.FindByEmailAsync(adminEmail);
-        if (adminInDb == null)
+        private async Task AddRolesAndAdminAsync(IApplicationBuilder app)
         {
-            var admin = new IdentityUser { UserName = configuration["AdminUserName"], Email = adminEmail };
-            var adminCreated = await userManager.CreateAsync(admin, configuration["AdminPassword"]);
+            using var scope = app.ApplicationServices.CreateScope();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-            if (adminCreated.Succeeded)
+            var roleList = new List<string> { "User", "Admin" };
+
+            foreach (var role in roleList)
             {
-                await userManager.AddToRoleAsync(admin, "Admin");
-                Console.WriteLine("Admin user created successfully.");
+                await CreateRoleIfNotExistAsync(roleManager, role);
             }
-            else
+
+            await CreateAdminIfNotExistAsync(userManager);
+        }
+
+        private static async Task CreateRoleIfNotExistAsync(RoleManager<IdentityRole> roleManager, string roleName)
+        {
+            if (!await roleManager.RoleExistsAsync(roleName))
             {
-                Console.WriteLine($"Error creating admin user: {string.Join(", ", adminCreated.Errors)}");
+                await roleManager.CreateAsync(new IdentityRole(roleName));
+            }
+        }
+
+        private async Task CreateAdminIfNotExistAsync(UserManager<ApplicationUser> userManager)
+        {
+            var adminEmail = configuration["AdminEmail"];
+
+            var adminInDb = await userManager.FindByEmailAsync(adminEmail!);
+            if (adminInDb == null)
+            {
+                var admin = new ApplicationUser("-")
+                {
+                    UserName = configuration["AdminUserName"],
+                    Email = adminEmail
+                };
+
+                var adminCreated = await userManager.CreateAsync(admin, configuration["AdminPassword"]!);
+
+                if (adminCreated.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(admin, "Admin");
+                    Console.WriteLine("Admin user created successfully.");
+                }
+                else
+                {
+                    Console.WriteLine($"Error creating admin user: {string.Join(", ", adminCreated.Errors)}");
+                }
             }
         }
     }
-    #endregion
 }

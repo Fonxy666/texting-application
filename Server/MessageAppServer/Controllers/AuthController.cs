@@ -3,13 +3,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Server.Contracts;
 using Server.Database;
+using Server.Model;
 using Server.Services.Authentication;
 
 namespace Server.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class AuthController(IAuthService authenticationService, UsersContext repository, ILogger<AuthController> logger, UserManager<IdentityUser> userManager) : ControllerBase
+public class AuthController(IAuthService authenticationService, UsersContext repository, ILogger<AuthController> logger, UserManager<ApplicationUser> userManager) : ControllerBase
 {
     [HttpPost("Register")]
     public async Task<ActionResult<RegistrationResponse>> Register(RegistrationRequest request)
@@ -19,7 +20,7 @@ public class AuthController(IAuthService authenticationService, UsersContext rep
             return BadRequest(ModelState);
         }
 
-        var result = await authenticationService.RegisterAsync(request.Email, request.Username, request.Password, "User");
+        var result = await authenticationService.RegisterAsync(request.Email, request.Username, request.Password, "User", request.Image);
 
         if (!result.Success)
         {
@@ -51,6 +52,8 @@ public class AuthController(IAuthService authenticationService, UsersContext rep
         if (!result.Success)
         {
             AddErrors(result);
+            ModelState.AddModelError("InvalidCredentials", "Invalid username or password");
+            
             return BadRequest(ModelState);
         }
 
@@ -60,7 +63,6 @@ public class AuthController(IAuthService authenticationService, UsersContext rep
     [HttpPatch("Patch"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<ChangeUserPasswordResponse>> ChangeUserPassword([FromBody] ChangeUserPasswordRequest request)
     {
-        Console.WriteLine(request);
         try
         {
             var existingUser = await userManager.FindByEmailAsync(request.Email);

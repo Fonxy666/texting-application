@@ -1,0 +1,105 @@
+@keyframes dayTime {
+    0% {
+        background-color: rgb(114, 69, 50);
+    }
+    15% {
+        background-color: rgb(242, 231, 176);
+    }
+    30% {
+        background-color: rgb(242, 231, 176);
+    }
+    50% {
+        background-color: rgb(114, 69, 50);
+    }
+    75% {
+        background-color: rgb(26, 26, 51);
+    }
+    100% {
+        background-color: rgb(114, 69, 50);
+    }
+}
+
+@keyframes moveLeft {
+    0% {
+        top: 20%;
+        right: -10%;
+    }
+    30% {
+        top: 12%;
+    }
+    45% {
+        top: 8%;
+    }
+    55% {
+        top: 8%;
+    }
+    70% {
+        top: 12%;
+    }
+    100% {
+        top: 20%;
+        right: 100%;
+    }
+}
+
+.btn-color {
+    background-color: #0e1c36;
+    color: #fff;
+}
+
+.profile-image-pic {
+    height: 200px;
+    width: 200px;
+    object-fit: cover;
+    border-radius: 100%;
+}
+
+a {
+    text-decoration: none;
+}
+
+.cont {
+    position: relative;
+    min-width: 100vh;
+    min-height: 100vh;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.background-image {
+    min-width: 100vh;
+    min-height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    object-position: top center;
+    z-index: -2;
+    animation: 
+        dayTime 20s linear infinite;
+}
+
+.moon_img {
+    width: 8%;
+    position: absolute;
+    animation: 
+        moveLeft 10s linear infinite;
+    z-index: -1;
+    animation-timing-function: cubic-bezier(0.47, 0.03, 0.49, 1);
+}
+
+.sun_img {
+    width: 10%;
+    position: absolute;
+    animation: 
+        moveLeft 10s linear infinite;
+    z-index: -1;
+    animation-timing-function: cubic-bezier(0.47, 0.03, 0.49, 1);
+}
+
+.text-style {
+    font-family: Cursive;
+}

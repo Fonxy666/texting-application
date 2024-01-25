@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Server.Model;
 
 namespace Server.Services.Authentication;
 
-public class AuthService(UserManager<IdentityUser> userManager, ITokenService tokenService)
+public class AuthService(UserManager<ApplicationUser> userManager, ITokenService tokenService)
     : IAuthService
 {
-    public async Task<AuthResult> RegisterAsync(string email, string username, string password, string role)
+    public async Task<AuthResult> RegisterAsync(string email, string username, string password, string role, string image)
     {
-        var user = new IdentityUser { UserName = username, Email = email };
+        var user = new ApplicationUser(image) { UserName = username, Email = email };
         var result = await userManager.CreateAsync(user, password);
 
         if (!result.Succeeded)
