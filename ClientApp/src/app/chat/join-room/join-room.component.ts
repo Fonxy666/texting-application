@@ -13,7 +13,7 @@ import { ChatService } from '../../chat.service';
 export class JoinRoomComponent implements OnInit {
     constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private chatService: ChatService) { }
 
-    myImage: string = "./assets/images/mountains-3270710.svg";
+    myImage: string = "./assets/images/backgroundpng.png";
     joinRoomForm!: FormGroup;
     isSunActive: boolean = true;
     isMoonActive: boolean = false;

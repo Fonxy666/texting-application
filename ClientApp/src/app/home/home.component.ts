@@ -6,7 +6,7 @@ import { Component, OnInit } from '@angular/core';
   styleUrl: './home.component.css'
 })
 export class HomeComponent implements OnInit {
-    myImage: string = "./assets/images/mountains-3270710.svg";
+    myImage: string = "./assets/images/backgroundpng.png";
     isSunActive: boolean = true;
     isMoonActive: boolean = false;
     displayHomeText: string = "";

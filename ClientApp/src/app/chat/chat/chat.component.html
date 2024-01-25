@@ -1,9 +1,10 @@
-<div>
+<div class="cont">
     <app-nav-bar />
+    <img [src]="myImage" class="background-image">
     <div class="container mt-5">
         <div class="chat_header">
-            <h3 class="text-center my-2">Welcome to <span class="text-warning">{{roomName}}</span> Group</h3>
-            <button (click)="leaveChat()" class="btn btn-danger">Leave Chat</button>
+            <h3 class="text-center my-2">Welcome to <span class="group-name">"{{roomName}}"</span> Group</h3>
+            <button (click)="leaveChat()" class="btn text-white">Leave Chat</button>
         </div>
         <div class="messaging">
             <div class="inbox_msg">

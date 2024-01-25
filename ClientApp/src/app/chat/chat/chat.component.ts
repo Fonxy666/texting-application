@@ -12,6 +12,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     inputMessage = "";
     loggedInUserName = sessionStorage.getItem("user");
     roomName = sessionStorage.getItem("room");
+    myImage: string = "./assets/images/chat-mountain.jpg";
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
 

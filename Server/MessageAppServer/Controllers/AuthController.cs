@@ -43,7 +43,6 @@ public class AuthController(IAuthService authenticationService, UsersContext rep
     {
         if (!ModelState.IsValid)
         {
-            Console.WriteLine("haha");
             return BadRequest(ModelState);
         }
 
@@ -51,7 +50,6 @@ public class AuthController(IAuthService authenticationService, UsersContext rep
 
         if (!result.Success)
         {
-            Console.WriteLine("hahe");
             AddErrors(result);
             ModelState.AddModelError("InvalidCredentials", "Invalid username or password");
             
