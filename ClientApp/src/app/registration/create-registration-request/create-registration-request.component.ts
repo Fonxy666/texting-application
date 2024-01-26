@@ -9,6 +9,7 @@ import { DomSanitizer } from '@angular/platform-browser';
   templateUrl: './create-registration-request.component.html',
   styleUrl: './create-registration-request.component.css'
 })
+
 export class CreateRegistrationRequestComponent {
 
     constructor(private fb: FormBuilder, private sanitizer: DomSanitizer) { }

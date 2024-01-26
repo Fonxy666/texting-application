@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using Server.Database;
 using Server.Model;
 using Server.Services.Authentication;
@@ -23,16 +24,32 @@ public class UserController(IAuthService authenticationService, UsersContext rep
         return existingUser!;
     }
 
-    [HttpGet("getProfilePic")]
-    public async Task<ActionResult<string>> GetProfilePic(string username)
+    [HttpGet("GetImage/{imageName}")]
+    public IActionResult GetImage(string imageName)
     {
-        var existingUser = await userManager.FindByNameAsync(username);
+        var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
+        var imagePath = Path.Combine(folderPath, $"{imageName}.png");
+        FileContentResult result = null;
 
-        if (existingUser == null)
+        if (System.IO.File.Exists(imagePath))
         {
-            return NotFound("User not found.");
-        }
+            var imageBytes = System.IO.File.ReadAllBytes(imagePath);
 
-        return existingUser.ImageUrl;
+            var contentType = GetContentType(imagePath);
+
+            result = File(imageBytes, contentType);
+        }
+        
+        return result ?? (IActionResult)NotFound();
+    }
+
+    private string GetContentType(string filePath)
+    {
+        var provider = new FileExtensionContentTypeProvider();
+        if (!provider.TryGetContentType(filePath, out var contentType))
+        {
+            contentType = "application/octet-stream";
+        }
+        return contentType;
     }
 }

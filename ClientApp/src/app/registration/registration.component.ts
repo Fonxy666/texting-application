@@ -14,7 +14,6 @@ export class RegistrationComponent {
     SendRegistration(data: RegistrationRequest) {
         this.http.post('http://localhost:5000/Auth/Register', data)
         .subscribe((response) => {
-            console.log(response);
             if (response) {
                 this.router.navigate(['/']);
             }
