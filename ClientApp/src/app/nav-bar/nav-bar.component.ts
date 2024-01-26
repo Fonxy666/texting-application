@@ -25,21 +25,27 @@ export class NavBarComponent implements OnInit {
 
     loadProfileData() {
         const username = this.cookieService.get('Username') || sessionStorage.getItem('Username');
+        
         if (username) {
-            const params = { username };
-            this.http.get('http://localhost:5000/User/getProfilePic', { params, responseType: 'text' })
-            .subscribe (
-                (response: any) => {
-                    if (response.length > 1) {
-                        this.profilePic = response;
-                    } else {
-                        this.profilePic = "https://ptetutorials.com/images/user-profile.png";
+            this.http.get(`http://localhost:5000/User/GetImage/${username}`, { responseType: 'blob' })
+                .subscribe(
+                    (response: any) => {
+                        if (response instanceof Blob) {
+                            console.log("Avatar loaded successfully");
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                                this.profilePic = reader.result as string;
+                            };
+                            reader.readAsDataURL(response);
+                        } else {
+                            this.profilePic = "https://ptetutorials.com/images/user-profile.png";
+                        }
+                    },
+                    (error) => {
+                        console.log(error);
+                        console.log("There is no Avatar for this user.");
                     }
-                },
-                () => {
-                    console.log("There is no Avatar for this user.");
-                }
-            );
+                );
         }
     }
 
