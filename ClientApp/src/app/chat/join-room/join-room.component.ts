@@ -19,8 +19,6 @@ export class JoinRoomComponent implements OnInit {
     isMoonActive: boolean = false;
 
     ngOnInit() : void {
-        console.log(`Session storage: ${sessionStorage.getItem('Username')}`);
-        console.log(`Cookies: ${this.cookieService.get('Username')}`);
         if (this.cookieService.get('Username').length > 1) {
             this.joinRoomForm = this.fb.group({
                 user: [this.cookieService.get('Username'), Validators.required],
