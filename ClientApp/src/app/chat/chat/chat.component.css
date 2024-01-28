@@ -1,5 +1,5 @@
 .cont {
-    min-height: 100vh;
+    max-height: 50vh;
     font-family: Cursive;
 }
 
@@ -274,14 +274,13 @@ img {
 }
 
 .background-image {
-    min-width: 100vh;
-    min-height: 100vh;
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: auto;
+    height: 100vh;
     object-fit: cover;
     object-position: top center;
     z-index: -1;
+    overflow: hidden;
 }

@@ -31,19 +31,17 @@ export class NavBarComponent implements OnInit {
                 .subscribe(
                     (response: any) => {
                         if (response instanceof Blob) {
-                            console.log("Avatar loaded successfully");
-                            const reader = new FileReader();
+                                                        const reader = new FileReader();
                             reader.onloadend = () => {
                                 this.profilePic = reader.result as string;
                             };
                             reader.readAsDataURL(response);
-                        } else {
-                            this.profilePic = "https://ptetutorials.com/images/user-profile.png";
                         }
                     },
                     (error) => {
                         console.log(error);
                         console.log("There is no Avatar for this user.");
+                        this.profilePic = "https://ptetutorials.com/images/user-profile.png";
                     }
                 );
         }

@@ -24,14 +24,16 @@
                     </div>
                     <div class="inbox-chat">
                         <ng-container *ngFor="let user of this.chatService.connectedUsers | async">
-                            <div class="chat_list">
-                                <div class="chat_people">
-                                    <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="image"></div>
-                                    <div class="chat_ib mt-3">
-                                        <h5>{{user}} <span class="online"></span> </h5>
-                                    </div>
-                                </div>
+                          <div class="chat_list">
+                            <div class="chat_people">
+                              <div class="chat_img">
+                                <img [src]="avatars[user] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
+                              </div>
+                              <div class="chat_ib mt-3">
+                                <h5>{{user}} <span class="online"></span> </h5>
+                              </div>
                             </div>
+                          </div>
                         </ng-container>
                     </div>
                 </div>
