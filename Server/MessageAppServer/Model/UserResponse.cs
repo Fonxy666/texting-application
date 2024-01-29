@@ -1,6 +1,6 @@
 ﻿namespace Server.Model;
 
-public class UserResponse
+public class UserResponse()
 {
-    
+    public string? Email { get; init; }
 }

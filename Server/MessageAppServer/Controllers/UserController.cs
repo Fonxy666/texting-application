@@ -11,8 +11,8 @@ namespace Server.Controllers;
 [Route("[controller]")]
 public class UserController(IAuthService authenticationService, UsersContext repository, UserManager<ApplicationUser> userManager) : ControllerBase 
 {
-    [HttpGet("getUser")]
-    public async Task<ActionResult<IdentityUser>> GetUser(string username)
+    [HttpGet("getUserEmail")]
+    public async Task<ActionResult<UserResponse>> GetUserEmail(string username)
     {
         var existingUser = await userManager.FindByNameAsync(username);
 
@@ -21,7 +21,9 @@ public class UserController(IAuthService authenticationService, UsersContext rep
             return NotFound("User not found.");
         }
 
-        return existingUser!;
+        var response = new UserResponse { Email = existingUser.Email };
+
+        return response;
     }
 
     [HttpGet("GetImage/{imageName}")]

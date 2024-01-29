@@ -1,1 +1,57 @@
-<p>profile works!</p>
+<div class="cont">
+    <app-nav-bar />
+    <div class="card">
+        <div class="card-body">
+            <h2>{{user.name}}</h2>
+            <img [src]="this.user.image" alt="user-image" class="user-image">
+            <div>
+                <div>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changeAvatar">
+                        Change avatar
+                    </button>
+                    <div class="modal fade" id="changeAvatar" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Change avatar</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <img [src]="this.user.image" alt="user-image" class="user-image">
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    Username: {{this.user.name}}
+                </div>
+                <div>
+                    Email: {{this.user.email}}
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changeEmail">
+                        Change e-mail
+                    </button>
+                    <div class="modal fade" id="changeEmail" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                        <app-generate-email-change-request/>
+                    </div>
+                </div>
+                <div>
+                    Password:
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changePassword">
+                        Change password
+                    </button>
+                    <div class="modal fade" id="changePassword" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                        <app-generate-password-change-request
+                            [email]="this.user.email"
+                            (SendPasswordChangeRequest)="changePassword($event)"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+    <img [src]="myImage" class="background-image">
+</div>

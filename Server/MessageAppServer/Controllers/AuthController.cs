@@ -92,7 +92,7 @@ public class AuthController(IAuthService authenticationService, UsersContext rep
         return Ok(new AuthResponse(result.Email, result.UserName, result.Token));
     }
 
-    [HttpPatch("Patch"), Authorize(Roles = "User, Admin")]
+    [HttpPatch("ChangePassword")]
     public async Task<ActionResult<ChangeUserPasswordResponse>> ChangeUserPassword([FromBody] ChangeUserPasswordRequest request)
     {
         try
@@ -111,7 +111,8 @@ public class AuthController(IAuthService authenticationService, UsersContext rep
             if (result.Succeeded)
             {
                 await repository.SaveChangesAsync();
-                return Ok($"Successful update on {request.Email}!");
+                var response = new ChangeUserPasswordResponse(existingUser.Email!, existingUser.UserName!);
+                return Ok(response);
             }
             else
             {
