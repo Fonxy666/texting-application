@@ -6,12 +6,18 @@ using Server.Contracts;
 using Server.Database;
 using Server.Model;
 using Server.Services.Authentication;
+using Server.Services.EmailSender;
 
 namespace Server.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class AuthController(IAuthService authenticationService, UsersContext repository, ILogger<AuthController> logger, UserManager<ApplicationUser> userManager) : ControllerBase
+public class AuthController(
+    IAuthService authenticationService,
+    UsersContext repository,
+    ILogger<AuthController> logger,
+    UserManager<ApplicationUser> userManager,
+    IEmailSender emailSender) : ControllerBase
 {
     [HttpPost("Register")]
     public async Task<ActionResult<RegistrationResponse>> Register(RegistrationRequest request)
@@ -29,6 +35,11 @@ public class AuthController(IAuthService authenticationService, UsersContext rep
             AddErrors(result);
             return BadRequest(ModelState);
         }
+
+        var receiver = "viktor_6@windowslive.com";
+        var subject = "Test";
+        var message = "Muxik !?";
+        await emailSender.SendEmailAsync(receiver, subject, message);
 
         return CreatedAtAction(nameof(Register), new RegistrationResponse(result.Email, result.UserName));
     }

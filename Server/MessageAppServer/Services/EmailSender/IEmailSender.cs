@@ -1,6 +1,6 @@
-﻿namespace Server.EmailSender;
+﻿namespace Server.Services.EmailSender;
 
 public interface IEmailSender
 {
-    Task SendEmailAsync 
+    Task SendEmailAsync(string email, string subject, string message);
 }
