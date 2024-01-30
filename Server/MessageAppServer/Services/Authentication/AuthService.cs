@@ -6,9 +6,9 @@ namespace Server.Services.Authentication;
 public class AuthService(UserManager<ApplicationUser> userManager, ITokenService tokenService)
     : IAuthService
 {
-    public async Task<AuthResult> RegisterAsync(string email, string username, string password, string role, string image)
+    public async Task<AuthResult> RegisterAsync(string email, string username, string password, string role, string phoneNumber, string image)
     {
-        var user = new ApplicationUser(image) { UserName = username, Email = email };
+        var user = new ApplicationUser(image) { UserName = username, Email = email, PhoneNumber = phoneNumber, PhoneNumberConfirmed = true };
         var result = await userManager.CreateAsync(user, password);
 
         if (!result.Succeeded)

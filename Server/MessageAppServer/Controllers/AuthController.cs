@@ -22,7 +22,7 @@ public class AuthController(IAuthService authenticationService, UsersContext rep
         }
 
         var imagePath = SaveImageLocally(request.Username, request.Image);
-        var result = await authenticationService.RegisterAsync(request.Email, request.Username, request.Password, "User", imagePath);
+        var result = await authenticationService.RegisterAsync(request.Email, request.Username, request.Password, "User", request.PhoneNumber, imagePath);
 
         if (!result.Success)
         {

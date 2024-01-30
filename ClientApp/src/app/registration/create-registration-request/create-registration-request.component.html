@@ -13,23 +13,27 @@
             <form [formGroup]="registrationRequest" (ngSubmit)="OnFormSubmit()">
                 <div class="form-group mt-3">
                     <label class="mb-2" for="email">Email</label>
-                    <input formControlName="email" type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="email" required name="email" required>
+                    <input formControlName="email" type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="email" required name="email">
                     <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
                 </div>
                 <div class="form-group mt-3">
                     <label class="mb-2" for="username">Username</label>
-                    <input formControlName="username" type="email" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Username" required name="username" required>
+                    <input formControlName="username" type="email" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Username" required name="username">
                 </div>
                 <div class="form-group mt-3">
                     <label class="mb-2" for="password">Password</label>
                     <div class="password-input">
-                        <input formControlName="password" [type]="showPassword ? 'text' : 'password'" class="form-control" id="password" placeholder="Password" required name="password" required>
+                        <input formControlName="password" [type]="showPassword ? 'text' : 'password'" class="form-control" id="password" placeholder="Password" required name="password">
                         <button type="button" (click)="toggleShowPassword()" class="show-button btn btn-primary">{{ showPassword ? 'Hide' : 'Show' }}</button>
                     </div>
                 </div>
                 <div class="form-group mt-3">
                     <label class="mb-2" for="password-repeat">Password repeat</label>
-                    <input formControlName="passwordrepeat" type="password" class="form-control" id="password-repeat" placeholder="Password" required name="password-repeat" required>
+                    <input formControlName="passwordrepeat" type="password" class="form-control" id="password-repeat" placeholder="Password" required name="password-repeat">
+                </div>
+                <div class="form-group mt-3">
+                    <label class="mb-2" for="phoneNumber">Telephone number</label>
+                    <input formControlName="phoneNumber" type="email" class="form-control" id="phoneNumber" aria-describedby="emailHelp" placeholder="06-20-221-2222" required name="phoneNumber">
                 </div>
                 <div class="form-group">
                     <label class="mb-2" for="profile-pic">Profile picture</label>
