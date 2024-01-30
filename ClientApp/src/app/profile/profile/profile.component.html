@@ -32,11 +32,17 @@
                 </div>
                 <div>
                     Email: {{this.user.email}}
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changeEmail">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changeEmail" [disabled]="!this.user.twoFactorEnabled">
                         Change e-mail
                     </button>
+                    <div *ngIf="!this.user.twoFactorEnabled">
+                        First you need to enable 2FA.
+                        <button type="button" class="btn btn-primary">Enable 2FA</button>
+                    </div>
                     <div class="modal fade" id="changeEmail" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                        <app-generate-email-change-request/>
+                        <app-generate-email-change-request 
+                            [email]="this.user.email"
+                            (SendPasswordChangeRequest)="changeEmail($event)"/>
                     </div>
                 </div>
                 <div>

@@ -1,3 +1,3 @@
 ﻿namespace Server.Contracts;
 
-public record ChangeEmailResponse();
+public record ChangeEmailResponse(string Email, string UserName);

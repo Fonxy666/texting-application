@@ -1,3 +1,3 @@
-﻿namespace Server.Model;
+﻿namespace Server.Contracts;
 
-public record UserResponse(string? Email, bool TwoFactorEnabled) {}
+public record UserResponse(string? Email, bool TwoFactorEnabled);

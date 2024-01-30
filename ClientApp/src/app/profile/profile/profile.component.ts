@@ -4,6 +4,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ChangePasswordRequest } from '../../model/ChangePasswordRequest';
 import { Router } from '@angular/router';
+import { ChangeEmailRequest } from '../../model/ChangeEmailRequest';
 
 @Component({
   selector: 'app-profile',
@@ -14,7 +15,7 @@ import { Router } from '@angular/router';
 export class ProfileComponent implements OnInit {
     
     myImage: string = "./assets/images/chat-mountain.jpg";
-    user: { name: string, image: string, email: string } = { name: '', image: '', email: '' };
+    user: { name: string, image: string, email: string, twoFactorEnabled: boolean } = { name: '', image: '', email: '', twoFactorEnabled: false };
     passwordChangeRequest!: FormGroup;
 
     constructor(private http: HttpClient, private cookieService: CookieService, private fb: FormBuilder, private router: Router) {
@@ -43,10 +44,12 @@ export class ProfileComponent implements OnInit {
     getUser(username: string) {
         if (username) {
             const params = { username };
-            this.http.get('http://localhost:5000/User/getUserEmail', { params })
+            this.http.get('http://localhost:5000/User/getUserCredentials', { params })
                 .subscribe((response: any) => {
                     if (response) {
+                        console.log(response);
                         this.user.email = response.email;
+                        this.user.twoFactorEnabled = response.twoFactorEnabled;
                     }
                 });
         } else {
@@ -77,11 +80,21 @@ export class ProfileComponent implements OnInit {
     }
 
     changePassword(data: ChangePasswordRequest) {
-        console.log(data);
         this.http.patch('http://localhost:5000/Auth/ChangePassword', data)
         .subscribe((response: any) => {
             if (response) {
                 alert("Password change succeeded!");
+            }
+        })
+    }
+
+    changeEmail(data: ChangeEmailRequest) {
+        console.log(data);
+        this.http.patch('http://localhost:5000/Auth/ChangeEmail', data)
+        .subscribe((response: any) => {
+            console.log(response);
+            if (response) {
+                alert("Email change succeeded!");
             }
         })
     }

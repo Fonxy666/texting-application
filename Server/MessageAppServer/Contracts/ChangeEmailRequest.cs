@@ -1,6 +1,5 @@
-﻿namespace Server.Contracts;
+﻿using System.ComponentModel.DataAnnotations;
 
-public class ChangeEmailRequest
-{
-    
-}
+namespace Server.Contracts;
+
+public record ChangeEmailRequest([Required]string OldEmail, [Required]string NewEmail, [Required]string Token);
