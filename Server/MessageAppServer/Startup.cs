@@ -62,6 +62,8 @@ namespace Server
             services.AddTransient<IEmailSender, EmailSender>();
 
             services.AddDbContext<UsersContext>(options => options.UseSqlServer(connection));
+            services.AddDbContext<MessagesContext>(options => options.UseSqlServer(connection));
+            services.AddDbContext<RoomsContext>(options => options.UseSqlServer(connection));
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
