@@ -8,7 +8,15 @@ public class AuthService(UserManager<ApplicationUser> userManager, ITokenService
 {
     public async Task<AuthResult> RegisterAsync(string email, string username, string password, string role, string phoneNumber, string image)
     {
-        var user = new ApplicationUser(image) { UserName = username, Email = email, PhoneNumber = phoneNumber, PhoneNumberConfirmed = true };
+        var user = new ApplicationUser(image)
+        {
+            UserName = username,
+            Email = email,
+            PhoneNumber = phoneNumber,
+            PhoneNumberConfirmed = false,
+            EmailConfirmed = true
+        };
+        
         var result = await userManager.CreateAsync(user, password);
 
         if (!result.Succeeded)

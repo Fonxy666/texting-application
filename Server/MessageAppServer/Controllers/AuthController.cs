@@ -65,25 +65,6 @@ public class AuthController(
 
         return CreatedAtAction(nameof(Register), new RegistrationResponse(result.Email, result.UserName));
     }
-
-    private async Task<ActionResult<RegistrationResponse>> SendRegistrationToDatabase(RegistrationRequest request)
-    {
-        var imagePath = SaveImageLocally(request.Username, request.Image);
-        var result = await authenticationService.RegisterAsync(request.Email, request.Username, request.Password, "User", request.PhoneNumber, imagePath);
-
-        if (!result.Success)
-        {
-            AddErrors(result);
-            return BadRequest(ModelState);
-        }
-
-        var receiver = "viktor_6@windowslive.com";
-        var subject = "Test";
-        var message = "Muxik !?";
-        await emailSender.SendEmailAsync(receiver, subject, message);
-        
-        return CreatedAtAction(nameof(Register), new RegistrationResponse(result.Email, result.UserName));
-    }
     
     private string SaveImageLocally(string userNameFileName, string base64Image)
     {

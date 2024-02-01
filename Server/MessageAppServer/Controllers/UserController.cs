@@ -10,7 +10,7 @@ namespace Server.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UserController(IAuthService authenticationService, UsersContext repository, UserManager<ApplicationUser> userManager) : ControllerBase 
+public class UserController(UserManager<ApplicationUser> userManager) : ControllerBase 
 {
     [HttpGet("getUserCredentials")]
     public async Task<ActionResult<UserResponse>> GetUserEmail(string username)
