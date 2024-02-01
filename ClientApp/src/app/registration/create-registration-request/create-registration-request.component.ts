@@ -11,7 +11,6 @@ import { DomSanitizer } from '@angular/platform-browser';
 })
 
 export class CreateRegistrationRequestComponent {
-
     constructor(private fb: FormBuilder, private sanitizer: DomSanitizer) { }
     
     showPassword: boolean = false;

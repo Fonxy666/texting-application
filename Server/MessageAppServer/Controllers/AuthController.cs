@@ -1,6 +1,4 @@
-﻿using System.Buffers.Text;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Server.Contracts;
 using Server.Database;
@@ -19,6 +17,35 @@ public class AuthController(
     UserManager<ApplicationUser> userManager,
     IEmailSender emailSender) : ControllerBase
 {
+    [HttpPost("GetEmailVerificationToken")]
+    public async Task<ActionResult<GetEmailForVerificationResponse>> SendEmailVerificationCode([FromBody] GetEmailForVerificationRequest receiver)
+    {
+        var subject = "Verification code";
+        var message = $"Verification code: {EmailSenderCodeGenerator.GenerateToken(receiver.Email)}";
+
+        var result = await emailSender.SendEmailAsync(receiver.Email, subject, message);
+        
+        if (!result)
+        {
+            return BadRequest(ModelState);
+        }
+
+        return Ok(new GetEmailForVerificationResponse("Successfully send."));
+    }
+
+    [HttpPost("ExamineVerifyToken")]
+    public async Task<ActionResult<string>> VerifyToken([FromBody] VerifyTokenRequest credentials)
+    {
+        var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(credentials.Email, credentials.VerifyCode);
+        if (!result)
+        {
+            return BadRequest(ModelState);
+        }
+        
+        EmailSenderCodeGenerator.RemoveVerificationCode(credentials.Email);
+        return Ok(new VerifyTokenResponse(true));
+    }
+        
     [HttpPost("Register")]
     public async Task<ActionResult<RegistrationResponse>> Register(RegistrationRequest request)
     {
@@ -36,11 +63,25 @@ public class AuthController(
             return BadRequest(ModelState);
         }
 
+        return CreatedAtAction(nameof(Register), new RegistrationResponse(result.Email, result.UserName));
+    }
+
+    private async Task<ActionResult<RegistrationResponse>> SendRegistrationToDatabase(RegistrationRequest request)
+    {
+        var imagePath = SaveImageLocally(request.Username, request.Image);
+        var result = await authenticationService.RegisterAsync(request.Email, request.Username, request.Password, "User", request.PhoneNumber, imagePath);
+
+        if (!result.Success)
+        {
+            AddErrors(result);
+            return BadRequest(ModelState);
+        }
+
         var receiver = "viktor_6@windowslive.com";
         var subject = "Test";
         var message = "Muxik !?";
         await emailSender.SendEmailAsync(receiver, subject, message);
-
+        
         return CreatedAtAction(nameof(Register), new RegistrationResponse(result.Email, result.UserName));
     }
     

@@ -1,2 +1,8 @@
-<app-create-registration-request
-    (SendRegistrationRequest)="SendRegistration($event)" />
+<ng-container *ngIf="this.showVerifyPage === false">
+    <app-create-registration-request
+        (SendRegistrationRequest)="GetVerifyTokenAndGoToVerifyPage($event)" />
+</ng-container>
+<ng-container *ngIf="this.showVerifyPage === true">
+    <app-create-email-verification-request
+        (SendVerificationCode)="GetVerifyTokenAndSendRegistration($event)" />
+</ng-container>

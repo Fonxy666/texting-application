@@ -5,7 +5,7 @@ namespace Server.Services.EmailSender;
 
 public class EmailSender(IConfiguration configuration) : IEmailSender
 {
-    public Task SendEmailAsync(string email, string subject, string message)
+    public async Task<bool> SendEmailAsync(string email, string subject, string message)
     {
         var mail = configuration["DeveloperEmail"];
         var pw = configuration["DeveloperPassword"];
@@ -15,7 +15,16 @@ public class EmailSender(IConfiguration configuration) : IEmailSender
             EnableSsl = true,
             Credentials = new NetworkCredential(mail, pw)
         };
-        return client.SendMailAsync(new MailMessage(from: mail, to: email, subject, message));
+        
+        try
+        {
+            await client.SendMailAsync(new MailMessage(from: mail!, to: email, subject, message));
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return false;
+        }
     }
-    
 }
