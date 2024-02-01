@@ -15,7 +15,8 @@ const routes: Routes = [
     { path: 'join-room', component: JoinRoomComponent, title: 'Join room' },
     { path: 'chat', component: ChatComponent, title: 'Chat' },
     { path: 'profile/profile', component: ProfileComponent, title: 'Profile'},
-    { path: 'profile/settings', component: SettingsComponent, title: 'Settings'}
+    { path: 'profile/settings', component: SettingsComponent, title: 'Settings'},
+    { path: 'registration/validate-email', component: RegistrationComponent, title: 'Email verify'}
 ];
 
 @NgModule({

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
+using Server.Contracts;
 using Server.Database;
 using Server.Model;
 using Server.Services.Authentication;
@@ -9,19 +10,20 @@ namespace Server.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UserController(IAuthService authenticationService, UsersContext repository, UserManager<ApplicationUser> userManager) : ControllerBase 
+public class UserController(UserManager<ApplicationUser> userManager) : ControllerBase 
 {
-    [HttpGet("getUser")]
-    public async Task<ActionResult<IdentityUser>> GetUser(string username)
+    [HttpGet("getUserCredentials")]
+    public async Task<ActionResult<UserResponse>> GetUserEmail(string username)
     {
         var existingUser = await userManager.FindByNameAsync(username);
-
         if (existingUser == null)
         {
             return NotFound("User not found.");
         }
 
-        return existingUser!;
+        var response = new UserResponse(existingUser.Email, existingUser.TwoFactorEnabled);
+
+        return response;
     }
 
     [HttpGet("GetImage/{imageName}")]

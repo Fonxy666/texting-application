@@ -17,6 +17,10 @@ import { JoinRoomComponent } from './chat/join-room/join-room.component';
 import { ProfileComponent } from './profile/profile/profile.component';
 import { SettingsComponent } from './profile/settings/settings.component';
 import { ImageCropperModule } from 'ngx-image-cropper';
+import { GeneratePasswordChangeRequestComponent } from './profile/profile/generate-password-change-request/generate-password-change-request.component';
+import { GenerateAvatarChangeRequestComponent } from './profile/profile/generate-avatar-change-request/generate-avatar-change-request.component';
+import { GenerateEmailChangeRequestComponent } from './profile/profile/generate-email-change-request/generate-email-change-request.component';
+import { CreateEmailVerificationRequestComponent } from './registration/create-email-verification-request/create-email-verification-request.component';
 
 @NgModule({
   declarations: [
@@ -31,6 +35,10 @@ import { ImageCropperModule } from 'ngx-image-cropper';
     JoinRoomComponent,
     ProfileComponent,
     SettingsComponent,
+    GeneratePasswordChangeRequestComponent,
+    GenerateAvatarChangeRequestComponent,
+    GenerateEmailChangeRequestComponent,
+    CreateEmailVerificationRequestComponent,
   ],
   imports: [
     BrowserModule,

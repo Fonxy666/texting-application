@@ -1,0 +1,24 @@
+.cont {
+    max-height: 50vh;
+    font-family: Cursive;
+}
+
+.background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    object-fit: cover;
+    object-position: top center;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.user-image {
+    width: 10%;
+}
+
+.card {
+    margin: 100px 200px 100px 200px;
+}

@@ -11,7 +11,6 @@ import { DomSanitizer } from '@angular/platform-browser';
 })
 
 export class CreateRegistrationRequestComponent {
-
     constructor(private fb: FormBuilder, private sanitizer: DomSanitizer) { }
     
     showPassword: boolean = false;
@@ -25,7 +24,8 @@ export class CreateRegistrationRequestComponent {
             email: ['', Validators.required],
             username: ['', Validators.required],
             password: ['', Validators.required],
-            passwordrepeat: ['', Validators.required]
+            passwordrepeat: ['', Validators.required],
+            phoneNumber: ['', Validators.required]
         }, {
             validators: this.passwordMatchValidator.bind(this)
         });
@@ -39,7 +39,8 @@ export class CreateRegistrationRequestComponent {
             this.registrationRequest.get('email')?.value,
             this.registrationRequest.get('username')?.value,
             this.registrationRequest.get('password')?.value,
-            this.profilePic
+            this.profilePic,
+            this.registrationRequest.get('phoneNumber')?.value
         );
         this.SendRegistrationRequest.emit(registrationRequest);
     }

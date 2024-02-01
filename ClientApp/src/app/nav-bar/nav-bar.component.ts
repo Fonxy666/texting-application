@@ -31,7 +31,7 @@ export class NavBarComponent implements OnInit {
                 .subscribe(
                     (response: any) => {
                         if (response instanceof Blob) {
-                                                        const reader = new FileReader();
+                            const reader = new FileReader();
                             reader.onloadend = () => {
                                 this.profilePic = reader.result as string;
                             };

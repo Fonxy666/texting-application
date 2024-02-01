@@ -8,6 +8,7 @@ using Server.Database;
 using Server.Hub;
 using Server.Model;
 using Server.Services.Authentication;
+using Server.Services.EmailSender;
 
 namespace Server
 {
@@ -58,6 +59,7 @@ namespace Server
             services.AddScoped<IAuthService, AuthService>();
             services.AddSingleton<IDictionary<string, UserRoomConnection>>(opt =>
                 new Dictionary<string, UserRoomConnection>());
+            services.AddTransient<IEmailSender, EmailSender>();
 
             services.AddDbContext<UsersContext>(options => options.UseSqlServer(connection));
 

@@ -1,0 +1,14 @@
+<div>
+    <div class="right-side">
+        <h1 class="mt-1">
+            Registration
+        </h1>
+        <form [formGroup]="verificationCode" (ngSubmit)="OnFormSubmit()">
+            <div class="form-group mt-3">
+                <label class="mb-2" for="verificationCode">Verification code</label>
+                <input formControlName="verifyCode" type="verificationCode" class="form-control" id="verificationCode" aria-describedby="verificationCodeHelp" placeholder="verificationCode" required name="verificationCode">
+                <small id="verificationCodeHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Submit</button>
+        </form>
+</div>
