@@ -15,7 +15,12 @@
                                 class="img-fluid profile-image-pic img-thumbnail rounded0circle my-3" width="200px" alt="image"/>
                         </div>
                         <div class="mb-3">
-                            <input type="text" formControlName="room" class="form-control" id="roomname" placeholder="Room name"/>
+                            <label id="roomNameLabel" for="Roomname">Roomname</label>
+                            <input type="text" formControlName="room" class="form-control" id="roomname" placeholder="Roomname"/>
+                        </div>
+                        <div class="mb-3">
+                            <label id="passwordlabel" for="password">Password</label>
+                            <input type="text" formControlName="password" class="form-control" id="roomname" placeholder="password"/>
                         </div>
                         <div class="text-center">
                             <button [disabled]="joinRoomForm.invalid" (click)="joinRoom()" class="btn btn-color px-5 mb-5 w-100" type="button">Join</button>

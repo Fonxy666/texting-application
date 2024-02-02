@@ -1,18 +1,17 @@
-﻿using Azure.Messaging;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Server.Contracts;
 using Server.Services.Chat;
 
 namespace Server.Controllers;
 
+[Route("[controller]")]
 public class ChatController(
     IRoomService roomRepository,
     ILogger<AuthController> logger) : ControllerBase
 {
-    [HttpPost("Chat/RegisterRoom")]
-    public async Task<ActionResult<CreateRoomResponse>> RegisterRoom([FromBody]CreateRoomRequest request)
+    [HttpPost("RegisterRoom")]
+    public async Task<ActionResult<RoomResponse>> RegisterRoom([FromBody]RoomRequest request)
     {
-        Console.WriteLine(request);
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -25,6 +24,22 @@ public class ChatController(
         
         var result = await roomRepository.RegisterRoomAsync(request.RoomName, request.Password);
         
+        if (result.Success == false)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    [HttpPost("JoinRoom")]
+    public async Task<ActionResult<RoomResponse>> LoginRoom([FromBody] RoomRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+        var result = await roomRepository.LoginRoomAsync(request.RoomName, request.Password);
         if (result.Success == false)
         {
             return BadRequest(result);

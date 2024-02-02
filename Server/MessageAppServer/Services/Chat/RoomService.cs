@@ -1,35 +1,40 @@
 ﻿using Server.Contracts;
 using Server.Database;
 using Server.Model.Chat;
-using Sprache;
 
 namespace Server.Services.Chat;
 
 public class RoomService(RoomsContext context) : IRoomService
 {
     private RoomsContext _context { get; set; } = context;
-    public async Task<CreateRoomResponse> RegisterRoomAsync(string roomName, string password)
+    public async Task<RoomResponse> RegisterRoomAsync(string roomName, string password)
     {
         try
         {
             var room = new Room(roomName, password);
-            Console.WriteLine(room.RoomName);
             await _context.Rooms.AddAsync(room);
             await _context.SaveChangesAsync();
             
-            return new CreateRoomResponse(true, room.RoomId, room.RoomName);
+            return new RoomResponse(true, room.RoomId, room.RoomName);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
-            return new CreateRoomResponse(false, "", "");
+            return new RoomResponse(false, "", "");
         }
     }
     
-
-    public Task<CreateRoomResponse> LoginRoomAsync(string roomName, string password)
+    public async Task<RoomResponse> LoginRoomAsync(string roomName, string password)
     {
-        throw new NotImplementedException();
+        var existingRoom = _context.Rooms.FirstOrDefault(room => room.RoomName == roomName)!;
+        if (existingRoom.RoomId.Length > 1)
+        {
+            return new RoomResponse(false, "", "");
+        }
+
+        var passwordMatch = existingRoom.PasswordMatch(password);
+        
+        return !passwordMatch ? new RoomResponse(false, "", existingRoom.RoomName) : new RoomResponse(true, existingRoom.RoomId, existingRoom.RoomName);
     }
 
     public Task<RoomNameTakenResponse> RoomNameTaken(string roomName)

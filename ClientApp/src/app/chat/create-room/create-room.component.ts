@@ -48,4 +48,8 @@ export class CreateRoomComponent implements OnInit {
             }
         );
     }
+
+    handleCancer() {
+        this.router.navigate(['/join-room']);
+    }
 }
