@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Server.Database;
 using Server.Model;
 
 namespace Server.Hub;
 
-public class ChatHub(IDictionary<string, UserRoomConnection> connection) : Microsoft.AspNetCore.SignalR.Hub
+public class ChatHub(IDictionary<string, UserRoomConnection> connection, MessagesContext messageRepository, RoomsContext roomRepository) : Microsoft.AspNetCore.SignalR.Hub
 {
     public async Task JoinRoom(UserRoomConnection userConnection)
     {
@@ -21,20 +22,20 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection) : Micro
         }
     }
 
- public override async Task OnDisconnectedAsync(Exception? exp)
-{
-    if (connection.TryGetValue(Context.ConnectionId, out UserRoomConnection roomConnection))
+     public override async Task OnDisconnectedAsync(Exception? exp)
     {
-        connection.Remove(Context.ConnectionId);
-        await Clients.Group(roomConnection.Room!)
-            .SendAsync("ReceiveMessage", "Textinger bot", $"{roomConnection.User} has left the room!", DateTime.Now);
-        await SendConnectedUser(roomConnection.Room!);
-        
-        await Clients.Group(roomConnection.Room!).SendAsync("UserDisconnected", roomConnection.User);
-    }
+        if (connection.TryGetValue(Context.ConnectionId, out UserRoomConnection roomConnection))
+        {
+            connection.Remove(Context.ConnectionId);
+            await Clients.Group(roomConnection.Room!)
+                .SendAsync("ReceiveMessage", "Textinger bot", $"{roomConnection.User} has left the room!", DateTime.Now);
+            await SendConnectedUser(roomConnection.Room!);
+            
+            await Clients.Group(roomConnection.Room!).SendAsync("UserDisconnected", roomConnection.User);
+        }
 
-    await base.OnDisconnectedAsync(exp);
-}
+        await base.OnDisconnectedAsync(exp);
+    }
 
     public Task SendConnectedUser(string room)
     {

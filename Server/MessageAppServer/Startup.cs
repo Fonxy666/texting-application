@@ -8,6 +8,7 @@ using Server.Database;
 using Server.Hub;
 using Server.Model;
 using Server.Services.Authentication;
+using Server.Services.Chat;
 using Server.Services.EmailSender;
 
 namespace Server
@@ -57,6 +58,7 @@ namespace Server
 
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IRoomService, RoomService>();
             services.AddSingleton<IDictionary<string, UserRoomConnection>>(opt =>
                 new Dictionary<string, UserRoomConnection>());
             services.AddTransient<IEmailSender, EmailSender>();

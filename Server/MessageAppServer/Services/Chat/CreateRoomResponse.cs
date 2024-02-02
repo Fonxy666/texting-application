@@ -1,6 +1,3 @@
 ﻿namespace Server.Contracts;
 
-public class CreateRoomResponse
-{
-    
-}
+public record CreateRoomResponse(bool Success, string RoomId, string RoomName) { }

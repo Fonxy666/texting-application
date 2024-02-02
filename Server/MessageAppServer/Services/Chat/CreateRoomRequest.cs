@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Server.Model.Chat;
 
-namespace Server.Contracts;
+namespace Server.Services.Chat;
 
-public class CreateRoomRequest([Required] string RoomName, [Required]string Password);
+public record CreateRoomRequest([Required]string RoomName, [Required]string Password);

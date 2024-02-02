@@ -51,4 +51,8 @@ export class JoinRoomComponent implements OnInit {
             console.log(err);
         })
     }
+
+    goToCreateRoom() {
+        this.router.navigate(['create-room']);
+    }
 }

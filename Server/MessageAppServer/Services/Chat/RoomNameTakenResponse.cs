@@ -1,6 +1,3 @@
 ﻿namespace Server.Services.Chat;
 
-public class RoomNameTakenResponse
-{
-    
-}
+public record RoomNameTakenResponse(bool Result);
