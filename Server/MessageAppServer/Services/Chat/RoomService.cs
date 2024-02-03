@@ -34,7 +34,6 @@ public class RoomService(RoomsContext context) : IRoomService
         }
 
         var passwordMatch = existingRoom.PasswordMatch(password);
-        Console.WriteLine(passwordMatch);
         
         return !passwordMatch ? new RoomResponse(false, "", existingRoom.RoomName) : new RoomResponse(true, existingRoom.RoomId, existingRoom.RoomName);
     }

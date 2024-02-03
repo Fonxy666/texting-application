@@ -54,14 +54,12 @@ export class JoinRoomComponent implements OnInit {
 
     joinRoom() {
         const data = this.createForm();
-        console.log(data);
-        this.http.post('http://localhost:5000/Chat/JoinRoom', this.createForm())
+        this.http.post('http://localhost:5000/Chat/JoinRoom', data)
         .subscribe(
             (response: any) => {
                 if (response.success) {
-                    this.setRoomCredentials(data);
-                    this.router.navigate(['/chat']);
-                } else {
+                    this.setRoomCredentialsAndNavigate(data, response.roomId);
+                } else if (response.success === false) {
                     console.log(response.error);
                 }
             },
@@ -75,12 +73,12 @@ export class JoinRoomComponent implements OnInit {
         );
     }
 
-    setRoomCredentials(data: any) {
+    setRoomCredentialsAndNavigate(data: any, roomId: string) {
         sessionStorage.setItem("user", data.UserName);
         sessionStorage.setItem("room", data.RoomName);
         this.chatService.joinRoom(data.UserName, data.RoomName)
         .then(() => {
-            this.router.navigate(['/chat']);
+            this.router.navigate([`/chat/${roomId}`]);
         }).catch((err) => {
             console.log(err);
         })
