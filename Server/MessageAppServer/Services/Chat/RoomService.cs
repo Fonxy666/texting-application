@@ -27,12 +27,14 @@ public class RoomService(RoomsContext context) : IRoomService
     public async Task<RoomResponse> LoginRoomAsync(string roomName, string password)
     {
         var existingRoom = _context.Rooms.FirstOrDefault(room => room.RoomName == roomName)!;
-        if (existingRoom.RoomId.Length > 1)
+
+        if (existingRoom.RoomId.Length < 1)
         {
             return new RoomResponse(false, "", "");
         }
 
         var passwordMatch = existingRoom.PasswordMatch(password);
+        Console.WriteLine(passwordMatch);
         
         return !passwordMatch ? new RoomResponse(false, "", existingRoom.RoomName) : new RoomResponse(true, existingRoom.RoomId, existingRoom.RoomName);
     }

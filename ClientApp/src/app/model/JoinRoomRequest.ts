@@ -1,3 +1,3 @@
 export class JoinRoomRequest {
-    constructor(public username: string, public room: string) { }
+    constructor(public UserName: string, public RoomName: string, public Password: string) { }
 }

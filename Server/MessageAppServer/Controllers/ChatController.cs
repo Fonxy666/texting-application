@@ -33,16 +33,17 @@ public class ChatController(
     }
 
     [HttpPost("JoinRoom")]
-    public async Task<ActionResult<RoomResponse>> LoginRoom([FromBody] RoomRequest request)
+    public async Task<ActionResult<RoomResponse>> LoginRoom([FromBody]RoomRequest request)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
         var result = await roomRepository.LoginRoomAsync(request.RoomName, request.Password);
+
         if (result.Success == false)
         {
-            return BadRequest(result);
+            return BadRequest(new { error = "Invalid login credentials." });
         }
 
         return Ok(result);
