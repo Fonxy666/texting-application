@@ -1,9 +1,10 @@
 import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ChatService } from '../../chat.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute  } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of  } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+import { MessageRequest } from '../../model/MessageRequest';
 
 @Component({
   selector: 'app-chat',
@@ -14,6 +15,7 @@ import { catchError, switchMap } from 'rxjs/operators';
 
 export class ChatComponent implements OnInit, AfterViewChecked {
 
+    roomId = "";
     inputMessage = "";
     loggedInUserName = sessionStorage.getItem("user");
     roomName = sessionStorage.getItem("room");
@@ -21,7 +23,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
 
-    constructor(public chatService: ChatService, public router: Router, private http: HttpClient) { }
+    constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute) { }
     
     messages: any[] = [];
     avatars: { [username: string]: string } = {};
@@ -30,6 +32,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.chatService.message$.subscribe(res => {
             this.messages = res;
         });
+
+        this.route.params.subscribe(params => {
+            this.roomId = params['id'];
+        })
       
         this.chatService.connectedUsers.subscribe((users) => {
             console.log('Connected users updated:', users);
@@ -51,7 +57,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     sendMessage() {
-        this.chatService.sendMessage(this.inputMessage)
+        var request = new MessageRequest(this.roomId, this.loggedInUserName!, this.inputMessage);
+        this.chatService.sendMessage(request)
         .then(() => {
             this.inputMessage ="";
         }).catch((err) => {

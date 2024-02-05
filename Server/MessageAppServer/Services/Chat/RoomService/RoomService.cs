@@ -1,19 +1,18 @@
-﻿using Server.Contracts;
-using Server.Database;
+﻿using Server.Database;
 using Server.Model.Chat;
 
-namespace Server.Services.Chat;
+namespace Server.Services.Chat.RoomService;
 
 public class RoomService(RoomsContext context) : IRoomService
 {
-    private RoomsContext _context { get; set; } = context;
+    private RoomsContext Context { get; set; } = context;
     public async Task<RoomResponse> RegisterRoomAsync(string roomName, string password)
     {
         try
         {
             var room = new Room(roomName, password);
-            await _context.Rooms.AddAsync(room);
-            await _context.SaveChangesAsync();
+            await Context.Rooms.AddAsync(room);
+            await Context.SaveChangesAsync();
             
             return new RoomResponse(true, room.RoomId, room.RoomName);
         }
@@ -26,7 +25,7 @@ public class RoomService(RoomsContext context) : IRoomService
     
     public async Task<RoomResponse> LoginRoomAsync(string roomName, string password)
     {
-        var existingRoom = _context.Rooms.FirstOrDefault(room => room.RoomName == roomName)!;
+        var existingRoom = Context.Rooms.FirstOrDefault(room => room.RoomName == roomName)!;
 
         if (existingRoom.RoomId.Length < 1)
         {

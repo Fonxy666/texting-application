@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using System.Globalization;
+using Microsoft.AspNetCore.SignalR;
 using Server.Database;
 using Server.Model;
+using Server.Model.Chat;
+using Server.Services.Chat.MessageService;
 
 namespace Server.Hub;
 
-public class ChatHub(IDictionary<string, UserRoomConnection> connection, MessagesContext messageRepository, RoomsContext roomRepository) : Microsoft.AspNetCore.SignalR.Hub
+public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessageService messageRepository) : Microsoft.AspNetCore.SignalR.Hub
 {
     public async Task JoinRoom(UserRoomConnection userConnection)
     {
@@ -14,12 +17,19 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, Message
         await SendConnectedUser(userConnection.Room!);
     }
 
-    public async Task SendMessage(string message)
+    public async Task SendMessage(MessageRequest request)
     {
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
         {
-            await Clients.Group(userRoomConnection.Room!).SendAsync("ReceiveMessage", userRoomConnection.User, message, DateTime.Now);
+            await Clients.Group(userRoomConnection.Room!).SendAsync("ReceiveMessage", userRoomConnection.User, request.Message, DateTime.Now);
+            await SaveMessage(request);
         }
+    }
+
+    public async Task SaveMessage(MessageRequest request)
+    {
+        var messageRequest = new MessageRequest(request.RoomId, request.UserName, request.Message);
+        await messageRepository.SendMessage(messageRequest);
     }
 
      public override async Task OnDisconnectedAsync(Exception? exp)

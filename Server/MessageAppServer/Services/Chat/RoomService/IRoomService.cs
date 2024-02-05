@@ -1,6 +1,4 @@
-﻿using Server.Contracts;
-
-namespace Server.Services.Chat;
+﻿namespace Server.Services.Chat;
 
 public interface IRoomService
 {

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject } from 'rxjs';
+import { MessageRequest } from './model/MessageRequest';
 
 @Injectable({
     providedIn: 'root'
@@ -52,7 +53,7 @@ export class ChatService {
         this.connection.invoke("JoinRoom", {user, room});
     }
 
-    public async sendMessage(message: string) {
+    public async sendMessage(message: MessageRequest) {
         return this.connection.invoke("SendMessage", message);
     }
 

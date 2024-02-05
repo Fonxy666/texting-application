@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Azure.Messaging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,8 @@ using Server.Hub;
 using Server.Model;
 using Server.Services.Authentication;
 using Server.Services.Chat;
+using Server.Services.Chat.MessageService;
+using Server.Services.Chat.RoomService;
 using Server.Services.EmailSender;
 
 namespace Server
@@ -59,6 +62,7 @@ namespace Server
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IRoomService, RoomService>();
+            services.AddScoped<IMessageService, MessageService>();
             services.AddSingleton<IDictionary<string, UserRoomConnection>>(opt =>
                 new Dictionary<string, UserRoomConnection>());
             services.AddTransient<IEmailSender, EmailSender>();
