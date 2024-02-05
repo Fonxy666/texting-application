@@ -24,12 +24,12 @@ export class ChatService {
         this.connection.on("ReceiveMessage", (user: String, message: String, messageTime: String) => {
             this.messages = [...this.messages, {user, message, messageTime}];
             this.message$.next(this.messages);
-        })
+        });
 
         this.connection.on("ConnectedUser", (users: any) => {
             this.connectedUsers.next(users);
             console.log(users);
-        })
+        });
 
         this.connection.on("UserDisconnected", (username: string) => {
             const updatedUsers = this.connectedUsers.value.filter(user => user !== username);

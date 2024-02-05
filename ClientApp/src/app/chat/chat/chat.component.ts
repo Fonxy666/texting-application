@@ -1,7 +1,7 @@
 import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ChatService } from '../../chat.service';
 import { Router, ActivatedRoute  } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of  } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';
@@ -38,7 +38,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         })
       
         this.chatService.connectedUsers.subscribe((users) => {
-            console.log('Connected users updated:', users);
             users.forEach((user) => {
                 this.getAvatarImage(user).subscribe(
                     (avatar) => {
@@ -50,6 +49,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 );
             });
         });
+
+        this.getMessages();
     }
 
     ngAfterViewChecked(): void {
@@ -76,6 +77,21 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }).catch((err) => {
             console.log(err);
         })
+    }
+
+    getMessages() {
+        this.http.get(`http://localhost:5000/Chat/GetMessages/${this.roomId}`)
+            .subscribe((response: any) => {
+                const fetchedMessages = response.map((element: any) => ({
+                    user: element.senderName,
+                    message: element.text,
+                    messageTime: element.sendTime
+                }));
+    
+                this.chatService.messages = [...fetchedMessages, ...this.chatService.messages];
+    
+                this.chatService.message$.next(this.chatService.messages);
+            });
     }
 
     getAvatarImage(username: string): Observable<string> {

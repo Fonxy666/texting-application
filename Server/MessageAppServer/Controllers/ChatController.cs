@@ -1,12 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Server.Contracts;
+using Server.Model.Chat;
 using Server.Services.Chat;
+using Server.Services.Chat.MessageService;
 
 namespace Server.Controllers;
 
 [Route("[controller]")]
 public class ChatController(
     IRoomService roomRepository,
+    IMessageService messageRepository,
     ILogger<AuthController> logger) : ControllerBase
 {
     [HttpPost("RegisterRoom")]
@@ -45,6 +48,19 @@ public class ChatController(
         {
             return BadRequest(new { error = "Invalid login credentials." });
         }
+
+        return Ok(result);
+    }
+    
+    [HttpGet("GetMessages/{id}")]
+    public async Task<ActionResult<IQueryable<Message>>> GetMessages(string id)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var result = await messageRepository.GetLast10Messages(id);
 
         return Ok(result);
     }

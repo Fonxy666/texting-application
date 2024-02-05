@@ -1,8 +1,5 @@
-﻿using System.Globalization;
-using Microsoft.AspNetCore.SignalR;
-using Server.Database;
+﻿using Microsoft.AspNetCore.SignalR;
 using Server.Model;
-using Server.Model.Chat;
 using Server.Services.Chat.MessageService;
 
 namespace Server.Hub;

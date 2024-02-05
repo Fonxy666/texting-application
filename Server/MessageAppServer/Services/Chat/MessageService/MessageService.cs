@@ -1,11 +1,12 @@
-﻿using Server.Database;
+﻿using Microsoft.EntityFrameworkCore;
+using Server.Database;
 using Server.Model.Chat;
 
 namespace Server.Services.Chat.MessageService;
 
 public class MessageService(MessagesContext context) : IMessageService
 {
-    private MessagesContext Context { get; set; } = context;
+    private MessagesContext Context { get; } = context;
     public async Task<MessageResponse> SendMessage(MessageRequest request)
     {
         try
@@ -21,5 +22,15 @@ public class MessageService(MessagesContext context) : IMessageService
             Console.WriteLine(ex.Message);
             return new MessageResponse(false, "");
         }
+    }
+
+    public async Task<IQueryable<Message>> GetLast10Messages(string roomId)
+    {
+        var messages = await Context.Messages
+            .Where(message => message.RoomId == roomId)
+            .OrderBy(message => message.SendTime)
+            .Take(10)
+            .ToListAsync();
+        return messages.AsQueryable();
     }
 }
