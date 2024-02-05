@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Server.Contracts;
 using Server.Database;
 using Server.Model;
+using Server.Requests;
+using Server.Responses;
 using Server.Services.Authentication;
 using Server.Services.EmailSender;
 
@@ -47,7 +48,7 @@ public class AuthController(
     }
         
     [HttpPost("Register")]
-    public async Task<ActionResult<RegistrationResponse>> Register(RegistrationRequest request)
+    public async Task<ActionResult<EmailUsernameResponse>> Register(RegistrationRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -63,7 +64,7 @@ public class AuthController(
             return BadRequest(ModelState);
         }
 
-        return CreatedAtAction(nameof(Register), new RegistrationResponse(result.Email, result.UserName));
+        return CreatedAtAction(nameof(Register), new EmailUsernameResponse(result.Email, result.UserName));
     }
     
     private string SaveImageLocally(string userNameFileName, string base64Image)
@@ -123,76 +124,5 @@ public class AuthController(
         }
 
         return Ok(new AuthResponse(result.Email, result.UserName, result.Token));
-    }
-
-    [HttpPatch("ChangePassword")]
-    public async Task<ActionResult<ChangeUserPasswordResponse>> ChangeUserPassword([FromBody] ChangeUserPasswordRequest request)
-    {
-        try
-        {
-            var existingUser = await userManager.FindByEmailAsync(request.Email);
-            if (existingUser == null)
-            {
-                logger.LogInformation($"Data for email: {request.Email} doesnt't exists in the database.");
-                return BadRequest(ModelState);
-            }
-
-            var result = await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.NewPassword);
-
-            await repository.SaveChangesAsync();
-
-            if (result.Succeeded)
-            {
-                await repository.SaveChangesAsync();
-                var response = new ChangeUserPasswordResponse(existingUser.Email!, existingUser.UserName!);
-                return Ok(response);
-            }
-            else
-            {
-                logger.LogError($"Error changing password for user {request.Email}: {string.Join(", ", result.Errors)}");
-                return BadRequest($"Error changing password for user {request.Email}");
-            }
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, $"Error changing password for user {request.Email}");
-            return NotFound($"Error changing password for user {request.Email}");
-        }
-    }
-    
-    [HttpPatch("ChangeEmail")]
-    public async Task<ActionResult<ChangeEmailRequest>> ChangeUserEmail([FromBody] ChangeEmailRequest request)
-    {
-        try
-        {
-;           var existingUser = await userManager.FindByEmailAsync(request.OldEmail);
-            Console.WriteLine(existingUser);
-            if (existingUser == null)
-            {
-                logger.LogInformation($"Data for email: {request.OldEmail} doesnt't exists in the database.");
-                return BadRequest(ModelState);
-            }
-            
-            var result = await userManager.ChangeEmailAsync(existingUser, request.NewEmail, request.Token);
-
-            await repository.SaveChangesAsync();
-
-            if (result.Succeeded)
-            {
-                await repository.SaveChangesAsync();
-                var response = new ChangeEmailResponse(existingUser.Email!, existingUser.UserName!);
-                return Ok(response);
-            }
-            else
-            {
-                logger.LogError($"Error changing e-mail for user {request.OldEmail}: {string.Join(", ", result.Errors)}");
-                return BadRequest($"Error changing e-mail for user {request.OldEmail}");
-            }
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, $"Error changing e-mail for user {request.OldEmail}");
-            return NotFound($"Error changing e-mail for user {request.OldEmail}");
-        }
     }
 }

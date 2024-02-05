@@ -1,3 +1,3 @@
-﻿namespace Server.Services.Chat.MessageService;
+﻿namespace Server.Responses;
 
 public record MessageResponse(bool Success, string RoomId);

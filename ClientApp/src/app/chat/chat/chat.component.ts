@@ -1,7 +1,7 @@
 import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ChatService } from '../../chat.service';
 import { Router, ActivatedRoute  } from '@angular/router';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of  } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';

@@ -1,5 +1,6 @@
 ﻿using Server.Database;
 using Server.Model.Chat;
+using Server.Responses;
 
 namespace Server.Services.Chat.RoomService;
 
