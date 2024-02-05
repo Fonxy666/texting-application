@@ -7,16 +7,17 @@ import { JoinRoomComponent } from './chat/join-room/join-room.component';
 import { ChatComponent } from './chat/chat/chat.component';
 import { SettingsComponent } from './profile/settings/settings.component';
 import { ProfileComponent } from './profile/profile/profile.component';
+import { CreateRoomComponent } from './chat/create-room/create-room.component';
 
 const routes: Routes = [
     { path: '', component: HomeComponent, title: 'Home' },
     { path: 'login', component: LoginComponent, title: 'Login' },
     { path: 'registration', component: RegistrationComponent, title: 'Registration' },
     { path: 'join-room', component: JoinRoomComponent, title: 'Join room' },
-    { path: 'chat', component: ChatComponent, title: 'Chat' },
+    { path: 'chat/:id', component: ChatComponent, title: 'Chat' },
     { path: 'profile/profile', component: ProfileComponent, title: 'Profile'},
     { path: 'profile/settings', component: SettingsComponent, title: 'Settings'},
-    { path: 'registration/validate-email', component: RegistrationComponent, title: 'Email verify'}
+    { path: 'create-room', component: CreateRoomComponent, title: 'Create room'}
 ];
 
 @NgModule({

@@ -1,0 +1,27 @@
+<div class="cont">
+    <app-nav-bar />
+    <div>
+        <div class="row">
+            <div class="col-md-4 offset-md-4">
+                <div class="card my-5">
+                    <form [formGroup]="createRoomForm" class="card-body cardbody-color p-lg 5">
+                        <div class="mb-3">
+                            <label id="roomlabel" for="roomname">Room name</label>
+                            <input id="roomname" type="text" formControlName="roomName" class="form-control" placeholder="Room name"/>
+                        </div>
+                        <div class="mb-3">
+                            <label id="passwordlabel"for="password">Password</label>
+                            <input id="password" type="password" formControlName="password" class="form-control" />
+                        </div>
+                        <div class="text-center">
+                            <button (click)="sendCreateRoomRequest()" class="btn btn-color px-5 mb-5 w-100" type="button">Create room</button>
+                        </div>
+                        <div class="text-center">
+                            <button (click)="handleCancer()" class="btn btn-color px-5 mb-5 w-100" type="button">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

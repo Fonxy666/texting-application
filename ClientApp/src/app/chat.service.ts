@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject } from 'rxjs';
+import { MessageRequest } from './model/MessageRequest';
 
 @Injectable({
     providedIn: 'root'
@@ -23,12 +24,12 @@ export class ChatService {
         this.connection.on("ReceiveMessage", (user: String, message: String, messageTime: String) => {
             this.messages = [...this.messages, {user, message, messageTime}];
             this.message$.next(this.messages);
-        })
+        });
 
         this.connection.on("ConnectedUser", (users: any) => {
             this.connectedUsers.next(users);
             console.log(users);
-        })
+        });
 
         this.connection.on("UserDisconnected", (username: string) => {
             const updatedUsers = this.connectedUsers.value.filter(user => user !== username);
@@ -52,7 +53,7 @@ export class ChatService {
         this.connection.invoke("JoinRoom", {user, room});
     }
 
-    public async sendMessage(message: string) {
+    public async sendMessage(message: MessageRequest) {
         return this.connection.invoke("SendMessage", message);
     }
 
