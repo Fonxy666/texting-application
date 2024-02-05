@@ -3,8 +3,9 @@ using Server.Model.Chat;
 
 namespace Server.Database;
 
-public class MessagesContext(DbContextOptions<MessagesContext> options, DbSet<Message> messages)
-    : DbContext(options)
+public class MessagesContext : DbContext
 {
-    public DbSet<Message> Messages { get; set; } = messages;
+    public DbSet<Message> Messages { get; set; }
+    
+    public MessagesContext(DbContextOptions<MessagesContext> options) : base(options) { }
 }
