@@ -1,3 +1,3 @@
-﻿namespace Server.Contracts;
+﻿namespace Server.Responses;
 
 public record VerifyTokenResponse(bool Response);

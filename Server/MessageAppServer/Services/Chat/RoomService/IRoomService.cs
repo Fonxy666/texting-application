@@ -1,4 +1,6 @@
-﻿namespace Server.Services.Chat;
+﻿using Server.Responses;
+
+namespace Server.Services.Chat;
 
 public interface IRoomService
 {

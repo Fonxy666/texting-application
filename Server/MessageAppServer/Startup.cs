@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using Azure.Messaging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -185,7 +184,6 @@ namespace Server
                 if (adminCreated.Succeeded)
                 {
                     await userManager.AddToRoleAsync(admin, "Admin");
-                    Console.WriteLine("Admin user created successfully.");
                 }
                 else
                 {

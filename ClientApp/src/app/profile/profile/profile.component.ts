@@ -80,7 +80,7 @@ export class ProfileComponent implements OnInit {
     }
 
     changePassword(data: ChangePasswordRequest) {
-        this.http.patch('http://localhost:5000/Auth/ChangePassword', data)
+        this.http.patch('http://localhost:5000/User/ChangePassword', data)
         .subscribe((response: any) => {
             if (response) {
                 alert("Password change succeeded!");
@@ -90,7 +90,7 @@ export class ProfileComponent implements OnInit {
 
     changeEmail(data: ChangeEmailRequest) {
         console.log(data);
-        this.http.patch('http://localhost:5000/Auth/ChangeEmail', data)
+        this.http.patch('http://localhost:5000/User/ChangeEmail', data)
         .subscribe((response: any) => {
             console.log(response);
             if (response) {

@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Server.Services.Authentication;
+namespace Server.Requests;
 
 public record AuthRequest([Required]string UserName, [Required]string Password);

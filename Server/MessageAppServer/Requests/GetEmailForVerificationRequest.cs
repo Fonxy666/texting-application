@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Server.Contracts;
+namespace Server.Requests;
 
 public record GetEmailForVerificationRequest([Required] string Email);

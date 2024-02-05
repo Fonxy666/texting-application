@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Server.Contracts;
 using Server.Model.Chat;
+using Server.Requests;
+using Server.Responses;
 using Server.Services.Chat;
 using Server.Services.Chat.MessageService;
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Server.Model;
+using Server.Requests;
 using Server.Services.Chat.MessageService;
 
 namespace Server.Hub;
