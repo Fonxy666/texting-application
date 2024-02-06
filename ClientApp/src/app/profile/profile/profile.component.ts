@@ -15,12 +15,14 @@ import { ChangeEmailRequest } from '../../model/ChangeEmailRequest';
 export class ProfileComponent implements OnInit {
     
     myImage: string = "./assets/images/chat-mountain.jpg";
-    user: { name: string, image: string, email: string, twoFactorEnabled: boolean } = { name: '', image: '', email: '', twoFactorEnabled: false };
+    user: { name: string, image: string, token: string, email: string, twoFactorEnabled: boolean } = { name: '', image: '', token: '', email: '', twoFactorEnabled: false };
     passwordChangeRequest!: FormGroup;
 
     constructor(private http: HttpClient, private cookieService: CookieService, private fb: FormBuilder, private router: Router) {
         this.user.name = this.cookieService.get('Username') ? 
             this.cookieService.get('Username')! : sessionStorage.getItem('Username')!;
+        this.user.token = this.cookieService.get('Token') ? 
+            this.cookieService.get('Token')! : sessionStorage.getItem('Token')!;
     }
 
     ngOnInit(): void {
@@ -42,9 +44,16 @@ export class ProfileComponent implements OnInit {
     }
 
     getUser(username: string) {
+
         if (username) {
             const params = { username };
-            this.http.get('http://localhost:5000/User/getUserCredentials', { params })
+            this.http.get('http://localhost:5000/User/getUserCredentials', { 
+                params,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${this.user.token}`
+                }
+            })
                 .subscribe((response: any) => {
                     if (response) {
                         console.log(response);
@@ -80,17 +89,27 @@ export class ProfileComponent implements OnInit {
     }
 
     changePassword(data: ChangePasswordRequest) {
-        this.http.patch('http://localhost:5000/User/ChangePassword', data)
+        this.http.patch('http://localhost:5000/User/ChangePassword', data, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${this.user.token}`
+            }
+        })
         .subscribe((response: any) => {
             if (response) {
-                alert("Password change succeeded!");
+                this.router.navigate(['/']);
             }
         })
     }
 
     changeEmail(data: ChangeEmailRequest) {
         console.log(data);
-        this.http.patch('http://localhost:5000/User/ChangeEmail', data)
+        this.http.patch('http://localhost:5000/User/ChangeEmail', data, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${this.user.token}`
+            }
+        })
         .subscribe((response: any) => {
             console.log(response);
             if (response) {

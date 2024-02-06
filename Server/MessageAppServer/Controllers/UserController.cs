@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Server.Database;
@@ -15,7 +16,7 @@ public class UserController(
     UsersContext repository,
     ILogger<AuthController> logger) : ControllerBase 
 {
-    [HttpGet("getUserCredentials")]
+    [HttpGet("getUserCredentials"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<UserResponse>> GetUserEmail(string username)
     {
         var existingUser = await userManager.FindByNameAsync(username);
@@ -58,7 +59,7 @@ public class UserController(
         return contentType;
     }
     
-    [HttpPatch("ChangeEmail")]
+    [HttpPatch("ChangeEmail"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<ChangeEmailRequest>> ChangeUserEmail([FromBody] ChangeEmailRequest request)
     {
         try
@@ -94,7 +95,7 @@ public class UserController(
         }
     }
     
-    [HttpPatch("ChangePassword")]
+    [HttpPatch("ChangePassword"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<EmailUsernameResponse>> ChangeUserPassword([FromBody] ChangeUserPasswordRequest request)
     {
         try

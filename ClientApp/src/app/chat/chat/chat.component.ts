@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of  } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';
+import { CookieService } from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-chat',
@@ -23,12 +24,16 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
 
-    constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute) { }
+    constructor(public chatService: ChatService, private cookieService: CookieService, public router: Router, private http: HttpClient, private route: ActivatedRoute) { }
     
     messages: any[] = [];
     avatars: { [username: string]: string } = {};
+    token: string = "";
 
     ngOnInit(): void {
+        this.token = this.cookieService.get('Token') ? 
+            this.cookieService.get('Token')! : sessionStorage.getItem('Token')!;
+
         this.chatService.message$.subscribe(res => {
             this.messages = res;
         });
@@ -80,7 +85,12 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     getMessages() {
-        this.http.get(`http://localhost:5000/Chat/GetMessages/${this.roomId}`)
+        this.http.get(`http://localhost:5000/Chat/GetMessages/${this.roomId}`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${this.token}`
+            }
+        })
             .subscribe((response: any) => {
                 const fetchedMessages = response.map((element: any) => ({
                     user: element.senderName,

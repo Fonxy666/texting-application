@@ -28,7 +28,6 @@ export class ChatService {
 
         this.connection.on("ConnectedUser", (users: any) => {
             this.connectedUsers.next(users);
-            console.log(users);
         });
 
         this.connection.on("UserDisconnected", (username: string) => {

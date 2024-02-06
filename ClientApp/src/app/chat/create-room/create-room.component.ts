@@ -14,8 +14,12 @@ export class CreateRoomComponent implements OnInit {
     constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private http: HttpClient) { }
 
     createRoomForm!: FormGroup;
+    token: string = "";
 
     ngOnInit(): void {
+        this.token = this.cookieService.get('Token') ? 
+            this.cookieService.get('Token')! : sessionStorage.getItem('Token')!;
+
         this.createRoomForm = this.fb.group({
             roomName: ['', Validators.required],
             password: ['', Validators.required]
@@ -30,7 +34,12 @@ export class CreateRoomComponent implements OnInit {
     }
 
     sendCreateRoomRequest() {
-        this.http.post('http://localhost:5000/Chat/RegisterRoom', this.createForm())
+        this.http.post('http://localhost:5000/Chat/RegisterRoom', this.createForm(), {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${this.token}`
+            }
+        })
         .subscribe(
             (response: any) => {
                 if (response.success) {

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Server.Model.Chat;
 using Server.Requests;
 using Server.Responses;
@@ -13,7 +14,7 @@ public class ChatController(
     IMessageService messageRepository,
     ILogger<AuthController> logger) : ControllerBase
 {
-    [HttpPost("RegisterRoom")]
+    [HttpPost("RegisterRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> RegisterRoom([FromBody]RoomRequest request)
     {
         if (!ModelState.IsValid)
@@ -36,7 +37,7 @@ public class ChatController(
         return Ok(result);
     }
 
-    [HttpPost("JoinRoom")]
+    [HttpPost("JoinRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> LoginRoom([FromBody]RoomRequest request)
     {
         if (!ModelState.IsValid)
@@ -53,7 +54,7 @@ public class ChatController(
         return Ok(result);
     }
     
-    [HttpGet("GetMessages/{id}")]
+    [HttpGet("GetMessages/{id}"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<IQueryable<Message>>> GetMessages(string id)
     {
         if (!ModelState.IsValid)

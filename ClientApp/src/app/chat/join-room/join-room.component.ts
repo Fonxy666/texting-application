@@ -19,15 +19,18 @@ export class JoinRoomComponent implements OnInit {
     joinRoomForm!: FormGroup;
     isSunActive: boolean = true;
     isMoonActive: boolean = false;
+    token: string = "";
 
     ngOnInit() : void {
         if (this.cookieService.get('Username').length > 1) {
+            this.token = this.cookieService.get('Token');
             this.joinRoomForm = this.fb.group({
                 user: [this.cookieService.get('Username'), Validators.required],
                 room: ['', Validators.required],
                 password: ['', Validators.required]
             });
         } else {
+            this.token = sessionStorage.getItem('Token')!;
             this.joinRoomForm = this.fb.group({
                 user: [sessionStorage.getItem('Username'), Validators.required],
                 room: ['', Validators.required],
@@ -54,7 +57,12 @@ export class JoinRoomComponent implements OnInit {
 
     joinRoom() {
         const data = this.createForm();
-        this.http.post('http://localhost:5000/Chat/JoinRoom', data)
+        this.http.post('http://localhost:5000/Chat/JoinRoom', data, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${this.token}`
+            }
+        })
         .subscribe(
             (response: any) => {
                 if (response.success) {

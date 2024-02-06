@@ -84,26 +84,42 @@ namespace Server
                         ValidAudience = issueAudience,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(issueSign))
                     };
+                    
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnTokenValidated = context =>
+                        {
+                            // Log information when the token is successfully validated
+                            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
+                            logger.LogInformation("Token validation successful for user: {username}", context.Principal.Identity?.Name);
+                            return Task.CompletedTask;
+                        },
+                        OnAuthenticationFailed = context =>
+                        {
+                            // Log information when authentication fails
+                            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
+                            logger.LogError("Authentication failed: {exception}", context.Exception.Message);
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
-
-            services.AddIdentity<ApplicationUser, IdentityRole>(ConfigureIdentityOptions)
+            
+            services.AddIdentityCore<ApplicationUser>(options =>
+                {
+                    options.SignIn.RequireConfirmedAccount = false;
+                    options.User.RequireUniqueEmail = true;
+                    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                    options.Password.RequireDigit = false;
+                    options.Password.RequiredLength = 6;
+                    options.Password.RequireNonAlphanumeric = false;
+                    options.Password.RequireUppercase = false;
+                    options.Password.RequireLowercase = false;
+                    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                    options.Lockout.MaxFailedAccessAttempts = 5;
+                    options.Lockout.AllowedForNewUsers = true;
+                })
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<UsersContext>();
-        }
-
-        private static void ConfigureIdentityOptions(IdentityOptions options)
-        {
-            options.SignIn.RequireConfirmedAccount = false;
-            options.User.RequireUniqueEmail = true;
-            options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-            options.Password.RequireDigit = false;
-            options.Password.RequiredLength = 6;
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequireUppercase = false;
-            options.Password.RequireLowercase = false;
-            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-            options.Lockout.MaxFailedAccessAttempts = 5;
-            options.Lockout.AllowedForNewUsers = true;
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -126,14 +142,14 @@ namespace Server
                        .AllowCredentials();
             });
 
+            app.UseAuthentication();
+            app.UseAuthorization();
+            
             app.UseEndpoints(endpoint =>
             {
                 endpoint.MapHub<ChatHub>("/chat");
             });
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
@@ -152,18 +168,10 @@ namespace Server
 
             foreach (var role in roleList)
             {
-                await CreateRoleIfNotExistAsync(roleManager, role);
+                await roleManager.CreateAsync(new IdentityRole(role));
             }
 
             await CreateAdminIfNotExistAsync(userManager);
-        }
-
-        private static async Task CreateRoleIfNotExistAsync(RoleManager<IdentityRole> roleManager, string roleName)
-        {
-            if (!await roleManager.RoleExistsAsync(roleName))
-            {
-                await roleManager.CreateAsync(new IdentityRole(roleName));
-            }
         }
 
         private async Task CreateAdminIfNotExistAsync(UserManager<ApplicationUser> userManager)

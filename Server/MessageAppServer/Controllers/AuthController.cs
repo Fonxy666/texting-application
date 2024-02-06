@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Server.Database;
-using Server.Model;
+﻿using Microsoft.AspNetCore.Mvc;
 using Server.Requests;
 using Server.Responses;
 using Server.Services.Authentication;
@@ -13,9 +10,6 @@ namespace Server.Controllers;
 [Route("[controller]")]
 public class AuthController(
     IAuthService authenticationService,
-    UsersContext repository,
-    ILogger<AuthController> logger,
-    UserManager<ApplicationUser> userManager,
     IEmailSender emailSender) : ControllerBase
 {
     [HttpPost("GetEmailVerificationToken")]

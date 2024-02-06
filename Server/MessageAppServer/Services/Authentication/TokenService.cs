@@ -14,7 +14,8 @@ public class TokenService(IConfiguration configuration) : ITokenService
     public string CreateToken(IdentityUser user, string? role, bool isTest = false)
     {
         var expiration = DateTime.UtcNow.AddMinutes(ExpirationMinutes);
-         var token = CreateJwtToken(CreateClaims(user, role), CreateSigningCredentials(), expiration);
+        var token = CreateJwtToken(CreateClaims(user, role), CreateSigningCredentials(), expiration);
+
         var tokenHandler = new JwtSecurityTokenHandler();
         return tokenHandler.WriteToken(token);
     }
@@ -22,9 +23,10 @@ public class TokenService(IConfiguration configuration) : ITokenService
     private JwtSecurityToken CreateJwtToken(List<Claim> claims, SigningCredentials credentials, DateTime expiration)
     {
         return new JwtSecurityToken(
-            configuration["IssueAudience"],
-            configuration["IssueAudience"],
-            claims,
+            issuer: configuration["IssueAudience"],
+            audience: configuration["IssueAudience"],
+            claims: claims,
+            notBefore: DateTime.UtcNow,
             expires: expiration,
             signingCredentials: credentials
         );
