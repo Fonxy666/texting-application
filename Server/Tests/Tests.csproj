@@ -28,4 +28,9 @@
       <ProjectReference Include="..\MessageAppServer\MessageAppServer.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Services\Chat\" />
+      <Folder Include="Services\Email\" />
+    </ItemGroup>
+
 </Project>
