@@ -44,7 +44,6 @@ export class ProfileComponent implements OnInit {
     }
 
     getUser(username: string) {
-
         if (username) {
             const params = { username };
             this.http.get('http://localhost:5000/User/getUserCredentials', { 

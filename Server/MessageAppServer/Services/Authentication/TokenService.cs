@@ -32,7 +32,7 @@ public class TokenService(IConfiguration configuration) : ITokenService
         );
     }
 
-    private List<Claim> CreateClaims(IdentityUser user, string? role)
+    public List<Claim> CreateClaims(IdentityUser user, string? role)
     {
         try
         {
