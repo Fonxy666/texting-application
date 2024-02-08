@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Server.Services.Authentication;
 
-public class TokenService(IConfiguration configuration) : ITokenService
+public class TokenService(Microsoft.Extensions.Configuration.IConfiguration configuration) : ITokenService
 {
     private const int ExpirationMinutes = 30;
         
