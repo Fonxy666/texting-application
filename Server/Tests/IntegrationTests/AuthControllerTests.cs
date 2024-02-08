@@ -1,14 +1,8 @@
 ﻿using System.Net;
 using System.Text;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Server;
-using Server.Database;
 using Server.Requests;
 using Server.Responses;
 using Server.Services.Authentication;
@@ -20,53 +14,10 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Tests.IntegrationTests;
 
-public class CustomWebApplicationFactory : WebApplicationFactory<Startup>
+public class AuthControllerTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
 {
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        builder.ConfigureServices(services =>
-        {
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<UsersContext>));
-
-            if (descriptor != null)
-            {
-                services.Remove(descriptor);
-            }
-
-            services.AddDbContext<UsersContext>(options =>
-                options.UseInMemoryDatabase("TestDb"));
-
-            services.AddIdentity<IdentityUser, IdentityRole>()
-                .AddEntityFrameworkStores<UsersContext>()
-                .AddDefaultTokenProviders();
-        });
-    }
-}
-
-public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
-{
-    private readonly HttpClient _httpClient;
-    private readonly Mock<IAuthService> _authServiceMock;
-
-    public AuthControllerTests(CustomWebApplicationFactory factory)
-    {
-        _httpClient = factory.CreateClient();
-        _authServiceMock = new Mock<IAuthService>();
-        ConfigureAuthService(factory);
-    }
-    
-    private void ConfigureAuthService(CustomWebApplicationFactory factory)
-    {
-        using var scope = factory.Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        var testUser = new ApplicationUser("url") { UserName = "adminGod", Email = "adminGod@adminGod.com" };
-        userManager.CreateAsync(testUser, "asdASDasd123666").GetAwaiter().GetResult();
-        
-        _authServiceMock.Setup(x => x.LoginAsync(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(new AuthResult(true, "adminGod@adminGod.com", "adminGod",
-                CreateToken(factory, testUser, "Admin")));
-    }
+    private readonly HttpClient _httpClient = factory.CreateClient();
+    private readonly Mock<IAuthService> _authServiceMock = new();
     
     private string CreateToken(CustomWebApplicationFactory factory, ApplicationUser user, string role)
     {
