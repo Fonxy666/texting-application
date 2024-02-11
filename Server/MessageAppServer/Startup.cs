@@ -89,14 +89,12 @@ namespace Server
                     {
                         OnTokenValidated = context =>
                         {
-                            // Log information when the token is successfully validated
                             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
                             logger.LogInformation("Token validation successful for user: {username}", context.Principal.Identity?.Name);
                             return Task.CompletedTask;
                         },
                         OnAuthenticationFailed = context =>
                         {
-                            // Log information when authentication fails
                             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
                             logger.LogError("Authentication failed: {exception}", context.Exception.Message);
                             return Task.CompletedTask;
@@ -155,10 +153,10 @@ namespace Server
                 endpoints.MapControllers();
             });
             
-            AddRolesAndAdminAsync(app).Wait();
+            AddRolesAndAdminAndTestUserAsync(app).Wait();
         }
 
-        private async Task AddRolesAndAdminAsync(IApplicationBuilder app)
+        private async Task AddRolesAndAdminAndTestUserAsync(IApplicationBuilder app)
         {
             using var scope = app.ApplicationServices.CreateScope();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -172,6 +170,7 @@ namespace Server
             }
 
             await CreateAdminIfNotExistAsync(userManager);
+            await CreateTestUser(userManager);
         }
 
         private async Task CreateAdminIfNotExistAsync(UserManager<ApplicationUser> userManager)
@@ -196,6 +195,32 @@ namespace Server
                 else
                 {
                     Console.WriteLine($"Error creating admin user: {string.Join(", ", adminCreated.Errors)}");
+                }
+            }
+        }
+        
+        private async Task CreateTestUser(UserManager<ApplicationUser> userManager)
+        {
+            const string testEmail = "test@hotmail.com";
+
+            var testInDb = await userManager.FindByEmailAsync(testEmail);
+            if (testInDb == null)
+            {
+                var testUser = new ApplicationUser("-")
+                {
+                    UserName = "TestUsername",
+                    Email = testEmail
+                };
+
+                var adminCreated = await userManager.CreateAsync(testUser, "testUserPassword123###");
+
+                if (adminCreated.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(testUser, "User");
+                }
+                else
+                {
+                    Console.WriteLine($"Error creating test user: {string.Join(", ", adminCreated.Errors)}");
                 }
             }
         }
