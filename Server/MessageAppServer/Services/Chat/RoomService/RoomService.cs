@@ -38,6 +38,38 @@ public class RoomService(RoomsContext context) : IRoomService
         return !passwordMatch ? new RoomResponse(false, "", existingRoom.RoomName) : new RoomResponse(true, existingRoom.RoomId, existingRoom.RoomName);
     }
 
+    public async Task<RoomResponse> DeleteRoomAsync(string roomName, string password)
+    {
+        var roomResponse = new RoomResponse(false, "", "");
+        var existingRoom = Context.Rooms.FirstOrDefault(room => room.RoomName == roomName)!;
+
+        if (existingRoom.RoomId.Length < 1)
+        {
+            roomResponse = new RoomResponse(false, "", "");
+        }
+
+        var passwordMatch = existingRoom.PasswordMatch(password);
+
+        if (passwordMatch)
+        {
+            try
+            {
+                var room = new Room(roomName, password);
+                Context.Rooms.Remove(existingRoom);
+                await Context.SaveChangesAsync();
+            
+                roomResponse = new RoomResponse(true, room.RoomId, room.RoomName);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                roomResponse = new RoomResponse(false, "", "");
+            }
+        }
+
+        return roomResponse;
+    }
+
     public Task<RoomNameTakenResponse> RoomNameTaken(string roomName)
     {
         var isTaken = context.Rooms.Any(room => room.RoomName == roomName);
