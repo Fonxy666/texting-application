@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Server.Model;
+using Server.Responses;
 
 namespace Server.Services.Authentication;
 
@@ -46,14 +47,14 @@ public class AuthService(UserManager<ApplicationUser> userManager, ITokenService
 
         if (managedUser == null)
         {
-            return InvalidLogin();
+            return InvalidCredentials();
         }
 
         var isPasswordValid = await userManager.CheckPasswordAsync(managedUser, password);
 
         if (!isPasswordValid)
         {
-            return InvalidLogin();
+            return InvalidCredentials();
         }
 
         var roles = await userManager.GetRolesAsync(managedUser);
@@ -62,10 +63,31 @@ public class AuthService(UserManager<ApplicationUser> userManager, ITokenService
         return new AuthResult(true, managedUser.Email!, managedUser.UserName!, accessToken);
     }
 
-    private AuthResult InvalidLogin()
+    private AuthResult InvalidCredentials()
     {
         var result = new AuthResult(false, "", "", "");
         result.ErrorMessages.Add("Bad credentials", "Invalid email");
         return result;
+    }
+    
+    public async Task<DeleteUserResponse> DeleteAsync(string username, string password)
+    {
+        var managedUser = await userManager.FindByNameAsync(username);
+
+        if (managedUser == null)
+        {
+            return new DeleteUserResponse($"{username}", "Doesn't exist in the database", false);
+        }
+
+        var isPasswordValid = await userManager.CheckPasswordAsync(managedUser, password);
+
+        if (!isPasswordValid)
+        {
+            return new DeleteUserResponse($"{username}", "For this user, the given credentials doesn't match.", false);
+        }
+
+        await userManager.DeleteAsync(managedUser);
+
+        return new DeleteUserResponse($"{username}", "Delete successful.", true);
     }
 }

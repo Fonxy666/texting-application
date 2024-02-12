@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-namespace Server.Services.EmailSender;
+﻿namespace Server.Services.EmailSender;
 
 public static class EmailSenderCodeGenerator
 {

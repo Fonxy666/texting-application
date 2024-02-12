@@ -17,13 +17,6 @@ namespace Tests.IntegrationTests;
 public class AuthControllerTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _httpClient = factory.CreateClient();
-    private readonly Mock<IAuthService> _authServiceMock = new();
-    
-    private string CreateToken(CustomWebApplicationFactory factory, ApplicationUser user, string role)
-    {
-        var tokenService = new TokenService(factory.Services.GetRequiredService<IConfiguration>());
-        return tokenService.CreateToken(user, role, false);
-    }
 
     private async Task<T> DeserializeResponse<T>(HttpResponseMessage response)
     {

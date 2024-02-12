@@ -6,6 +6,7 @@ using Server.Database;
 using Server.Model;
 using Server.Requests;
 using Server.Responses;
+using Server.Services.Authentication;
 
 namespace Server.Controllers;
 
@@ -14,10 +15,11 @@ namespace Server.Controllers;
 public class UserController(
     UserManager<ApplicationUser> userManager,
     UsersContext repository,
+    IAuthService authenticationService,
     ILogger<AuthController> logger) : ControllerBase 
 {
     [HttpGet("getUserCredentials"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<UserResponse>> GetUserEmail(string username)
+    public async Task<ActionResult<UserResponse>> GetUserEmail([FromQuery] string username)
     {
         var existingUser = await userManager.FindByNameAsync(username);
         if (existingUser == null)
@@ -60,19 +62,24 @@ public class UserController(
     }
     
     [HttpPatch("ChangeEmail"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<ChangeEmailRequest>> ChangeUserEmail([FromBody] ChangeEmailRequest request)
+    public async Task<ActionResult<ChangeEmailRequest>> ChangeUserEmail([FromBody]ChangeEmailRequest request)
     {
         try
         {
             var existingUser = await userManager.FindByEmailAsync(request.OldEmail);
-            Console.WriteLine(existingUser);
             if (existingUser == null)
             {
                 logger.LogInformation($"Data for email: {request.OldEmail} doesnt't exists in the database.");
                 return BadRequest(ModelState);
             }
+
+            if (!existingUser.TwoFactorEnabled)
+            {
+                return BadRequest(ModelState);
+            }
             
-            var result = await userManager.ChangeEmailAsync(existingUser, request.NewEmail, request.Token);
+            var token = await userManager.GenerateChangeEmailTokenAsync(existingUser, request.NewEmail);
+            var result = await userManager.ChangeEmailAsync(existingUser, request.NewEmail, token);
 
             await repository.SaveChangesAsync();
 
@@ -96,7 +103,7 @@ public class UserController(
     }
     
     [HttpPatch("ChangePassword"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<EmailUsernameResponse>> ChangeUserPassword([FromBody] ChangeUserPasswordRequest request)
+    public async Task<ActionResult<EmailUsernameResponse>> ChangeUserPassword([FromBody]ChangeUserPasswordRequest request)
     {
         try
         {
@@ -127,6 +134,37 @@ public class UserController(
         {
             logger.LogError(e, $"Error changing password for user {request.Email}");
             return NotFound($"Error changing password for user {request.Email}");
+        }
+    }
+    
+    [HttpDelete("DeleteUser"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<EmailUsernameResponse>> DeleteUser([FromQuery]string email, [FromQuery]string username, [FromQuery]string password)
+    {
+        try
+        {
+            var existingUser = await userManager.FindByEmailAsync(email);
+            if (existingUser == null)
+            {
+                logger.LogInformation($"Data for email: {email} doesn't exist in the database.");
+                return BadRequest(ModelState);
+            }
+
+            var result = await authenticationService.DeleteAsync(username, password);
+
+            if (!result.Successful)
+            {
+                logger.LogError($"Error changing password for user {email}: {string.Join(", ", result)}");
+                return BadRequest($"Error changing password for user {email}");
+            }
+        
+            await repository.SaveChangesAsync();
+            var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
+            return Ok(response);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error changing password for user {email}");
+            return NotFound($"Error changing password for user {email}");
         }
     }
 }

@@ -85,7 +85,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     getMessages() {
-        this.http.get(`http://localhost:5000/Chat/GetMessages/${this.roomId}`, {
+        this.http.get(`http://localhost:5000/Message/GetMessages/${this.roomId}`, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${this.token}`
