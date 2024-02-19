@@ -153,8 +153,8 @@ public class UserController(
 
             if (!result.Successful)
             {
-                logger.LogError($"Error changing password for user {email}: {string.Join(", ", result)}");
-                return BadRequest($"Error changing password for user {email}");
+                logger.LogError($"Error deleting user {email}: {string.Join(", ", result)}");
+                return BadRequest($"Error deleting user {email}");
             }
         
             await repository.SaveChangesAsync();
@@ -163,8 +163,8 @@ public class UserController(
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error changing password for user {email}");
-            return NotFound($"Error changing password for user {email}");
+            logger.LogError(e, $"Error deleting user {email}");
+            return NotFound($"Error deleting user {email}");
         }
     }
 }

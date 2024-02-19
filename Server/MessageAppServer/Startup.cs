@@ -205,9 +205,11 @@ namespace Server
         {
             const string testEmail1 = "test1@hotmail.com";
             const string testEmail2 = "test2@hotmail.com";
+            const string testEmail3 = "test3@hotmail.com";
 
             var testInDb1 = await userManager.FindByEmailAsync(testEmail1);
             var testInDb2 = await userManager.FindByEmailAsync(testEmail2);
+            var testInDb3 = await userManager.FindByEmailAsync(testEmail3);
             
             if (testInDb1 == null)
             {
@@ -236,6 +238,26 @@ namespace Server
                     UserName = "TestUsername2",
                     Email = testEmail2,
                     TwoFactorEnabled = true
+                };
+
+                var testUserCreated = await userManager.CreateAsync(testUser, "testUserPassword123###");
+
+                if (testUserCreated.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(testUser, "User");
+                }
+                else
+                {
+                    Console.WriteLine($"Error creating test user: {string.Join(", ", testUserCreated.Errors)}");
+                }
+            }
+            if (testInDb3 == null)
+            {
+                var testUser = new ApplicationUser("-")
+                {
+                    UserName = "TestUsername3",
+                    Email = testEmail3,
+                    TwoFactorEnabled = false
                 };
 
                 var testUserCreated = await userManager.CreateAsync(testUser, "testUserPassword123###");
