@@ -49,7 +49,7 @@ public class AuthController(
             return BadRequest(ModelState);
         }
 
-        var imagePath = SaveImageLocally(request.Username, request.Image);
+        var imagePath = authenticationService.SaveImageLocally(request.Username, request.Image);
         var result = await authenticationService.RegisterAsync(request.Email, request.Username, request.Password, "User", request.PhoneNumber, imagePath);
 
         if (!result.Success)
@@ -59,36 +59,6 @@ public class AuthController(
         }
 
         return CreatedAtAction(nameof(Register), new EmailUsernameResponse(result.Email, result.UserName));
-    }
-    
-    private string SaveImageLocally(string userNameFileName, string base64Image)
-    {
-        var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
-        if (!Directory.Exists(folderPath))
-        {
-            Directory.CreateDirectory(folderPath);
-        }
-
-        var imageName = userNameFileName + ".png";
-        var imagePath = Path.Combine(folderPath, imageName);
-
-        try
-        {
-            base64Image = base64Image.Replace("data:image/png;base64,", "");
-            var imageBytes = Convert.FromBase64String(base64Image);
-
-            using (var fileStream = new FileStream(imagePath, FileMode.Create))
-            {
-                fileStream.Write(imageBytes, 0, imageBytes.Length);
-            }
-
-            return imagePath;
-        }
-        catch (FormatException ex)
-        {
-            Console.WriteLine($"Error decoding base64 image: {ex.Message}");
-            throw;
-        }
     }
 
     private void AddErrors(AuthResult result)
