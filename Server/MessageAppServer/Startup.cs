@@ -101,12 +101,13 @@ namespace Server
                         }
                     };
                 });
-            
+
             services.AddIdentityCore<ApplicationUser>(options =>
                 {
                     options.SignIn.RequireConfirmedAccount = false;
                     options.User.RequireUniqueEmail = true;
-                    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                    options.User.AllowedUserNameCharacters =
+                        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
                     options.Password.RequireDigit = false;
                     options.Password.RequiredLength = 6;
                     options.Password.RequireNonAlphanumeric = false;
@@ -117,7 +118,8 @@ namespace Server
                     options.Lockout.AllowedForNewUsers = true;
                 })
                 .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<UsersContext>();
+                .AddEntityFrameworkStores<UsersContext>()
+                .AddDefaultTokenProviders();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -201,26 +203,50 @@ namespace Server
         
         private async Task CreateTestUser(UserManager<ApplicationUser> userManager)
         {
-            const string testEmail = "test@hotmail.com";
+            const string testEmail1 = "test1@hotmail.com";
+            const string testEmail2 = "test2@hotmail.com";
 
-            var testInDb = await userManager.FindByEmailAsync(testEmail);
-            if (testInDb == null)
+            var testInDb1 = await userManager.FindByEmailAsync(testEmail1);
+            var testInDb2 = await userManager.FindByEmailAsync(testEmail2);
+            
+            if (testInDb1 == null)
             {
                 var testUser = new ApplicationUser("-")
                 {
-                    UserName = "TestUsername",
-                    Email = testEmail
+                    UserName = "TestUsername1",
+                    Email = testEmail1,
+                    TwoFactorEnabled = true
                 };
 
-                var adminCreated = await userManager.CreateAsync(testUser, "testUserPassword123###");
+                var testUserCreated = await userManager.CreateAsync(testUser, "testUserPassword123###");
 
-                if (adminCreated.Succeeded)
+                if (testUserCreated.Succeeded)
                 {
                     await userManager.AddToRoleAsync(testUser, "User");
                 }
                 else
                 {
-                    Console.WriteLine($"Error creating test user: {string.Join(", ", adminCreated.Errors)}");
+                    Console.WriteLine($"Error creating test user: {string.Join(", ", testUserCreated.Errors)}");
+                }
+            }
+            if (testInDb2 == null)
+            {
+                var testUser = new ApplicationUser("-")
+                {
+                    UserName = "TestUsername2",
+                    Email = testEmail2,
+                    TwoFactorEnabled = true
+                };
+
+                var testUserCreated = await userManager.CreateAsync(testUser, "testUserPassword123###");
+
+                if (testUserCreated.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(testUser, "User");
+                }
+                else
+                {
+                    Console.WriteLine($"Error creating test user: {string.Join(", ", testUserCreated.Errors)}");
                 }
             }
         }

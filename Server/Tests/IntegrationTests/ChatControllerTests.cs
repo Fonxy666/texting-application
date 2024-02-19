@@ -1,70 +1,60 @@
-﻿/*using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
+﻿using System.Text;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using Server;
-using Server.Model.Chat;
 using Server.Requests;
-using System.Text;
 using Server.Responses;
 using Xunit;
-using Assert = Xunit.Assert;
 
-public class ChatControllerIntegrationTests
+namespace Tests.IntegrationTests;
+
+[Collection("Sequential")]
+public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
-    private readonly TestServer _server;
+    private readonly WebApplicationFactory<Startup> _factory;
     private readonly HttpClient _client;
+    private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
+    private readonly RoomRequest _testRoom = new ("TestRoom1", "TestRoomPassword");
 
-    public ChatControllerIntegrationTests()
+    public ChatControllerTests(WebApplicationFactory<Startup> factory)
     {
-        // Arrange
-        _server = new TestServer(new WebHostBuilder().UseStartup<Startup>());
-        _client = _server.CreateClient();
+        _factory = factory;
+        _client = _factory.CreateClient();
     }
-
-    [Fact]
-    public async Task RegisterRoom_ValidRequest_ReturnsOkResult()
+    
+    private async Task<AuthResponse> Login_With_Test_User(AuthRequest request)
     {
-        // Act
-        var request = new RoomRequest("TestRoom", "TestPassword");
-        var jsonRequest = JsonConvert.SerializeObject(request);
+        var authJsonRequest = JsonConvert.SerializeObject(request);
+        var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
+        var authResponse = await _client.PostAsync("/Auth/Login", authContent);
+        var responseContent = await authResponse.Content.ReadAsStringAsync();
+        return JsonConvert.DeserializeObject<AuthResponse>(responseContent)!;
+    }
+    
+    [Fact]
+    public async Task ChatFunctions_ReturnSuccessStatusCode()
+    {
+        var client = _factory.CreateClient();
+        var loginResponse = await Login_With_Test_User(_testUser);
+        
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
+        
+        var jsonRequestRegister = JsonConvert.SerializeObject(_testRoom);
+        var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
+
+        var roomRegistrationResponse = await client.PostAsync("/Chat/RegisterRoom", contentRegister);
+        roomRegistrationResponse.EnsureSuccessStatusCode();
+
+        var jsonRequest = JsonConvert.SerializeObject(_testRoom);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/Chat/RegisterRoom", content);
 
-        // Assert
-        response.EnsureSuccessStatusCode();
-        var responseBody = await response.Content.ReadAsStringAsync();
-        var result = JsonConvert.DeserializeObject<RoomResponse>(responseBody);
-        Assert.NotNull(result);
-        Assert.True(result.Success);
+        var roomLoginResponse = await client.PostAsync("/Chat/JoinRoom", content);
+        roomLoginResponse.EnsureSuccessStatusCode();
+        
+        var jsonRequestDelete = JsonConvert.SerializeObject(_testRoom);
+        var contentDelete = new StringContent(jsonRequestDelete, Encoding.UTF8, "application/json");
+
+        var deleteRoomResponse = await client.PostAsync("/Chat/DeleteRoom", contentDelete);
+        deleteRoomResponse.EnsureSuccessStatusCode();
     }
-
-    [Fact]
-    public async Task LoginRoom_ValidRequest_ReturnsOkResult()
-    {
-        // Act
-        var request = new RoomRequest("TestRoom", "TestPassword");
-        var jsonRequest = JsonConvert.SerializeObject(request);
-        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/Chat/JoinRoom", content);
-
-        // Assert
-        response.EnsureSuccessStatusCode();
-        var responseBody = await response.Content.ReadAsStringAsync();
-        var result = JsonConvert.DeserializeObject<RoomResponse>(responseBody);
-        Assert.NotNull(result);
-        Assert.True(result.Success);
-    }
-
-    [Fact]
-    public async Task GetMessages_ValidRequest_ReturnsOkResult()
-    {
-        var roomId = "ValidRoomId";
-
-        var response = await _client.GetAsync($"/Chat/GetMessages/{roomId}");
-
-        response.EnsureSuccessStatusCode();
-        var responseBody = await response.Content.ReadAsStringAsync();
-        var result = JsonConvert.DeserializeObject<Message[]>(responseBody);
-        Assert.NotNull(result);
-    }
-}*/
+}

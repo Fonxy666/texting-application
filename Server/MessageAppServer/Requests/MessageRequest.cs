@@ -2,4 +2,4 @@
 
 namespace Server.Requests;
 
-public record MessageRequest([Required]string RoomId, [Required]string UserName, [Required]string Message);
+public record MessageRequest([Required]string RoomId, [Required]string UserName, [Required]string Message, string? MessageId = null);

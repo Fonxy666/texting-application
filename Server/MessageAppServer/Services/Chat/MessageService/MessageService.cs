@@ -13,7 +13,10 @@ public class MessageService(MessagesContext context) : IMessageService
     {
         try
         {
-            var message = new Message(request.RoomId, request.UserName, request.Message);
+            var message = request.MessageId != null ? 
+                new Message(request.RoomId, request.UserName, request.Message, request.MessageId) : 
+                new Message(request.RoomId, request.UserName, request.Message);
+            
             await Context.Messages.AddAsync(message);
             await Context.SaveChangesAsync();
 
@@ -34,5 +37,55 @@ public class MessageService(MessagesContext context) : IMessageService
             .Take(10)
             .ToListAsync();
         return messages.AsQueryable();
+    }
+    
+    public async Task<MessageResponse> EditMessage(EditMessageRequest request)
+    {
+        var existingMessage = Context.Messages.FirstOrDefault(message => message.MessageId == request.Id);
+        
+        if (existingMessage!.RoomId.Length < 1)
+        {
+            return new MessageResponse(false, "");
+        }
+        
+        try
+        {
+            existingMessage.RoomId = request.RoomId;
+            existingMessage.SenderName = request.UserName;
+            existingMessage.Text = request.Message;
+
+            Context.Messages.Update(existingMessage);
+            await Context.SaveChangesAsync();
+
+            return new MessageResponse(true, request.RoomId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return new MessageResponse(false, "");
+        }
+    }
+
+    public async Task<MessageResponse> DeleteMessage(string id)
+    {
+        var existingMessage = Context.Messages.FirstOrDefault(message => message.MessageId == id);
+        
+        if (existingMessage!.RoomId.Length < 1)
+        {
+            return new MessageResponse(false, "");
+        }
+        
+        try
+        {
+            Context.Messages.Remove(existingMessage);
+            await Context.SaveChangesAsync();
+
+            return new MessageResponse(true, id);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return new MessageResponse(false, "");
+        }
     }
 }

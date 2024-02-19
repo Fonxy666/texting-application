@@ -13,7 +13,7 @@ public class AuthController(
     IEmailSender emailSender) : ControllerBase
 {
     [HttpPost("GetEmailVerificationToken")]
-    public async Task<ActionResult<GetEmailForVerificationResponse>> SendEmailVerificationCode([FromBody] GetEmailForVerificationRequest receiver)
+    public async Task<ActionResult<GetEmailForVerificationResponse>> SendEmailVerificationCode([FromBody]GetEmailForVerificationRequest receiver)
     {
         var subject = "Verification code";
         var message = $"Verification code: {EmailSenderCodeGenerator.GenerateToken(receiver.Email)}";
@@ -29,7 +29,7 @@ public class AuthController(
     }
 
     [HttpPost("ExamineVerifyToken")]
-    public async Task<ActionResult<string>> VerifyToken([FromBody] VerifyTokenRequest credentials)
+    public async Task<ActionResult<string>> VerifyToken([FromBody]VerifyTokenRequest credentials)
     {
         var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(credentials.Email, credentials.VerifyCode);
         if (!result)
@@ -100,7 +100,7 @@ public class AuthController(
     }
     
     [HttpPost("Login")]
-    public async Task<ActionResult<AuthResponse>> Authenticate([FromBody] AuthRequest request)
+    public async Task<ActionResult<AuthResponse>> Authenticate([FromBody]AuthRequest request)
     {
         if (!ModelState.IsValid)
         {

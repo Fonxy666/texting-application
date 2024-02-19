@@ -21,4 +21,12 @@ public class Message
         SenderName = senderName;
         Text = text;
     }
+    
+    public Message(string roomId, string senderName, string text, string messageId)
+    {
+        RoomId = roomId;
+        SenderName = senderName;
+        Text = text;
+        MessageId = messageId;
+    }
 }
