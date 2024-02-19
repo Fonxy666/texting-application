@@ -69,6 +69,11 @@ public class RoomService(RoomsContext context) : IRoomService
 
         return roomResponse;
     }
+    
+    public Task<Room> TestRoom()
+    {
+        return Task.FromResult(Context.Rooms.FirstOrDefault(room => room.RoomName == "test")!);
+    }
 
     public Task<RoomNameTakenResponse> RoomNameTaken(string roomName)
     {

@@ -65,11 +65,33 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     sendMessage() {
         var request = new MessageRequest(this.roomId, this.loggedInUserName!, this.inputMessage);
         this.chatService.sendMessage(request)
-        .then(() => {
-            this.inputMessage ="";
-        }).catch((err) => {
-            console.log(err);
+            .then(() => {
+                this.inputMessage ="";
+                this.saveMessage(request);
+            }).catch((err) => {
+                console.log(err);
+            })
+    }
+
+    saveMessage(request: MessageRequest) {
+        this.http.post('http://localhost:5000/Message/SendMessage', request, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${this.token}`
+            }
         })
+        .subscribe((response: any) => {
+            if (response.success) {
+                console.log("Message sent successfully");
+            }
+        }, 
+        (error) => {
+            if (error.status === 400) {
+                alert("Invalid username or password.");
+            } else {
+                console.error("An error occurred:", error);
+            }
+        });
     }
 
     leaveChat() {

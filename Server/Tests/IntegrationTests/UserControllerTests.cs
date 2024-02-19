@@ -5,7 +5,6 @@ using Server;
 using Server.Requests;
 using Server.Responses;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Tests.IntegrationTests;
 
@@ -13,15 +12,12 @@ namespace Tests.IntegrationTests;
 public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
     private readonly WebApplicationFactory<Startup> _factory;
-    private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _client;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
-    private readonly RoomRequest _testRoom = new ("test", "test");
 
-    public UserControllerTests(WebApplicationFactory<Startup> factory, ITestOutputHelper testOutputHelper)
+    public UserControllerTests(WebApplicationFactory<Startup> factory)
     {
         _factory = factory;
-        _testOutputHelper = testOutputHelper;
         _client = _factory.CreateClient();
     }
     
@@ -40,9 +36,6 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var loginResponse = await Login_With_Test_User(_testUser);
         
         _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
-        
-        var jsonRequestRegister = JsonConvert.SerializeObject(_testUser.UserName);
-        var getUser = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var getUserResponse = await _client.GetAsync($"/User/getUserCredentials?username={_testUser.UserName}");
         getUserResponse.EnsureSuccessStatusCode();

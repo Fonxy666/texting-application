@@ -23,9 +23,25 @@ public class MessageController(IMessageService messageRepository) : ControllerBa
         return Ok(result);
     }
     
+    [HttpPost("SendMessage"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<MessageResponse>> SendMessage([FromBody]MessageRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var result = await messageRepository.SendMessage(request);
+
+        if (result.Success == false)
+        {
+            return BadRequest(new { error = "Invalid login credentials." });
+        }
+
+        return Ok(result);
+    }
     
-    
-    [HttpPost("EditMessage"), Authorize(Roles = "User, Admin")]
+    [HttpPatch("EditMessage"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<MessageResponse>> ModifyMessage([FromBody]EditMessageRequest request)
     {
         if (!ModelState.IsValid)
@@ -43,8 +59,8 @@ public class MessageController(IMessageService messageRepository) : ControllerBa
         return Ok(result);
     }
     
-    [HttpPost("DeleteRoom"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<MessageResponse>> DeleteRoom([FromBody]string id)
+    [HttpDelete("DeleteMessage"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<MessageResponse>> DeleteMessage([FromQuery]string id)
     {
         if (!ModelState.IsValid)
         {

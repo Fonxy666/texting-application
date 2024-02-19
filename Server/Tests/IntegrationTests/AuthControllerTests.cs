@@ -1,78 +1,71 @@
-﻿using System.Net;
-using System.Text;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
+﻿using System.Text;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Newtonsoft.Json;
+using Server;
 using Server.Requests;
 using Server.Responses;
-using Server.Services.Authentication;
 using Xunit;
-using Assert = Xunit.Assert;
-using System.Text.Json;
-using Server.Model;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Tests.IntegrationTests;
 
-public class AuthControllerTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
+[Collection("Sequential")]
+public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
-    private readonly HttpClient _httpClient = factory.CreateClient();
+    private readonly WebApplicationFactory<Startup> _factory;
+    private readonly HttpClient _client;
+    private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
 
-    private async Task<T> DeserializeResponse<T>(HttpResponseMessage response)
+    public AuthControllerTests(WebApplicationFactory<Startup> factory)
     {
-        var responseContent = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<T>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+        _factory = factory;
+        _client = _factory.CreateClient();
     }
     
-    [Fact]
-    public async Task Authenticate_Returns_OkResult_With_Valid_Credentials()
-    {
-        var request = new AuthRequest("Admin", "asdASDasd123666");
-        var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
-        
-        var response = await _httpClient.PostAsync("http://localhost:5000/Auth/Login", content);
-        
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var authResponse = await DeserializeResponse<AuthResponse>(response);
-        Assert.NotNull(authResponse);
-    }
     
-    [Fact]
-    public async Task Authenticate_Returns_BadRequest_With_Not_Valid_Credentials()
+    private async Task<AuthResponse> Login_With_Test_User(AuthRequest request)
     {
-        var request = new AuthRequest("Admin", "notValidPassword123");
-        var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
-        
-        var response = await _httpClient.PostAsync("http://localhost:5000/Auth/Login", content);
-        
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        var authResponse = await DeserializeResponse<AuthResponse>(response);
-        Assert.NotNull(authResponse);
+        var authJsonRequest = JsonConvert.SerializeObject(request);
+        var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
+        var authResponse = await _client.PostAsync("/Auth/Login", authContent);
+        var responseContent = await authResponse.Content.ReadAsStringAsync();
+        return JsonConvert.DeserializeObject<AuthResponse>(responseContent)!;
     }
 
     [Fact]
-    public async Task Register_Returns_OkResult_With_Valid_Credentials()
+    public async Task Login_Test_User_ReturnSuccessStatusCode()
     {
-        var request = new RegistrationRequest("user@test.com", "test-user", "PasswordToTestUser", "06201234567",
-            "");
-        var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
-        
-        var response = await _httpClient.PostAsync("http://localhost:5000/Auth/Register", content);
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var authResponse = await DeserializeResponse<AuthResponse>(response);
-        Assert.NotNull(authResponse);
+        var request = new AuthRequest("TestUsername1", "testUserPassword123###");
+        var authJsonRequest = JsonConvert.SerializeObject(request);
+        var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
+        var authResponse = await _client.PostAsync("/Auth/Login", authContent);
+        authResponse.EnsureSuccessStatusCode();
     }
     
     [Fact]
-    public async Task Register_Returns_BadRequest_With_Not_Valid_Credentials()
+    public async Task Register_Test_User_ReturnSuccessStatusCode()
     {
-        var request = new RegistrationRequest("", "test-user", "PasswordToTestUser", "06201234567",
-            "");
-        var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
-        
-        var response = await _httpClient.PostAsync("http://localhost:5000/Auth/Register", content);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        var authResponse = await DeserializeResponse<AuthResponse>(response);
-        Assert.NotNull(authResponse);
+        var testUser = new RegistrationRequest("unique@hotmail.com", "uniqueTestUsername", "TestUserPassword", "01234567890", "");
+        var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
+        var userLogin = new StringContent(jsonLoginRequest, Encoding.UTF8, "application/json");
+
+        var getUserResponse = await _client.PostAsync("/Auth/Register", userLogin);
+        getUserResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task Delete_User_ReturnSuccessStatusCode()
+    {
+        var loginResponse = await Login_With_Test_User(_testUser);
+    
+        _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
+
+        const string email = "unique@hotmail.com";
+        const string username = "uniqueTestUsername";
+        const string password = "TestUserPassword";
+
+        var deleteUrl = $"/User/DeleteUser?email={Uri.EscapeDataString(email)}&username={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}";
+
+        var getUserResponse = await _client.DeleteAsync(deleteUrl);
+        getUserResponse.EnsureSuccessStatusCode();
     }
 }

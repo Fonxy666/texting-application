@@ -13,7 +13,10 @@ public class MessageService(MessagesContext context) : IMessageService
     {
         try
         {
-            var message = new Message(request.RoomId, request.UserName, request.Message);
+            var message = request.MessageId != null ? 
+                new Message(request.RoomId, request.UserName, request.Message, request.MessageId) : 
+                new Message(request.RoomId, request.UserName, request.Message);
+            
             await Context.Messages.AddAsync(message);
             await Context.SaveChangesAsync();
 

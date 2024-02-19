@@ -20,7 +20,6 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessag
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
         {
             await Clients.Group(userRoomConnection.Room!).SendAsync("ReceiveMessage", userRoomConnection.User, request.Message, DateTime.Now);
-            await SaveMessage(request);
         }
     }
 

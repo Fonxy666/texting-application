@@ -19,7 +19,7 @@ public class UserController(
     ILogger<AuthController> logger) : ControllerBase 
 {
     [HttpGet("getUserCredentials"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<UserResponse>> GetUserEmail([FromQuery] string username)
+    public async Task<ActionResult<UserResponse>> GetUserEmail([FromQuery]string username)
     {
         var existingUser = await userManager.FindByNameAsync(username);
         if (existingUser == null)

@@ -208,6 +208,7 @@ namespace Server
 
             var testInDb1 = await userManager.FindByEmailAsync(testEmail1);
             var testInDb2 = await userManager.FindByEmailAsync(testEmail2);
+            
             if (testInDb1 == null)
             {
                 var testUser = new ApplicationUser("-")
