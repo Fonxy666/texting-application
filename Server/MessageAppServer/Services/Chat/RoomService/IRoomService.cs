@@ -1,6 +1,6 @@
 ﻿using Server.Responses;
 
-namespace Server.Services.Chat;
+namespace Server.Services.Chat.RoomService;
 
 public interface IRoomService
 {

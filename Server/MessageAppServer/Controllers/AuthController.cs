@@ -15,7 +15,7 @@ public class AuthController(
     [HttpPost("GetEmailVerificationToken")]
     public async Task<ActionResult<GetEmailForVerificationResponse>> SendEmailVerificationCode([FromBody]GetEmailForVerificationRequest receiver)
     {
-        var subject = "Verification code";
+        const string subject = "Verification code";
         var message = $"Verification code: {EmailSenderCodeGenerator.GenerateToken(receiver.Email)}";
 
         var result = await emailSender.SendEmailAsync(receiver.Email, subject, message);
@@ -55,7 +55,7 @@ public class AuthController(
         if (!result.Success)
         {
             AddErrors(result);
-            return BadRequest(ModelState);
+            return NotFound(ModelState);
         }
 
         return CreatedAtAction(nameof(Register), new EmailUsernameResponse(result.Email, result.UserName));
@@ -84,7 +84,7 @@ public class AuthController(
             AddErrors(result);
             ModelState.AddModelError("InvalidCredentials", "Invalid username or password");
             
-            return BadRequest(ModelState);
+            return NotFound(ModelState);
         }
 
         return Ok(new AuthResponse(result.Email, result.UserName, result.Token));
