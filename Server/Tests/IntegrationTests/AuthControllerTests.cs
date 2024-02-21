@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using Server;
 using Server.Requests;
-using Server.Responses;
 using Server.Services.EmailSender;
 using Xunit;
 using Assert = Xunit.Assert;
@@ -22,16 +21,6 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     {
         _factory = factory;
         _client = _factory.CreateClient();
-    }
-    
-    
-    private async Task<AuthResponse> Login_With_Test_User(AuthRequest request)
-    {
-        var authJsonRequest = JsonConvert.SerializeObject(request);
-        var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
-        var authResponse = await _client.PostAsync("/Auth/Login", authContent);
-        var responseContent = await authResponse.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<AuthResponse>(responseContent)!;
     }
 
     [Fact]
@@ -89,7 +78,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Delete_User_ReturnSuccessStatusCode()
     {
-        var loginResponse = await Login_With_Test_User(_testUser);
+        var loginResponse = await TestLogin.Login_With_Test_User(_testUser, _factory);
     
         _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
 

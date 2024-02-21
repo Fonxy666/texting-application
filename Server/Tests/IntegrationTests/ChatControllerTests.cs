@@ -22,20 +22,11 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         _client = _factory.CreateClient();
     }
     
-    private async Task<AuthResponse> Login_With_Test_User(AuthRequest request)
-    {
-        var authJsonRequest = JsonConvert.SerializeObject(request);
-        var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
-        var authResponse = await _client.PostAsync("/Auth/Login", authContent);
-        var responseContent = await authResponse.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<AuthResponse>(responseContent)!;
-    }
-    
     [Fact]
     public async Task ChatFunctions_ReturnSuccessStatusCode()
     {
         var client = _factory.CreateClient();
-        var loginResponse = await Login_With_Test_User(_testUser);
+        var loginResponse = await TestLogin.Login_With_Test_User(_testUser, _factory);
         
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
         

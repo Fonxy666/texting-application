@@ -22,19 +22,10 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         _client = _factory.CreateClient();
     }
     
-    private async Task<AuthResponse> Login_With_Test_User(AuthRequest request)
-    {
-        var authJsonRequest = JsonConvert.SerializeObject(request);
-        var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
-        var authResponse = await _client.PostAsync("/Auth/Login", authContent);
-        var responseContent = await authResponse.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<AuthResponse>(responseContent)!;
-    }
-    
     [Fact]
     public async Task Get_Message_ReturnSuccessStatusCode()
     {
-        var loginResponse = await Login_With_Test_User(_testUser);
+        var loginResponse = await TestLogin.Login_With_Test_User(_testUser, _factory);
         
         _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
 
@@ -47,7 +38,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task Send_Message_ReturnSuccessStatusCode()
     {
-        var loginResponse = await Login_With_Test_User(_testUser);
+        var loginResponse = await TestLogin.Login_With_Test_User(_testUser, _factory);
         
         _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
 
@@ -62,7 +53,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task Edit_Message_ReturnSuccessStatusCode()
     {
-        var loginResponse = await Login_With_Test_User(_testUser);
+        var loginResponse = await TestLogin.Login_With_Test_User(_testUser, _factory);
         
         _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
 
@@ -77,7 +68,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task Delete_Message_ReturnSuccessStatusCode()
     {
-        var loginResponse = await Login_With_Test_User(_testUser);
+        var loginResponse = await TestLogin.Login_With_Test_User(_testUser, _factory);
         
         _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
 

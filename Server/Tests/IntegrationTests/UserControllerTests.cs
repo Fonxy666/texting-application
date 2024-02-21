@@ -24,19 +24,10 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         _client = _factory.CreateClient();
     }
     
-    private async Task<AuthResponse> Login_With_Test_User(AuthRequest request)
-    {
-        var authJsonRequest = JsonConvert.SerializeObject(request);
-        var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
-        var authResponse = await _client.PostAsync("/Auth/Login", authContent);
-        var responseContent = await authResponse.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<AuthResponse>(responseContent)!;
-    }
-    
     [Fact]
     public async Task Get_User_Credentials_ReturnSuccessStatusCode()
     {
-        var loginResponse = await Login_With_Test_User(_testUser1);
+        var loginResponse = await TestLogin.Login_With_Test_User(_testUser1, _factory);
         
         _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
 
@@ -47,7 +38,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Get_User_Credentials_ReturnNotFound()
     {
-        var loginResponse = await Login_With_Test_User(_testUser1);
+        var loginResponse = await TestLogin.Login_With_Test_User(_testUser1, _factory);
         
         _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
 
@@ -58,7 +49,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Change_Email_For_User_ReturnSuccessStatusCode()
     {
-        var loginResponse = await Login_With_Test_User(_testUser1);
+        var loginResponse = await TestLogin.Login_With_Test_User(_testUser1, _factory);
         
         _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
 
@@ -73,7 +64,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Change_Email_For_Not_Registered_User_Returns_NotFound()
     {
-        var loginResponse = await Login_With_Test_User(_testUser1);
+        var loginResponse = await TestLogin.Login_With_Test_User(_testUser1, _factory);
         
         _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
 
@@ -88,7 +79,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Change_Email_For_Not_2FA_User_Returns_NotFound()
     {
-        var loginResponse = await Login_With_Test_User(_testUser3);
+        var loginResponse = await TestLogin.Login_With_Test_User(_testUser3, _factory);
         
         _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
 
@@ -103,7 +94,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Change_Password_For_User_ReturnSuccessStatusCode()
     {
-        var loginResponse = await Login_With_Test_User(_testUser1);
+        var loginResponse = await TestLogin.Login_With_Test_User(_testUser1, _factory);
         
         _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
 
@@ -137,7 +128,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Delete_User_ReturnSuccessStatusCode()
     {
-        var loginResponse = await Login_With_Test_User(_testUser1);
+        var loginResponse = await TestLogin.Login_With_Test_User(_testUser1, _factory);
     
         _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
 
