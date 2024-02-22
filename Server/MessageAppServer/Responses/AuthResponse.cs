@@ -1,3 +1,3 @@
 ﻿namespace Server.Responses;
 
-public record AuthResponse(string Email, string Username, string Token);
+public record AuthResponse(bool Success, string Id);

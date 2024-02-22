@@ -19,27 +19,24 @@ export class NavBarComponent implements OnInit {
     profilePic: string = "";
 
     isLoggedIn(): boolean {
-        return !!((this.cookieService.check('Token') && this.cookieService.check('Username')) ||
-                   (sessionStorage.getItem('Token') && sessionStorage.getItem('Username')));
+        return this.cookieService.check('UserId');
     }
 
     loadProfileData() {
-        const username = this.cookieService.get('Username') || sessionStorage.getItem('Username');
+        const userId = this.cookieService.get('UserId');
         
-        if (username) {
-            this.http.get(`http://localhost:5000/User/GetImage/${username}`, { responseType: 'blob' })
+        if (userId) {
+            this.http.get(`https://localhost:7045/User/GetImage/${userId}`, { withCredentials: true, responseType: 'blob' })
                 .subscribe(
-                    (response: any) => {
-                        if (response instanceof Blob) {
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                                this.profilePic = reader.result as string;
-                            };
-                            reader.readAsDataURL(response);
-                        }
+                    (response: Blob) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            this.profilePic = reader.result as string;
+                        };
+                        reader.readAsDataURL(response);
                     },
                     (error) => {
-                        console.log(error);
+                        console.error(error);
                         console.log("There is no Avatar for this user.");
                         this.profilePic = "https://ptetutorials.com/images/user-profile.png";
                     }
@@ -48,13 +45,14 @@ export class NavBarComponent implements OnInit {
     }
 
     logout() {
-        if (this.cookieService.check('Token') && this.cookieService.check('Username')) {
-            this.cookieService.delete('Token');
-            this.cookieService.delete('Username');
-        } else {
-            sessionStorage.removeItem('Token');
-            sessionStorage.removeItem('Username');
-        }
-        this.router.navigate(['/']);
+        this.http.post('https://localhost:7045/Auth/Logout', {}, { withCredentials: true })
+        .subscribe((response: any) => {
+            if (response.success) {
+                this.router.navigate(['/']);
+            }
+        }, 
+        (error) => {
+            console.error("An error occurred:", error);
+        });
     }
 }

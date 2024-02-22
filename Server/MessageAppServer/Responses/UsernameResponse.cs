@@ -1,6 +1,3 @@
 ﻿namespace Server.Responses;
 
-public class UsernameResponse
-{
-    
-}
+public record UsernameResponse(string Username);

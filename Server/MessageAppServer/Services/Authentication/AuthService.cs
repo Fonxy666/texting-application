@@ -4,8 +4,9 @@ using Server.Responses;
 
 namespace Server.Services.Authentication;
 
-public class AuthService(UserManager<ApplicationUser> userManager, ITokenService tokenService)
-    : IAuthService
+public class AuthService(
+    UserManager<ApplicationUser> userManager,
+    ITokenService tokenService) : IAuthService
 {
     public async Task<AuthResult> RegisterAsync(string email, string username, string password, string role, string phoneNumber, string image)
     {
@@ -26,12 +27,12 @@ public class AuthService(UserManager<ApplicationUser> userManager, ITokenService
         }
 
         await userManager.AddToRoleAsync(user, role);
-        return new AuthResult(true, email, username, "");
+        return new AuthResult(true, "");
     }
 
     private static AuthResult FailedRegistration(IdentityResult result, string email, string username)
     {
-        var authenticationResult = new AuthResult(false, email, username, "");
+        var authenticationResult = new AuthResult(false, "");
 
         foreach (var identityError in result.Errors)
         {
@@ -41,7 +42,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, ITokenService
         return authenticationResult;
     }
 
-    public async Task<AuthResult> LoginAsync(string username, string password)
+    public async Task<AuthResult> LoginAsync(string username, string password, bool rememberMe)
     {
         var managedUser = await userManager.FindByNameAsync(username);
 
@@ -59,13 +60,21 @@ public class AuthService(UserManager<ApplicationUser> userManager, ITokenService
 
         var roles = await userManager.GetRolesAsync(managedUser);
         var accessToken = tokenService.CreateToken(managedUser, roles[0]);
+        
+        tokenService.SetCookies(accessToken, managedUser.Id, rememberMe);
 
-        return new AuthResult(true, managedUser.Email!, managedUser.UserName!, accessToken);
+        return new AuthResult(true, managedUser.Id);
+    }
+
+    public Task<AuthResult> LogOut()
+    {
+        tokenService.DeleteCookies();
+        return Task.FromResult(new AuthResult(true, ""));
     }
 
     private AuthResult InvalidCredentials()
     {
-        var result = new AuthResult(false, "", "", "");
+        var result = new AuthResult(false, "");
         result.ErrorMessages.Add("Bad credentials", "Invalid email");
         return result;
     }

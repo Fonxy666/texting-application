@@ -20,25 +20,18 @@ export class LoginComponent {
     }
 
     isLoggedIn() : boolean {
-        return this.cookieService.check('Token') && this.cookieService.check('Username');
+        return this.cookieService.check('UserId');
     }
     
     CreateTask(data: LoginRequest) {
-        this.http.post('http://localhost:5000/Auth/Login', data)
+        this.http.post('https://localhost:7045/Auth/Login', data, { withCredentials: true })
         .subscribe((response: any) => {
-            console.log(response);
-            if (data.rememberme) {
-                this.cookieService.set('Token', response.token);
-                this.cookieService.set('Username', response.username);
-            } else {
-                sessionStorage.setItem('Token', response.token);
-                sessionStorage.setItem('Username', response.username);
+            if (response.success) {
+                this.router.navigate(['/']);
             }
-            
-            this.router.navigate(['/']);
         }, 
         (error) => {
-            if (error.status === 400) {
+            if (error.status === 404) {
                 alert("Invalid username or password.");
             } else {
                 console.error("An error occurred:", error);

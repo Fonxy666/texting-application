@@ -18,6 +18,20 @@ public class UserController(
     IAuthService authenticationService,
     ILogger<AuthController> logger) : ControllerBase 
 {
+    [HttpGet("getUsername/{UserId}"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<UsernameResponse>> GetUsername(string UserId)
+    {
+        var existingUser = await userManager.FindByIdAsync(UserId);
+        if (existingUser == null)
+        {
+            return NotFound("User not found.");
+        }
+
+        var response = new UsernameResponse(existingUser.UserName!);
+
+        return response;
+    }
+    
     [HttpGet("getUserCredentials"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<UserResponse>> GetUserEmail([FromQuery]string username)
     {
@@ -32,11 +46,31 @@ public class UserController(
         return response;
     }
 
-    [HttpGet("GetImage/{imageName}")]
-    public IActionResult GetImage(string imageName)
+    [HttpGet("GetImage/{userId}")]
+    public async Task<IActionResult> GetImageWithId(string userId)
+    {
+        var existingUser = await userManager.FindByIdAsync(userId);
+        var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
+        var imagePath = Path.Combine(folderPath, $"{existingUser!.UserName}.png");
+        FileContentResult result = null;
+
+        if (System.IO.File.Exists(imagePath))
+        {
+            var imageBytes = System.IO.File.ReadAllBytes(imagePath);
+
+            var contentType = GetContentType(imagePath);
+
+            result = File(imageBytes, contentType);
+        }
+        
+        return result ?? (IActionResult)NotFound();
+    }
+    
+    [HttpGet("GetImageWithUsername/{userName}")]
+    public async Task<IActionResult> GetImageWithUsername(string userName)
     {
         var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
-        var imagePath = Path.Combine(folderPath, $"{imageName}.png");
+        var imagePath = Path.Combine(folderPath, $"{userName}.png");
         FileContentResult result = null;
 
         if (System.IO.File.Exists(imagePath))
