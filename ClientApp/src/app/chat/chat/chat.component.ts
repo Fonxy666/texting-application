@@ -24,7 +24,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
 
-    constructor(public chatService: ChatService, private cookieService: CookieService, public router: Router, private http: HttpClient, private route: ActivatedRoute) { }
+    constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute) { }
     
     messages: any[] = [];
     avatars: { [userId: string]: string } = {};

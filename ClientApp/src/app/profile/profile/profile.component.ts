@@ -15,44 +15,26 @@ import { ChangeEmailRequest } from '../../model/ChangeEmailRequest';
 export class ProfileComponent implements OnInit {
     
     myImage: string = "./assets/images/chat-mountain.jpg";
-    user: { name: string, image: string, token: string, email: string, twoFactorEnabled: boolean } = { name: '', image: '', token: '', email: '', twoFactorEnabled: false };
+    user: { id: string, name: string, image: string, token: string, email: string, twoFactorEnabled: boolean } = { id: "", name: '', image: '', token: '', email: '', twoFactorEnabled: false };
     passwordChangeRequest!: FormGroup;
 
     constructor(private http: HttpClient, private cookieService: CookieService, private fb: FormBuilder, private router: Router) {
-        this.user.name = this.cookieService.get('Username') ? 
-            this.cookieService.get('Username')! : sessionStorage.getItem('Username')!;
-        this.user.token = this.cookieService.get('Token') ? 
-            this.cookieService.get('Token')! : sessionStorage.getItem('Token')!;
+        this.user.id = this.cookieService.get('UserId');
     }
 
     ngOnInit(): void {
-        const username = this.cookieService.get('Username') || sessionStorage.getItem('Username');
-        this.getUser(username!);
-        this.loadProfileData(username!);
+        this.getUser(this.user.id);
+        this.loadProfileData(this.user.id);
         this.passwordChangeRequest = this.fb.group({
             oldPassword: ['', Validators.required],
             newPassword: ['', Validators.required]
         })
     }
 
-    OnPasswordChangeFormSubmit() {
-        const changeRequest = new ChangePasswordRequest(
-            this.user.email,
-            this.passwordChangeRequest.get('password')?.value,
-            this.passwordChangeRequest.get('rememberme')?.value
-        )
-    }
-
     getUser(username: string) {
         if (username) {
             const params = { username };
-            this.http.get('http://localhost:5000/User/getUserCredentials', { 
-                params,
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${this.user.token}`
-                }
-            })
+            this.http.get('https://localhost:7045/User/getUserCredentials', { withCredentials: true })
                 .subscribe((response: any) => {
                     if (response) {
                         console.log(response);
@@ -67,7 +49,7 @@ export class ProfileComponent implements OnInit {
 
     loadProfileData(username: string) {
         if (username) {
-            this.http.get(`http://localhost:5000/User/GetImage/${username}`, { responseType: 'blob' })
+            this.http.get(`https://localhost:7045/User/GetImage/${username}`, { withCredentials: true, responseType: 'blob' })
                 .subscribe(
                     (response: any) => {
                         if (response instanceof Blob) {
@@ -88,13 +70,12 @@ export class ProfileComponent implements OnInit {
     }
 
     changePassword(data: ChangePasswordRequest) {
-        this.http.patch('http://localhost:5000/User/ChangePassword', data, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${this.user.token}`
-            }
-        })
+        data.id = this.user.id;
+        console.log(data);
+
+        this.http.patch('https://localhost:7045/User/ChangePassword', data, { withCredentials: true})
         .subscribe((response: any) => {
+            console.log(response);
             if (response) {
                 this.router.navigate(['/']);
             }
@@ -102,13 +83,7 @@ export class ProfileComponent implements OnInit {
     }
 
     changeEmail(data: ChangeEmailRequest) {
-        console.log(data);
-        this.http.patch('http://localhost:5000/User/ChangeEmail', data, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${this.user.token}`
-            }
-        })
+        this.http.patch('https://localhost:7045/User/ChangeEmail', data, { withCredentials: true})
         .subscribe((response: any) => {
             console.log(response);
             if (response) {

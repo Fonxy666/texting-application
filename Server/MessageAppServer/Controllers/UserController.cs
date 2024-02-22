@@ -141,10 +141,10 @@ public class UserController(
     {
         try
         {
-            var existingUser = await userManager.FindByEmailAsync(request.Email);
+            var existingUser = await userManager.FindByIdAsync(request.Id);
             if (existingUser == null)
             {
-                logger.LogInformation($"Data for email: {request.Email} doesnt't exists in the database.");
+                logger.LogInformation($"Data for id: {request.Id} doesnt't exists in the database.");
                 return BadRequest(ModelState);
             }
 
@@ -160,14 +160,14 @@ public class UserController(
             }
             else
             {
-                logger.LogError($"Error changing password for user {request.Email}: {string.Join(", ", result.Errors)}");
-                return BadRequest($"Error changing password for user {request.Email}");
+                logger.LogError($"Error changing password for user {request.Id}: {string.Join(", ", result.Errors)}");
+                return BadRequest($"Error changing password for user {request.Id}");
             }
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error changing password for user {request.Email}");
-            return NotFound($"Error changing password for user {request.Email}");
+            logger.LogError(e, $"Error changing password for user {request.Id}");
+            return NotFound($"Error changing password for user {request.Id}");
         }
     }
     

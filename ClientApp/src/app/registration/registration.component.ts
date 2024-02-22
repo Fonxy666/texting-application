@@ -30,7 +30,7 @@ export class RegistrationComponent implements OnInit  {
             'Content-Type': 'application/json'
         });
 
-        this.http.post('http://localhost:5000/Auth/GetEmailVerificationToken', requestData, { headers: headers, responseType: 'text' })
+        this.http.post('https://localhost:7045/Auth/GetEmailVerificationToken', requestData, { headers: headers, responseType: 'text' })
             .subscribe((response: any) => {
                 if (response) {
                     this.user = data;
@@ -44,7 +44,7 @@ export class RegistrationComponent implements OnInit  {
         const headers = new HttpHeaders({
             'Content-Type': 'application/json'
         });
-        this.http.post('http://localhost:5000/Auth/ExamineVerifyToken', request, { headers: headers, responseType: 'text' })
+        this.http.post('https://localhost:7045/Auth/ExamineVerifyToken', request, { headers: headers, responseType: 'text' })
             .subscribe((response: any) => {
                 if (response) {
                     this.SendRegistration();
@@ -54,10 +54,10 @@ export class RegistrationComponent implements OnInit  {
     }
 
     SendRegistration() {
-        this.http.post('http://localhost:5000/Auth/Register', this.user)
+        this.http.post('https://localhost:7045/Auth/Register', this.user)
             .subscribe((response) => {
                 if (response) {
-                    alert("Succesfull registration!");
+                    alert("Succesfull registration!");  
                 }
             });
     }
