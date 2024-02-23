@@ -9,7 +9,7 @@ import { MessageRequest } from './model/MessageRequest';
 
 export class ChatService {
     public connection : any = new signalR.HubConnectionBuilder()
-        .withUrl('http://localhost:5000/chat')
+        .withUrl('https://localhost:7045/chat')
         .configureLogging(signalR.LogLevel.Information)
         .build();
 
@@ -33,7 +33,6 @@ export class ChatService {
         this.connection.on("UserDisconnected", (username: string) => {
             const updatedUsers = this.connectedUsers.value.filter(user => user !== username);
             this.connectedUsers.next(updatedUsers);
-            console.log('User disconnected:', username);
         });
     }
 

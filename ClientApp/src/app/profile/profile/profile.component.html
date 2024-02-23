@@ -52,7 +52,6 @@
                     </button>
                     <div class="modal fade" id="changePassword" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                         <app-generate-password-change-request
-                            [email]="this.user.email"
                             (SendPasswordChangeRequest)="changePassword($event)"/>
                     </div>
                 </div>

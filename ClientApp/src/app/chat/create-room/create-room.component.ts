@@ -34,12 +34,7 @@ export class CreateRoomComponent implements OnInit {
     }
 
     sendCreateRoomRequest() {
-        this.http.post('http://localhost:5000/Chat/RegisterRoom', this.createForm(), {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${this.token}`
-            }
-        })
+        this.http.post('https://localhost:7045/Chat/RegisterRoom', this.createForm(), { withCredentials: true })
         .subscribe(
             (response: any) => {
                 if (response.success) {

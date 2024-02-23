@@ -7,9 +7,11 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Server.Services.Authentication;
 
-public class TokenService(Microsoft.Extensions.Configuration.IConfiguration configuration) : ITokenService
+public class TokenService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor) : ITokenService
 {
     private const int ExpirationMinutes = 30;
+    private HttpRequest Request => httpContextAccessor.HttpContext?.Request ?? throw new InvalidOperationException("HttpContext or Request is null");
+    private HttpResponse Response => httpContextAccessor.HttpContext?.Response ?? throw new InvalidOperationException("HttpContext or Response is null");
         
     public string CreateToken(IdentityUser user, string? role, bool isTest = false)
     {
@@ -18,6 +20,41 @@ public class TokenService(Microsoft.Extensions.Configuration.IConfiguration conf
 
         var tokenHandler = new JwtSecurityTokenHandler();
         return tokenHandler.WriteToken(token);
+    }
+    
+    public void SetCookies(string accessToken, string id, bool rememberMe)
+    {
+        Response.Cookies.Append("Authorization", accessToken, GetCookieOptions(true, rememberMe));
+        
+        Response.Cookies.Append("UserId", id, GetCookieOptions(false, rememberMe));
+    }
+
+    public CookieOptions GetCookieOptions(bool httpOnly, bool rememberMe)
+    {
+        var expireTime = DateTimeOffset.UtcNow.AddHours(1);
+        var extendedTime = expireTime.AddMinutes(5);
+        
+        return new CookieOptions
+        {
+            Domain = Request.Host.Host,
+            HttpOnly = httpOnly,
+            SameSite = SameSiteMode.None,
+            IsEssential = true,
+            Secure = true,
+            Expires = rememberMe? expireTime : null,
+            MaxAge = TimeSpan.FromSeconds((extendedTime-DateTime.UtcNow).TotalSeconds)
+        };
+    }
+
+    public void DeleteCookies()
+    {
+        var cookieOptions = new CookieOptions
+        {
+            SameSite = SameSiteMode.None,
+            Secure = true
+        };
+        Response.Cookies.Delete("Authorization", cookieOptions);
+        Response.Cookies.Delete("UserId", cookieOptions);
     }
 
     private JwtSecurityToken CreateJwtToken(List<Claim> claims, SigningCredentials credentials, DateTime expiration)

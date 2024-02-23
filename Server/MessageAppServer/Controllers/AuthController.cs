@@ -3,7 +3,7 @@ using Server.Requests;
 using Server.Responses;
 using Server.Services.Authentication;
 using Server.Services.EmailSender;
-
+using Microsoft.AspNetCore.Authorization;
 namespace Server.Controllers;
 
 [ApiController]
@@ -58,7 +58,7 @@ public class AuthController(
             return NotFound(ModelState);
         }
 
-        return CreatedAtAction(nameof(Register), new EmailUsernameResponse(result.Email, result.UserName));
+        return Ok(new AuthResponse(true, result.Id));
     }
 
     private void AddErrors(AuthResult result)
@@ -77,7 +77,7 @@ public class AuthController(
             return BadRequest(ModelState);
         }
 
-        var result = await authenticationService.LoginAsync(request.UserName, request.Password);
+        var result = await authenticationService.LoginAsync(request.UserName, request.Password, request.RememberMe);
 
         if (!result.Success)
         {
@@ -87,6 +87,20 @@ public class AuthController(
             return NotFound(ModelState);
         }
 
-        return Ok(new AuthResponse(result.Email, result.UserName, result.Token));
+        return Ok(new AuthResponse(true, result.Id));
+    }
+    
+    [HttpPost("Logout")]
+    public async Task<ActionResult<AuthResponse>> LogOut()
+    {
+        var result = await authenticationService.LogOut();
+
+        if (!result.Success)
+        {
+            AddErrors(result);
+            return NotFound(ModelState);
+        }
+
+        return Ok(new AuthResponse(true, ""));
     }
 }

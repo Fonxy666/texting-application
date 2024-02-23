@@ -19,9 +19,7 @@ namespace Tests.Services.Auth
             var result = await authService.RegisterAsync("test@example.com", "TestUser", "password123", "User", "123456789", "image");
 
             Assert.That(result.Success, Is.True);
-            Assert.That(result.Email, Is.EqualTo("test@example.com"));
-            Assert.That(result.UserName, Is.EqualTo("TestUser"));
-            Assert.That(result.Token, Is.Empty);
+            Assert.That(result.Id, Is.EqualTo(""));
         }
 
         [Test]
@@ -35,9 +33,6 @@ namespace Tests.Services.Auth
             var result = await authService.RegisterAsync("test@example.com", "TestUser", "password123", "UserRole", "123456789", "image");
 
             Assert.That(result.Success, Is.False);
-            Assert.That(result.Email, Is.EqualTo("test@example.com"));
-            Assert.That(result.UserName, Is.EqualTo("TestUser"));
-            Assert.That(result.Token, Is.Empty);
             Assert.That(result.ErrorMessages, Is.Not.Empty);
         }
 
@@ -49,12 +44,9 @@ namespace Tests.Services.Auth
 
             var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object);
 
-            var result = await authService.LoginAsync("TestUser", "password123");
+            var result = await authService.LoginAsync("TestUser", "password123", false);
 
             Assert.That(result.Success, Is.True);
-            Assert.That(result.Email, Is.EqualTo("test@example.com"));
-            Assert.That(result.UserName, Is.EqualTo("TestUser"));
-            Assert.That(result.Token, Is.Not.Empty);
         }
 
         [Test]
@@ -65,12 +57,9 @@ namespace Tests.Services.Auth
 
             var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object);
 
-            var result = await authService.LoginAsync("InvalidUser", "invalidPassword");
+            var result = await authService.LoginAsync("InvalidUser", "invalidPassword", false);
 
             Assert.That(result.Success, Is.False);
-            Assert.That(result.Email, Is.EqualTo(""));
-            Assert.That(result.UserName, Is.EqualTo(""));
-            Assert.That(result.Token, Is.Empty);
             Assert.That(result.ErrorMessages, Is.Not.Empty);
         }
     }
