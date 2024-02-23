@@ -9,13 +9,15 @@ namespace Tests;
 
 public static class TestLogin
 {
-    public static  async Task<AuthResponse> Login_With_Test_User(AuthRequest request, WebApplicationFactory<Startup> factory)
+    public static async Task<string> Login_With_Test_User(AuthRequest request, HttpClient _client)
     {
-        var client = factory.CreateClient();
         var authJsonRequest = JsonConvert.SerializeObject(request);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
-        var authResponse = await client.PostAsync("/Auth/Login", authContent);
-        var responseContent = await authResponse.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<AuthResponse>(responseContent)!;
+
+        var authResponse = await _client.PostAsync("/Auth/Login", authContent);
+        authResponse.EnsureSuccessStatusCode();
+
+        var cookies = authResponse.Headers.GetValues("Set-Cookie");
+        return string.Join("; ", cookies);
     }
 }

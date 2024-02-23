@@ -1,4 +1,4 @@
-﻿/*using System.Net;
+﻿using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
@@ -15,7 +15,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
     private readonly WebApplicationFactory<Startup> _factory;
     private readonly HttpClient _client;
-    private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
+    private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###", false);
 
     public AuthControllerTests(WebApplicationFactory<Startup> factory)
     {
@@ -26,7 +26,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Login_Test_User_ReturnSuccessStatusCode()
     {
-        var request = new AuthRequest("TestUsername1", "testUserPassword123###");
+        var request = new AuthRequest("TestUsername1", "testUserPassword123###", false);
         var authJsonRequest = JsonConvert.SerializeObject(request);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
         var authResponse = await _client.PostAsync("/Auth/Login", authContent);
@@ -36,7 +36,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Login_With_Invalid_User_ReturnBadRequestStatusCode()
     {
-        var request = new AuthRequest("", "");
+        var request = new AuthRequest("", "", false);
         var authJsonRequest = JsonConvert.SerializeObject(request);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
         var authResponse = await _client.PostAsync("/Auth/Login", authContent);
@@ -46,7 +46,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Login_With_Bad_Credentials_ReturnNotFoundStatusCode()
     {
-        var request = new AuthRequest("TestUsername1", "testUserPassword123");
+        var request = new AuthRequest("TestUsername1", "testUserPassword123", false);
         var authJsonRequest = JsonConvert.SerializeObject(request);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
         var authResponse = await _client.PostAsync("/Auth/Login", authContent);
@@ -78,15 +78,15 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Delete_User_ReturnSuccessStatusCode()
     {
-        var loginResponse = await TestLogin.Login_With_Test_User(_testUser, _factory);
-    
-        _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {loginResponse.Token}");
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client);
 
         const string email = "unique@hotmail.com";
         const string username = "uniqueTestUsername";
         const string password = "TestUserPassword";
 
         var deleteUrl = $"/User/DeleteUser?email={Uri.EscapeDataString(email)}&username={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}";
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
         var getUserResponse = await _client.DeleteAsync(deleteUrl);
         getUserResponse.EnsureSuccessStatusCode();
@@ -129,4 +129,4 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-}*/
+}
