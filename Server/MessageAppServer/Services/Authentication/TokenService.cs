@@ -29,7 +29,7 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
         Response.Cookies.Append("UserId", id, GetCookieOptions(false, rememberMe));
     }
 
-    private CookieOptions GetCookieOptions(bool httpOnly, bool rememberMe)
+    public CookieOptions GetCookieOptions(bool httpOnly, bool rememberMe)
     {
         var expireTime = DateTimeOffset.UtcNow.AddHours(1);
         var extendedTime = expireTime.AddMinutes(5);
