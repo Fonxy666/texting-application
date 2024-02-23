@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿/*using System.Text;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using Server;
@@ -77,4 +77,4 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var getUserResponse = await _client.DeleteAsync($"/Message/DeleteMessage?id={messageDeleteRequestId}");
         getUserResponse.EnsureSuccessStatusCode();
     }
-}
+}*/

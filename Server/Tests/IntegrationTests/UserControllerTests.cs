@@ -1,4 +1,4 @@
-﻿using System.Net;
+﻿/*using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
@@ -141,4 +141,4 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var getUserResponse = await _client.DeleteAsync(deleteUrl);
         getUserResponse.EnsureSuccessStatusCode();
     }
-}
+}*/

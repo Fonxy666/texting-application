@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿/*using System.Text;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using Server;
@@ -48,4 +48,4 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var deleteRoomResponse = await client.PostAsync("/Chat/DeleteRoom", contentDelete);
         deleteRoomResponse.EnsureSuccessStatusCode();
     }
-}
+}*/

@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -12,12 +13,14 @@ namespace Tests.Services.Auth
     {
         private TokenService _tokenService;
         private Mock<IConfiguration> _configurationMock;
+        private IHttpContextAccessor _contextAccessor;
 
         [SetUp]
         public void SetUp()
         {
             _configurationMock = new Mock<IConfiguration>();
-            _tokenService = new TokenService(_configurationMock.Object);
+            _contextAccessor = new HttpContextAccessor();
+            _tokenService = new TokenService(_configurationMock.Object, _contextAccessor);
         }
 
         [Test]
