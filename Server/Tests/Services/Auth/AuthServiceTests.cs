@@ -2,6 +2,7 @@
 using Moq;
 using Server.Model;
 using Server.Services.Authentication;
+using Server.Services.User;
 
 namespace Tests.Services.Auth
 {
@@ -13,8 +14,9 @@ namespace Tests.Services.Auth
         {
             var userManagerMock = MockUserManager.Create();
             var tokenServiceMock = new Mock<ITokenService>();
+            var userServiceMock = new Mock<IUserServices>();
 
-            var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object);
+            var authService = new AuthService(userManagerMock.Object, userServiceMock.Object, tokenServiceMock.Object);
 
             var result = await authService.RegisterAsync("test@example.com", "TestUser", "password123", "User", "123456789", "image");
 
@@ -27,8 +29,9 @@ namespace Tests.Services.Auth
         {
             var userManagerMock = MockUserManager.CreateFailedRegistration();
             var tokenServiceMock = new Mock<ITokenService>();
+            var userServiceMock = new Mock<IUserServices>();
 
-            var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object);
+            var authService = new AuthService(userManagerMock.Object, userServiceMock.Object, tokenServiceMock.Object);
 
             var result = await authService.RegisterAsync("test@example.com", "TestUser", "password123", "UserRole", "123456789", "image");
 
@@ -41,8 +44,9 @@ namespace Tests.Services.Auth
         {
             var userManagerMock = MockUserManager.Create();
             var tokenServiceMock = new Mock<ITokenService>();
+            var userServiceMock = new Mock<IUserServices>();
 
-            var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object);
+            var authService = new AuthService(userManagerMock.Object, userServiceMock.Object,  tokenServiceMock.Object);
 
             var result = await authService.LoginAsync("TestUser", "password123", false);
 
@@ -54,8 +58,9 @@ namespace Tests.Services.Auth
         {
             var userManagerMock = MockUserManager.CreateInvalidLogin();
             var tokenServiceMock = new Mock<ITokenService>();
+            var userServiceMock = new Mock<IUserServices>();
 
-            var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object);
+            var authService = new AuthService(userManagerMock.Object, userServiceMock.Object, tokenServiceMock.Object);
 
             var result = await authService.LoginAsync("InvalidUser", "invalidPassword", false);
 

@@ -7,6 +7,7 @@ using Server.Model;
 using Server.Requests;
 using Server.Responses;
 using Server.Services.Authentication;
+using Server.Services.User;
 
 namespace Server.Controllers;
 
@@ -16,6 +17,7 @@ public class UserController(
     UserManager<ApplicationUser> userManager,
     UsersContext repository,
     IAuthService authenticationService,
+    IUserServices userServices,
     ILogger<AuthController> logger) : ControllerBase 
 {
     [HttpGet("getUsername/{UserId}"), Authorize(Roles = "User, Admin")]
@@ -183,7 +185,7 @@ public class UserController(
                 return BadRequest(ModelState);
             }
 
-            authenticationService.SaveImageLocally(existingUser.UserName!, request.Image);
+            userServices.SaveImageLocally(existingUser.UserName!, request.Image);
             return Ok(new { Status = "Ok" });
         }
         catch (Exception e)

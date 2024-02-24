@@ -11,6 +11,7 @@ using Server.Services.Authentication;
 using Server.Services.Chat.MessageService;
 using Server.Services.Chat.RoomService;
 using Server.Services.EmailSender;
+using Server.Services.User;
 
 namespace Server
 {
@@ -62,6 +63,7 @@ namespace Server
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IRoomService, RoomService>();
             services.AddScoped<IMessageService, MessageService>();
+            services.AddScoped<IUserServices, UserServices>();
             services.AddSingleton<IDictionary<string, UserRoomConnection>>(opt =>
                 new Dictionary<string, UserRoomConnection>());
             services.AddTransient<IEmailSender, EmailSender>();

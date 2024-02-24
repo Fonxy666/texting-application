@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Server.Model;
 using Server.Responses;
+using Server.Services.User;
 
 namespace Server.Services.Authentication;
 
 public class AuthService(
     UserManager<ApplicationUser> userManager,
+    IUserServices userServices,
     ITokenService tokenService) : IAuthService
 {
     public async Task<AuthResult> RegisterAsync(string email, string username, string password, string role, string phoneNumber, string image)
@@ -98,35 +100,5 @@ public class AuthService(
         await userManager.DeleteAsync(managedUser);
 
         return new DeleteUserResponse($"{username}", "Delete successful.", true);
-    }
-    
-    public string SaveImageLocally(string userNameFileName, string base64Image)
-    {
-        var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
-        if (!Directory.Exists(folderPath))
-        {
-            Directory.CreateDirectory(folderPath);
-        }
-
-        var imageName = userNameFileName + ".png";
-        var imagePath = Path.Combine(folderPath, imageName);
-
-        try
-        {
-            base64Image = base64Image.Replace("data:image/png;base64,", "");
-            var imageBytes = Convert.FromBase64String(base64Image);
-
-            using (var fileStream = new FileStream(imagePath, FileMode.Create))
-            {
-                fileStream.Write(imageBytes, 0, imageBytes.Length);
-            }
-
-            return imagePath;
-        }
-        catch (FormatException ex)
-        {
-            Console.WriteLine($"Error decoding base64 image: {ex.Message}");
-            throw;
-        }
     }
 }

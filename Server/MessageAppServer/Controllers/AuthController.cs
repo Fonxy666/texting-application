@@ -4,12 +4,15 @@ using Server.Responses;
 using Server.Services.Authentication;
 using Server.Services.EmailSender;
 using Microsoft.AspNetCore.Authorization;
+using Server.Services.User;
+
 namespace Server.Controllers;
 
 [ApiController]
 [Route("[controller]")]
 public class AuthController(
     IAuthService authenticationService,
+    IUserServices userServices,
     IEmailSender emailSender) : ControllerBase
 {
     [HttpPost("GetEmailVerificationToken")]
@@ -49,7 +52,7 @@ public class AuthController(
             return BadRequest(ModelState);
         }
 
-        var imagePath = authenticationService.SaveImageLocally(request.Username, request.Image);
+        var imagePath = userServices.SaveImageLocally(request.Username, request.Image);
         var result = await authenticationService.RegisterAsync(request.Email, request.Username, request.Password, "User", request.PhoneNumber, imagePath);
 
         if (!result.Success)
