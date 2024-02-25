@@ -5,6 +5,9 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ChangePasswordRequest } from '../../model/ChangePasswordRequest';
 import { Router } from '@angular/router';
 import { ChangeEmailRequest } from '../../model/ChangeEmailRequest';
+import { DomSanitizer } from '@angular/platform-browser';
+import { ImageCroppedEvent } from 'ngx-image-cropper';
+import { ChangeAvatarRequest } from '../../model/ChangeAvatarRequest';
 
 @Component({
   selector: 'app-profile',
@@ -13,12 +16,15 @@ import { ChangeEmailRequest } from '../../model/ChangeEmailRequest';
 })
 
 export class ProfileComponent implements OnInit {
-    
+
+    profilePic: string = "";
+    imageChangedEvent: any = '';
+    croppedImage: any = '';
     myImage: string = "./assets/images/chat-mountain.jpg";
     user: { id: string, name: string, image: string, token: string, email: string, twoFactorEnabled: boolean } = { id: "", name: '', image: '', token: '', email: '', twoFactorEnabled: false };
     passwordChangeRequest!: FormGroup;
 
-    constructor(private http: HttpClient, private cookieService: CookieService, private fb: FormBuilder, private router: Router) {
+    constructor(private http: HttpClient, private cookieService: CookieService, private fb: FormBuilder, private router: Router, private sanitizer: DomSanitizer) {
         this.user.id = this.cookieService.get('UserId');
     }
 
@@ -31,13 +37,12 @@ export class ProfileComponent implements OnInit {
         })
     }
 
-    getUser(username: string) {
-        if (username) {
-            const params = { username };
-            this.http.get('https://localhost:7045/User/getUserCredentials', { withCredentials: true })
+    getUser(userId: string) {
+        if (userId) {
+            this.http.get(`https://localhost:7045/User/getUserCredentials?userId=${userId}`, { withCredentials: true })
                 .subscribe((response: any) => {
                     if (response) {
-                        console.log(response);
+                        this.user.name = response.userName;
                         this.user.email = response.email;
                         this.user.twoFactorEnabled = response.twoFactorEnabled;
                     }
@@ -69,9 +74,41 @@ export class ProfileComponent implements OnInit {
         }
     }
 
+    fileChangeEvent(event: any): void {
+        this.imageChangedEvent = event;
+    }
+
+    imageCropped(event: ImageCroppedEvent) {
+        this.croppedImage = this.sanitizer.bypassSecurityTrustUrl(event.base64!!);
+        this.onProfilePicChange(event);
+    }
+
+    async onProfilePicChange(event: ImageCroppedEvent) {
+        const base64data = event.blob instanceof Blob ? await this.getBase64FromBlob(event.blob) : '';
+        this.profilePic = base64data;
+    }
+    
+    getBase64FromBlob(blob: Blob): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = (error) => reject(error);
+        });
+    }
+
+    changeAvatar() {
+        const request = new ChangeAvatarRequest(this.user.id, this.profilePic);
+        this.http.post('https://localhost:7045/User/ChangeAvatar', request, { withCredentials: true})
+        .subscribe((response: any) => {
+            if (response && response.status === 'Ok') {
+                location.reload();
+            }
+        })
+    }
+
     changePassword(data: ChangePasswordRequest) {
         data.id = this.user.id;
-        console.log(data);
 
         this.http.patch('https://localhost:7045/User/ChangePassword', data, { withCredentials: true})
         .subscribe((response: any) => {

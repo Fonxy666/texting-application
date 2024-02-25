@@ -107,7 +107,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task VerifyToken_Valid_Code_ReturnsOk()
     {
-        var validCode = EmailSenderCodeGenerator.GenerateToken("test@email.com");
+        var validCode = EmailSenderCodeGenerator.GenerateTokenForRegistration("test@email.com");
 
         var testRequest = new VerifyTokenRequest("test@email.com", validCode);
         var jsonRequest = JsonConvert.SerializeObject(testRequest);

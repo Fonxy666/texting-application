@@ -1,3 +1,3 @@
 ﻿namespace Server.Responses;
 
-public record UserResponse(string? Email, bool TwoFactorEnabled);
+public record UserResponse(string? UserName, string? Email, bool TwoFactorEnabled);

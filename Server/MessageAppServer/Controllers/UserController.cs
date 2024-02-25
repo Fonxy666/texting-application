@@ -7,6 +7,7 @@ using Server.Model;
 using Server.Requests;
 using Server.Responses;
 using Server.Services.Authentication;
+using Server.Services.User;
 
 namespace Server.Controllers;
 
@@ -16,6 +17,7 @@ public class UserController(
     UserManager<ApplicationUser> userManager,
     UsersContext repository,
     IAuthService authenticationService,
+    IUserServices userServices,
     ILogger<AuthController> logger) : ControllerBase 
 {
     [HttpGet("getUsername/{UserId}"), Authorize(Roles = "User, Admin")]
@@ -33,15 +35,15 @@ public class UserController(
     }
     
     [HttpGet("getUserCredentials"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<UserResponse>> GetUserEmail([FromQuery]string username)
+    public async Task<ActionResult<UserResponse>> GetUserEmail([FromQuery]string userId)
     {
-        var existingUser = await userManager.FindByNameAsync(username);
+        var existingUser = await userManager.FindByIdAsync(userId);
         if (existingUser == null)
         {
             return NotFound("User not found.");
         }
 
-        var response = new UserResponse(existingUser.Email, existingUser.TwoFactorEnabled);
+        var response = new UserResponse(existingUser.UserName, existingUser.Email, existingUser.TwoFactorEnabled);
 
         return response;
     }
@@ -170,6 +172,28 @@ public class UserController(
             return NotFound($"Error changing password for user {request.Id}");
         }
     }
+
+    [HttpPost("ChangeAvatar"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<AuthResponse>> ChangeAvatar([FromBody]AvatarChange request)
+    {
+        try
+        {
+            var existingUser = await userManager.FindByIdAsync(request.UserId);
+            if (existingUser == null)
+            {
+                logger.LogInformation($"Data for id: {request.UserId} doesnt't exists in the database.");
+                return BadRequest(ModelState);
+            }
+
+            userServices.SaveImageLocally(existingUser.UserName!, request.Image);
+            return Ok(new { Status = "Ok" });
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error changing password for user {request.UserId}");
+            return NotFound($"Error changing password for user {request.UserId}");
+        }
+    } 
     
     [HttpDelete("DeleteUser"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<EmailUsernameResponse>> DeleteUser([FromQuery]string email, [FromQuery]string username, [FromQuery]string password)

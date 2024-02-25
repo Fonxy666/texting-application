@@ -30,7 +30,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
-        var getUserResponse = await _client.GetAsync($"/User/getUserCredentials?username={_testUser1.UserName}");
+        var getUserResponse = await _client.GetAsync($"/User/getUserCredentials?userId=20fa67ce-ec87-4518-b7b5-9bbdfcfebcce");
         getUserResponse.EnsureSuccessStatusCode();
     }
     

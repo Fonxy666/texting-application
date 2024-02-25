@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { RegistrationRequest } from '../model/RegistrationRequest';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -10,15 +10,11 @@ import { TokenValidatorRequest } from '../model/TokenValidatorRequest';
   styleUrl: './registration.component.css'
 })
 
-export class RegistrationComponent implements OnInit  {
+export class RegistrationComponent {
     constructor(private http: HttpClient, private router: Router) { }
 
     user: any;
     showVerifyPage: boolean = false;
-
-    ngOnInit(): void {
-        
-    }
 
     GetVerifyTokenAndGoToVerifyPage(data: RegistrationRequest) {
         this.SendVerifyEmail(data);
