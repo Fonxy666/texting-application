@@ -2,8 +2,9 @@
 
 public static class EmailSenderCodeGenerator
 {
-    private static Dictionary<string, string> _verificationCodes = new();
-    public static string GenerateToken(string email)
+    private static Dictionary<string, string> _regVerificationCodes = new();
+    private static Dictionary<string, string> _loginVerificationCodes = new();
+    public static string GenerateTokenForRegistration(string email)
     {
         const string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -22,28 +23,70 @@ public static class EmailSenderCodeGenerator
             }
         }
 
-        StoreVerificationCode(email, new string(token));
+        StoreVerificationCode(email, new string(token), "registration");
         return new string(token);
     }
     
-    private static void StoreVerificationCode(string email, string code)
+    public static string GenerateTokenForLogin(string email)
     {
-        _verificationCodes[email] = code;
-    }
+        const string characters = "0123456789";
 
-    public static bool ExamineIfTheCodeWasOk(string email, string verifyCode)
-    {
-        _verificationCodes.TryGetValue(email, out var value);
-        Console.WriteLine(value);
+        var rnd = new Random();
+        var token = new char[6];
 
-        return _verificationCodes.TryGetValue(email, out var code) && code == verifyCode;
-    }
-
-    public static void RemoveVerificationCode(string email)
-    {
-        if (_verificationCodes.ContainsKey(email))
+        for (var i = 0; i < 6; i++)
         {
-            _verificationCodes.Remove(email);
+            token[i] = characters[rnd.Next(characters.Length)];
         }
+
+        StoreVerificationCode(email, new string(token), "login");
+        return new string(token);
+    }
+    
+    private static void StoreVerificationCode(string email, string code, string type)
+    {
+        if (type == "registration")
+        {
+            _regVerificationCodes[email] = code;
+        }
+        else
+        {
+            _loginVerificationCodes[email] = code;
+        }
+    }
+
+    public static bool ExamineIfTheCodeWasOk(string email, string verifyCode, string type)
+    {
+        if (type == "registration")
+        {
+            _regVerificationCodes.TryGetValue(email, out var value);
+
+            return _regVerificationCodes.TryGetValue(email, out var code) && code == verifyCode;
+        }
+        else
+        {
+            _loginVerificationCodes.TryGetValue(email, out var value);
+
+            return _loginVerificationCodes.TryGetValue(email, out var code) && code == verifyCode;
+        }
+    }
+
+    public static void RemoveVerificationCode(string email, string type)
+    {
+        if (type == "registration")
+        {
+            if (_regVerificationCodes.ContainsKey(email))
+            {
+                _regVerificationCodes.Remove(email);
+            }
+        }
+        else
+        {
+            if (_loginVerificationCodes.ContainsKey(email))
+            {
+                _loginVerificationCodes.Remove(email);
+            }
+        }
+        
     }
 }

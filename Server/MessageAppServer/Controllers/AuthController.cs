@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using Server.Requests;
 using Server.Responses;
 using Server.Services.Authentication;
 using Server.Services.EmailSender;
-using Microsoft.AspNetCore.Authorization;
 using Server.Services.User;
 
 namespace Server.Controllers;
@@ -19,7 +19,7 @@ public class AuthController(
     public async Task<ActionResult<GetEmailForVerificationResponse>> SendEmailVerificationCode([FromBody]GetEmailForVerificationRequest receiver)
     {
         const string subject = "Verification code";
-        var message = $"Verification code: {EmailSenderCodeGenerator.GenerateToken(receiver.Email)}";
+        var message = $"Verification code: {EmailSenderCodeGenerator.GenerateTokenForRegistration(receiver.Email)}";
 
         var result = await emailSender.SendEmailAsync(receiver.Email, subject, message);
         
@@ -34,13 +34,13 @@ public class AuthController(
     [HttpPost("ExamineVerifyToken")]
     public async Task<ActionResult<string>> VerifyToken([FromBody]VerifyTokenRequest credentials)
     {
-        var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(credentials.Email, credentials.VerifyCode);
+        var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(credentials.Email, credentials.VerifyCode, "registration");
         if (!result)
         {
             return BadRequest(ModelState);
         }
         
-        EmailSenderCodeGenerator.RemoveVerificationCode(credentials.Email);
+        EmailSenderCodeGenerator.RemoveVerificationCode(credentials.Email, "registration");
         return Ok(new VerifyTokenResponse(true));
     }
         
@@ -72,15 +72,15 @@ public class AuthController(
         }
     }
     
-    [HttpPost("Login")]
-    public async Task<ActionResult<AuthResponse>> Authenticate([FromBody]AuthRequest request)
+    [HttpPost("SendLoginToken")]
+    public async Task<ActionResult<AuthResponse>> SendLoginToken([FromBody]AuthRequest request)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var result = await authenticationService.LoginAsync(request.UserName, request.Password, request.RememberMe);
+        var result = await authenticationService.ExamineLoginCredentials(request.UserName, request.Password, request.RememberMe);
 
         if (!result.Success)
         {
@@ -89,8 +89,47 @@ public class AuthController(
             
             return NotFound(ModelState);
         }
+        
+        const string subject = "Verification code";
+        var message = $"Verification code: {EmailSenderCodeGenerator.GenerateTokenForLogin(result.Email)}";
 
-        return Ok(new AuthResponse(true, result.Id));
+        var emailResult = await emailSender.SendEmailAsync(result.Email, subject, message);
+
+        return Ok(new AuthResponse(emailResult, result.Id));
+    }
+
+    public record LoginAuth([Required]string UserName, [Required]string Password, [Required]bool RememberMe, [Required]string Token);
+    
+    [HttpPost("Login")]
+    public async Task<ActionResult<AuthResponse>> Authenticate([FromBody]LoginAuth request)
+    {
+        Console.WriteLine(request);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+        
+        var email = await authenticationService.GetEmailFromUserName(request.UserName);
+        var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(email!, request.Token, "login");
+        
+        if (!result)
+        {
+            return BadRequest(ModelState);
+        }
+
+        EmailSenderCodeGenerator.RemoveVerificationCode(email!, "login");
+
+        var loginResult = await authenticationService.LoginAsync(request.UserName, request.Password, request.RememberMe);
+
+        if (!loginResult.Success)
+        {
+            AddErrors(loginResult);
+            ModelState.AddModelError("InvalidCredentials", "Invalid username or password");
+            
+            return NotFound(ModelState);
+        }
+
+        return Ok(new AuthResponse(true, loginResult.Id));
     }
     
     [HttpPost("Logout")]

@@ -22,6 +22,7 @@ import { GenerateAvatarChangeRequestComponent } from './profile/profile/generate
 import { GenerateEmailChangeRequestComponent } from './profile/profile/generate-email-change-request/generate-email-change-request.component';
 import { CreateEmailVerificationRequestComponent } from './registration/create-email-verification-request/create-email-verification-request.component';
 import { CreateRoomComponent } from './chat/create-room/create-room.component';
+import { ProvideLoginAuthTokenComponent } from './login/provide-login-auth-token/provide-login-auth-token.component';
 
 @NgModule({
   declarations: [
@@ -41,6 +42,7 @@ import { CreateRoomComponent } from './chat/create-room/create-room.component';
     GenerateEmailChangeRequestComponent,
     CreateEmailVerificationRequestComponent,
     CreateRoomComponent,
+    ProvideLoginAuthTokenComponent,
   ],
   imports: [
     BrowserModule,
