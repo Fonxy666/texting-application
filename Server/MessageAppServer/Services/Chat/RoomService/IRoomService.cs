@@ -1,4 +1,5 @@
 ﻿using Server.Responses;
+using Server.Responses.Chat;
 
 namespace Server.Services.Chat.RoomService;
 

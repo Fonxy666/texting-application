@@ -1,4 +1,10 @@
 <ng-container *ngIf="!isLoggedIn();">
-    <app-create-login-request
-        (SendLoginRequest)="CreateTask($event)"/>
+    <ng-container *ngIf="!loginStarted;">
+        <app-create-login-request
+            (SendLoginRequest)="CreateTask($event)"/>
+    </ng-container>
+    <ng-container *ngIf="loginStarted;">
+        <app-provide-login-auth-token
+            (SendToken)="SendLoginToken($event)"/>
+    </ng-container>
 </ng-container>

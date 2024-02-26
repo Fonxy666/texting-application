@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Server.Model;
 using Server.Responses;
+using Server.Responses.User;
 using Server.Services.User;
 
 namespace Server.Services.Authentication;

@@ -1,7 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Server.Requests;
+using Server.Requests.Auth;
 using Server.Responses;
+using Server.Responses.Auth;
+using Server.Responses.User;
 using Server.Services.Authentication;
 using Server.Services.EmailSender;
 using Server.Services.User;
@@ -97,13 +100,10 @@ public class AuthController(
 
         return Ok(new AuthResponse(emailResult, result.Id));
     }
-
-    public record LoginAuth([Required]string UserName, [Required]string Password, [Required]bool RememberMe, [Required]string Token);
     
     [HttpPost("Login")]
     public async Task<ActionResult<AuthResponse>> Authenticate([FromBody]LoginAuth request)
     {
-        Console.WriteLine(request);
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -114,7 +114,7 @@ public class AuthController(
         
         if (!result)
         {
-            return BadRequest(ModelState);
+            return BadRequest(new AuthResponse(false, "loginResult.Id"));
         }
 
         EmailSenderCodeGenerator.RemoveVerificationCode(email!, "login");

@@ -5,7 +5,10 @@ using Microsoft.AspNetCore.StaticFiles;
 using Server.Database;
 using Server.Model;
 using Server.Requests;
+using Server.Requests.User;
 using Server.Responses;
+using Server.Responses.Auth;
+using Server.Responses.User;
 using Server.Services.Authentication;
 using Server.Services.User;
 

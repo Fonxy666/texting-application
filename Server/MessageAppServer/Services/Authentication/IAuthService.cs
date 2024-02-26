@@ -1,4 +1,5 @@
 ﻿using Server.Responses;
+using Server.Responses.User;
 
 namespace Server.Services.Authentication;
 

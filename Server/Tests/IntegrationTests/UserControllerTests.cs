@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using Server;
 using Server.Requests;
+using Server.Requests.Auth;
+using Server.Requests.User;
 using Xunit;
 using Assert = Xunit.Assert;
 
