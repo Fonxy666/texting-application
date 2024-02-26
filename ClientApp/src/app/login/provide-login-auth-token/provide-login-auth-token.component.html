@@ -1,0 +1,17 @@
+<section class="cont">
+    <app-nav-bar></app-nav-bar>
+    <div class="signup-card">
+        <div class="right-side">
+            <h1 class="mt-3">
+                Auth token
+            </h1>
+            <form [formGroup]="token" (ngSubmit)="OnFormSubmit()">
+                <div class="form-group mt-3">
+                    <label for="token">Token</label>
+                    <input formControlName="token" type="email" class="form-control" id="token" aria-describedby="emailHelp" placeholder="012345" required>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Sign in</button>
+            </form>
+        </div>
+    </div>
+</section>

@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using Server;
 using Server.Requests;
+using Server.Requests.Auth;
+using Server.Requests.Chat;
 using Server.Responses;
 using Xunit;
 
@@ -25,7 +27,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task ChatFunctions_ReturnSuccessStatusCode()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client);
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
         
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
         

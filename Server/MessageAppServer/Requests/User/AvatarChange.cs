@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Reflection.Metadata;
 
-namespace Server.Requests;
+namespace Server.Requests.User;
 
 public record AvatarChange([Required]string UserId, [Required]string Image);

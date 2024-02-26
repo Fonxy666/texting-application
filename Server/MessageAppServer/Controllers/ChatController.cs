@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Server.Requests;
+using Server.Requests.Chat;
 using Server.Responses;
+using Server.Responses.Chat;
 using Server.Services.Chat;
 using Server.Services.Chat.MessageService;
 using Server.Services.Chat.RoomService;

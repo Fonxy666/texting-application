@@ -1,7 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Server.Requests;
+using Server.Requests.Auth;
 using Server.Responses;
+using Server.Responses.Auth;
+using Server.Responses.User;
 using Server.Services.Authentication;
 using Server.Services.EmailSender;
 using Server.Services.User;
@@ -81,13 +84,11 @@ public class AuthController(
         }
 
         var result = await authenticationService.ExamineLoginCredentials(request.UserName, request.Password, request.RememberMe);
-
-        if (!result.Success)
+        
+        if (result is FailedAuthResult failedResult)
         {
-            AddErrors(result);
             ModelState.AddModelError("InvalidCredentials", "Invalid username or password");
-            
-            return NotFound(ModelState);
+            return NotFound(failedResult.AdditionalInfo);
         }
         
         const string subject = "Verification code";
@@ -97,13 +98,10 @@ public class AuthController(
 
         return Ok(new AuthResponse(emailResult, result.Id));
     }
-
-    public record LoginAuth([Required]string UserName, [Required]string Password, [Required]bool RememberMe, [Required]string Token);
     
     [HttpPost("Login")]
     public async Task<ActionResult<AuthResponse>> Authenticate([FromBody]LoginAuth request)
     {
-        Console.WriteLine(request);
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -114,7 +112,7 @@ public class AuthController(
         
         if (!result)
         {
-            return BadRequest(ModelState);
+            return BadRequest(new AuthResponse(false, "loginResult.Id"));
         }
 
         EmailSenderCodeGenerator.RemoveVerificationCode(email!, "login");
