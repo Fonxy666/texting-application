@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using Server;
-using Server.Requests;
 using Server.Requests.Auth;
 using Server.Requests.Chat;
 using Server.Requests.Message;
@@ -27,7 +26,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task Get_Message_ReturnSuccessStatusCode()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client);
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
@@ -40,7 +39,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task Send_Message_ReturnSuccessStatusCode()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client);
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
@@ -55,7 +54,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task Edit_Message_ReturnSuccessStatusCode()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client);
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
@@ -70,7 +69,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task Delete_Message_ReturnSuccessStatusCode()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client);
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 

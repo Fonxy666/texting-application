@@ -7,6 +7,7 @@ using Server.Requests;
 using Server.Requests.Auth;
 using Server.Services.EmailSender;
 using Xunit;
+using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
 namespace Tests.IntegrationTests;
@@ -15,23 +16,15 @@ namespace Tests.IntegrationTests;
 public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
     private readonly WebApplicationFactory<Startup> _factory;
+    private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _client;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###", false);
 
-    public AuthControllerTests(WebApplicationFactory<Startup> factory)
+    public AuthControllerTests(WebApplicationFactory<Startup> factory, ITestOutputHelper testOutputHelper)
     {
         _factory = factory;
+        _testOutputHelper = testOutputHelper;
         _client = _factory.CreateClient();
-    }
-
-    [Fact]
-    public async Task Login_Test_User_ReturnSuccessStatusCode()
-    {
-        var request = new AuthRequest("TestUsername1", "testUserPassword123###", false);
-        var authJsonRequest = JsonConvert.SerializeObject(request);
-        var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
-        var authResponse = await _client.PostAsync("/Auth/Login", authContent);
-        authResponse.EnsureSuccessStatusCode();
     }
     
     [Fact]
@@ -47,8 +40,9 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Login_With_Bad_Credentials_ReturnNotFoundStatusCode()
     {
-        var request = new AuthRequest("TestUsername1", "testUserPassword123", false);
-        var authJsonRequest = JsonConvert.SerializeObject(request);
+        var token = EmailSenderCodeGenerator.GenerateTokenForLogin("test1@hotmail.com");
+        var login = new LoginAuth("TestUsername1", "testUserPassword123", false, token);
+        var authJsonRequest = JsonConvert.SerializeObject(login);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
         var authResponse = await _client.PostAsync("/Auth/Login", authContent);
         Assert.Equal(HttpStatusCode.NotFound, authResponse.StatusCode);
@@ -79,7 +73,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Delete_User_ReturnSuccessStatusCode()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client);
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
         const string email = "unique@hotmail.com";
         const string username = "uniqueTestUsername";
@@ -127,6 +121,39 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
         var response = await _client.PostAsync("/Auth/GetEmailVerificationToken", content);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Get_VerifyToken_Valid_Code_ReturnsOk()
+    {
+        var request = new GetEmailForVerificationRequest("test1@hotmail.com");
+        var jsonRequest = JsonConvert.SerializeObject(request);
+        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/Auth/GetEmailVerificationToken", content);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Send_VerifyToken_Valid_Code_ReturnsOk()
+    {
+        var request = new AuthRequest(_testUser.UserName, _testUser.Password, _testUser.RememberMe);
+        var jsonRequest = JsonConvert.SerializeObject(request);
+        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/Auth/SendLoginToken", content);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Logut_Returns_Ok()
+    {
+        var emptyContent = new StringContent("", Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/Auth/Logout", emptyContent);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }

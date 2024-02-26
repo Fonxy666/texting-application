@@ -54,7 +54,6 @@ export class LoginComponent {
         const request = new LoginAuthTokenRequest(this.loginRequest.username, this.loginRequest.password, this.loginRequest.rememberme, token);
         this.http.post('https://localhost:7045/Auth/Login', request, { withCredentials: true })
         .subscribe((response: any) => {
-            console.log("HAHAHAHHAHAHHAHAHAHA");
             if (response.success) {
                 this.loginStarted = false;
                 this.loginRequest = new LoginRequest("", "", false);

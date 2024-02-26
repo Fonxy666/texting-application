@@ -28,7 +28,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Get_User_Credentials_ReturnSuccessStatusCode()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client);
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
@@ -39,7 +39,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Get_User_Credentials_ReturnNotFound()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client);
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
@@ -50,7 +50,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Change_Email_For_User_ReturnSuccessStatusCode()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client);
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
@@ -65,7 +65,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Change_Email_For_Not_Registered_User_Returns_NotFound()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client);
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
@@ -80,7 +80,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Change_Email_For_Not_2FA_User_Returns_NotFound()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser3, _client);
+        var cookies = await TestLogin.Login_With_Test_User(_testUser3, _client, "test3@hotmail.com");
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
@@ -95,7 +95,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Change_Password_For_User_ReturnSuccessStatusCode()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client);
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
@@ -141,7 +141,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Delete_User_ReturnSuccessStatusCode()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client);
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
