@@ -1,8 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
-using Server.Requests;
+﻿using Microsoft.AspNetCore.Mvc;
 using Server.Requests.Auth;
-using Server.Responses;
 using Server.Responses.Auth;
 using Server.Responses.User;
 using Server.Services.Authentication;
@@ -16,7 +13,8 @@ namespace Server.Controllers;
 public class AuthController(
     IAuthService authenticationService,
     IUserServices userServices,
-    IEmailSender emailSender) : ControllerBase
+    IEmailSender emailSender,
+    ITokenService tokenService) : ControllerBase
 {
     [HttpPost("GetEmailVerificationToken")]
     public async Task<ActionResult<GetEmailForVerificationResponse>> SendEmailVerificationCode([FromBody]GetEmailForVerificationRequest receiver)
@@ -117,7 +115,7 @@ public class AuthController(
 
         EmailSenderCodeGenerator.RemoveVerificationCode(email!, "login");
 
-        var loginResult = await authenticationService.LoginAsync(request.UserName, request.Password, request.RememberMe);
+        var loginResult = await authenticationService.LoginAsync(request.UserName, request.RememberMe);
 
         if (!loginResult.Success)
         {
@@ -128,6 +126,30 @@ public class AuthController(
         }
 
         return Ok(new AuthResponse(true, loginResult.Id));
+    }
+
+    [HttpPost("Refresh-Token")]
+    public async Task<ActionResult<string>> RefreshToken([FromQuery]string userId)
+    {
+        var refreshToken = Request.Cookies["RefreshToken"];
+        var tokenExamine = authenticationService.ExamineRefreshToken(userId, refreshToken!).Result;
+        
+        if (!tokenExamine.Success)
+        {
+            if (tokenExamine.Message == "Invalid Refresh Token.")
+            {
+                return Unauthorized(tokenExamine.Message);
+            }
+
+            if (tokenExamine.Message == "Token expired.")
+            {
+                return Unauthorized(tokenExamine.Message);
+            }
+        }
+
+        var newRefreshTokenResponse = await authenticationService.SetRefreshToken(userId);
+
+        return Ok(newRefreshTokenResponse);
     }
     
     [HttpPost("Logout")]

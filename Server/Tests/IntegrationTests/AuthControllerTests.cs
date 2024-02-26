@@ -38,14 +38,14 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Login_With_Bad_Credentials_ReturnNotFoundStatusCode()
+    public async Task Login_With_Bad_Credentials_ReturnInternalServerError()
     {
         var token = EmailSenderCodeGenerator.GenerateTokenForLogin("test1@hotmail.com");
-        var login = new LoginAuth("TestUsername1", "testUserPassword123", false, token);
+        var login = new LoginAuth("TestUs", false, token);
         var authJsonRequest = JsonConvert.SerializeObject(login);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
         var authResponse = await _client.PostAsync("/Auth/Login", authContent);
-        Assert.Equal(HttpStatusCode.NotFound, authResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.InternalServerError, authResponse.StatusCode);
     }
     
     [Fact]

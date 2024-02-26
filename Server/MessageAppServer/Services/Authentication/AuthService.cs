@@ -1,15 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Server.Model;
-using Server.Responses;
 using Server.Responses.Auth;
 using Server.Responses.User;
-using Server.Services.User;
 
 namespace Server.Services.Authentication;
 
 public class AuthService(
     UserManager<ApplicationUser> userManager,
-    IUserServices userServices,
     ITokenService tokenService) : IAuthService
 {
     public async Task<AuthResult> RegisterAsync(string email, string username, string password, string role, string phoneNumber, string image)
@@ -48,7 +45,7 @@ public class AuthService(
         return authenticationResult;
     }
 
-    public async Task<AuthResult> LoginAsync(string username, string password, bool rememberMe)
+    public async Task<AuthResult> LoginAsync(string username, bool rememberMe)
     {
         var managedUser = await userManager.FindByNameAsync(username);
 
@@ -57,20 +54,12 @@ public class AuthService(
             return InvalidCredentials("There is no user with this username");
         }
 
-        var isPasswordValid = await userManager.CheckPasswordAsync(managedUser, password);
-
-        if (!isPasswordValid)
-        {
-            return InvalidCredentials("Invalid username or password");
-        }
-
-        var userLockout = userManager.GetAccessFailedCountAsync(managedUser).Result >= 5;
-        Console.WriteLine(userManager.GetAccessFailedCountAsync(managedUser).Result);
-
         var roles = await userManager.GetRolesAsync(managedUser);
-        var accessToken = tokenService.CreateToken(managedUser, roles[0]);
+        var accessToken = tokenService.CreateJwtToken(managedUser, roles[0]);
         
         tokenService.SetCookies(accessToken, managedUser.Id, rememberMe);
+        tokenService.SetRefreshToken(managedUser);
+        await userManager.UpdateAsync(managedUser);
 
         return new AuthResult(true, managedUser.Id, "");
     }
@@ -118,6 +107,29 @@ public class AuthService(
         await userManager.ResetAccessFailedCountAsync(managedUser);
 
         return new AuthResult(true, managedUser.Id, managedUser.Email!);
+    }
+
+    public async Task<RefreshTokenResponse> ExamineRefreshToken(string userId, string refreshToken)
+    {
+        var user = userManager.Users.FirstOrDefault(user => user.Id == userId);
+        if (user!.RefreshToken != refreshToken)
+        {
+            return new RefreshTokenResponse(false, "Invalid Refresh Token.");
+        }
+
+        if (user.RefreshTokenExpires < DateTime.Now)
+        {
+            return new RefreshTokenResponse(false, "Token expired.");
+        }
+
+        return new RefreshTokenResponse(true, "Valid Refresh Token.");
+    }
+
+    public async Task<RefreshTokenResponse> SetRefreshToken(string userId)
+    {
+        var user = userManager.Users.FirstOrDefault(user => user.Id == userId);
+        tokenService.SetRefreshToken(user!);
+        return new RefreshTokenResponse(true, "Success.");
     }
 
     public Task<AuthResult> LogOut()

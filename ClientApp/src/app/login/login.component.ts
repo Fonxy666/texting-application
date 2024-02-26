@@ -35,9 +35,7 @@ export class LoginComponent {
         this.http.post('https://localhost:7045/Auth/SendLoginToken', data, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {
-                console.log(response);
                 this.loginRequest.username = data.username;
-                this.loginRequest.password = data.password;
                 this.loginRequest.rememberme = data.rememberme;
                 this.loginStarted = true;
             }
