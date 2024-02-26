@@ -1,38 +1,65 @@
 ﻿using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using Server.Model;
 
 namespace Server.Services.Authentication;
 
 public class TokenService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor) : ITokenService
 {
-    private const int ExpirationMinutes = 30;
+    private const int ExpirationHours = 1;
     private HttpRequest Request => httpContextAccessor.HttpContext?.Request ?? throw new InvalidOperationException("HttpContext or Request is null");
     private HttpResponse Response => httpContextAccessor.HttpContext?.Response ?? throw new InvalidOperationException("HttpContext or Response is null");
         
-    public string CreateToken(IdentityUser user, string? role, bool isTest = false)
+    public string CreateJwtToken(IdentityUser user, string? role, bool isTest = false)
     {
-        var expiration = DateTime.UtcNow.AddMinutes(ExpirationMinutes);
+        var expiration = DateTime.UtcNow.AddHours(ExpirationHours);
         var token = CreateJwtToken(CreateClaims(user, role), CreateSigningCredentials(), expiration);
 
         var tokenHandler = new JwtSecurityTokenHandler();
         return tokenHandler.WriteToken(token);
     }
+
+    private RefreshToken CreateRefreshToken()
+    {
+        return new RefreshToken
+        {
+            Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
+            Expires = DateTime.Now.AddDays(7),
+        };
+    }
+
+    public void SetRefreshToken(ApplicationUser user)
+    {
+        var newRefreshToken = CreateRefreshToken();
+        Response.Cookies.Append("RefreshToken", newRefreshToken.Token, new CookieOptions
+        {
+            Domain = Request.Host.Host,
+            HttpOnly = true,
+            SameSite = SameSiteMode.None,
+            IsEssential = true,
+            Secure = true,
+            Expires = newRefreshToken.Expires
+        });
+        user.RefreshToken = newRefreshToken.Token;
+        user.RefreshTokenCreated = newRefreshToken.Created;
+        user.RefreshTokenExpires = newRefreshToken.Expires;
+    }
     
-    public void SetCookies(string accessToken, string id, bool rememberMe)
+    public void SetCookies(string accessToken, string userId, bool rememberMe)
     {
         Response.Cookies.Append("Authorization", accessToken, GetCookieOptions(true, rememberMe));
         
-        Response.Cookies.Append("UserId", id, GetCookieOptions(false, rememberMe));
+        Response.Cookies.Append("UserId", userId, GetCookieOptions(false, rememberMe));
     }
 
     public CookieOptions GetCookieOptions(bool httpOnly, bool rememberMe)
     {
         var expireTime = DateTimeOffset.UtcNow.AddHours(1);
-        var extendedTime = expireTime.AddMinutes(5);
         
         return new CookieOptions
         {
@@ -41,8 +68,7 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
             SameSite = SameSiteMode.None,
             IsEssential = true,
             Secure = true,
-            Expires = rememberMe? expireTime : null,
-            MaxAge = TimeSpan.FromSeconds((extendedTime-DateTime.UtcNow).TotalSeconds)
+            Expires = rememberMe? expireTime : null
         };
     }
 
@@ -55,6 +81,7 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
         };
         Response.Cookies.Delete("Authorization", cookieOptions);
         Response.Cookies.Delete("UserId", cookieOptions);
+        Response.Cookies.Delete("RefreshToken", cookieOptions);
     }
 
     private JwtSecurityToken CreateJwtToken(List<Claim> claims, SigningCredentials credentials, DateTime expiration)

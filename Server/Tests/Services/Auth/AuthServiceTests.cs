@@ -14,9 +14,8 @@ namespace Tests.Services.Auth
         {
             var userManagerMock = MockUserManager.Create();
             var tokenServiceMock = new Mock<ITokenService>();
-            var userServiceMock = new Mock<IUserServices>();
 
-            var authService = new AuthService(userManagerMock.Object, userServiceMock.Object, tokenServiceMock.Object);
+            var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object);
 
             var result = await authService.RegisterAsync("test@example.com", "TestUser", "password123", "User", "123456789", "image");
 
@@ -31,7 +30,7 @@ namespace Tests.Services.Auth
             var tokenServiceMock = new Mock<ITokenService>();
             var userServiceMock = new Mock<IUserServices>();
 
-            var authService = new AuthService(userManagerMock.Object, userServiceMock.Object, tokenServiceMock.Object);
+            var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object);
 
             var result = await authService.RegisterAsync("test@example.com", "TestUser", "password123", "UserRole", "123456789", "image");
 
@@ -46,9 +45,9 @@ namespace Tests.Services.Auth
             var tokenServiceMock = new Mock<ITokenService>();
             var userServiceMock = new Mock<IUserServices>();
 
-            var authService = new AuthService(userManagerMock.Object, userServiceMock.Object,  tokenServiceMock.Object);
+            var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object);
 
-            var result = await authService.LoginAsync("TestUser", "password123", false);
+            var result = await authService.LoginAsync("TestUser", false);
 
             Assert.That(result.Success, Is.True);
         }
@@ -60,9 +59,9 @@ namespace Tests.Services.Auth
             var tokenServiceMock = new Mock<ITokenService>();
             var userServiceMock = new Mock<IUserServices>();
 
-            var authService = new AuthService(userManagerMock.Object, userServiceMock.Object, tokenServiceMock.Object);
+            var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object);
 
-            var result = await authService.LoginAsync("InvalidUser", "invalidPassword", false);
+            var result = await authService.LoginAsync("InvalidUser", false);
 
             Assert.That(result.Success, Is.False);
             Assert.That(result.ErrorMessages, Is.Not.Empty);
