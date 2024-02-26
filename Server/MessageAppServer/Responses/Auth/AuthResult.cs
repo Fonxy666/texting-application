@@ -1,4 +1,4 @@
-﻿namespace Server.Services.Authentication;
+﻿namespace Server.Responses.Auth;
 
 public record AuthResult(
     bool Success,

@@ -84,13 +84,11 @@ public class AuthController(
         }
 
         var result = await authenticationService.ExamineLoginCredentials(request.UserName, request.Password, request.RememberMe);
-
-        if (!result.Success)
+        
+        if (result is FailedAuthResult failedResult)
         {
-            AddErrors(result);
             ModelState.AddModelError("InvalidCredentials", "Invalid username or password");
-            
-            return NotFound(ModelState);
+            return NotFound(failedResult.AdditionalInfo);
         }
         
         const string subject = "Verification code";

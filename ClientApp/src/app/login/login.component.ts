@@ -35,6 +35,7 @@ export class LoginComponent {
         this.http.post('https://localhost:7045/Auth/SendLoginToken', data, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {
+                console.log(response);
                 this.loginRequest.username = data.username;
                 this.loginRequest.password = data.password;
                 this.loginRequest.rememberme = data.rememberme;
@@ -43,7 +44,12 @@ export class LoginComponent {
         }, 
         (error) => {
             if (error.status === 404) {
-                alert("Invalid username or password.");
+                if (!isNaN(error.error)) {
+                    alert(`Invalid username or password, you have ${5-error.error} tries.`);
+                } else {
+                    var errorMessage = error.error.split(".")[0] + "." + error.error.split(".")[1];
+                    alert(errorMessage);
+                }
             } else {
                 console.error("An error occurred:", error);
             }
