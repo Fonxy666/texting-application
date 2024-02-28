@@ -53,12 +53,14 @@ export class JoinRoomComponent implements OnInit {
             (response: any) => {
                 if (response.success) {
                     this.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
-                } else if (response.success === false) {
-                    console.log(response.error);
+                    console.log(response.status);
                 }
             },
             (error: any) => {
-                if (error.error && error.error.error === "Invalid login credentials.") {
+                if (error.status === 403) {
+                    alert("Token expired, you need to log in again.");
+                    this.router.navigate(['/login']);
+                } else if (error.error && error.error.error === "Invalid login credentials.") {
                     alert("Invalid room name or password.");
                 } else {
                     console.log(error);
@@ -71,7 +73,10 @@ export class JoinRoomComponent implements OnInit {
         this.http.get(`https://localhost:7045/User/getUsername/${user}`, { withCredentials: true})
         .subscribe((response: any) => {
             this.userName = response.username;
-            console.log(this.userName);
+            if (response.status === 403) {
+                alert("Token expired, you need to log in again.");
+                this.router.navigate(['/']);;
+            }
         }, 
         (error) => {
             if (error.status === 400) {

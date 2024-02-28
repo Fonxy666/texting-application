@@ -52,7 +52,7 @@ public class AuthService(
         var roles = await userManager.GetRolesAsync(managedUser!);
         var accessToken = tokenService.CreateJwtToken(managedUser!, roles[0]);
         
-        tokenService.SetJwtToken(accessToken);
+        await tokenService.SetJwtToken(accessToken);
         tokenService.SetRefreshTokenAndUserId(managedUser!);
         await userManager.UpdateAsync(managedUser!);
 
@@ -104,22 +104,6 @@ public class AuthService(
         return new AuthResult(true, managedUser.Id, managedUser.Email!);
     }
 
-    public async Task<RefreshTokenResponse> ExamineRefreshToken(string userId, string refreshToken)
-    {
-        var user = userManager.Users.FirstOrDefault(user => user.Id == userId);
-        if (user!.RefreshToken != refreshToken)
-        {
-            return new RefreshTokenResponse(false, "Invalid Refresh Token.");
-        }
-
-        if (user.RefreshTokenExpires < DateTime.Now)
-        {
-            return new RefreshTokenResponse(false, "Token expired.");
-        }
-
-        return new RefreshTokenResponse(true, "Valid Refresh Token.");
-    }
-
     public async Task<RefreshTokenResponse> SetRefreshToken(string userId)
     {
         var user = userManager.Users.FirstOrDefault(user => user.Id == userId);
@@ -127,10 +111,15 @@ public class AuthService(
         return new RefreshTokenResponse(true, "Success.");
     }
 
-    public Task<AuthResult> LogOut()
+    public async Task<AuthResult> LogOut(string userId)
     {
+        var user = userManager.Users.FirstOrDefault(user => user.Id == userId);
+        user!.RefreshToken = string.Empty;
+        user.RefreshTokenExpires = DateTime.Now;
+        user.RefreshTokenCreated = DateTime.Now;
+        await userManager.UpdateAsync(user);
         tokenService.DeleteCookies();
-        return Task.FromResult(new AuthResult(true, "-", "-"));
+        return new AuthResult(true, "-", "-");
     }
 
     private FailedAuthResult InvalidCredentials(string message)

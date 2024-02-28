@@ -107,7 +107,7 @@ public class AuthController(
     }
     
     [HttpPost("Login")]
-    public async Task<ActionResult<AuthResponse>> Authenticate([FromBody]LoginAuth request)
+    public async Task<ActionResult<AuthResponse>> Login([FromBody]LoginAuth request)
     {
         if (!ModelState.IsValid)
         {
@@ -136,42 +136,17 @@ public class AuthController(
 
         return Ok(new AuthResponse(true, loginResult.Id));
     }
-
-    /*[HttpPost("Refresh-Token")]
-    public async Task<ActionResult<string>> RefreshToken([FromQuery]string userId)
-    {
-        var refreshToken = Request.Cookies["RefreshToken"];
-        var tokenExamine = authenticationService.ExamineRefreshToken(userId, refreshToken!).Result;
-        
-        if (!tokenExamine.Success)
-        {
-            if (tokenExamine.Message == "Invalid Refresh Token.")
-            {
-                return Unauthorized(tokenExamine.Message);
-            }
-
-            if (tokenExamine.Message == "Token expired.")
-            {
-                return Unauthorized(tokenExamine.Message);
-            }
-        }
-
-        var newRefreshTokenResponse = await authenticationService.SetRefreshToken(userId);
-
-        return Ok(newRefreshTokenResponse);
-    }*/
     
     [HttpPost("Logout")]
-    public async Task<ActionResult<AuthResponse>> LogOut()
+    public async Task<ActionResult<AuthResponse>> LogOut([FromQuery]string userId)
     {
-        var result = await authenticationService.LogOut();
-
+        var result = await authenticationService.LogOut(userId);
         if (!result.Success)
         {
             AddErrors(result);
             return NotFound(ModelState);
         }
 
-        return Ok(new AuthResponse(true, ""));
+        return Ok(new AuthResponse(true, userId));
     }
 }

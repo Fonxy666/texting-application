@@ -46,8 +46,10 @@ export class NavBarComponent implements OnInit {
     }
 
     logout() {
-        this.http.post('https://localhost:7045/Auth/Logout', {}, { withCredentials: true })
+        var request = this.cookieService.get('UserId');
+        this.http.post(`https://localhost:7045/Auth/Logout?userId=${request}`, request, { withCredentials: true })
         .subscribe((response: any) => {
+            console.log(response);
             if (response.success) {
                 this.router.navigate(['/']);
             }

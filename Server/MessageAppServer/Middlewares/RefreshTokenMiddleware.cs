@@ -10,7 +10,7 @@ public class RefreshTokenMiddleware(RequestDelegate next)
     {
         if (TokenExpired(context, userManager))
         {
-            context.Response.StatusCode = 401;
+            context.Response.StatusCode = 403;
             tokenService.DeleteCookies();
             return;
         }
@@ -29,7 +29,7 @@ public class RefreshTokenMiddleware(RequestDelegate next)
 
         var tokenExpiration = userManager.FindByIdAsync(userId).Result!.RefreshTokenExpires;
 
-        return tokenExpiration <= DateTime.Now;
+        return tokenExpiration <= DateTime.Now.AddHours(1);
     }
 }
 

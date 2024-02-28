@@ -10,8 +10,6 @@ public interface IAuthService
     Task<AuthResult> LoginAsync(string username, bool rememberMe);
     Task<string?> GetEmailFromUserName(string username);
     Task<AuthResult> ExamineLoginCredentials(string username, string password, bool rememberMe);
-    Task<RefreshTokenResponse> ExamineRefreshToken(string userId, string refreshToken);
-    Task<RefreshTokenResponse> SetRefreshToken(string userId);
-    Task<AuthResult> LogOut();
+    Task<AuthResult> LogOut(string userId);
     Task<DeleteUserResponse> DeleteAsync(string username, string password);
 }

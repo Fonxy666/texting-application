@@ -183,9 +183,14 @@ namespace Server
 
             var roleList = new List<string> { "User", "Admin" };
 
-            foreach (var role in roleList)
+            foreach (var roleName in roleList)
             {
-                await roleManager.CreateAsync(new IdentityRole(role));
+                var roleExists = await roleManager.RoleExistsAsync(roleName);
+
+                if (!roleExists)
+                {
+                    await roleManager.CreateAsync(new IdentityRole(roleName));
+                }
             }
 
             await CreateAdminIfNotExistAsync(userManager);
