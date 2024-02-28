@@ -11,13 +11,13 @@ namespace Server.Services.Authentication;
 
 public class TokenService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor) : ITokenService
 {
-    private const int ExpirationHours = 1;
+    private const int ExpirationHours = 2;
     private HttpRequest Request => httpContextAccessor.HttpContext?.Request ?? throw new InvalidOperationException("HttpContext or Request is null");
     private HttpResponse Response => httpContextAccessor.HttpContext?.Response ?? throw new InvalidOperationException("HttpContext or Response is null");
         
     public string CreateJwtToken(IdentityUser user, string? role)
     {
-        var expiration = DateTime.UtcNow.AddMinutes(ExpirationHours);
+        var expiration = DateTime.UtcNow.AddHours(ExpirationHours);
         var token = CreateJwtToken(CreateClaims(user, role), CreateSigningCredentials(), expiration);
 
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -37,7 +37,7 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
     {
         var newRefreshToken = CreateRefreshToken();
 
-        Response.Cookies.Append("RefreshToken", newRefreshToken.Token, new CookieOptions
+        Response.Cookies.Append("RefreshToken", newRefreshToken.Token!, new CookieOptions
         {
             Domain = Request.Host.Host,
             HttpOnly = true,
@@ -64,8 +64,6 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
 
     public Task<bool> SetJwtToken(string accessToken)
     {
-        var expireTime = DateTimeOffset.UtcNow.AddHours(1).AddMinutes(1);
-
         Response.Cookies.Append("Authorization", accessToken, new CookieOptions
         {
             Domain = Request.Host.Host,
@@ -73,8 +71,7 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
             SameSite = SameSiteMode.None,
             IsEssential = true,
             Secure = true,
-            Expires = expireTime,
-            MaxAge = TimeSpan.FromDays(7)
+            Expires = DateTimeOffset.UtcNow.AddHours(ExpirationHours)
         });
 
         return Task.FromResult(true);
