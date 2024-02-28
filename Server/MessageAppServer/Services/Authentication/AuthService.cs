@@ -49,19 +49,14 @@ public class AuthService(
     {
         var managedUser = await userManager.FindByNameAsync(username);
 
-        if (managedUser == null)
-        {
-            return InvalidCredentials("There is no user with this username");
-        }
-
-        var roles = await userManager.GetRolesAsync(managedUser);
-        var accessToken = tokenService.CreateJwtToken(managedUser, roles[0]);
+        var roles = await userManager.GetRolesAsync(managedUser!);
+        var accessToken = tokenService.CreateJwtToken(managedUser!, roles[0]);
         
-        tokenService.SetCookies(accessToken, managedUser.Id, rememberMe);
-        tokenService.SetRefreshToken(managedUser);
-        await userManager.UpdateAsync(managedUser);
+        tokenService.SetJwtToken(accessToken);
+        tokenService.SetRefreshTokenAndUserId(managedUser!);
+        await userManager.UpdateAsync(managedUser!);
 
-        return new AuthResult(true, managedUser.Id, "");
+        return new AuthResult(true, managedUser!.Id, "");
     }
 
     public Task<string?> GetEmailFromUserName(string username)
@@ -128,7 +123,7 @@ public class AuthService(
     public async Task<RefreshTokenResponse> SetRefreshToken(string userId)
     {
         var user = userManager.Users.FirstOrDefault(user => user.Id == userId);
-        tokenService.SetRefreshToken(user!);
+        tokenService.SetRefreshTokenAndUserId(user!);
         return new RefreshTokenResponse(true, "Success.");
     }
 

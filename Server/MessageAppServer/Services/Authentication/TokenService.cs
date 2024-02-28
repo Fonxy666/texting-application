@@ -15,9 +15,9 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
     private HttpRequest Request => httpContextAccessor.HttpContext?.Request ?? throw new InvalidOperationException("HttpContext or Request is null");
     private HttpResponse Response => httpContextAccessor.HttpContext?.Response ?? throw new InvalidOperationException("HttpContext or Response is null");
         
-    public string CreateJwtToken(IdentityUser user, string? role, bool isTest = false)
+    public string CreateJwtToken(IdentityUser user, string? role)
     {
-        var expiration = DateTime.UtcNow.AddHours(ExpirationHours);
+        var expiration = DateTime.UtcNow.AddMinutes(ExpirationHours);
         var token = CreateJwtToken(CreateClaims(user, role), CreateSigningCredentials(), expiration);
 
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -29,13 +29,14 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
         return new RefreshToken
         {
             Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
-            Expires = DateTime.Now.AddDays(7),
+            Expires = DateTime.Now.AddDays(7)
         };
     }
 
-    public void SetRefreshToken(ApplicationUser user)
+    public void SetRefreshTokenAndUserId(ApplicationUser user)
     {
         var newRefreshToken = CreateRefreshToken();
+
         Response.Cookies.Append("RefreshToken", newRefreshToken.Token, new CookieOptions
         {
             Domain = Request.Host.Host,
@@ -45,31 +46,38 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
             Secure = true,
             Expires = newRefreshToken.Expires
         });
+        
         user.RefreshToken = newRefreshToken.Token;
         user.RefreshTokenCreated = newRefreshToken.Created;
         user.RefreshTokenExpires = newRefreshToken.Expires;
-    }
-    
-    public void SetCookies(string accessToken, string userId, bool rememberMe)
-    {
-        Response.Cookies.Append("Authorization", accessToken, GetCookieOptions(true, rememberMe));
         
-        Response.Cookies.Append("UserId", userId, GetCookieOptions(false, rememberMe));
-    }
-
-    public CookieOptions GetCookieOptions(bool httpOnly, bool rememberMe)
-    {
-        var expireTime = DateTimeOffset.UtcNow.AddHours(1);
-        
-        return new CookieOptions
+        Response.Cookies.Append("UserId", user.Id, new CookieOptions
         {
             Domain = Request.Host.Host,
-            HttpOnly = httpOnly,
+            HttpOnly = false,
             SameSite = SameSiteMode.None,
             IsEssential = true,
             Secure = true,
-            Expires = rememberMe? expireTime : null
-        };
+            Expires = newRefreshToken.Expires
+        });
+    }
+
+    public Task<bool> SetJwtToken(string accessToken)
+    {
+        var expireTime = DateTimeOffset.UtcNow.AddHours(1).AddMinutes(1);
+
+        Response.Cookies.Append("Authorization", accessToken, new CookieOptions
+        {
+            Domain = Request.Host.Host,
+            HttpOnly = true,
+            SameSite = SameSiteMode.None,
+            IsEssential = true,
+            Secure = true,
+            Expires = expireTime,
+            MaxAge = TimeSpan.FromDays(7)
+        });
+
+        return Task.FromResult(true);
     }
 
     public void DeleteCookies()

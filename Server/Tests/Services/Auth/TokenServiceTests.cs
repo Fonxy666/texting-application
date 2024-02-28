@@ -29,22 +29,6 @@ public class TokenServiceTests
     }
 
     [Test]
-    public void GetCookieOptions_ValidInput_ReturnsValidCookieOptions()
-    {
-        var httpOnly = true;
-        var rememberMe = true;
-
-        var cookieOptions = _tokenService.GetCookieOptions(httpOnly, rememberMe);
-
-        Assert.IsNotNull(cookieOptions);
-        Assert.AreEqual(_contextAccessor.HttpContext.Request.Host.Host, cookieOptions.Domain);
-        Assert.IsTrue(cookieOptions.HttpOnly);
-        Assert.AreEqual(SameSiteMode.None, cookieOptions.SameSite);
-        Assert.IsTrue(cookieOptions.IsEssential);
-        Assert.IsTrue(cookieOptions.Secure);
-    }
-
-    [Test]
     public void CreateToken_ValidUser_ReturnsValidToken()
     {
         var user = new IdentityUser

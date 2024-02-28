@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Server.Database;
 using Server.Hub;
+using Server.Middlewares;
 using Server.Model;
 using Server.Services.Authentication;
 using Server.Services.Chat.MessageService;
@@ -108,6 +109,7 @@ namespace Server
                         {
                             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
                             logger.LogError("Authentication failed: {exception}", context.Exception.Message);
+                            logger.LogError(context.HttpContext.Request.Cookies["Authorization"]);
                             return Task.CompletedTask;
                         }
                     };
@@ -119,11 +121,11 @@ namespace Server
                 options.User.RequireUniqueEmail = true;
                 options.User.AllowedUserNameCharacters =
                     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-                options.Password.RequireDigit = false;
+                options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 6;
                 options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.AllowedForNewUsers = true;
@@ -131,6 +133,7 @@ namespace Server
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<UsersContext>()
             .AddDefaultTokenProviders();
+            
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("UserPolicy", policy => policy.RequireRole("User"));
@@ -157,7 +160,8 @@ namespace Server
                        .AllowAnyHeader()
                        .AllowCredentials();
             });
-
+            
+            app.UseJwtRefreshMiddleware();
             app.UseAuthentication();
             app.UseAuthorization();
 
@@ -165,11 +169,6 @@ namespace Server
             {
                 endpoint.MapHub<ChatHub>("/chat");
                 endpoint.MapControllers();
-            });
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
             });
 
             AddRolesAndAdminAndTestUserAsync(app).Wait();

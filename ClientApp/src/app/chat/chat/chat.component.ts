@@ -101,6 +101,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     getMessages() {
         this.http.get(`https://localhost:7045/Message/GetMessages/${this.roomId}`, { withCredentials: true })
             .subscribe((response: any) => {
+                console.log(response);
                 const fetchedMessages = response.map((element: any) => ({
                     user: element.senderName,
                     message: element.text,

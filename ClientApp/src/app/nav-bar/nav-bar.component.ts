@@ -13,6 +13,7 @@ export class NavBarComponent implements OnInit {
     constructor(private cookieService : CookieService, private router: Router, private http: HttpClient) {}
 
     ngOnInit(): void {
+        this.isLoggedIn();
         this.loadProfileData();
     }
 

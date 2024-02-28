@@ -32,6 +32,15 @@ public class AuthController(
         return Ok(new GetEmailForVerificationResponse("Successfully send."));
     }
 
+    [HttpGet("CheckCookies")]
+    public ActionResult CheckCookies()
+    {
+        var userIdExists = Request.Cookies.ContainsKey("UserId");
+        var refreshTokenExists = Request.Cookies.ContainsKey("RefreshToken");
+
+        return Ok(userIdExists && refreshTokenExists);
+    }
+
     [HttpPost("ExamineVerifyToken")]
     public async Task<ActionResult<string>> VerifyToken([FromBody]VerifyTokenRequest credentials)
     {
@@ -128,7 +137,7 @@ public class AuthController(
         return Ok(new AuthResponse(true, loginResult.Id));
     }
 
-    [HttpPost("Refresh-Token")]
+    /*[HttpPost("Refresh-Token")]
     public async Task<ActionResult<string>> RefreshToken([FromQuery]string userId)
     {
         var refreshToken = Request.Cookies["RefreshToken"];
@@ -150,7 +159,7 @@ public class AuthController(
         var newRefreshTokenResponse = await authenticationService.SetRefreshToken(userId);
 
         return Ok(newRefreshTokenResponse);
-    }
+    }*/
     
     [HttpPost("Logout")]
     public async Task<ActionResult<AuthResponse>> LogOut()

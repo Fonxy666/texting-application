@@ -21,6 +21,9 @@ public class MessageController(IMessageService messageRepository) : ControllerBa
         }
 
         var result = await messageRepository.GetLast10Messages(id);
+        Console.WriteLine("-------------------------------------------------------------");
+        Console.WriteLine(result);
+        Console.WriteLine("-------------------------------------------------------------");
 
         return Ok(result);
     }

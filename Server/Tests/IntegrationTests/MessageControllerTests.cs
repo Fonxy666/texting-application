@@ -58,7 +58,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
-        var messageChangeRequest = new EditMessageRequest("92213476-74f8-4f63-8d39-55524e37099b", "bbdcc735-d897-45a7-b10d-62c57b52fcca", "Fonxy666", "TestChange");
+        var messageChangeRequest = new EditMessageRequest("a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "bbdcc735-d897-45a7-b10d-62c57b52fcca", "Fonxy666", "TestChange");
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 

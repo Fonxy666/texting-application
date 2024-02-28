@@ -5,8 +5,8 @@ namespace Server.Services.Authentication;
 
 public interface ITokenService
 {
-    public string CreateJwtToken(IdentityUser user, string? role, bool isTest = false);
-    public void SetRefreshToken(ApplicationUser user);
-    public void SetCookies(string accessToken, string userId, bool rememberMe);
+    public string CreateJwtToken(IdentityUser user, string? role);
+    public void SetRefreshTokenAndUserId(ApplicationUser user);
+    public Task<bool> SetJwtToken(string accessToken);
     public void DeleteCookies();
 }
