@@ -161,6 +161,7 @@ namespace Server
                        .AllowCredentials();
             });
             
+            app.UseRefreshTokenMiddleware();
             app.UseJwtRefreshMiddleware();
             app.UseAuthentication();
             app.UseAuthorization();
