@@ -5,6 +5,8 @@ import { CookieService } from 'ngx-cookie-service';
 import { ChatService } from '../../chat.service';
 import { HttpClient } from '@angular/common/http';
 import { JoinRoomRequest } from '../../model/JoinRoomRequest';
+import { retryWhen, delay, take, mergeMap } from 'rxjs/operators';
+import { defer, of } from 'rxjs';
 
 @Component({
   selector: 'app-join-room',
@@ -48,7 +50,21 @@ export class JoinRoomComponent implements OnInit {
 
     joinRoom() {
         const data = this.createForm();
+        let retryCount = 0;
         this.http.post('https://localhost:7045/Chat/JoinRoom', data, { withCredentials: true })
+        .pipe(
+            retryWhen(errors => errors.pipe(
+                mergeMap((error: any) => {
+                    if (error.status === 401 && retryCount < 3) {
+                        retryCount++;
+                        return defer(() => of(error));
+                    }
+                    throw error;
+                }),
+                delay(1000),
+                take(3)
+            ))
+        )
         .subscribe(
             (response: any) => {
                 if (response.success) {

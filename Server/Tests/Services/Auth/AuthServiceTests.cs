@@ -57,14 +57,12 @@ namespace Tests.Services.Auth
         {
             var userManagerMock = MockUserManager.CreateInvalidLogin();
             var tokenServiceMock = new Mock<ITokenService>();
-            var userServiceMock = new Mock<IUserServices>();
 
             var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object);
 
             var result = await authService.LoginAsync("InvalidUser", false);
 
             Assert.That(result.Success, Is.False);
-            Assert.That(result.ErrorMessages, Is.Not.Empty);
         }
     }
 

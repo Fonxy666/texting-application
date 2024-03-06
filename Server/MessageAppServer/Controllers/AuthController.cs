@@ -68,7 +68,7 @@ public class AuthController(
         if (!result.Success)
         {
             AddErrors(result);
-            return NotFound(ModelState);
+            return BadRequest(ModelState);
         }
 
         return Ok(new AuthResponse(true, result.Id));
