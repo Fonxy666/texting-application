@@ -5,6 +5,9 @@ import { CookieService } from 'ngx-cookie-service';
 import { ChatService } from '../../chat.service';
 import { HttpClient } from '@angular/common/http';
 import { JoinRoomRequest } from '../../model/JoinRoomRequest';
+import { retryWhen, delay, take, mergeMap } from 'rxjs/operators';
+import { defer, of } from 'rxjs';
+import { ErrorHandlerService } from '../../services/error-handler.service';
 
 @Component({
   selector: 'app-join-room',
@@ -13,7 +16,7 @@ import { JoinRoomRequest } from '../../model/JoinRoomRequest';
 })
 
 export class JoinRoomComponent implements OnInit {
-    constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private chatService: ChatService, private http: HttpClient) { }
+    constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private chatService: ChatService, private http: HttpClient, private errorHandler: ErrorHandlerService) { }
 
     myImage: string = "./assets/images/backgroundpng.png";
     joinRoomForm!: FormGroup;
@@ -48,7 +51,11 @@ export class JoinRoomComponent implements OnInit {
 
     joinRoom() {
         const data = this.createForm();
+        let retryCount = 0;
         this.http.post('https://localhost:7045/Chat/JoinRoom', data, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
         .subscribe(
             (response: any) => {
                 if (response.success) {
@@ -58,10 +65,9 @@ export class JoinRoomComponent implements OnInit {
             },
             (error: any) => {
                 if (error.status === 403) {
-                    alert("Token expired, you need to log in again.");
-                    this.router.navigate(['/login']);
+                    this.errorHandler.handleError403(error);
                 } else if (error.error && error.error.error === "Invalid login credentials.") {
-                    alert("Invalid room name or password.");
+                    this.errorHandler.errorAlert("Invalid room name or password.");
                 } else {
                     console.log(error);
                 }
@@ -71,6 +77,9 @@ export class JoinRoomComponent implements OnInit {
 
     getUsername(user: any) {
         this.http.get(`https://localhost:7045/User/getUsername/${user}`, { withCredentials: true})
+        .pipe(
+            this.errorHandler.handleError401()
+        )
         .subscribe((response: any) => {
             this.userName = response.username;
             if (response.status === 403) {
@@ -79,8 +88,10 @@ export class JoinRoomComponent implements OnInit {
             }
         }, 
         (error) => {
-            if (error.status === 400) {
-                alert("Invalid username or password.");
+            if (error.status === 403) {
+                this.errorHandler.handleError403(error);
+            } else if (error.status === 400) {
+                this.errorHandler.errorAlert("Invalid username or password.");
             } else {
                 console.error("An error occurred:", error);
             }

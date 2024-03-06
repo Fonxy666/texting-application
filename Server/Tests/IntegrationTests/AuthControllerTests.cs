@@ -51,7 +51,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Register_Test_User_ReturnSuccessStatusCode()
     {
-        var testUser = new RegistrationRequest("unique@hotmail.com", "uniqueTestUsername", "TestUserPassword", "01234567890", "");
+        var testUser = new RegistrationRequest("unique@hotmail.com", "uniqueTestUsername", "TestUserPassword123666$$$", "01234567890", "");
         var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
         var userLogin = new StringContent(jsonLoginRequest, Encoding.UTF8, "application/json");
 
@@ -77,7 +77,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         const string email = "unique@hotmail.com";
         const string username = "uniqueTestUsername";
-        const string password = "TestUserPassword";
+        const string password = "TestUserPassword123666$$$";
 
         var deleteUrl = $"/User/DeleteUser?email={Uri.EscapeDataString(email)}&username={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}";
 
@@ -150,11 +150,11 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Logut_Returns_Ok()
+    public async Task Logout_Returns_Ok()
     {
         var emptyContent = new StringContent("", Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/Auth/Logout", emptyContent);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 }

@@ -48,13 +48,18 @@ public class AuthService(
     public async Task<AuthResult> LoginAsync(string username, bool rememberMe)
     {
         var managedUser = await userManager.FindByNameAsync(username);
+        if (managedUser == null)
+        {
+            return new AuthResult(false, "", "");
+        }
 
         var roles = await userManager.GetRolesAsync(managedUser!);
         var accessToken = tokenService.CreateJwtToken(managedUser!, roles[0]);
-        
+
         await tokenService.SetJwtToken(accessToken);
         tokenService.SetRefreshTokenAndUserId(managedUser!);
         await userManager.UpdateAsync(managedUser!);
+
 
         return new AuthResult(true, managedUser!.Id, "");
     }

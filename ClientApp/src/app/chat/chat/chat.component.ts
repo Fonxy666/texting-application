@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of  } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';
-import { CookieService } from 'ngx-cookie-service';
+import { ErrorHandlerService } from '../../services/error-handler.service';
 
 @Component({
   selector: 'app-chat',
@@ -24,7 +24,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
 
-    constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute) { }
+    constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute, private errorHandler: ErrorHandlerService) { }
     
     messages: any[] = [];
     avatars: { [userId: string]: string } = {};
@@ -72,14 +72,19 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     saveMessage(request: MessageRequest) {
         this.http.post('https://localhost:7045/Message/SendMessage', request, { withCredentials: true})
+        .pipe(
+            this.errorHandler.handleError401()
+        )
         .subscribe((response: any) => {
             if (response.success) {
                 console.log("Message sent successfully");
             }
         }, 
         (error) => {
-            if (error.status === 400) {
-                alert("Invalid username or password.");
+            if (error.status === 403) {
+                this.errorHandler.handleError403(error);
+            } else if (error.status === 400) {
+                this.errorHandler.errorAlert("Invalid username or password.");
             } else {
                 console.error("An error occurred:", error);
             }
@@ -100,17 +105,19 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     getMessages() {
         this.http.get(`https://localhost:7045/Message/GetMessages/${this.roomId}`, { withCredentials: true })
-            .subscribe((response: any) => {
-                console.log(response);
-                const fetchedMessages = response.map((element: any) => ({
-                    user: element.senderName,
-                    message: element.text,
-                    messageTime: element.sendTime
-                }));
-                this.chatService.messages = [...fetchedMessages, ...this.chatService.messages];
-    
-                this.chatService.message$.next(this.chatService.messages);
-            });
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe((response: any) => {
+            const fetchedMessages = response.map((element: any) => ({
+                user: element.senderName,
+                message: element.text,
+                messageTime: element.sendTime
+            }));
+            this.chatService.messages = [...fetchedMessages, ...this.chatService.messages];
+
+            this.chatService.message$.next(this.chatService.messages);
+        });
     }
 
     getAvatarImage(userName: string): Observable<string> {
@@ -120,6 +127,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     
         return this.http.get(`https://localhost:7045/User/GetImageWithUsername/${userName}`, { withCredentials: true, responseType: 'blob' })
             .pipe(
+                this.errorHandler.handleError401(),
                 switchMap((response: Blob) => {
                     const reader = new FileReader();
                     const result$ = new Observable<string>((observer) => {
