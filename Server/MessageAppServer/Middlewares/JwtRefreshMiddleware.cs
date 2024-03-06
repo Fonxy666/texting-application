@@ -10,12 +10,35 @@ public class JwtRefreshMiddleware(RequestDelegate next)
 {
     public async Task Invoke(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager)
     {
+        if (ExamineCookies(context))
+        {
+            await SetNewJwtToken(context, tokenService, userManager);
+        }
         if (TokenExpired(context))
         {
             await RefreshToken(context, tokenService, userManager);
         }
 
         await next(context);
+    }
+
+    private async Task SetNewJwtToken(HttpContext context, ITokenService tokenService,
+        UserManager<ApplicationUser> userManager)
+    {
+        var userId = context.Request.Cookies["UserId"];
+        var user = userManager.Users.FirstOrDefault(user => user.Id == userId);
+        var newToken = tokenService.CreateJwtToken(user!, "User");
+
+        await tokenService.SetJwtToken(newToken);
+    }
+
+    private bool ExamineCookies(HttpContext context)
+    {
+        return context.Request.Cookies["RefreshToken"] != string.Empty &&
+               context.Request.Cookies["RefreshToken"] != null &&
+               context.Request.Cookies["UserId"] != string.Empty &&
+               context.Request.Cookies["UserId"] != null &&
+               context.Request.Cookies["Authorization"] == null;
     }
 
     private bool TokenExpired(HttpContext context)
@@ -41,8 +64,7 @@ public class JwtRefreshMiddleware(RequestDelegate next)
 
             var expirationDateTime = DateTimeOffset.FromUnixTimeSeconds(expirationTimestamp).UtcDateTime;  //Convert to daytime
 
-            var isExpired = expirationDateTime <= DateTime.UtcNow;
-
+            var isExpired = expirationDateTime < DateTime.UtcNow.AddHours(2);
             return isExpired;
         }
         catch (Exception)

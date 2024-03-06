@@ -150,7 +150,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Logut_Returns_Ok()
+    public async Task Logout_Returns_Ok()
     {
         var emptyContent = new StringContent("", Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/Auth/Logout", emptyContent);

@@ -51,10 +51,17 @@ public class AuthService(
 
         var roles = await userManager.GetRolesAsync(managedUser!);
         var accessToken = tokenService.CreateJwtToken(managedUser!, roles[0]);
-        
-        await tokenService.SetJwtToken(accessToken);
-        tokenService.SetRefreshTokenAndUserId(managedUser!);
-        await userManager.UpdateAsync(managedUser!);
+
+        try
+        {
+            await tokenService.SetJwtToken(accessToken);
+            tokenService.SetRefreshTokenAndUserId(managedUser!);
+            await userManager.UpdateAsync(managedUser!);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
 
         return new AuthResult(true, managedUser!.Id, "");
     }
