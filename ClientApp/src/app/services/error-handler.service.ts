@@ -25,8 +25,8 @@ export class ErrorHandlerService {
                     errorObservable.pipe(
                     mergeMap((error: any) => {
                         if (error.status === 401 && retryCount < 3) {
-                        retryCount++;
-                        return defer(() => of(error));
+                            retryCount++;
+                            return defer(() => of(error));
                         }
                         throw error;
                     }),
