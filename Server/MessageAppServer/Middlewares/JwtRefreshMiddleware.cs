@@ -14,6 +14,7 @@ public class JwtRefreshMiddleware(RequestDelegate next)
         {
             await SetNewJwtToken(context, tokenService, userManager);
         }
+
         if (TokenExpired(context))
         {
             await RefreshToken(context, tokenService, userManager);
@@ -64,7 +65,9 @@ public class JwtRefreshMiddleware(RequestDelegate next)
 
             var expirationDateTime = DateTimeOffset.FromUnixTimeSeconds(expirationTimestamp).UtcDateTime;  //Convert to daytime
 
-            var isExpired = expirationDateTime < DateTime.UtcNow.AddHours(2);
+            Console.WriteLine($"Expiration time: {expirationDateTime}");
+            Console.WriteLine($"Datetime now: {DateTime.UtcNow.AddHours(1)}");
+            var isExpired = expirationDateTime < DateTime.UtcNow.AddHours(1);
             return isExpired;
         }
         catch (Exception)

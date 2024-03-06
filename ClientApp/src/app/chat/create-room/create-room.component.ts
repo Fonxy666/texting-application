@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { HttpClient } from '@angular/common/http';
 import { CreateRoomRequest } from '../../model/CreateRoomRequest';
+import { ErrorHandlerService } from '../../services/error-handler.service';
 
 @Component({
   selector: 'app-create-room',
@@ -11,7 +12,7 @@ import { CreateRoomRequest } from '../../model/CreateRoomRequest';
   styleUrl: './create-room.component.css'
 })
 export class CreateRoomComponent implements OnInit {
-    constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private http: HttpClient) { }
+    constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private http: HttpClient, private errorHandler: ErrorHandlerService) { }
 
     createRoomForm!: FormGroup;
     token: string = "";
@@ -35,6 +36,9 @@ export class CreateRoomComponent implements OnInit {
 
     sendCreateRoomRequest() {
         this.http.post('https://localhost:7045/Chat/RegisterRoom', this.createForm(), { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
         .subscribe(
             (response: any) => {
                 if (response.success) {
@@ -44,8 +48,10 @@ export class CreateRoomComponent implements OnInit {
                 }
             },
             (error: any) => {
-                if (error.error && error.error.error === "This room's name already taken.") {
-                    alert("This room is already taken. Choose another one!");
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                } else if (error.error && error.error.error === "This room's name already taken.") {
+                    this.errorHandler.errorAlert("This room is already taken. Choose another one!");
                 } else {
                     console.log(error);
                 }

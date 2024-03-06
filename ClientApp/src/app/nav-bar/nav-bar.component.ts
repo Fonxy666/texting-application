@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
+import { ErrorHandlerService } from '../services/error-handler.service';
 
 @Component({
   selector: 'app-nav-bar',
@@ -10,7 +11,7 @@ import { CookieService } from 'ngx-cookie-service';
 })
 
 export class NavBarComponent implements OnInit {
-    constructor(private cookieService : CookieService, private router: Router, private http: HttpClient) {}
+    constructor(private cookieService : CookieService, private router: Router, private http: HttpClient, private errorHandler: ErrorHandlerService) {}
 
     ngOnInit(): void {
         this.isLoggedIn();
@@ -28,20 +29,26 @@ export class NavBarComponent implements OnInit {
         
         if (userId) {
             this.http.get(`https://localhost:7045/User/GetImage/${userId}`, { withCredentials: true, responseType: 'blob' })
-                .subscribe(
-                    (response: Blob) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                            this.profilePic = reader.result as string;
-                        };
-                        reader.readAsDataURL(response);
-                    },
-                    (error) => {
-                        console.error(error);
-                        console.log("There is no Avatar for this user.");
-                        this.profilePic = "https://ptetutorials.com/images/user-profile.png";
+            .pipe(
+                this.errorHandler.handleError401()
+            )
+            .subscribe(
+                (response: Blob) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        this.profilePic = reader.result as string;
+                    };
+                    reader.readAsDataURL(response);
+                },
+                (error) => {
+                    if (error.status === 403) {
+                        this.errorHandler.handleError403(error);
                     }
-                );
+                    console.error(error);
+                    console.log("There is no Avatar for this user.");
+                    this.profilePic = "https://ptetutorials.com/images/user-profile.png";
+                }
+            );
         }
     }
 
