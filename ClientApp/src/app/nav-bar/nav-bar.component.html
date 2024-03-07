@@ -5,18 +5,18 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item ">
+                <ul class="navbar-nav mb-2 mb-lg-0">
+                    <li class="nav-item">
                         <a class="nav-link active text-white px-5 text-style" aria-current="page" routerLink="/">Home</a>
                     </li>
                     <ng-container *ngIf="isLoggedIn()">
                         <li class="nav-item">
-                            <a class="nav-link active text-white px-3 text-style" aria-current="page" routerLink="/join-room">Connect to a room</a>
+                            <a class="nav-link active text-white px-5 text-style" aria-current="page" routerLink="/join-room">Connect to a room</a>
                         </li>
                     </ng-container>
                 </ul>
                 <ng-container *ngIf="!isLoggedIn(); else loggedIn">
-                    <a class="nav-link active text-white px-3 text-style" aria-current="page" routerLink="/login">Sign in</a>
+                    <a class="nav-link active text-white px-5 text-style" aria-current="page" routerLink="/login">Sign in</a>
                 </ng-container>
                 <ng-template #loggedIn>
                     <div class="dropdown mx-3">

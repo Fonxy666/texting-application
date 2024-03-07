@@ -13,8 +13,7 @@ namespace Server.Controllers;
 public class AuthController(
     IAuthService authenticationService,
     IUserServices userServices,
-    IEmailSender emailSender,
-    ITokenService tokenService) : ControllerBase
+    IEmailSender emailSender) : ControllerBase
 {
     [HttpPost("GetEmailVerificationToken")]
     public async Task<ActionResult<GetEmailForVerificationResponse>> SendEmailVerificationCode([FromBody]GetEmailForVerificationRequest receiver)
