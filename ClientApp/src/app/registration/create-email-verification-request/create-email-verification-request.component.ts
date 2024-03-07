@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-create-email-verification-request',
@@ -7,7 +8,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
   styleUrl: './create-email-verification-request.component.css'
 })
 export class CreateEmailVerificationRequestComponent {
-    constructor(private fb: FormBuilder) {}
+    constructor(private fb: FormBuilder, private router: Router) {}
 
     verificationCode!: FormGroup;
     @Input() user: any;
@@ -26,5 +27,9 @@ export class CreateEmailVerificationRequestComponent {
             this.verificationCode.get('verifyCode')?.value
         );
         this.SendVerificationCode.emit(registrationRequest);
+    }
+
+    HandleBackClick() {
+        this.router.navigate(['/']);
     }
 }
