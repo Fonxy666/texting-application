@@ -89,10 +89,10 @@
 
     @media (max-width: 1000px) {
         width: 15%;
-    }
+    };
     @media (max-width: 650px) {
         width: 20%;
-    }
+    };
 }
 
 .welcome-text {
@@ -100,11 +100,13 @@
     color: white;
     @media (max-width: 1300px) {
         margin-top: 20%;
-    }
+    };
     @media (max-width: 850px) {
+        margin-top: 40%;
+    };
+    @media (min-width: 850px) {
         animation: 
             colorAnimation 20s linear infinite;
-        margin-top: 40%
     }
 }
 
