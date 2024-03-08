@@ -19,28 +19,10 @@
     }
 }
 
-@keyframes sunStandingInTheMiddle {
-    0% {
-        background-color: rgb(114, 69, 50);
-    }
-    100% {
-        background-color: rgb(230, 203, 129);
-    }
-}
-
-@keyframes SunToLeftAfterStayingMiddle {
-    0% {
-        background-color: rgb(230, 203, 129);
-    }
-    100% {
-        background-color: rgb(114, 69, 50);
-    }
-}
-
 @keyframes moveLeft {
     0% {
         top: 20%;
-        right: -10%;
+        right: -30%;
     }
     30% {
         top: 12%;
@@ -60,49 +42,21 @@
     }
 }
 
-@keyframes sunToMiddle {
+@keyframes colorAnimation {
     0% {
-        top: 20%;
-        right: -10%;
-    }
-    60% {
-        top: 12%;
-    }
-    90% {
-        top: 8%;
-    }
-    100% {
-        top: 8%;
-        right: 50%;
-    }
-}
-
-@keyframes sunToLeft {
-    0% {
-        top: 8%;
-        right: 50%;
-    }
-    10% {
-        top: 8%;
+        color: white;
     }
     40% {
-        top: 12%;
+        color: white;
+    }
+    50% {
+        color: black;
+    }
+    90% {
+        color: black;
     }
     100% {
-        top: 20%;
-        right: 100%;
-    }
-}
-
-@keyframes fadeIn {
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes fadeOut {
-    to {
-        opacity: 0;
+        color: white;
     }
 }
 
@@ -122,60 +76,38 @@
     width: 100%;
     z-index: -3;
     animation: 
-        sunStandingInTheMiddle 5s linear forwards,
-        SunToLeftAfterStayingMiddle 5s linear forwards 10s,
-        dayTime 20s linear 15s infinite;
-}
-
-.moon_img {
-    width: 8%;
-    position: absolute;
-    animation: 
-        sunToMiddle 5s linear forwards,
-        sunToLeft 5s linear forwards 10.5s,
-        moveLeft 10s linear infinite 15s;
-    z-index: -1;
-    animation-timing-function: cubic-bezier(0.47, 0.03, 0.49, 1);
+        dayTime 20s linear infinite;
 }
 
 .sun_img {
     width: 10%;
     position: absolute;
     animation: 
-        sunToMiddle 5s linear forwards,
-        sunToLeft 5s linear forwards 10.5s,
-        moveLeft 10s linear infinite 15s;
+        moveLeft 10s linear infinite;
     z-index: -1;
     animation-timing-function: cubic-bezier(0.47, 0.03, 0.49, 1);
-}
 
-.chat_bubble {
-    top: 15%;
-    width: 14%;
-    position: absolute;
-    right: 39%;
-    opacity: 0;
-    animation: 
-        fadeIn 0s linear 5s forwards,
-        fadeOut 0s linear 10s forwards;
-    z-index: -1;
-}
-
-.home-text {
-    margin: 75px 0 0 50%;
-    animation: fadeOut 0s linear 10s forwards;
-    height: 96px;
-}
-
-.sunToMiddle {
-    animation-name: sunToMiddle;
-    animation-duration: 5s;
-    animation-timing-function: cubic-bezier(0.47, 0.03, 0.49, 1.35);
-    animation-fill-mode: forwards;
+    @media (max-width: 1000px) {
+        width: 15%;
+    };
+    @media (max-width: 650px) {
+        width: 20%;
+    };
 }
 
 .welcome-text {
-    margin-top: 30px;
+    margin-top: 10%;
+    color: white;
+    @media (max-width: 1300px) {
+        margin-top: 20%;
+    };
+    @media (max-width: 850px) {
+        margin-top: 40%;
+    };
+    @media (min-width: 850px) {
+        animation: 
+            colorAnimation 20s linear infinite;
+    }
 }
 
 .text-style {

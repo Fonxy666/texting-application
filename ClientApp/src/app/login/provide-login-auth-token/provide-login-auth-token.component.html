@@ -1,6 +1,5 @@
 <section class="cont">
-    <app-nav-bar></app-nav-bar>
-    <div class="signup-card">
+    <div class="card">
         <div class="right-side">
             <h1 class="mt-3">
                 Auth token
@@ -11,6 +10,7 @@
                     <input formControlName="token" type="email" class="form-control" id="token" aria-describedby="emailHelp" placeholder="012345" required>
                 </div>
                 <button type="submit" class="btn btn-primary mt-3">Sign in</button>
+                <button type="button" class="btn btn-primary mt-3 mx-2" (click)="HandleBackClick()">Back</button>
             </form>
         </div>
     </div>

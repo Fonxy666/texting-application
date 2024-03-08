@@ -82,7 +82,6 @@ export class ProfileComponent implements OnInit {
                         this.errorHandler.handleError403(error);
                     }
                     console.log(error);
-                    console.log("There is no Avatar for this user.");
                     this.user.image = "https://ptetutorials.com/images/user-profile.png";
                 }
             );

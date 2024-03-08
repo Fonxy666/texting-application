@@ -14,7 +14,7 @@ export class RegistrationComponent {
     constructor(private http: HttpClient, private router: Router) { }
 
     user: any;
-    showVerifyPage: boolean = false;
+    showVerifyPage: boolean = true;
 
     GetVerifyTokenAndGoToVerifyPage(data: RegistrationRequest) {
         this.SendVerifyEmail(data);
@@ -57,4 +57,5 @@ export class RegistrationComponent {
                 }
             });
     }
+
 }

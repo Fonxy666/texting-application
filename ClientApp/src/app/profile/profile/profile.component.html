@@ -1,64 +1,63 @@
 <div class="cont">
     <app-nav-bar />
     <div class="card">
-        <div class="card-body">
-            <img [src]="this.user.image" alt="user-image" class="user-image">
-            <div>
-                <div class="form-group">
-                    <label for="profile-pic" class="btn btn-primary">
-                        <span>Change avatar</span>
-                        <input type="file" class="form-control" id="profile-pic" accept="image/*" data-bs-toggle="modal" data-bs-target="#exampleModal" (change)="fileChangeEvent($event)" required name="profile-pic" style="display: none;">
-                    </label>
-                    <div class="modal fade" id="exampleModal" #exampleModal tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="exampleModalLabel">You need to crop the image</h1>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <image-cropper
-                                        [imageChangedEvent]="imageChangedEvent"
-                                        [maintainAspectRatio]="true"
-                                        [aspectRatio]="10 / 10"
-                                        format="png"
-                                        (imageCropped)="imageCropped($event)"/>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="changeAvatar()">Save changes</button>
-                                </div>
+        <div class="m-3">
+            Username: {{this.user.name}}
+        </div>
+        <div class="m-3">
+            Email: {{this.user.email}}
+        </div>
+        <img [src]="this.user.image" alt="user-image" class="user-image">
+        <div>
+            <div class="form-group m-3">
+                <label for="profile-pic" class="btn btn-primary">
+                    <span>Change avatar</span>
+                    <input type="file" class="form-control" id="profile-pic" accept="image/*" data-bs-toggle="modal" data-bs-target="#exampleModal" (change)="fileChangeEvent($event)" required name="profile-pic" style="display: none;">
+                </label>
+                <div class="modal fade" id="exampleModal" #exampleModal tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="exampleModalLabel">You need to crop the image</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <image-cropper
+                                    [imageChangedEvent]="imageChangedEvent"
+                                    [maintainAspectRatio]="true"
+                                    [aspectRatio]="10 / 10"
+                                    format="png"
+                                    (imageCropped)="imageCropped($event)"/>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="changeAvatar()">Save changes</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div>
-                    Username: {{this.user.name}}
+            </div>
+            <div class="m-3">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changeEmail" [disabled]="!this.user.twoFactorEnabled">
+                    Change e-mail
+                </button>
+                <div *ngIf="!this.user.twoFactorEnabled">
+                    First you need to enable 2FA.
+                    <button type="button" class="btn btn-primary">Enable 2FA</button>
                 </div>
-                <div>
-                    Email: {{this.user.email}}
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changeEmail" [disabled]="!this.user.twoFactorEnabled">
-                        Change e-mail
-                    </button>
-                    <div *ngIf="!this.user.twoFactorEnabled">
-                        First you need to enable 2FA.
-                        <button type="button" class="btn btn-primary">Enable 2FA</button>
-                    </div>
-                    <div class="modal fade" id="changeEmail" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                        <app-generate-email-change-request 
-                            [email]="this.user.email"
-                            (SendPasswordChangeRequest)="changeEmail($event)"/>
-                    </div>
+                <div class="modal fade" id="changeEmail" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <app-generate-email-change-request 
+                        [email]="this.user.email"
+                        (SendPasswordChangeRequest)="changeEmail($event)"/>
                 </div>
-                <div>
-                    Password:
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changePassword">
-                        Change password
-                    </button>
-                    <div class="modal fade" id="changePassword" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                        <app-generate-password-change-request
-                            (SendPasswordChangeRequest)="changePassword($event)"/>
-                    </div>
+            </div>
+            <div class="m-3">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changePassword">
+                    Change password
+                </button>
+                <div class="modal fade" id="changePassword" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <app-generate-password-change-request
+                        (SendPasswordChangeRequest)="changePassword($event)"/>
                 </div>
             </div>
         </div>

@@ -1,11 +1,9 @@
 <div class="cont">
     <app-nav-bar />
-    <img src="assets/images/chatbubble.png" alt="chat_bubble" class="chat_bubble">
     <img [src]="isSunActive ? 'assets/images/sun.png' : 'assets/images/moon.png'" 
        alt="{{ isSunActive ? 'sun' : 'moon' }}" 
        class="sun_img" >
-    <div class="home-text text-style" [innerHTML]="displayHomeText"></div>
-    <div class="welcome-text text-center text-black">
+    <div class="welcome-text text-center">
         <h1 class="text-style">Hello & Welcome</h1>
         <h2 class="text-style">Chat with your friends day & night.</h2>
     </div>
