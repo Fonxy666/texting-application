@@ -7,20 +7,20 @@
             <div class="collapse navbar-collapse" id="navbarContent">
                 <ul class="navbar-nav mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active text-white px-5 text-style" aria-current="page" routerLink="/">Home</a>
+                        <a class="nav-link active text-white mx-4 text-style" aria-current="page" routerLink="/">Home</a>
                     </li>
                     <ng-container *ngIf="isLoggedIn()">
                         <li class="nav-item">
-                            <a class="nav-link active text-white px-5 text-style" aria-current="page" routerLink="/join-room">Connect to a room</a>
+                            <a class="nav-link active text-white mx-4 text-style" aria-current="page" routerLink="/join-room">Connect to a room</a>
                         </li>
                     </ng-container>
                 </ul>
                 <ng-container *ngIf="!isLoggedIn(); else loggedIn">
-                    <a class="nav-link active text-white px-5 text-style" aria-current="page" routerLink="/login">Sign in</a>
+                    <a class="nav-link active text-white mx-4 text-style" aria-current="page" routerLink="/login">Sign in</a>
                 </ng-container>
                 <ng-template #loggedIn>
-                    <div class="dropdown mx-3">
-                        <button class="btn text-white dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="dropdown ms-auto">
+                        <button class="btn text-white dropdown-toggle mx-4" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <img [src]="profilePic" alt="Profile Image" class="profile-pic">
                         </button>
                         <ul class="dropdown-menu">

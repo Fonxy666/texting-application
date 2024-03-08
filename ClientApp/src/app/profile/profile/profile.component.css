@@ -16,9 +16,15 @@
 }
 
 .user-image {
-    width: 10%;
+    width: 200px;
+    border-radius: 100px;
 }
 
 .card {
-    margin: 100px 200px 100px 200px;
+    padding: 20px;
+    width: 500px;
+    margin: auto;
+    text-align: center;
+    display: flex;
+    align-items: center;
 }
