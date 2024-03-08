@@ -57,8 +57,9 @@ public class AuthService(
         var accessToken = tokenService.CreateJwtToken(managedUser!, roles[0]);
 
         await tokenService.SetJwtToken(accessToken);
-        tokenService.SetRefreshTokenAndUserId(managedUser!);
-        await userManager.UpdateAsync(managedUser!);
+        tokenService.SetRefreshTokenAndUserId(managedUser);
+        tokenService.SetAnimateAndAnonymous();
+        await userManager.UpdateAsync(managedUser);
 
 
         return new AuthResult(true, managedUser!.Id, "");
@@ -107,13 +108,6 @@ public class AuthService(
         await userManager.ResetAccessFailedCountAsync(managedUser);
 
         return new AuthResult(true, managedUser.Id, managedUser.Email!);
-    }
-
-    public async Task<RefreshTokenResponse> SetRefreshToken(string userId)
-    {
-        var user = userManager.Users.FirstOrDefault(user => user.Id == userId);
-        tokenService.SetRefreshTokenAndUserId(user!);
-        return new RefreshTokenResponse(true, "Success.");
     }
 
     public async Task<AuthResult> LogOut(string userId)

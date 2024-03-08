@@ -55,12 +55,22 @@ export class LoginComponent {
     }
 
     SendLoginToken(token: string) {
+        const expirationDate = new Date();
+        expirationDate.setFullYear(expirationDate.getFullYear() + 10);
         const request = new LoginAuthTokenRequest(this.loginRequest.username, this.loginRequest.password, this.loginRequest.rememberme, token);
+
         this.http.post('https://localhost:7045/Auth/Login', request, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {
                 this.loginStarted = false;
                 this.loginRequest = new LoginRequest("", "", false);
+                if (this.cookieService.get('Anonymous') === '' && this.cookieService.get('Animation') === '') {
+                    const expirationTime = new Date();
+                    expirationTime.setFullYear(expirationTime.getFullYear() + 10);
+                
+                    this.cookieService.set('Anonymous', 'false', new Date(2033, 2, 1));
+                    this.cookieService.set('Animation', 'false', new Date(2033, 2, 1));
+                }
                 this.router.navigate(['/']);
             }
         }, 

@@ -61,6 +61,35 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
             Expires = newRefreshToken.Expires
         });
     }
+    
+    public void SetAnimateAndAnonymous()
+    {
+        if (Request.Cookies["Animation"] == "")
+        {
+            Response.Cookies.Append("Animation", false.ToString(), new CookieOptions
+            {
+                Domain = Request.Host.Host,
+                HttpOnly = true,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                Secure = true,
+                Expires = DateTime.UtcNow.AddYears(ExpirationHours)
+            });
+        }
+
+        if (Request.Cookies["Anonymous"] == "")
+        {
+            Response.Cookies.Append("Anonymous", false.ToString(), new CookieOptions
+            {
+                Domain = Request.Host.Host,
+                HttpOnly = false,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                Secure = true,
+                Expires = DateTime.UtcNow.AddYears(ExpirationHours)
+            });
+        }
+    }
 
     public Task<bool> SetJwtToken(string accessToken)
     {
