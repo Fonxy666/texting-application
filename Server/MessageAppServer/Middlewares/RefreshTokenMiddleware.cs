@@ -1,17 +1,18 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Server.Model;
 using Server.Services.Authentication;
+using Server.Services.Cookie;
 
 namespace Server.Middlewares;
 
 public class RefreshTokenMiddleware(RequestDelegate next)
 {
-    public async Task Invoke(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager)
+    public async Task Invoke(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService)
     {
         if (TokenExpired(context, userManager))
         {
             context.Response.StatusCode = 403;
-            tokenService.DeleteCookies();
+            cookieService.DeleteCookies();
             return;
         }
 

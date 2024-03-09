@@ -3,34 +3,35 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Server.Model;
 using Server.Services.Authentication;
+using Server.Services.Cookie;
 
 namespace Server.Middlewares;
 
 public class JwtRefreshMiddleware(RequestDelegate next)
 {
-    public async Task Invoke(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager)
+    public async Task Invoke(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService)
     {
         if (ExamineCookies(context))
         {
-            await SetNewJwtToken(context, tokenService, userManager);
+            await SetNewJwtToken(context, tokenService, userManager, cookieService);
         }
 
         if (TokenExpired(context))
         {
-            await RefreshToken(context, tokenService, userManager);
+            await RefreshToken(context, tokenService, userManager, cookieService);
         }
 
         await next(context);
     }
 
     private async Task SetNewJwtToken(HttpContext context, ITokenService tokenService,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager, ICookieService cookieService)
     {
         var userId = context.Request.Cookies["UserId"];
         var user = userManager.Users.FirstOrDefault(user => user.Id == userId);
         var newToken = tokenService.CreateJwtToken(user!, "User");
 
-        await tokenService.SetJwtToken(newToken);
+        await cookieService.SetJwtToken(newToken);
     }
 
     private bool ExamineCookies(HttpContext context)
@@ -74,7 +75,7 @@ public class JwtRefreshMiddleware(RequestDelegate next)
         }
     }
 
-    private async Task RefreshToken(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager)
+    private async Task RefreshToken(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService)
     {
         var user = await userManager.FindByIdAsync(context.Request.Cookies["UserId"]!);
 
@@ -84,7 +85,7 @@ public class JwtRefreshMiddleware(RequestDelegate next)
             var role = GetRoleFromToken(token!);
             var newToken = tokenService.CreateJwtToken(user, role);
 
-            await tokenService.SetJwtToken(newToken);
+            await cookieService.SetJwtToken(newToken);
         }
         else
         {
