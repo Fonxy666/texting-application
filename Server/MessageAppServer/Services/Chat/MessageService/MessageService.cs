@@ -53,7 +53,7 @@ public class MessageService(MessagesContext context) : IMessageService
         try
         {
             existingMessage.RoomId = request.RoomId;
-            existingMessage.SenderName = request.UserName;
+            existingMessage.SenderId = request.Id;
             existingMessage.Text = request.Message;
 
             Context.Messages.Update(existingMessage);

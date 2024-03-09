@@ -51,7 +51,6 @@ export class JoinRoomComponent implements OnInit {
 
     joinRoom() {
         const data = this.createForm();
-        let retryCount = 0;
         this.http.post('https://localhost:7045/Chat/JoinRoom', data, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
@@ -60,7 +59,6 @@ export class JoinRoomComponent implements OnInit {
             (response: any) => {
                 if (response.success) {
                     this.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
-                    console.log(response.status);
                 }
             },
             (error: any) => {
@@ -102,6 +100,12 @@ export class JoinRoomComponent implements OnInit {
         this.chatService.joinRoom(this.userName, roomName)
         .then(() => {
             this.router.navigate([`/chat/${roomId}`]);
+            sessionStorage.setItem("room", roomName);
+            if (this.cookieService.get("Anonymous") === "True") {
+                sessionStorage.setItem("user", "Anonymous");
+            } else {
+                sessionStorage.setItem("user", this.userName);
+            }
         }).catch((err) => {
             console.log(err);
         })
