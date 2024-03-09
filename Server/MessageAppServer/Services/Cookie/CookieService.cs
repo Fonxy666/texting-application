@@ -42,7 +42,7 @@ public class CookieService(IConfiguration configuration, IHttpContextAccessor ht
     {
         if (Request.Cookies["Animation"] == null)
         {
-            Response.Cookies.Append("Animation", false.ToString(), new CookieOptions
+            Response.Cookies.Append("Animation", true.ToString(), new CookieOptions
             {
                 Domain = Request.Host.Host,
                 HttpOnly = false,

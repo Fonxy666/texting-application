@@ -27,12 +27,12 @@ export class RegistrationComponent {
         });
 
         this.http.post('https://localhost:7045/Auth/GetEmailVerificationToken', requestData, { headers: headers, responseType: 'text' })
-            .subscribe((response: any) => {
-                if (response) {
-                    this.user = data;
-                    this.showVerifyPage = true;
-                }
-            });
+        .subscribe((response: any) => {
+            if (response) {
+                this.user = data;
+                this.showVerifyPage = true;
+            }
+        });
     }
 
     GetVerifyTokenAndSendRegistration(verifyCode: String) {
@@ -41,21 +41,20 @@ export class RegistrationComponent {
             'Content-Type': 'application/json'
         });
         this.http.post('https://localhost:7045/Auth/ExamineVerifyToken', request, { headers: headers, responseType: 'text' })
-            .subscribe((response: any) => {
-                if (response) {
-                    this.SendRegistration();
-                    this.router.navigate(['login']);
-                }
-            });
+        .subscribe((response: any) => {
+            if (response) {
+                this.SendRegistration();
+                this.router.navigate(['login']);
+            }
+        });
     }
 
     SendRegistration() {
         this.http.post('https://localhost:7045/Auth/Register', this.user)
-            .subscribe((response) => {
-                if (response) {
-                    alert("Succesfull registration!");  
-                }
-            });
+        .subscribe((response) => {
+            if (response) {
+                alert("Succesfull registration!");  
+            }
+        });
     }
-
 }

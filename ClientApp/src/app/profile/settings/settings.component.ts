@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 
 @Component({
   selector: 'app-settings',
@@ -8,16 +9,44 @@ import { CookieService } from 'ngx-cookie-service';
 })
 export class SettingsComponent {
 
-    constructor(private cookieService : CookieService) {}
+    constructor(private cookieService : CookieService, private http: HttpClient) {}
     myImage: string = "./assets/images/chat-mountain.jpg";
-    animate: boolean = (this.cookieService.get('Animation') === 'true');
-    anonymous: boolean = (this.cookieService.get('Anonymous') === 'true');
+    animate: boolean = (this.cookieService.get('Animation') === 'True');
+    anonymous: boolean = (this.cookieService.get('Anonymous') === 'True');
 
     handleAnimateCheck() {
-        console.log(this.animate);
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json'
+        });
+        const params = new HttpParams().set('request', 'Animation');
+        this.http.post('https://localhost:7045/Cookie/ChangeCookie', null, { headers: headers, params: params, responseType: 'text', withCredentials: true })
+        .subscribe((response: any) => {
+            if (response) {
+                this.animate = !this.animate;
+                if (this.animate) {
+                    alert(["All animations enabled in the webpage."]);
+                } else {
+                    alert(["All animations disabled in the webpage."]);
+                }
+            }
+        });
     }
 
     handleAnonymus() {
-        console.log(this.anonymous);
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json'
+        });
+        const params = new HttpParams().set('request', 'Anonymous');
+        this.http.post('https://localhost:7045/Cookie/ChangeCookie', null, { headers: headers, params: params, responseType: 'text', withCredentials: true })
+        .subscribe((response: any) => {
+            if (response) {
+                this.anonymous = !this.anonymous;
+                if (this.anonymous) {
+                    alert(["Now other users cannot see your username/e-mail."]);
+                } else {
+                    alert(["Now other users can see your username/e-mail."]);
+                }
+            }
+        });
     }
 }
