@@ -28,11 +28,6 @@ public class RefreshTokenMiddleware(RequestDelegate next)
             return false;
         }
 
-        if (userManager.FindByIdAsync(userId) == null)
-        {
-            return false;
-        }
-
         var tokenExpiration = userManager.FindByIdAsync(userId).Result!.RefreshTokenExpires;
 
         return tokenExpiration <= DateTime.UtcNow.AddHours(1);
