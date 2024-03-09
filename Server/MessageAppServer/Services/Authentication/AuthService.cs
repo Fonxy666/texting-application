@@ -53,16 +53,17 @@ public class AuthService(
             return new AuthResult(false, "", "");
         }
 
-        var roles = await userManager.GetRolesAsync(managedUser!);
-        var accessToken = tokenService.CreateJwtToken(managedUser!, roles[0]);
+        
+        var roles = await userManager.GetRolesAsync(managedUser);
+        var accessToken = tokenService.CreateJwtToken(managedUser, roles[0]);
 
+        tokenService.SetAnimateAndAnonymous();
         await tokenService.SetJwtToken(accessToken);
         tokenService.SetRefreshTokenAndUserId(managedUser);
-        tokenService.SetAnimateAndAnonymous();
         await userManager.UpdateAsync(managedUser);
 
 
-        return new AuthResult(true, managedUser!.Id, "");
+        return new AuthResult(true, managedUser.Id, "");
     }
 
     public Task<string?> GetEmailFromUserName(string username)

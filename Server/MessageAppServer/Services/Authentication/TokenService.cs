@@ -64,20 +64,20 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
     
     public void SetAnimateAndAnonymous()
     {
-        if (Request.Cookies["Animation"] == "")
+        if (Request.Cookies["Animation"] == null)
         {
             Response.Cookies.Append("Animation", false.ToString(), new CookieOptions
             {
                 Domain = Request.Host.Host,
-                HttpOnly = true,
+                HttpOnly = false,
                 SameSite = SameSiteMode.None,
                 IsEssential = true,
                 Secure = true,
-                Expires = DateTime.UtcNow.AddYears(ExpirationHours)
+                Expires = DateTime.UtcNow.AddYears(2)
             });
         }
 
-        if (Request.Cookies["Anonymous"] == "")
+        if (Request.Cookies["Anonymous"] == null)
         {
             Response.Cookies.Append("Anonymous", false.ToString(), new CookieOptions
             {
@@ -86,7 +86,7 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
                 SameSite = SameSiteMode.None,
                 IsEssential = true,
                 Secure = true,
-                Expires = DateTime.UtcNow.AddYears(ExpirationHours)
+                Expires = DateTime.UtcNow.AddYears(2)
             });
         }
     }
