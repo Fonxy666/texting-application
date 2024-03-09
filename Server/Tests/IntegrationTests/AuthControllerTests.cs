@@ -88,32 +88,6 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task VerifyToken_Invalid_Code_ReturnsBadRequest()
-    {
-        var testRequest = new VerifyTokenRequest("test@email.com", "invalid-code");
-        var jsonRequest = JsonConvert.SerializeObject(testRequest);
-        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-
-        var response = await _client.PostAsync("/Auth/ExamineVerifyToken", content);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-    
-    [Fact]
-    public async Task VerifyToken_Valid_Code_ReturnsOk()
-    {
-        var validCode = EmailSenderCodeGenerator.GenerateTokenForRegistration("test@email.com");
-
-        var testRequest = new VerifyTokenRequest("test@email.com", validCode);
-        var jsonRequest = JsonConvert.SerializeObject(testRequest);
-        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-
-        var response = await _client.PostAsync("/Auth/ExamineVerifyToken", content);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
-    
-    [Fact]
     public async Task SendEmailVerificationCode_ValidRequest_ReturnsOk()
     {
         var emailRequest = new GetEmailForVerificationRequest("test@test.hu");

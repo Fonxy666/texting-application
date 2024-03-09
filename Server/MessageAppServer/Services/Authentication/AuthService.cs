@@ -2,12 +2,14 @@
 using Server.Model;
 using Server.Responses.Auth;
 using Server.Responses.User;
+using Server.Services.Cookie;
 
 namespace Server.Services.Authentication;
 
 public class AuthService(
     UserManager<ApplicationUser> userManager,
-    ITokenService tokenService) : IAuthService
+    ITokenService tokenService,
+    ICookieService cookieService) : IAuthService
 {
     public async Task<AuthResult> RegisterAsync(string email, string username, string password, string role, string phoneNumber, string image)
     {
@@ -57,9 +59,9 @@ public class AuthService(
         var roles = await userManager.GetRolesAsync(managedUser);
         var accessToken = tokenService.CreateJwtToken(managedUser, roles[0]);
 
-        tokenService.SetAnimateAndAnonymous();
-        await tokenService.SetJwtToken(accessToken);
-        tokenService.SetRefreshTokenAndUserId(managedUser);
+        cookieService.SetAnimateAndAnonymous();
+        await cookieService.SetJwtToken(accessToken);
+        cookieService.SetRefreshTokenAndUserId(managedUser);
         await userManager.UpdateAsync(managedUser);
 
 
@@ -70,11 +72,11 @@ public class AuthService(
     {
         if (cookieName == "animation")
         {
-            tokenService.ChangeAnimation();
+            cookieService.ChangeAnimation();
         }
         else
         {
-            tokenService.ChangeUserAnonymous();
+            cookieService.ChangeUserAnonymous();
         }
     }
 
@@ -130,7 +132,7 @@ public class AuthService(
         user.RefreshTokenExpires = DateTime.Now;
         user.RefreshTokenCreated = DateTime.Now;
         await userManager.UpdateAsync(user);
-        tokenService.DeleteCookies();
+        cookieService.DeleteCookies();
         return new AuthResult(true, "-", "-");
     }
 
