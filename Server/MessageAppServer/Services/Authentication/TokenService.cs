@@ -91,6 +91,34 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
         }
     }
 
+    public void ChangeAnimation()
+    {
+        Response.Cookies.Append("Animation",
+            Request.Cookies["Animation"] == "False" ? true.ToString() : false.ToString(), new CookieOptions
+            {
+                Domain = Request.Host.Host,
+                HttpOnly = false,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                Secure = true,
+                Expires = DateTime.UtcNow.AddYears(2)
+            });
+    }
+
+    public void ChangeUserAnonymous()
+    {
+        Response.Cookies.Append("Anonymous",
+            Request.Cookies["Anonymous"] == "False" ? true.ToString() : false.ToString(), new CookieOptions
+            {
+                Domain = Request.Host.Host,
+                HttpOnly = false,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                Secure = true,
+                Expires = DateTime.UtcNow.AddYears(2)
+            });
+    }
+
     public Task<bool> SetJwtToken(string accessToken)
     {
         Response.Cookies.Append("Authorization", accessToken, new CookieOptions

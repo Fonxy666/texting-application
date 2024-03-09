@@ -64,13 +64,6 @@ export class LoginComponent {
             if (response.success) {
                 this.loginStarted = false;
                 this.loginRequest = new LoginRequest("", "", false);
-                if (this.cookieService.get('Anonymous') === '' && this.cookieService.get('Animation') === '') {
-                    const expirationTime = new Date();
-                    expirationTime.setFullYear(expirationTime.getFullYear() + 10);
-                
-                    this.cookieService.set('Anonymous', 'false', new Date(2033, 2, 1));
-                    this.cookieService.set('Animation', 'false', new Date(2033, 2, 1));
-                }
                 this.router.navigate(['/']);
             }
         }, 

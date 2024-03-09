@@ -10,7 +10,7 @@ export class SettingsComponent {
 
     constructor(private cookieService : CookieService) {}
     myImage: string = "./assets/images/chat-mountain.jpg";
-    animate: boolean = (this.cookieService.get('AnimateBackGround') === 'true');
+    animate: boolean = (this.cookieService.get('Animation') === 'true');
     anonymous: boolean = (this.cookieService.get('Anonymous') === 'true');
 
     handleAnimateCheck() {

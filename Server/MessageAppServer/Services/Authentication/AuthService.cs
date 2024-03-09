@@ -66,6 +66,18 @@ public class AuthService(
         return new AuthResult(true, managedUser.Id, "");
     }
 
+    public void ChangeCookies(string cookieName)
+    {
+        if (cookieName == "animation")
+        {
+            tokenService.ChangeAnimation();
+        }
+        else
+        {
+            tokenService.ChangeUserAnonymous();
+        }
+    }
+
     public Task<string?> GetEmailFromUserName(string username)
     {
         return Task.FromResult(userManager.Users.FirstOrDefault(user => user.UserName == username)?.Email);
