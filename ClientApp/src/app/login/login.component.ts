@@ -55,7 +55,10 @@ export class LoginComponent {
     }
 
     SendLoginToken(token: string) {
+        const expirationDate = new Date();
+        expirationDate.setFullYear(expirationDate.getFullYear() + 10);
         const request = new LoginAuthTokenRequest(this.loginRequest.username, this.loginRequest.password, this.loginRequest.rememberme, token);
+
         this.http.post('https://localhost:7045/Auth/Login', request, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {

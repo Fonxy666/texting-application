@@ -64,9 +64,7 @@ public class JwtRefreshMiddleware(RequestDelegate next)
             }
 
             var expirationDateTime = DateTimeOffset.FromUnixTimeSeconds(expirationTimestamp).UtcDateTime;  //Convert to daytime
-
-            Console.WriteLine($"Expiration time: {expirationDateTime}");
-            Console.WriteLine($"Datetime now: {DateTime.UtcNow.AddHours(1)}");
+            
             var isExpired = expirationDateTime < DateTime.UtcNow.AddHours(1);
             return isExpired;
         }

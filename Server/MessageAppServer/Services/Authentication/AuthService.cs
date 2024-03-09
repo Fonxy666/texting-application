@@ -53,15 +53,29 @@ public class AuthService(
             return new AuthResult(false, "", "");
         }
 
-        var roles = await userManager.GetRolesAsync(managedUser!);
-        var accessToken = tokenService.CreateJwtToken(managedUser!, roles[0]);
+        
+        var roles = await userManager.GetRolesAsync(managedUser);
+        var accessToken = tokenService.CreateJwtToken(managedUser, roles[0]);
 
+        tokenService.SetAnimateAndAnonymous();
         await tokenService.SetJwtToken(accessToken);
-        tokenService.SetRefreshTokenAndUserId(managedUser!);
-        await userManager.UpdateAsync(managedUser!);
+        tokenService.SetRefreshTokenAndUserId(managedUser);
+        await userManager.UpdateAsync(managedUser);
 
 
-        return new AuthResult(true, managedUser!.Id, "");
+        return new AuthResult(true, managedUser.Id, "");
+    }
+
+    public void ChangeCookies(string cookieName)
+    {
+        if (cookieName == "animation")
+        {
+            tokenService.ChangeAnimation();
+        }
+        else
+        {
+            tokenService.ChangeUserAnonymous();
+        }
     }
 
     public Task<string?> GetEmailFromUserName(string username)
@@ -107,13 +121,6 @@ public class AuthService(
         await userManager.ResetAccessFailedCountAsync(managedUser);
 
         return new AuthResult(true, managedUser.Id, managedUser.Email!);
-    }
-
-    public async Task<RefreshTokenResponse> SetRefreshToken(string userId)
-    {
-        var user = userManager.Users.FirstOrDefault(user => user.Id == userId);
-        tokenService.SetRefreshTokenAndUserId(user!);
-        return new RefreshTokenResponse(true, "Success.");
     }
 
     public async Task<AuthResult> LogOut(string userId)

@@ -52,6 +52,13 @@ public class AuthController(
         EmailSenderCodeGenerator.RemoveVerificationCode(credentials.Email, "registration");
         return Ok(new VerifyTokenResponse(true));
     }
+    
+    [HttpPost("ExamineVerifyToken")]
+    public Task<ActionResult<string>> ChangeCookies(string key)
+    {
+        authenticationService.ChangeCookies(key);
+        return Task.FromResult<ActionResult<string>>(Ok(new VerifyTokenResponse(true)));
+    }
         
     [HttpPost("Register")]
     public async Task<ActionResult<EmailUsernameResponse>> Register(RegistrationRequest request)

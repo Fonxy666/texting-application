@@ -10,7 +10,6 @@ public class RefreshTokenMiddleware(RequestDelegate next)
     {
         if (TokenExpired(context, userManager))
         {
-            Console.WriteLine($"TOKENEXPIRED");
             context.Response.StatusCode = 403;
             tokenService.DeleteCookies();
             return;

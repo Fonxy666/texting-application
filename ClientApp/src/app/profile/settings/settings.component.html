@@ -1,3 +1,14 @@
 <div class="cont">
-    <app-nav-bar />
+    <app-nav-bar></app-nav-bar>
+    <div class="card">
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="flexSwitchAnimate" [checked]="animate" (change)="handleAnimateCheck()">
+            <label class="form-check-label" for="flexSwitchAnimate">Animation</label>
+        </div>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="flexSwitchAnonymus" [checked]="anonymous" (change)="handleAnonymus()">
+            <label class="form-check-label" for="flexSwitchAnonymus">Appear as anonymous</label>
+        </div>
+    </div>
+    <img [src]="myImage" class="background-image">
 </div>

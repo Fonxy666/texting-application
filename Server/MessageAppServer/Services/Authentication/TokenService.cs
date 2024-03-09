@@ -61,6 +61,63 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
             Expires = newRefreshToken.Expires
         });
     }
+    
+    public void SetAnimateAndAnonymous()
+    {
+        if (Request.Cookies["Animation"] == null)
+        {
+            Response.Cookies.Append("Animation", false.ToString(), new CookieOptions
+            {
+                Domain = Request.Host.Host,
+                HttpOnly = false,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                Secure = true,
+                Expires = DateTime.UtcNow.AddYears(2)
+            });
+        }
+
+        if (Request.Cookies["Anonymous"] == null)
+        {
+            Response.Cookies.Append("Anonymous", false.ToString(), new CookieOptions
+            {
+                Domain = Request.Host.Host,
+                HttpOnly = false,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                Secure = true,
+                Expires = DateTime.UtcNow.AddYears(2)
+            });
+        }
+    }
+
+    public void ChangeAnimation()
+    {
+        Response.Cookies.Append("Animation",
+            Request.Cookies["Animation"] == "False" ? true.ToString() : false.ToString(), new CookieOptions
+            {
+                Domain = Request.Host.Host,
+                HttpOnly = false,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                Secure = true,
+                Expires = DateTime.UtcNow.AddYears(2)
+            });
+    }
+
+    public void ChangeUserAnonymous()
+    {
+        Response.Cookies.Append("Anonymous",
+            Request.Cookies["Anonymous"] == "False" ? true.ToString() : false.ToString(), new CookieOptions
+            {
+                Domain = Request.Host.Host,
+                HttpOnly = false,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                Secure = true,
+                Expires = DateTime.UtcNow.AddYears(2)
+            });
+    }
 
     public Task<bool> SetJwtToken(string accessToken)
     {
