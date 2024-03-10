@@ -32,7 +32,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
-        var getUserResponse = await _client.GetAsync($"/User/getUserCredentials?userId=2334d7b7-413a-4c53-9a38-93ac09ff7b64");
+        var getUserResponse = await _client.GetAsync($"/User/getUserCredentials?userId=3e91f179-18f5-423d-9b36-1c2977f62fb4");
         getUserResponse.EnsureSuccessStatusCode();
     }
     
@@ -99,14 +99,14 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
-        var passwordRequest = new ChangeUserPasswordRequest("2334d7b7-413a-4c53-9a38-93ac09ff7b64", "testUserPassword123###", "testUserPassword123###!@#");
+        var passwordRequest = new ChangeUserPasswordRequest("3e91f179-18f5-423d-9b36-1c2977f62fb4", "testUserPassword123###", "testUserPassword123###!@#");
         var jsonRequestRegister = JsonConvert.SerializeObject(passwordRequest);
         var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var getUserResponse = await _client.PatchAsync("/User/ChangePassword", userChangeEmail);
         getUserResponse.EnsureSuccessStatusCode();
         
-        var passwordRequest1 = new ChangeUserPasswordRequest("2334d7b7-413a-4c53-9a38-93ac09ff7b64", "testUserPassword123###!@#", "testUserPassword123###");
+        var passwordRequest1 = new ChangeUserPasswordRequest("3e91f179-18f5-423d-9b36-1c2977f62fb4", "testUserPassword123###!@#", "testUserPassword123###");
         var jsonRequestRegister1 = JsonConvert.SerializeObject(passwordRequest1);
         var userChangeEmail1 = new StringContent(jsonRequestRegister1, Encoding.UTF8, "application/json");
         
@@ -129,7 +129,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task GetImage_With_Id_ReturnSuccessStatusCode()
     {
-        const string userId = "95c740bd-cecb-4219-8d45-232df625317d";
+        const string userId = "b0f2e6d8-dae6-4ffb-809c-9c2a096dc28c";
         
         Directory.SetCurrentDirectory("D:/after codecool/texting-application/Server/MessageAppServer");
     

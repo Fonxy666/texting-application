@@ -2,10 +2,11 @@ import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, OnIni
 import { ChatService } from '../../chat.service';
 import { Router, ActivatedRoute  } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of  } from 'rxjs';
+import { Observable, of, forkJoin  } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
+import { CookieService } from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-chat',
@@ -18,13 +19,13 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     roomId = "";
     inputMessage = "";
-    loggedInUserName:string = "";
+    loggedInUserId:string = "";
     roomName = sessionStorage.getItem("room");
     myImage: string = "./assets/images/chat-mountain.jpg";
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
 
-    constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute, private errorHandler: ErrorHandlerService) { }
+    constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute, private errorHandler: ErrorHandlerService, private cookieService: CookieService) { }
     
     messages: any[] = [];
     avatars: { [userId: string]: string } = {};
@@ -40,7 +41,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
       
         this.chatService.connectedUsers.subscribe((users) => {
             users.forEach((user) => {
-                this.loggedInUserName = user;
+                this.loggedInUserId = this.cookieService.get("UserId");
                 this.getAvatarImage(user).subscribe(
                     (avatar) => {
                         this.avatars[user] = avatar;
@@ -60,10 +61,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     sendMessage() {
-        var request = new MessageRequest(this.roomId, this.loggedInUserName!, this.inputMessage);
+        var request = new MessageRequest(this.roomId, this.cookieService.get("UserId"), this.inputMessage, this.cookieService.get("Anonymous") === "True");
         this.chatService.sendMessage(request)
             .then(() => {
-                this.inputMessage ="";
+                this.inputMessage = "";
+                console.log(request);
                 this.saveMessage(request);
             }).catch((err) => {
                 console.log(err);
@@ -105,19 +107,27 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     getMessages() {
         this.http.get(`https://localhost:7045/Message/GetMessages/${this.roomId}`, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe((response: any) => {
-            const fetchedMessages = response.map((element: any) => ({
-                user: element.senderName,
-                message: element.text,
-                messageTime: element.sendTime
-            }));
-            this.chatService.messages = [...fetchedMessages, ...this.chatService.messages];
-
-            this.chatService.message$.next(this.chatService.messages);
-        });
+            .pipe(
+                this.errorHandler.handleError401()
+            )
+            .subscribe((response: any) => {
+                const observables = response.map((element: any) =>
+                    this.http.get(`https://localhost:7045/User/getUsername/${element.senderId}`, { withCredentials: true })
+                );
+    
+                forkJoin(observables).subscribe((usernames: any) => {
+                    console.log(response);
+                    const fetchedMessages = response.map((element: any, index: number) => ({
+                        user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
+                        userId: element.senderId,
+                        message: element.text,
+                        messageTime: element.sendTime
+                    }));
+                    this.chatService.messages = [...fetchedMessages, ...this.chatService.messages];
+    
+                    this.chatService.message$.next(this.chatService.messages);
+                });
+            });
     }
 
     getAvatarImage(userName: string): Observable<string> {
