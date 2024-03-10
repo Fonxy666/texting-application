@@ -16,8 +16,8 @@ public class MessageService(MessagesContext context) : IMessageService
         try
         {
             var message = request.MessageId != null ? 
-                new Message(request.RoomId, request.UserName, request.Message, request.MessageId) : 
-                new Message(request.RoomId, request.UserName, request.Message);
+                new Message(request.RoomId, request.UserName, request.Message, request.MessageId, request.SentAsAnonymous) : 
+                new Message(request.RoomId, request.UserName, request.Message, request.SentAsAnonymous);
             
             await Context.Messages.AddAsync(message);
             await Context.SaveChangesAsync();

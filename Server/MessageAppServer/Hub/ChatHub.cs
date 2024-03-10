@@ -28,7 +28,7 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessag
 
     public async Task SaveMessage(MessageRequest request)
     {
-        var messageRequest = new MessageRequest(request.RoomId, request.UserName, request.Message);
+        var messageRequest = new MessageRequest(request.RoomId, request.UserName, request.Message, request.SentAsAnonymous);
         await messageRepository.SendMessage(messageRequest);
     }
 

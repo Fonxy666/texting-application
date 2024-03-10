@@ -43,7 +43,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
-        var messageRequest = new MessageRequest("bbdcc735-d897-45a7-b10d-62c57b52fcca", _testUser.UserName, "test", "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
+        var messageRequest = new MessageRequest("bbdcc735-d897-45a7-b10d-62c57b52fcca", _testUser.UserName, "test", false, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
         var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
         var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
 
