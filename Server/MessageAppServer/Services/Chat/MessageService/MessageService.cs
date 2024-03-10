@@ -16,8 +16,8 @@ public class MessageService(MessagesContext context) : IMessageService
         try
         {
             var message = request.MessageId != null ? 
-                new Message(request.RoomId, request.UserName, request.Message, request.MessageId) : 
-                new Message(request.RoomId, request.UserName, request.Message);
+                new Message(request.RoomId, request.UserName, request.Message, request.MessageId, request.AsAnonymous) : 
+                new Message(request.RoomId, request.UserName, request.Message, request.AsAnonymous);
             
             await Context.Messages.AddAsync(message);
             await Context.SaveChangesAsync();
@@ -53,7 +53,7 @@ public class MessageService(MessagesContext context) : IMessageService
         try
         {
             existingMessage.RoomId = request.RoomId;
-            existingMessage.SenderName = request.UserName;
+            existingMessage.SenderId = request.Id;
             existingMessage.Text = request.Message;
 
             Context.Messages.Update(existingMessage);

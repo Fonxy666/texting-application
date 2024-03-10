@@ -14,7 +14,7 @@ export class RegistrationComponent {
     constructor(private http: HttpClient, private router: Router) { }
 
     user: any;
-    showVerifyPage: boolean = true;
+    showVerifyPage: boolean = false;
 
     GetVerifyTokenAndGoToVerifyPage(data: RegistrationRequest) {
         this.SendVerifyEmail(data);
@@ -40,7 +40,7 @@ export class RegistrationComponent {
         const headers = new HttpHeaders({
             'Content-Type': 'application/json'
         });
-        this.http.post('https://localhost:7045/Auth/ExamineVerifyToken', request, { headers: headers, responseType: 'text' })
+        this.http.post('https://localhost:7045/Auth/ExamineVerifyToken', request)
         .subscribe((response: any) => {
             if (response) {
                 this.SendRegistration();

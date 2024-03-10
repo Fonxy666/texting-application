@@ -9,24 +9,27 @@ public class Message
     public string MessageId { get; set; } = Guid.NewGuid().ToString();
 
     public string RoomId { get; set; } 
-    public string SenderName { get; set; } 
+    public string SenderId { get; set; } 
     public string Text { get; set; } 
     public string SendTime { get; set; } = DateTime.Now.ToString(CultureInfo.InvariantCulture);
+    public bool SentAsAnonymous { get; set; }
     
     public Message() { }
 
-    public Message(string roomId, string senderName, string text)
+    public Message(string roomId, string senderId, string text, bool sentAsAnonymous)
     {
         RoomId = roomId;
-        SenderName = senderName;
+        SenderId = senderId;
         Text = text;
+        SentAsAnonymous = sentAsAnonymous;
     }
     
-    public Message(string roomId, string senderName, string text, string messageId)
+    public Message(string roomId, string senderId, string text, string messageId, bool sentAsAnonymous)
     {
         RoomId = roomId;
-        SenderName = senderName;
+        SenderId = senderId;
         Text = text;
         MessageId = messageId;
+        SentAsAnonymous = sentAsAnonymous;
     }
 }

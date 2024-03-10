@@ -37,7 +37,7 @@ export class SettingsComponent {
             'Content-Type': 'application/json'
         });
         const params = new HttpParams().set('request', 'Anonymous');
-        this.http.post('https://localhost:7045/Cookie/ChangeCookie', null, { headers: headers, params: params, responseType: 'text', withCredentials: true })
+        this.http.post('https://localhost:7045/Cookie/ChangeCookies', null, { headers: headers, params: params, responseType: 'text', withCredentials: true })
         .subscribe((response: any) => {
             if (response) {
                 this.anonymous = !this.anonymous;

@@ -7,10 +7,9 @@ namespace Server.Controllers;
 [Route("[controller]")]
 public class CookieController(ICookieService cookieService) : ControllerBase
 {
-    [HttpPost("ChangeCookie")]
+    [HttpPost("ChangeCookies")]
     public Task<ActionResult<bool>> ChangeAnimateOrAnonymousCookie([FromQuery]string request)
     {
-        Console.WriteLine(request);
         if (!ModelState.IsValid)
         {
             return Task.FromResult<ActionResult<bool>>(BadRequest(ModelState));

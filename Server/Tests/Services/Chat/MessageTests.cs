@@ -34,7 +34,7 @@ namespace Tests.Services.Chat
         [Test]
         public async Task SendMessage_ValidMessage_ReturnsSuccessResponse()
         {
-            var request = new MessageRequest("TestRoom", "TestUser", "Hello, World!");
+            var request = new MessageRequest("TestRoom", "TestUser", "Hello, World!", false);
 
             var response = await _messageService.SendMessage(request);
 
@@ -58,7 +58,7 @@ namespace Tests.Services.Chat
         {
             for (var i = 1; i <= 15; i++)
             {
-                await _dbContext.Messages.AddAsync(new Message(roomId, $"User{i}", $"Message{i}"));
+                await _dbContext.Messages.AddAsync(new Message(roomId, $"User{i}", $"Message{i}", false));
             }
 
             await _dbContext.SaveChangesAsync();

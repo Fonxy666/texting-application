@@ -40,17 +40,17 @@
                 <div class="mesgs">
                     <div #scrollMe class="msg_history">
                         <ng-container *ngFor="let message of this.chatService.message$ | async">
-                            <div [ngClass]="{'incoming_msg': message.user != loggedInUserName, 'outgoing_msg': message.user === loggedInUserName}">
-                                <div *ngIf="message.user != loggedInUserName" class="incoming_msg_img">
-                                    <img src="https://ptetutorials.com/images/user-profile.png">
+                            <div [ngClass]="{'incoming_msg': message.userId != loggedInUserId, 'outgoing_msg': message.userId === loggedInUserId}">
+                                <div *ngIf="message.userId != loggedInUserId" class="incoming_msg_img">
+                                    <img [src]="avatars[message.user] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
                                 </div>
-                                <div *ngIf="message.user != loggedInUserName" class="received_msg">
+                                <div *ngIf="message.userId != loggedInUserId" class="received_msg">
                                     <div class="received_withd_msg ">
                                         <p> {{message.message}} </p>
                                         <span class="time_date"> {{message.user}} | {{message.messageTime | date: 'medium'}}</span>
                                     </div>
                                 </div>
-                                <div *ngIf="message.user === loggedInUserName" class="sent_msg">
+                                <div *ngIf="message.userId === loggedInUserId" class="sent_msg">
                                     <div class="sent_withd_msg">
                                         <p>{{message.message}}</p>
                                         <span class="time_date">{{message.user}} | {{message.messageTime | date: 'medium'}}</span>

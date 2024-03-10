@@ -12,11 +12,11 @@ public class MessageTests
         var senderName = "TestSender";
         var text = "TestText";
 
-        var message = new Message(roomId, senderName, text);
+        var message = new Message(roomId, senderName, text, false);
 
         Assert.IsNotNull(message.MessageId);
         Assert.AreEqual(roomId, message.RoomId);
-        Assert.AreEqual(senderName, message.SenderName);
+        Assert.AreEqual(senderName, message.SenderId);
         Assert.AreEqual(text, message.Text);
         Assert.IsNotNull(message.SendTime);
     }
