@@ -24,14 +24,15 @@ public class JwtRefreshMiddleware(RequestDelegate next)
         await next(context);
     }
 
-    private async Task SetNewJwtToken(HttpContext context, ITokenService tokenService,
-        UserManager<ApplicationUser> userManager, ICookieService cookieService)
+    private async Task SetNewJwtToken(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService)
     {
+        var rememberMe = context.Request.Cookies["RememberMe"] == "True";
+        
         var userId = context.Request.Cookies["UserId"];
         var user = userManager.Users.FirstOrDefault(user => user.Id == userId);
-        var newToken = tokenService.CreateJwtToken(user!, "User");
+        var newToken = tokenService.CreateJwtToken(user!, "User", rememberMe);
 
-        await cookieService.SetJwtToken(newToken);
+        await cookieService.SetJwtToken(newToken, rememberMe);
     }
 
     private bool ExamineCookies(HttpContext context)
@@ -57,6 +58,11 @@ public class JwtRefreshMiddleware(RequestDelegate next)
         {
             var jsonToken = handler.ReadToken(token) as JwtSecurityToken;      //Token decode
 
+            if (jsonToken?.Payload.Exp == null)
+            {
+                return false;
+            }
+            
             var expirationClaim = jsonToken?.Payload.Exp;      //Extract the expiration claims
 
             if (expirationClaim == null || !long.TryParse(expirationClaim.ToString(), out var expirationTimestamp))
@@ -65,7 +71,6 @@ public class JwtRefreshMiddleware(RequestDelegate next)
             }
 
             var expirationDateTime = DateTimeOffset.FromUnixTimeSeconds(expirationTimestamp).UtcDateTime;  //Convert to daytime
-            
             var isExpired = expirationDateTime < DateTime.UtcNow.AddHours(1);
             return isExpired;
         }
@@ -78,14 +83,15 @@ public class JwtRefreshMiddleware(RequestDelegate next)
     private async Task RefreshToken(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService)
     {
         var user = await userManager.FindByIdAsync(context.Request.Cookies["UserId"]!);
+        var rememberMe = context.Request.Cookies["RememberMe"] == "True";
 
         if (user != null && user.RefreshToken == context.Request.Cookies["RefreshToken"])
         {
             var token = context.Request.Cookies["Authorization"];
             var role = GetRoleFromToken(token!);
-            var newToken = tokenService.CreateJwtToken(user, role);
+            var newToken = tokenService.CreateJwtToken(user, role, rememberMe);
 
-            await cookieService.SetJwtToken(newToken);
+            await cookieService.SetJwtToken(newToken, rememberMe);
         }
         else
         {

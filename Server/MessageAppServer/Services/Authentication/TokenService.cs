@@ -15,9 +15,9 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
     private HttpRequest Request => httpContextAccessor.HttpContext?.Request ?? throw new InvalidOperationException("HttpContext or Request is null");
     private HttpResponse Response => httpContextAccessor.HttpContext?.Response ?? throw new InvalidOperationException("HttpContext or Response is null");
         
-    public string CreateJwtToken(IdentityUser user, string? role)
+    public string CreateJwtToken(IdentityUser user, string? role, bool rememberMe)
     {
-        var expiration = DateTime.UtcNow.AddHours(ExpirationHours);
+        var expiration = rememberMe? DateTime.UtcNow.AddHours(ExpirationHours) : (DateTime?)null;
         var token = CreateJwtToken(CreateClaims(user, role), CreateSigningCredentials(), expiration);
 
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -33,14 +33,14 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
         };
     }
 
-    private JwtSecurityToken CreateJwtToken(List<Claim> claims, SigningCredentials credentials, DateTime expiration)
+    private JwtSecurityToken CreateJwtToken(List<Claim> claims, SigningCredentials credentials, DateTime? expiration)
     {
         return new JwtSecurityToken(
             issuer: configuration["IssueAudience"],
             audience: configuration["IssueAudience"],
             claims: claims,
             notBefore: DateTime.UtcNow,
-            expires: expiration,
+            expires: null,
             signingCredentials: credentials
         );
     }

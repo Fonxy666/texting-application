@@ -4,10 +4,12 @@ namespace Server.Services.Cookie;
 
 public interface ICookieService
 {
-    public void SetRefreshTokenAndUserId(ApplicationUser user);
-    public void SetAnimateAndAnonymous();
+    public void SetUserId(string userId, bool rememberMe);
+    public void SetRefreshToken(ApplicationUser user);
+    public void SetAnimateAndAnonymous(bool rememberMe);
     public void ChangeAnimation();
     public void ChangeUserAnonymous();
-    public Task<bool> SetJwtToken(string accessToken);
+    public Task<bool> SetJwtToken(string accessToken, bool rememberMe);
     public void DeleteCookies();
+    public void SetRememberMeCookie(bool rememberMe);
 }

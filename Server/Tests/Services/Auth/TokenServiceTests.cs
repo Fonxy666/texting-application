@@ -41,7 +41,7 @@ public class TokenServiceTests
         _configurationMock.Setup(x => x["IssueAudience"]).Returns("tests With Authentication goes &&& comes nowhere");
         _configurationMock.Setup(x => x["IssueSign"]).Returns("!SomethingVeryHardToHackIntoTests!");
 
-        var token = _tokenService.CreateJwtToken(user, "UserRole");
+        var token = _tokenService.CreateJwtToken(user, "UserRole", true);
 
         Assert.IsNotNull(token);
         Assert.IsInstanceOf<JwtSecurityToken>(new JwtSecurityTokenHandler().ReadToken(token));

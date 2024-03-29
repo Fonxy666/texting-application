@@ -18,7 +18,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     private readonly WebApplicationFactory<Startup> _factory;
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _client;
-    private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###", false);
+    private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
 
     public AuthControllerTests(WebApplicationFactory<Startup> factory, ITestOutputHelper testOutputHelper)
     {
@@ -30,7 +30,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Login_With_Invalid_User_ReturnBadRequestStatusCode()
     {
-        var request = new AuthRequest("", "", false);
+        var request = new AuthRequest("", "");
         var authJsonRequest = JsonConvert.SerializeObject(request);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
         var authResponse = await _client.PostAsync("/Auth/Login", authContent);
@@ -114,7 +114,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Send_VerifyToken_Valid_Code_ReturnsOk()
     {
-        var request = new AuthRequest(_testUser.UserName, _testUser.Password, _testUser.RememberMe);
+        var request = new AuthRequest(_testUser.UserName, _testUser.Password);
         var jsonRequest = JsonConvert.SerializeObject(request);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 

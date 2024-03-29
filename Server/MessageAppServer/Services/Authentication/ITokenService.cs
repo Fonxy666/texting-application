@@ -5,6 +5,6 @@ namespace Server.Services.Authentication;
 
 public interface ITokenService
 {
-    public string CreateJwtToken(IdentityUser user, string? role);
+    public string CreateJwtToken(IdentityUser user, string? role, bool rememberMe);
     public RefreshToken CreateRefreshToken();
 }

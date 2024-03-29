@@ -15,7 +15,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
     private readonly WebApplicationFactory<Startup> _factory;
     private readonly HttpClient _client;
-    private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###", false);
+    private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
     private readonly RoomRequest _testRoom = new ("TestRoom1", "TestRoomPassword");
 
     public ChatControllerTests(WebApplicationFactory<Startup> factory)

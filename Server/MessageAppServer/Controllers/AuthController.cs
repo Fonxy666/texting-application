@@ -89,7 +89,7 @@ public class AuthController(
             return BadRequest(ModelState);
         }
 
-        var result = await authenticationService.ExamineLoginCredentials(request.UserName, request.Password, request.RememberMe);
+        var result = await authenticationService.ExamineLoginCredentials(request.UserName, request.Password);
         
         if (result is FailedAuthResult failedResult)
         {

@@ -12,7 +12,7 @@ public class CookieController(ICookieService cookieService) : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            return Task.FromResult<ActionResult<bool>>(BadRequest(ModelState));
+            return Task.FromResult<ActionResult<bool>>(BadRequest(ModelState)); 
         }
 
         if (request == "Animation")

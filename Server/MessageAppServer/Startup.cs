@@ -91,7 +91,8 @@ namespace Server
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = issueAudience,
                         ValidAudience = issueAudience,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(issueSign))
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(issueSign)),
+                        RequireExpirationTime = false
                     };
 
                     options.Events = new JwtBearerEvents
@@ -111,7 +112,6 @@ namespace Server
                         {
                             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
                             logger.LogError("Authentication failed: {exception}", context.Exception.Message);
-                            logger.LogError(context.HttpContext.Request.Cookies["Authorization"]);
                             return Task.CompletedTask;
                         }
                     };
