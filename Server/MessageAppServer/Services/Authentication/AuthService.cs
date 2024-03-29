@@ -50,21 +50,25 @@ public class AuthService(
     public async Task<AuthResult> LoginAsync(string username, bool rememberMe)
     {
         var managedUser = await userManager.FindByNameAsync(username);
+        
         if (managedUser == null)
         {
             return new AuthResult(false, "", "");
         }
-
         
         var roles = await userManager.GetRolesAsync(managedUser);
-        var accessToken = tokenService.CreateJwtToken(managedUser, roles[0]);
+        var accessToken = tokenService.CreateJwtToken(managedUser, roles[0], rememberMe);
 
+        if (rememberMe)
+        {
+            cookieService.SetRefreshToken(managedUser);
+            await userManager.UpdateAsync(managedUser);
+        }
+        
+        cookieService.SetUserId(managedUser.Id);
         cookieService.SetAnimateAndAnonymous();
-        await cookieService.SetJwtToken(accessToken);
-        cookieService.SetRefreshTokenAndUserId(managedUser);
-        await userManager.UpdateAsync(managedUser);
-
-
+        await cookieService.SetJwtToken(accessToken, rememberMe);
+        
         return new AuthResult(true, managedUser.Id, "");
     }
 
@@ -85,7 +89,7 @@ public class AuthService(
         return Task.FromResult(userManager.Users.FirstOrDefault(user => user.UserName == username)?.Email);
     }
 
-    public async Task<AuthResult> ExamineLoginCredentials(string username, string password, bool rememberMe)
+    public async Task<AuthResult> ExamineLoginCredentials(string username, string password)
     {
         var managedUser = await userManager.FindByNameAsync(username);
 
@@ -129,8 +133,8 @@ public class AuthService(
     {
         var user = userManager.Users.FirstOrDefault(user => user.Id == userId);
         user!.RefreshToken = string.Empty;
-        user.RefreshTokenExpires = DateTime.Now;
-        user.RefreshTokenCreated = DateTime.Now;
+        user.RefreshTokenExpires = null;
+        user.RefreshTokenCreated = null;
         await userManager.UpdateAsync(user);
         cookieService.DeleteCookies();
         return new AuthResult(true, "-", "-");

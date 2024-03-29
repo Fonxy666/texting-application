@@ -1,7 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Identity;
+using Newtonsoft.Json;
 using Server.Model;
+using Server.Requests.Auth;
 using Server.Services.Authentication;
 using Server.Services.Cookie;
 
@@ -27,11 +30,20 @@ public class JwtRefreshMiddleware(RequestDelegate next)
     private async Task SetNewJwtToken(HttpContext context, ITokenService tokenService,
         UserManager<ApplicationUser> userManager, ICookieService cookieService)
     {
+        bool rememberMe;
+        using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
+        {
+            var body = await reader.ReadToEndAsync();
+            var requestBody = JsonConvert.DeserializeObject<LoginAuth>(body);
+
+            rememberMe = requestBody!.RememberMe;
+        }
+        
         var userId = context.Request.Cookies["UserId"];
         var user = userManager.Users.FirstOrDefault(user => user.Id == userId);
-        var newToken = tokenService.CreateJwtToken(user!, "User");
+        var newToken = tokenService.CreateJwtToken(user!, "User", rememberMe);
 
-        await cookieService.SetJwtToken(newToken);
+        await cookieService.SetJwtToken(newToken, rememberMe);
     }
 
     private bool ExamineCookies(HttpContext context)
@@ -57,6 +69,11 @@ public class JwtRefreshMiddleware(RequestDelegate next)
         {
             var jsonToken = handler.ReadToken(token) as JwtSecurityToken;      //Token decode
 
+            if (jsonToken?.Payload.Exp == null)
+            {
+                return false;
+            }
+            
             var expirationClaim = jsonToken?.Payload.Exp;      //Extract the expiration claims
 
             if (expirationClaim == null || !long.TryParse(expirationClaim.ToString(), out var expirationTimestamp))
@@ -65,7 +82,6 @@ public class JwtRefreshMiddleware(RequestDelegate next)
             }
 
             var expirationDateTime = DateTimeOffset.FromUnixTimeSeconds(expirationTimestamp).UtcDateTime;  //Convert to daytime
-            
             var isExpired = expirationDateTime < DateTime.UtcNow.AddHours(1);
             return isExpired;
         }
@@ -83,9 +99,9 @@ public class JwtRefreshMiddleware(RequestDelegate next)
         {
             var token = context.Request.Cookies["Authorization"];
             var role = GetRoleFromToken(token!);
-            var newToken = tokenService.CreateJwtToken(user, role);
+            var newToken = tokenService.CreateJwtToken(user, role, false);
 
-            await cookieService.SetJwtToken(newToken);
+            await cookieService.SetJwtToken(newToken, true);
         }
         else
         {

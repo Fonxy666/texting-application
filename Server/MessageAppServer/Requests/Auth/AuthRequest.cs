@@ -2,4 +2,4 @@
 
 namespace Server.Requests.Auth;
 
-public record AuthRequest([Required]string UserName, [Required]string Password, [Required]bool RememberMe);
+public record AuthRequest([Required]string UserName, [Required]string Password);

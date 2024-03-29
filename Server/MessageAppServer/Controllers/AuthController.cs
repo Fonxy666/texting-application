@@ -52,13 +52,6 @@ public class AuthController(
         EmailSenderCodeGenerator.RemoveVerificationCode(credentials.Email, "registration");
         return Ok(new VerifyTokenResponse(true));
     }
-    
-    [HttpPost("ExamineVerifyToken")]
-    public Task<ActionResult<string>> ChangeCookies(string key)
-    {
-        authenticationService.ChangeCookies(key);
-        return Task.FromResult<ActionResult<string>>(Ok(new VerifyTokenResponse(true)));
-    }
         
     [HttpPost("Register")]
     public async Task<ActionResult<EmailUsernameResponse>> Register(RegistrationRequest request)
@@ -96,7 +89,7 @@ public class AuthController(
             return BadRequest(ModelState);
         }
 
-        var result = await authenticationService.ExamineLoginCredentials(request.UserName, request.Password, request.RememberMe);
+        var result = await authenticationService.ExamineLoginCredentials(request.UserName, request.Password);
         
         if (result is FailedAuthResult failedResult)
         {
