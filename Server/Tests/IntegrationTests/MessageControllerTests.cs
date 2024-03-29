@@ -14,7 +14,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
 {
     private readonly WebApplicationFactory<Startup> _factory;
     private readonly HttpClient _client;
-    private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###", false);
+    private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
     private readonly RoomRequest _testRoom = new ("test", "test");
 
     public MessageControllerTests(WebApplicationFactory<Startup> factory)

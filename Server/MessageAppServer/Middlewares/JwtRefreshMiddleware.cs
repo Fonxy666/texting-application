@@ -1,10 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using Microsoft.AspNetCore.Identity;
-using Newtonsoft.Json;
 using Server.Model;
-using Server.Requests.Auth;
 using Server.Services.Authentication;
 using Server.Services.Cookie;
 
@@ -27,17 +24,9 @@ public class JwtRefreshMiddleware(RequestDelegate next)
         await next(context);
     }
 
-    private async Task SetNewJwtToken(HttpContext context, ITokenService tokenService,
-        UserManager<ApplicationUser> userManager, ICookieService cookieService)
+    private async Task SetNewJwtToken(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService)
     {
-        bool rememberMe;
-        using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
-        {
-            var body = await reader.ReadToEndAsync();
-            var requestBody = JsonConvert.DeserializeObject<LoginAuth>(body);
-
-            rememberMe = requestBody!.RememberMe;
-        }
+        var rememberMe = context.Request.Cookies["RememberMe"] == "True";
         
         var userId = context.Request.Cookies["UserId"];
         var user = userManager.Users.FirstOrDefault(user => user.Id == userId);
@@ -94,14 +83,15 @@ public class JwtRefreshMiddleware(RequestDelegate next)
     private async Task RefreshToken(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService)
     {
         var user = await userManager.FindByIdAsync(context.Request.Cookies["UserId"]!);
+        var rememberMe = context.Request.Cookies["RememberMe"] == "True";
 
         if (user != null && user.RefreshToken == context.Request.Cookies["RefreshToken"])
         {
             var token = context.Request.Cookies["Authorization"];
             var role = GetRoleFromToken(token!);
-            var newToken = tokenService.CreateJwtToken(user, role, false);
+            var newToken = tokenService.CreateJwtToken(user, role, rememberMe);
 
-            await cookieService.SetJwtToken(newToken, true);
+            await cookieService.SetJwtToken(newToken, rememberMe);
         }
         else
         {

@@ -16,8 +16,8 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
     private readonly WebApplicationFactory<Startup> _factory;
     private readonly HttpClient _client;
-    private readonly AuthRequest _testUser1 = new ("TestUsername1", "testUserPassword123###", false);
-    private readonly AuthRequest _testUser3 = new ("TestUsername3", "testUserPassword123###", false);
+    private readonly AuthRequest _testUser1 = new ("TestUsername1", "testUserPassword123###");
+    private readonly AuthRequest _testUser3 = new ("TestUsername3", "testUserPassword123###");
 
     public UserControllerTests(WebApplicationFactory<Startup> factory)
     {

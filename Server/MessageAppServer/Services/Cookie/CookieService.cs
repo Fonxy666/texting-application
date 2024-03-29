@@ -10,7 +10,7 @@ public class CookieService(IConfiguration configuration, IHttpContextAccessor ht
     
     private const int ExpirationHours = 2;
 
-    public void SetUserId(string userId)
+    public void SetUserId(string userId, bool rememberMe)
     {
         Response.Cookies.Append("UserId", userId, new CookieOptions
         {
@@ -19,7 +19,7 @@ public class CookieService(IConfiguration configuration, IHttpContextAccessor ht
             SameSite = SameSiteMode.None,
             IsEssential = true,
             Secure = true,
-            Expires = DateTime.UtcNow.AddDays(7)
+            Expires = rememberMe? DateTime.UtcNow.AddDays(7) : null
         });
     }
 
@@ -41,8 +41,8 @@ public class CookieService(IConfiguration configuration, IHttpContextAccessor ht
         user.RefreshTokenCreated = newRefreshToken.Created;
         user.RefreshTokenExpires = newRefreshToken.Expires;
     }
-    
-    public void SetAnimateAndAnonymous()
+
+    public void SetAnimateAndAnonymous(bool rememberMe)
     {
         if (Request.Cookies["Animation"] == null)
         {
@@ -53,7 +53,7 @@ public class CookieService(IConfiguration configuration, IHttpContextAccessor ht
                 SameSite = SameSiteMode.None,
                 IsEssential = true,
                 Secure = true,
-                Expires = DateTime.UtcNow.AddYears(2)
+                Expires = rememberMe? DateTime.UtcNow.AddYears(2) : null
             });
         }
 
@@ -66,13 +66,14 @@ public class CookieService(IConfiguration configuration, IHttpContextAccessor ht
                 SameSite = SameSiteMode.None,
                 IsEssential = true,
                 Secure = true,
-                Expires = DateTime.UtcNow.AddYears(2)
+                Expires = rememberMe? DateTime.UtcNow.AddYears(2) : null
             });
         }
     }
 
     public void ChangeAnimation()
     {
+        var rememberMe = Request.Cookies["RememberMe"] == "True";
         Response.Cookies.Append("Animation",
             Request.Cookies["Animation"] == "False" ? true.ToString() : false.ToString(), new CookieOptions
             {
@@ -81,12 +82,13 @@ public class CookieService(IConfiguration configuration, IHttpContextAccessor ht
                 SameSite = SameSiteMode.None,
                 IsEssential = true,
                 Secure = true,
-                Expires = DateTime.UtcNow.AddYears(2)
+                Expires = rememberMe? DateTime.UtcNow.AddYears(2) : null
             });
     }
 
     public void ChangeUserAnonymous()
     {
+        var rememberMe = Request.Cookies["RememberMe"] == "True";
         Response.Cookies.Append("Anonymous",
             Request.Cookies["Anonymous"] == "False" ? true.ToString() : false.ToString(), new CookieOptions
             {
@@ -95,7 +97,7 @@ public class CookieService(IConfiguration configuration, IHttpContextAccessor ht
                 SameSite = SameSiteMode.None,
                 IsEssential = true,
                 Secure = true,
-                Expires = DateTime.UtcNow.AddYears(2)
+                Expires = rememberMe? DateTime.UtcNow.AddYears(2) : null
             });
     }
 
@@ -125,5 +127,21 @@ public class CookieService(IConfiguration configuration, IHttpContextAccessor ht
         Response.Cookies.Delete("Authorization", cookieOptions);
         Response.Cookies.Delete("UserId", cookieOptions);
         Response.Cookies.Delete("RefreshToken", cookieOptions);
+        Response.Cookies.Delete("RememberMe", cookieOptions);
+        Response.Cookies.Delete("Animation", cookieOptions);
+        Response.Cookies.Delete("Anonymous", cookieOptions);
+    }
+
+    public void SetRememberMeCookie(bool rememberMe)
+    {
+        Response.Cookies.Append("RememberMe", rememberMe.ToString(), new CookieOptions
+        {
+            Domain = Request.Host.Host,
+            HttpOnly = true,
+            SameSite = SameSiteMode.None,
+            IsEssential = true,
+            Secure = true,
+            Expires = rememberMe? DateTime.UtcNow.AddYears(2) : null
+        });
     }
 }

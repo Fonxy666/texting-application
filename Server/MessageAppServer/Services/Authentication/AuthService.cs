@@ -64,9 +64,10 @@ public class AuthService(
             cookieService.SetRefreshToken(managedUser);
             await userManager.UpdateAsync(managedUser);
         }
-        
-        cookieService.SetUserId(managedUser.Id);
-        cookieService.SetAnimateAndAnonymous();
+
+        cookieService.SetRememberMeCookie(rememberMe);
+        cookieService.SetUserId(managedUser.Id, rememberMe);
+        cookieService.SetAnimateAndAnonymous(rememberMe);
         await cookieService.SetJwtToken(accessToken, rememberMe);
         
         return new AuthResult(true, managedUser.Id, "");
