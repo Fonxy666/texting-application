@@ -42,6 +42,24 @@
     }
 }
 
+@keyframes colorAnimation {
+    0% {
+        color: black;
+    }
+    40% {
+        color: black;
+    }
+    50% {
+        color: white;
+    }
+    90% {
+        color: white;
+    }
+    100% {
+        color: black;
+    }
+}
+
 .btn-color {
     background-color: #0e1c36;
     color: #fff;
@@ -65,7 +83,7 @@ a {
     overflow: hidden;
 }
 
-.background-image {
+.animate-image {
     min-width: 100vh;
     min-height: 100vh;
     position: absolute;
@@ -78,6 +96,17 @@ a {
     z-index: -2;
     animation: 
         dayTime 20s linear infinite;
+}
+
+.nonanimate-image {
+    min-width: 100vh;
+    min-height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: -3;
+    background-color: rgb(26, 26, 51);
 }
 
 .moon_img {
@@ -96,6 +125,30 @@ a {
         moveLeft 10s linear infinite;
     z-index: -1;
     animation-timing-function: cubic-bezier(0.47, 0.03, 0.49, 1);
+}
+
+.animate-welcome-text {
+    color: white;
+    @media (max-width: 1300px) {
+        margin-top: 20%;
+    };
+    @media (max-width: 850px) {
+        margin-top: 40%;
+    };
+    @media (min-width: 850px) {
+        animation: 
+            colorAnimation 20s linear infinite;
+    }
+}
+
+.nonanimate-welcome-text {
+    color: white;
+    @media (max-width: 1300px) {
+        margin-top: 20%;
+    };
+    @media (max-width: 850px) {
+        margin-top: 40%;
+    };
 }
 
 .text-style {

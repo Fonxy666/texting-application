@@ -24,8 +24,11 @@ export class JoinRoomComponent implements OnInit {
     isMoonActive: boolean = false;
     userId: string = this.cookieService.get("UserId");
     userName: string = "";
+    animation: boolean = true;
 
     ngOnInit() : void {
+        this.animation = this.cookieService.get("Animation") == "True";
+        
         this.joinRoomForm = this.fb.group({
             room: ['', Validators.required],
             password: ['', Validators.required]
