@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { CookieService } from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-home',
@@ -6,12 +7,17 @@ import { Component, OnInit } from '@angular/core';
   styleUrl: './home.component.css'
 })
 export class HomeComponent implements OnInit {
+    constructor(private cookieService: CookieService) { }
+
     myImage: string = "./assets/images/backgroundpng.png";
     isSunActive: boolean = true;
     isMoonActive: boolean = false;
     displayHomeText: string = "";
+    animation: boolean = true;
 
     ngOnInit() {
+        this.animation = this.cookieService.get("Animation") == "True";
+        console.log(this.animation);
         this.toggleImageClasses();
 
         setInterval(() => {

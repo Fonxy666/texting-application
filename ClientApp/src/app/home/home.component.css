@@ -67,7 +67,7 @@
     overflow: hidden;
 }
   
-.background-image {
+.animate-image {
     min-width: 100vh;
     min-height: 100vh;
     position: absolute;
@@ -77,6 +77,17 @@
     z-index: -3;
     animation: 
         dayTime 20s linear infinite;
+}
+
+.nonanimate-image {
+    min-width: 100vh;
+    min-height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: -3;
+    background-color: rgb(26, 26, 51);
 }
 
 .sun_img {
@@ -108,6 +119,17 @@
         animation: 
             colorAnimation 20s linear infinite;
     }
+}
+
+.nonanimate-welcome-text {
+    margin-top: 10%;
+    color: white;
+    @media (max-width: 1300px) {
+        margin-top: 20%;
+    };
+    @media (max-width: 850px) {
+        margin-top: 40%;
+    };
 }
 
 .text-style {

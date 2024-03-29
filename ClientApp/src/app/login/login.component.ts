@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { LoginRequest } from '../model/LoginRequest';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
@@ -11,7 +11,7 @@ import { LoginAuthTokenRequest } from '../model/LoginAuthTokenRequest';
   styleUrl: './login.component.css'
 })
 
-export class LoginComponent {
+export class LoginComponent implements OnInit {
     constructor(private http: HttpClient, private cookieService: CookieService, private router: Router) { }
 
     loginStarted: boolean = false;
