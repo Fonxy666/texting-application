@@ -106,7 +106,7 @@
     };
 }
 
-.welcome-text {
+.animate-welcome-text {
     margin-top: 10%;
     color: white;
     @media (max-width: 1300px) {

@@ -17,7 +17,7 @@ export class HomeComponent implements OnInit {
 
     ngOnInit() {
         this.animation = this.cookieService.get("Animation") == "True";
-        console.log(this.animation);
+        
         this.toggleImageClasses();
 
         setInterval(() => {

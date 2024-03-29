@@ -2,12 +2,13 @@
     <app-nav-bar />
     <img [src]="isSunActive ? 'assets/images/sun.png' : 'assets/images/moon.png'" 
        alt="{{ isSunActive ? 'sun' : 'moon' }}" 
-       class="sun_img" >
+       class="sun_img"
+       *ngIf="animation">
     <div>
         <div class="row">
             <div class="col-md-4 offset-md-4">
-                <h2 class="text-center mt-5 text-dark text-white text-style">Welcome to Textinger</h2>
-                <div class="text-center mb-5 text-dark text-white text-style">Here you can join to a desired room with your friends.</div>
+                <h2 [ngClass]="{ 'animate-welcome-text': animation, 'nonanimate-welcome-text': !animation }" class="text-center mt-5 text-style">Welcome to Textinger</h2>
+                <div [ngClass]="{ 'animate-welcome-text': animation, 'nonanimate-welcome-text': !animation }" class="text-center mb-5 text-style">Here you can join to a desired room with your friends.</div>
                 <div class="card my-5">
                     <form [formGroup]="joinRoomForm" class="card-body cardbody-color p-lg 5">
                         <div class="text-center">
@@ -33,5 +34,5 @@
             </div>
         </div>
     </div>
-    <img [src]="myImage" class="background-image">
+    <img [src]="myImage" [class]="animation ? 'animate-image' : 'nonanimate-image'">
 </div>
