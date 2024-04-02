@@ -21,7 +21,7 @@ export class CreateRegistrationRequestComponent {
     
     ngOnInit(): void {
         this.registrationRequest = this.fb.group({
-            email: ['', Validators.required],
+            email: ['', [Validators.required, Validators.email]],
             username: ['', Validators.required],
             password: ['', Validators.required],
             passwordrepeat: ['', Validators.required],
