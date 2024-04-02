@@ -69,6 +69,8 @@ export class JoinRoomComponent implements OnInit {
                     this.errorHandler.handleError403(error);
                 } else if (error.error && error.error.error === "Invalid login credentials.") {
                     this.errorHandler.errorAlert("Invalid room name or password.");
+                } else if (error.status === 400) {
+                    alert("Invalid username or password.");
                 } else {
                     console.log(error);
                 }
