@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using Server;
-using Server.Requests.Auth;
-using Server.Requests.Chat;
-using Server.Requests.Message;
+using Server.Model.Requests.Auth;
+using Server.Model.Requests.Chat;
+using Server.Model.Requests.Message;
 using Xunit;
 
 namespace Tests.IntegrationTests;
@@ -15,7 +15,6 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     private readonly WebApplicationFactory<Startup> _factory;
     private readonly HttpClient _client;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
-    private readonly RoomRequest _testRoom = new ("test", "test");
 
     public MessageControllerTests(WebApplicationFactory<Startup> factory)
     {

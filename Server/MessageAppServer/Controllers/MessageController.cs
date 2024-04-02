@@ -2,10 +2,8 @@
 using Server.Services.Chat.MessageService;
 using Microsoft.AspNetCore.Authorization;
 using Server.Model.Chat;
-using Server.Requests;
-using Server.Requests.Message;
-using Server.Responses;
-using Server.Responses.Message;
+using Server.Model.Requests.Message;
+using Server.Model.Responses.Message;
 
 namespace Server.Controllers;
 

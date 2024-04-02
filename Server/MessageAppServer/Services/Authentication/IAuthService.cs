@@ -1,6 +1,5 @@
-﻿using Server.Responses;
-using Server.Responses.Auth;
-using Server.Responses.User;
+﻿using Server.Model.Responses.Auth;
+using Server.Model.Responses.User;
 
 namespace Server.Services.Authentication;
 

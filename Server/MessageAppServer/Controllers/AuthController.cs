@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Server.Requests.Auth;
-using Server.Responses.Auth;
-using Server.Responses.User;
+using Server.Model.Requests.Auth;
+using Server.Model.Responses.Auth;
+using Server.Model.Responses.User;
 using Server.Services.Authentication;
 using Server.Services.EmailSender;
 using Server.Services.User;

@@ -1,11 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Server.Requests;
-using Server.Requests.Chat;
-using Server.Responses;
-using Server.Responses.Chat;
-using Server.Services.Chat;
-using Server.Services.Chat.MessageService;
+using Server.Model.Requests.Chat;
+using Server.Model.Responses.Chat;
 using Server.Services.Chat.RoomService;
 
 namespace Server.Controllers;
@@ -43,6 +39,9 @@ public class ChatController(IRoomService roomRepository) : ControllerBase
         {
             return BadRequest(ModelState);
         }
+        
+        
+        
         var result = await roomRepository.LoginRoomAsync(request.RoomName, request.Password);
 
         if (result.Success == false)
