@@ -40,11 +40,9 @@ public class ChatController(IRoomService roomRepository) : ControllerBase
             return BadRequest(ModelState);
         }
         
-        
-        
         var result = await roomRepository.LoginRoomAsync(request.RoomName, request.Password);
 
-        if (result.Success == false)
+        if (!result.Success)
         {
             return BadRequest(new { error = "Invalid login credentials." });
         }

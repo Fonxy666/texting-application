@@ -7,6 +7,25 @@ namespace Server.Services.Chat.RoomService;
 public class RoomService(RoomsContext context) : IRoomService
 {
     private RoomsContext Context { get; set; } = context;
+    public async Task<RoomResponse> GetRoom(string roomName)
+    {
+        try
+        {
+            var existingRoom = Context.Rooms.FirstOrDefault(room => room.RoomName == roomName);
+            if (existingRoom == null)
+            {
+                return new RoomResponse(false, "", "");
+            }
+
+            return new RoomResponse(true, existingRoom.RoomId, existingRoom.RoomName);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
     public async Task<RoomResponse> RegisterRoomAsync(string roomName, string password)
     {
         try
@@ -27,6 +46,11 @@ public class RoomService(RoomsContext context) : IRoomService
     public async Task<RoomResponse> LoginRoomAsync(string roomName, string password)
     {
         var existingRoom = Context.Rooms.FirstOrDefault(room => room.RoomName == roomName)!;
+        
+        if (existingRoom == null)
+        {
+            return new RoomResponse(false, "", "");
+        }
 
         if (existingRoom.RoomId.Length < 1)
         {
