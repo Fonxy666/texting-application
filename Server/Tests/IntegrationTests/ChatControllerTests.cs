@@ -2,10 +2,8 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using Server;
-using Server.Requests;
-using Server.Requests.Auth;
-using Server.Requests.Chat;
-using Server.Responses;
+using Server.Model.Requests.Auth;
+using Server.Model.Requests.Chat;
 using Xunit;
 
 namespace Tests.IntegrationTests;

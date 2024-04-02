@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Server.Database;
+using Server.DockerHelper;
 using Server.Hub;
 using Server.Middlewares;
 using Server.Model;
@@ -24,6 +25,23 @@ namespace Server
             var connection = configuration["ConnectionString"];
             var issueSign = configuration["IssueSign"];
             var issueAudience = configuration["IssueAudience"];
+            var localhost = connection.Split("=")[1].Split(",")[0] == "localhost";
+
+            if (localhost)
+            {
+                if (!DockerContainerHelperClass.IsSqlServerContainerRunning())
+                {
+                    DockerContainerHelperClass.StopAllRunningContainers();
+                    Thread.Sleep(1000);
+                    DockerContainerHelperClass.StartSqlServerContainer();
+                }
+            
+                while (!DockerContainerHelperClass.IsSqlServerContainerRunning())
+                {
+                    Thread.Sleep(3000);
+                }
+            }
+            
 
             services.AddHttpContextAccessor();
             services.AddControllers(options =>

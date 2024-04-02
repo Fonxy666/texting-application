@@ -1,10 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Server.Database;
 using Server.Model.Chat;
-using Server.Requests;
-using Server.Requests.Message;
-using Server.Responses;
-using Server.Responses.Message;
+using Server.Model.Requests.Message;
+using Server.Model.Responses.Message;
 
 namespace Server.Services.Chat.MessageService;
 
