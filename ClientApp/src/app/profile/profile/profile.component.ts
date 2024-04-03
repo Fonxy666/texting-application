@@ -154,7 +154,6 @@ export class ProfileComponent implements OnInit {
             this.errorHandler.handleError401()
         )
         .subscribe((response: any) => {
-            console.log(response);
             if (response) {
                 alert("Email change succeeded!");
             }
