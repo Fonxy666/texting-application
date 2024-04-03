@@ -9,6 +9,8 @@ import { ChangePasswordRequest } from '../../../model/ChangePasswordRequest';
 })
 export class GeneratePasswordChangeRequestComponent implements OnInit {
     constructor(private fb: FormBuilder) { }
+
+    showPassword: boolean = false;
     
     changePasswordRequest!: FormGroup;
     @Input() email!: string;
@@ -18,6 +20,8 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
             email: [''],
             oldPassword: ['', Validators.required],
             newPassword: ['', Validators.required]
+        }, {
+            validators: this.validPasswordValidator.bind(this)
         });
     }
 
@@ -31,5 +35,26 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
             this.changePasswordRequest.get('newPassword')?.value
             );
         this.SendPasswordChangeRequest.emit(changePasswordRequest);
+    }
+
+    validPasswordValidator(group: FormGroup): { [key: string]:boolean } | null {
+        const password = group.get('password')?.value;
+        const passwordRepeat = group.get('passwordrepeat')?.value;
+
+        if (!password || !passwordRepeat) {
+            return null;
+        }
+
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+        if (!regex.test(password)) {
+            return { invalidPassword: true };
+        }
+
+        return null;
+    }
+
+    toggleShowPassword() {
+        this.showPassword = !this.showPassword;
     }
 }

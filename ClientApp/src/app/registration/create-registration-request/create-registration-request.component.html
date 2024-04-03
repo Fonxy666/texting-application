@@ -11,14 +11,23 @@
                 Registration
             </h1>
             <form [formGroup]="registrationRequest" (ngSubmit)="OnFormSubmit()">
-                <div class="form-group mt-3">
+                <div class="form-group mt-3" *ngIf="registrationRequest.get('email')">
                     <label class="mb-2" for="email">Email</label>
                     <input formControlName="email" type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="email" required name="email">
                     <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                    <div *ngIf="registrationRequest.get('email')?.invalid 
+                                && (registrationRequest.get('email')?.dirty || registrationRequest.get('email')?.touched)" class="text-danger">
+                        <div *ngIf="registrationRequest.get('email')?.errors?.['required']">Email is required</div>
+                        <div *ngIf="registrationRequest.get('email')?.errors?.['email']">Invalid email format</div>
+                    </div>
                 </div>
                 <div class="form-group mt-3">
                     <label class="mb-2" for="username">Username</label>
-                    <input formControlName="username" type="email" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Username" required name="username">
+                    <input formControlName="username" type="text" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Username" required name="username">
+                    <div *ngIf="registrationRequest.get('username')?.invalid 
+                        && (registrationRequest.get('username')?.dirty || registrationRequest.get('username')?.touched)" class="text-danger">
+                        <div *ngIf="registrationRequest.get('username')?.errors?.['required']">Username is required</div>
+                    </div>
                 </div>
                 <div class="form-group mt-3">
                     <label class="mb-2" for="password">Password</label>
@@ -32,14 +41,26 @@
                             </svg>
                         </span>
                     </div>
+                    <div *ngIf="registrationRequest.get('password')?.invalid 
+                        && (registrationRequest.get('password')?.dirty || registrationRequest.get('password')?.touched)" class="text-danger">
+                        <div *ngIf="registrationRequest.get('password')?.errors">Invalid password format</div>
+                    </div>
                 </div>
                 <div class="form-group mt-3">
                     <label class="mb-2" for="password-repeat">Password repeat</label>
                     <input formControlName="passwordrepeat" [type]="showPassword ? 'text' : 'password'" class="form-control" id="password-repeat" placeholder="Password" required name="password-repeat">
+                    <div *ngIf="registrationRequest.get('passwordrepeat')?.invalid 
+                        && (registrationRequest.get('passwordrepeat')?.dirty || registrationRequest.get('passwordrepeat')?.touched)" class="text-danger">
+                        <div *ngIf="registrationRequest.get('passwordrepeat')?.errors">Invalid password format</div>
+                    </div>
                 </div>
                 <div class="form-group mt-3">
                     <label class="mb-2" for="phoneNumber">Telephone number</label>
                     <input formControlName="phoneNumber" type="email" class="form-control" id="phoneNumber" aria-describedby="emailHelp" placeholder="06-20-221-2222" required name="phoneNumber">
+                    <div *ngIf="registrationRequest.get('phoneNumber')?.invalid 
+                        && (registrationRequest.get('phoneNumber')?.dirty || registrationRequest.get('phoneNumber')?.touched)" class="text-danger">
+                        <div *ngIf="registrationRequest.get('phoneNumber')?.errors?.['required']">Phone number required</div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label class="mb-2" for="profile-pic">Profile picture</label>
