@@ -15,7 +15,7 @@ export class GenerateEmailChangeRequestComponent implements OnInit {
 
     ngOnInit(): void {
         this.changeEmailRequest = this.fb.group({
-            newEmail: ['', Validators.required]
+            newEmail: ['', [Validators.required, Validators.email]]
         });
     }
 
@@ -25,8 +25,7 @@ export class GenerateEmailChangeRequestComponent implements OnInit {
     OnFormSubmit() {
         const changeEmailRequest = new ChangeEmailRequest(
             this.email,
-            this.changeEmailRequest.get('newEmail')?.value,
-            'asdasdasd'
+            this.changeEmailRequest.get('newEmail')?.value
             );
         this.SendPasswordChangeRequest.emit(changeEmailRequest);
     }

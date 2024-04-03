@@ -10,10 +10,15 @@
                   <label for="inputEmail" class="form-label">New e-mail address</label>
                   <input formControlName="newEmail" type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp">
                   <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+                  <div *ngIf="changeEmailRequest.get('newEmail')?.invalid 
+                        && (changeEmailRequest.get('newEmail')?.dirty || changeEmailRequest.get('newEmail')?.touched)" class="text-danger">
+                        <div *ngIf="changeEmailRequest.get('newEmail')?.errors?.['required']">Email is required</div>
+                        <div *ngIf="changeEmailRequest.get('newEmail')?.errors">Invalid email format</div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="!changeEmailRequest.valid">Submit</button>
                 </div>
             </form>
         </div>

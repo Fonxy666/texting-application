@@ -84,12 +84,13 @@ a {
 }
 
 .animate-image {
-    min-width: 100vh;
-    min-height: 100vh;
+    min-width: 100%;
+    min-height: 100%;
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
+    height: 100%;
     height: auto;
     object-fit: cover;
     object-position: top center;
@@ -99,8 +100,8 @@ a {
 }
 
 .nonanimate-image {
-    min-width: 100vh;
-    min-height: 100vh;
+    min-width: 100%;
+    min-height: 100%;
     position: absolute;
     top: 0;
     left: 0;
@@ -132,9 +133,6 @@ a {
     @media (max-width: 1300px) {
         margin-top: 20%;
     };
-    @media (max-width: 850px) {
-        margin-top: 40%;
-    };
     @media (min-width: 850px) {
         animation: 
             colorAnimation 20s linear infinite;
@@ -145,9 +143,6 @@ a {
     color: white;
     @media (max-width: 1300px) {
         margin-top: 20%;
-    };
-    @media (max-width: 850px) {
-        margin-top: 40%;
     };
 }
 

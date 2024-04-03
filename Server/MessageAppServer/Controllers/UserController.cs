@@ -151,7 +151,7 @@ public class UserController(
                 return BadRequest(ModelState);
             }
 
-            var result = await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.NewPassword);
+            var result = await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.Password);
 
             await repository.SaveChangesAsync();
 

@@ -1,0 +1,101 @@
+Index: MessageAppServer/MessageAppServer.csproj
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><Project Sdk=\"Microsoft.NET.Sdk.Web\">\r\n\r\n    <PropertyGroup>\r\n        <TargetFramework>net8.0</TargetFramework>\r\n        <Nullable>enable</Nullable>\r\n        <ImplicitUsings>enable</ImplicitUsings>\r\n        <InvariantGlobalization>false</InvariantGlobalization>\r\n        <UserSecretsId>d7867322-cb5c-4dc2-9c09-b598b2955136</UserSecretsId>\r\n        <RootNamespace>Server</RootNamespace>\r\n    </PropertyGroup>\r\n\r\n    <ItemGroup>\r\n        <PackageReference Include=\"DotNetEnv\" Version=\"3.0.0\" />\r\n        <PackageReference Include=\"Microsoft.AspNet.SignalR\" Version=\"2.4.3\" />\r\n        <PackageReference Include=\"Microsoft.AspNet.SignalR.Client\" Version=\"2.4.3\" />\r\n        <PackageReference Include=\"Microsoft.AspNetCore.Authentication.JwtBearer\" Version=\"7.0.14\" />\r\n        <PackageReference Include=\"Microsoft.AspNetCore.Identity.EntityFrameworkCore\" Version=\"8.0.1\" />\r\n        <PackageReference Include=\"Microsoft.AspNetCore.Mvc.Testing\" Version=\"8.0.1\" />\r\n        <PackageReference Include=\"Microsoft.AspNetCore.OpenApi\" Version=\"8.0.0\" />\r\n        <PackageReference Include=\"Microsoft.AspNetCore.TestHost\" Version=\"8.0.1\" />\r\n        <PackageReference Include=\"Microsoft.EntityFrameworkCore.Design\" Version=\"8.0.1\">\r\n          <PrivateAssets>all</PrivateAssets>\r\n          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>\r\n        </PackageReference>\r\n        <PackageReference Include=\"Microsoft.EntityFrameworkCore.InMemory\" Version=\"8.0.1\" />\r\n        <PackageReference Include=\"Microsoft.EntityFrameworkCore.SqlServer\" Version=\"8.0.1\" />\r\n        <PackageReference Include=\"Microsoft.NET.Test.Sdk\" Version=\"17.6.0\" />\r\n        <PackageReference Include=\"Moq\" Version=\"4.20.70\" />\r\n        <PackageReference Include=\"Newtonsoft.Json\" Version=\"13.0.3\" />\r\n        <PackageReference Include=\"Swashbuckle.AspNetCore\" Version=\"6.4.0\" />\r\n    </ItemGroup>\r\n\r\n</Project>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/MessageAppServer/MessageAppServer.csproj b/MessageAppServer/MessageAppServer.csproj
+--- a/MessageAppServer/MessageAppServer.csproj	(revision 90281daf5b6fc8d42db76532978064d7756e111f)
++++ b/MessageAppServer/MessageAppServer.csproj	(date 1712041938103)
+@@ -10,6 +10,7 @@
+     </PropertyGroup>
+ 
+     <ItemGroup>
++        <PackageReference Include="Docker.DotNet" Version="3.125.15" />
+         <PackageReference Include="DotNetEnv" Version="3.0.0" />
+         <PackageReference Include="Microsoft.AspNet.SignalR" Version="2.4.3" />
+         <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.4.3" />
+Index: MessageAppServer/Docker/DockerContainerHelperClass.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/MessageAppServer/Docker/DockerContainerHelperClass.cs b/MessageAppServer/Docker/DockerContainerHelperClass.cs
+new file mode 100644
+--- /dev/null	(date 1712042103640)
++++ b/MessageAppServer/Docker/DockerContainerHelperClass.cs	(date 1712042103640)
+@@ -0,0 +1,72 @@
++using System.Diagnostics;
++
++namespace Server.Docker;
++
++public static class DockerContainerHelperClass
++{
++    public static void StopAllRunningContainers()
++    {
++        using (var process = new Process())
++        {
++            process.StartInfo.FileName = "docker";
++            process.StartInfo.Arguments = "ps -q";
++            process.StartInfo.RedirectStandardOutput = true;
++            process.StartInfo.UseShellExecute = false;
++            process.StartInfo.CreateNoWindow = true;
++            process.Start();
++
++            string output = process.StandardOutput.ReadToEnd();
++            process.WaitForExit();
++
++            string[] containerIds = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
++
++            foreach (string containerId in containerIds)
++            {
++                StopContainer(containerId);
++            }
++        }
++    }
++
++    public static void StopContainer(string containerId)
++    {
++        using (var process = new Process())
++        {
++            process.StartInfo.FileName = "docker";
++            process.StartInfo.Arguments = $"stop {containerId}";
++            process.StartInfo.UseShellExecute = false;
++            process.StartInfo.CreateNoWindow = true;
++            process.Start();
++        }
++    }
++
++    public static void StartSqlServerContainer()
++    {
++        using (var process = new Process())
++        {
++            process.StartInfo.FileName = "docker";
++            process.StartInfo.Arguments = "start dazzling_cartwright";
++            process.StartInfo.UseShellExecute = false;
++            process.StartInfo.CreateNoWindow = true;
++
++            process.Start();
++        }
++    }
++
++    public static bool IsSqlServerContainerRunning()
++    {
++        using (var process = new Process())
++        {
++            process.StartInfo.FileName = "docker";
++            process.StartInfo.Arguments = "ps --format '{{.Names}}' --filter name=dazzling_cartwright";
++            process.StartInfo.RedirectStandardOutput = true;
++            process.StartInfo.UseShellExecute = false;
++            process.StartInfo.CreateNoWindow = true;
++
++            process.Start();
++            string output = process.StandardOutput.ReadToEnd();
++            process.WaitForExit();
++
++            return !string.IsNullOrWhiteSpace(output) && output.Contains("dazzling_cartwright");
++        }
++    }
++}
+\ No newline at end of file

@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup,  Validators } from '@angular/forms';
 import { RegistrationRequest } from '../../model/RegistrationRequest';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { DomSanitizer } from '@angular/platform-browser';
+import { passwordValidator, passwordMatchValidator } from '../../validators/ValidPasswordValidator';
 
 @Component({
   selector: 'app-create-registration-request',
@@ -21,13 +22,13 @@ export class CreateRegistrationRequestComponent {
     
     ngOnInit(): void {
         this.registrationRequest = this.fb.group({
-            email: ['', Validators.required],
+            email: ['', [Validators.required, Validators.email]],
             username: ['', Validators.required],
-            password: ['', Validators.required],
-            passwordrepeat: ['', Validators.required],
+            password: ['', [Validators.required, passwordValidator]],
+            passwordrepeat: ['', [Validators.required, passwordValidator]],
             phoneNumber: ['', Validators.required]
         }, {
-            validators: this.passwordMatchValidator.bind(this)
+            validators: passwordMatchValidator.bind(this)
         });
     }
     
@@ -43,13 +44,6 @@ export class CreateRegistrationRequestComponent {
             this.registrationRequest.get('phoneNumber')?.value
         );
         this.SendRegistrationRequest.emit(registrationRequest);
-    }
-
-    passwordMatchValidator(group: FormGroup): { [key: string]: boolean } | null {
-        const password = group.get('password')?.value;
-        const passwordRepeat = group.get('passwordrepeat')?.value;
-    
-        return password === passwordRepeat ? null : { 'passwordMismatch': true };
     }
 
     toggleShowPassword() {

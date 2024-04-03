@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ChangePasswordRequest } from '../../../model/ChangePasswordRequest';
+import { CookieService } from 'ngx-cookie-service';
+import { passwordValidator, passwordMatchValidator } from '../../../validators/ValidPasswordValidator';
 
 @Component({
   selector: 'app-generate-password-change-request',
@@ -8,16 +10,20 @@ import { ChangePasswordRequest } from '../../../model/ChangePasswordRequest';
   styleUrl: './generate-password-change-request.component.css'
 })
 export class GeneratePasswordChangeRequestComponent implements OnInit {
-    constructor(private fb: FormBuilder) { }
+    constructor(private fb: FormBuilder, private cookieService: CookieService) { }
+
+    showPassword: boolean = false;
     
     changePasswordRequest!: FormGroup;
-    @Input() email!: string;
     
     ngOnInit(): void {
         this.changePasswordRequest = this.fb.group({
-            email: [''],
+            id: [''],
             oldPassword: ['', Validators.required],
-            newPassword: ['', Validators.required]
+            password: ['', [Validators.required, passwordValidator]],
+            passwordrepeat: ["", [Validators.required, passwordValidator]]
+        }, {
+            validators: passwordMatchValidator.bind(this)
         });
     }
 
@@ -26,10 +32,15 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
 
     OnFormSubmit() {
         const changePasswordRequest = new ChangePasswordRequest(
-            this.email,
+            this.cookieService.get("UserId"),
             this.changePasswordRequest.get('oldPassword')?.value,
-            this.changePasswordRequest.get('newPassword')?.value
+            this.changePasswordRequest.get('password')?.value,
+            this.changePasswordRequest.get('passwordrepeat')?.value
             );
         this.SendPasswordChangeRequest.emit(changePasswordRequest);
+    }
+
+    toggleShowPassword() {
+        this.showPassword = !this.showPassword;
     }
 }
