@@ -131,12 +131,13 @@ export class ProfileComponent implements OnInit {
 
     changePassword(data: ChangePasswordRequest) {
         data.id = this.user.id;
-
+        console.log(data);
         this.http.patch('https://localhost:7045/User/ChangePassword', data, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401()
         )
         .subscribe((response: any) => {
+            console.log(response);
             if (response) {
                 this.router.navigate(['/']);
             }
@@ -144,6 +145,8 @@ export class ProfileComponent implements OnInit {
         (error) => {
             if (error.status === 403) {
                 this.errorHandler.handleError403(error);
+            } else if (error.status === 400) {
+                alert("Wrong password.");
             }
         });
     }
