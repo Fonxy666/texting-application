@@ -5,8 +5,6 @@ import { CookieService } from 'ngx-cookie-service';
 import { ChatService } from '../../services/chat-service/chat.service';
 import { HttpClient } from '@angular/common/http';
 import { JoinRoomRequest } from '../../model/JoinRoomRequest';
-import { retryWhen, delay, take, mergeMap } from 'rxjs/operators';
-import { defer, of } from 'rxjs';
 import { ErrorHandlerService } from '../../services/error-handler.service';
 
 @Component({
@@ -25,6 +23,7 @@ export class JoinRoomComponent implements OnInit {
     userId: string = this.cookieService.get("UserId");
     userName: string = "";
     animation: boolean = true;
+    showPassword: boolean = false;
 
     ngOnInit() : void {
         this.animation = this.cookieService.get("Animation") == "True";
@@ -125,5 +124,9 @@ export class JoinRoomComponent implements OnInit {
 
     goToCreateRoom() {
         this.router.navigate(['create-room']);
+    }
+
+    toggleShowPassword() {
+        this.showPassword = !this.showPassword;
     }
 }

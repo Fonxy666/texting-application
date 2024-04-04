@@ -14,10 +14,18 @@ import { ErrorHandlerService } from '../../services/error-handler.service';
 export class CreateRoomComponent implements OnInit {
     constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private http: HttpClient, private errorHandler: ErrorHandlerService) { }
 
+    myImage: string = "./assets/images/backgroundpng.png";
+    boyImage: string = "./assets/images/create_room_image.png"
     createRoomForm!: FormGroup;
     token: string = "";
+    animation: boolean = true;
+    isSunActive: boolean = true;
+    isMoonActive: boolean = false;
+    showPassword: boolean = false;
 
     ngOnInit(): void {
+        this.animation = this.cookieService.get("Animation") == "True";
+
         this.token = this.cookieService.get('Token') ? 
             this.cookieService.get('Token')! : sessionStorage.getItem('Token')!;
 
@@ -59,7 +67,11 @@ export class CreateRoomComponent implements OnInit {
         );
     }
 
-    handleCancer() {
+    handleCancel() {
         this.router.navigate(['/join-room']);
+    }
+
+    toggleShowPassword() {
+        this.showPassword = !this.showPassword;
     }
 }
