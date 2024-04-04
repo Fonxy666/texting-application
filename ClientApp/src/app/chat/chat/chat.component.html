@@ -42,7 +42,7 @@
                         <ng-container *ngFor="let message of this.chatService.message$ | async">
                             <div [ngClass]="{'incoming_msg': message.UserName != loggedInUserId, 'outgoing_msg': message.userId === loggedInUserId}">
                                 <div *ngIf="message.userId != loggedInUserId" class="incoming_msg_img">
-                                    <img [src]="avatars[message.user] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
+                                    <img class="user_image" [src]="avatars[message.user] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
                                 </div>
                                 <div *ngIf="message.userId != loggedInUserId" class="received_msg">
                                     <div class="received_withd_msg ">

@@ -1,5 +1,5 @@
 import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { ChatService } from '../../chat.service';
+import { ChatService } from '../../services/chat-service/chat.service';
 import { Router, ActivatedRoute  } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, forkJoin  } from 'rxjs';
@@ -31,10 +31,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     ngOnInit(): void {
         this.loggedInUserId = this.cookieService.get("UserId");
-        console.log(this.loggedInUserId);
         this.chatService.message$.subscribe(res => {
             this.messages = res;
-            console.log(this.messages);
         });
 
         this.route.params.subscribe(params => {
