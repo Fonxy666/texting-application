@@ -118,10 +118,9 @@ public class UserController(
             var token = await userManager.GenerateChangeEmailTokenAsync(existingUser, request.NewEmail);
             var result = await userManager.ChangeEmailAsync(existingUser, request.NewEmail, token);
 
-            await repository.SaveChangesAsync();
-
             if (result.Succeeded)
             {
+                existingUser.NormalizedEmail = request.NewEmail.ToUpper();
                 await repository.SaveChangesAsync();
                 var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
                 return Ok(response);

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { ChatService } from '../../chat.service';
+import { ChatService } from '../../services/chat-service/chat.service';
 import { HttpClient } from '@angular/common/http';
 import { JoinRoomRequest } from '../../model/JoinRoomRequest';
 import { retryWhen, delay, take, mergeMap } from 'rxjs/operators';

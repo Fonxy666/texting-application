@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject } from 'rxjs';
-import { MessageRequest } from './model/MessageRequest';
+import { MessageRequest } from '../../model/MessageRequest';
 
 @Injectable({
     providedIn: 'root'
@@ -21,8 +21,8 @@ export class ChatService {
     constructor() {
         this.start();
 
-        this.connection.on("ReceiveMessage", (user: String, message: String, messageTime: String) => {
-            this.messages = [...this.messages, {user, message, messageTime}];
+        this.connection.on("ReceiveMessage", (user: String, message: String, messageTime: String, userId: String) => {
+            this.messages = [...this.messages, {user, message, messageTime, userId}];
             this.message$.next(this.messages);
         });
 

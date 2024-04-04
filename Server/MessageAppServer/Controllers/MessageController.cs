@@ -26,6 +26,8 @@ public class MessageController(IMessageService messageRepository) : ControllerBa
     [HttpPost("SendMessage"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<MessageResponse>> SendMessage([FromBody]MessageRequest request)
     {
+        Console.WriteLine(request.UserName);
+        Console.WriteLine(request.Message);
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);

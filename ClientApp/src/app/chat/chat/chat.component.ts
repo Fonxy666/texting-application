@@ -1,9 +1,9 @@
 import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { ChatService } from '../../chat.service';
+import { ChatService } from '../../services/chat-service/chat.service';
 import { Router, ActivatedRoute  } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, forkJoin  } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { catchError, switchMap, tap } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
 import { CookieService } from 'ngx-cookie-service';
@@ -16,12 +16,13 @@ import { CookieService } from 'ngx-cookie-service';
 })
 
 export class ChatComponent implements OnInit, AfterViewChecked {
-
     roomId = "";
     inputMessage = "";
     loggedInUserId:string = "";
     roomName = sessionStorage.getItem("room");
     myImage: string = "./assets/images/chat-mountain.jpg";
+    connectedUsers: string[] = [];
+    searchTerm: string = '';
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
 
@@ -31,8 +32,12 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     avatars: { [userId: string]: string } = {};
 
     ngOnInit(): void {
+        this.loggedInUserId = this.cookieService.get("UserId");
         this.chatService.message$.subscribe(res => {
             this.messages = res;
+            this.messages.forEach(message => {
+                this.loadAvatarsFromMessages(message.userId);
+            })
         });
 
         this.route.params.subscribe(params => {
@@ -40,8 +45,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         })
       
         this.chatService.connectedUsers.subscribe((users) => {
+            this.connectedUsers = users;
             users.forEach((user) => {
-                this.loggedInUserId = this.cookieService.get("UserId");
                 this.getAvatarImage(user).subscribe(
                     (avatar) => {
                         this.avatars[user] = avatar;
@@ -60,12 +65,31 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
     }
 
+    loadAvatarsFromMessages(userId : string) {
+        if (userId === null || userId === undefined) {
+            return;
+        }
+
+        this.http.get(`https://localhost:7045/User/getUsername/${userId}`, { withCredentials: true })
+        .subscribe((user: any) => {
+            if (this.avatars[user.username] == null) {
+                this.getAvatarImage(user.username).subscribe(
+                    (avatar) => {
+                        this.avatars[user.username] = avatar;
+                    },
+                    (error) => {
+                        console.log(error);
+                    }
+                );
+            }
+        });
+    }
+
     sendMessage() {
         var request = new MessageRequest(this.roomId, this.cookieService.get("UserId"), this.inputMessage, this.cookieService.get("Anonymous") === "True");
         this.chatService.sendMessage(request)
             .then(() => {
                 this.inputMessage = "";
-                console.log(request);
                 this.saveMessage(request);
             }).catch((err) => {
                 console.log(err);
@@ -77,11 +101,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         .pipe(
             this.errorHandler.handleError401()
         )
-        .subscribe((response: any) => {
-            if (response.success) {
-                console.log("Message sent successfully");
-            }
-        }, 
+        .subscribe(() => { }, 
         (error) => {
             if (error.status === 403) {
                 this.errorHandler.handleError403(error);
@@ -116,7 +136,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 );
     
                 forkJoin(observables).subscribe((usernames: any) => {
-                    console.log(response);
                     const fetchedMessages = response.map((element: any, index: number) => ({
                         user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
                         userId: element.senderId,
@@ -131,10 +150,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     getAvatarImage(userName: string): Observable<string> {
-        if (!userName) {
-            return of("https://ptetutorials.com/images/user-profile.png");
-        }
-    
         return this.http.get(`https://localhost:7045/User/GetImageWithUsername/${userName}`, { withCredentials: true, responseType: 'blob' })
             .pipe(
                 this.errorHandler.handleError401(),
@@ -154,5 +169,17 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     return of("https://ptetutorials.com/images/user-profile.png");
                 })
             );
+    }
+
+    searchInConnectedUsers() {
+        if (this.searchTerm.trim() === '') {
+            this.chatService.connectedUsers.subscribe(users => {
+                this.connectedUsers = users;
+            });
+        } else {
+            this.connectedUsers = this.chatService.connectedUsers.value.filter(user => 
+                user.toLowerCase().includes(this.searchTerm.toLowerCase())
+            );
+        }
     }
 }
