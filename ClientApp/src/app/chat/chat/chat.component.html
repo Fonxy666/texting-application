@@ -27,7 +27,7 @@
                           <div class="chat_list">
                             <div class="chat_people">
                               <div class="chat_img">
-                                <img [src]="avatars[user] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
+                                <img class="user_image" [src]="avatars[user] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
                               </div>
                               <div class="chat_ib mt-3">
                                 <h5>{{user}} <span class="online"></span> </h5>
@@ -40,7 +40,7 @@
                 <div class="mesgs">
                     <div #scrollMe class="msg_history">
                         <ng-container *ngFor="let message of this.chatService.message$ | async">
-                            <div [ngClass]="{'incoming_msg': message.userId != loggedInUserId, 'outgoing_msg': message.userId === loggedInUserId}">
+                            <div [ngClass]="{'incoming_msg': message.UserName != loggedInUserId, 'outgoing_msg': message.userId === loggedInUserId}">
                                 <div *ngIf="message.userId != loggedInUserId" class="incoming_msg_img">
                                     <img [src]="avatars[message.user] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
                                 </div>
@@ -61,7 +61,7 @@
                     </div>
                     <div class="type_msg">
                         <div class="input_msg_write">
-                            <input (keydown.enter)="sendMessage()" [(ngModel)]="inputMessage" type="text" class="write_msg" placeholder="Type a message" />
+                            <input (keydown.enter)="sendMessage()" [(ngModel)]="inputMessage" type="text" class="text-primary" placeholder="Type a message" />
                             <button (click)="sendMessage()" class="msg_send_btn" type="button"> <i class="fa fa-paper-plane-o" aria-hidden="true"></i> </button>
                         </div>
                     </div>

@@ -33,8 +33,9 @@ public class MessageService(MessagesContext context) : IMessageService
     {
         var messages = await Context.Messages
             .Where(message => message.RoomId == roomId)
-            .OrderBy(message => message.SendTime)
+            .OrderByDescending(message => message.SendTime)
             .Take(10)
+            .OrderBy(message => message.SendTime)
             .ToListAsync();
         return messages.AsQueryable();
     }

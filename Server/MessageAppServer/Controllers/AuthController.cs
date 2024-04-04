@@ -43,6 +43,8 @@ public class AuthController(
     [HttpPost("ExamineVerifyToken")]
     public async Task<ActionResult<string>> VerifyToken([FromBody]VerifyTokenRequest credentials)
     {
+        Console.WriteLine(credentials.Email);
+        Console.WriteLine(credentials.VerifyCode);
         var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(credentials.Email, credentials.VerifyCode, "registration");
         if (!result)
         {

@@ -43,6 +43,7 @@ export class RegistrationComponent {
         this.http.post('https://localhost:7045/Auth/ExamineVerifyToken', request)
         .subscribe((response: any) => {
             if (response) {
+                console.log(response);
                 this.SendRegistration();
                 this.router.navigate(['login']);
             }

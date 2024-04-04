@@ -43,7 +43,7 @@ namespace Server
                 
                 if (DockerContainerHelperClass.IsSqlServerContainerRunning())
                 {
-                    Thread.Sleep(5000);
+                    Thread.Sleep(10000);
                 }
             }
 

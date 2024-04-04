@@ -15,7 +15,7 @@
     border-radius: 15px;
     max-width: 1170px;
     margin: auto;
-    background-color: #52ACFF;
+    background-color: #52ffab;
     background-image: linear-gradient(180deg, #52ACFF 25%, #2c1971 100%);
     opacity: 0.8;
 }
@@ -54,7 +54,8 @@ img {
 
 .inbox_people {
     background-color: #52ACFF;
-    background-image: linear-gradient(180deg, #52ACFF 25%, #2c1971 100%);
+    border-radius: 15px;
+    background-image: linear-gradient(180deg, #5258ff 25%, #2c1971 100%);
     float: left;
     overflow: hidden;
     width: 40%;
@@ -121,7 +122,7 @@ img {
 
 .chat_ib h5 {
     font-size: 15px;
-    color: #464646;
+    color: #ffffff;
     margin: 0 0 8px 0;
 }
 
@@ -132,7 +133,7 @@ img {
 
 .chat_ib p {
     font-size: 14px;
-    color: #989898;
+    color: #ffffff;
     margin: auto;
 }
 
@@ -145,6 +146,10 @@ img {
     float: left;
     padding: 0 0 0 15px;
     width: 88%;
+}
+
+.user_image {
+    border-radius: 50%;
 }
 
 .chat_people {
@@ -182,7 +187,7 @@ img {
 .received_withd_msg p {
     background: #ebebeb none repeat scroll 0 0;
     border-radius: 3px;
-    color: #646464;
+    color: #2a2a2e;
     font-size: 14px;
     margin: 0;
     padding: 5px 10px 5px 10px;
@@ -190,6 +195,7 @@ img {
 }
 
 .time_date {
+    color:rgb(0, 0, 0);
     display: block;
     font-size: 12px;
     margin: 8px 0 0;
@@ -239,7 +245,6 @@ img {
 .input_msg_write input {
     background: rgba(0, 0, 0, 0) none repeat scroll 0 0;
     border: medium none;
-    color: #4c4c4c;
     font-size: 15px;
     min-height: 48px;
     width: 100%;

@@ -16,7 +16,6 @@ import { CookieService } from 'ngx-cookie-service';
 })
 
 export class ChatComponent implements OnInit, AfterViewChecked {
-
     roomId = "";
     inputMessage = "";
     loggedInUserId:string = "";
@@ -31,8 +30,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     avatars: { [userId: string]: string } = {};
 
     ngOnInit(): void {
+        this.loggedInUserId = this.cookieService.get("UserId");
+        console.log(this.loggedInUserId);
         this.chatService.message$.subscribe(res => {
             this.messages = res;
+            console.log(this.messages);
         });
 
         this.route.params.subscribe(params => {
@@ -41,7 +43,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
       
         this.chatService.connectedUsers.subscribe((users) => {
             users.forEach((user) => {
-                this.loggedInUserId = this.cookieService.get("UserId");
                 this.getAvatarImage(user).subscribe(
                     (avatar) => {
                         this.avatars[user] = avatar;
@@ -65,7 +66,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.chatService.sendMessage(request)
             .then(() => {
                 this.inputMessage = "";
-                console.log(request);
                 this.saveMessage(request);
             }).catch((err) => {
                 console.log(err);
@@ -77,11 +77,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         .pipe(
             this.errorHandler.handleError401()
         )
-        .subscribe((response: any) => {
-            if (response.success) {
-                console.log("Message sent successfully");
-            }
-        }, 
+        .subscribe(() => { }, 
         (error) => {
             if (error.status === 403) {
                 this.errorHandler.handleError403(error);
@@ -116,7 +112,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 );
     
                 forkJoin(observables).subscribe((usernames: any) => {
-                    console.log(response);
                     const fetchedMessages = response.map((element: any, index: number) => ({
                         user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
                         userId: element.senderId,
