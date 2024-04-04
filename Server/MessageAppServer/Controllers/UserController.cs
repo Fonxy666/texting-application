@@ -72,6 +72,9 @@ public class UserController(
     [HttpGet("GetImageWithUsername/{userName}")]
     public async Task<IActionResult> GetImageWithUsername(string userName)
     {
+        Console.WriteLine("-------------------------------------------------------------------");
+        Console.WriteLine(userName);
+        Console.WriteLine("-------------------------------------------------------------------");
         var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
         var imagePath = Path.Combine(folderPath, $"{userName}.png");
         FileContentResult result = null;

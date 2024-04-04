@@ -3,7 +3,7 @@ import { ChatService } from '../../services/chat-service/chat.service';
 import { Router, ActivatedRoute  } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, forkJoin  } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { catchError, switchMap, tap } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
 import { CookieService } from 'ngx-cookie-service';
@@ -33,6 +33,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.loggedInUserId = this.cookieService.get("UserId");
         this.chatService.message$.subscribe(res => {
             this.messages = res;
+            this.messages.forEach(message => {
+                this.loadAvatarsFromMessages(message.userId);
+            })
         });
 
         this.route.params.subscribe(params => {
@@ -57,6 +60,22 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     ngAfterViewChecked(): void {
         this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
+    }
+
+    loadAvatarsFromMessages(userId : string) {
+        this.http.get(`https://localhost:7045/User/getUsername/${userId}`, { withCredentials: true })
+        .subscribe((user: any) => {
+            if (this.avatars[user.username] == null) {
+                this.getAvatarImage(user.username).subscribe(
+                    (avatar) => {
+                        this.avatars[user.username] = avatar;
+                    },
+                    (error) => {
+                        console.log(error);
+                    }
+                );
+            }
+        });
     }
 
     sendMessage() {
@@ -124,10 +143,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     getAvatarImage(userName: string): Observable<string> {
-        if (!userName) {
-            return of("https://ptetutorials.com/images/user-profile.png");
-        }
-    
         return this.http.get(`https://localhost:7045/User/GetImageWithUsername/${userName}`, { withCredentials: true, responseType: 'blob' })
             .pipe(
                 this.errorHandler.handleError401(),
@@ -147,5 +162,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     return of("https://ptetutorials.com/images/user-profile.png");
                 })
             );
+    }
+
+    getAvatarEverywhere(userName: string) {
+        return userName;
     }
 }
