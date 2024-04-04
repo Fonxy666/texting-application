@@ -72,9 +72,6 @@ public class UserController(
     [HttpGet("GetImageWithUsername/{userName}")]
     public async Task<IActionResult> GetImageWithUsername(string userName)
     {
-        Console.WriteLine("-------------------------------------------------------------------");
-        Console.WriteLine(userName);
-        Console.WriteLine("-------------------------------------------------------------------");
         var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
         var imagePath = Path.Combine(folderPath, $"{userName}.png");
         FileContentResult result = null;
@@ -121,10 +118,9 @@ public class UserController(
             var token = await userManager.GenerateChangeEmailTokenAsync(existingUser, request.NewEmail);
             var result = await userManager.ChangeEmailAsync(existingUser, request.NewEmail, token);
 
-            await repository.SaveChangesAsync();
-
             if (result.Succeeded)
             {
+                existingUser.NormalizedEmail = request.NewEmail.ToUpper();
                 await repository.SaveChangesAsync();
                 var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
                 return Ok(response);

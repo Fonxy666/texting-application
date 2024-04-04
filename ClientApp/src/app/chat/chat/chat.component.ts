@@ -178,7 +178,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             });
         } else {
             this.connectedUsers = this.chatService.connectedUsers.value.filter(user => 
-                user.includes(this.searchTerm)
+                user.toLowerCase().includes(this.searchTerm.toLowerCase())
             );
         }
     }
