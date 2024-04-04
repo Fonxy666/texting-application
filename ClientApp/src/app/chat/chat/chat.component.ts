@@ -21,6 +21,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     loggedInUserId:string = "";
     roomName = sessionStorage.getItem("room");
     myImage: string = "./assets/images/chat-mountain.jpg";
+    connectedUsers: string[] = [];
+    searchTerm: string = '';
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
 
@@ -43,6 +45,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         })
       
         this.chatService.connectedUsers.subscribe((users) => {
+            this.connectedUsers = users;
             users.forEach((user) => {
                 this.getAvatarImage(user).subscribe(
                     (avatar) => {
@@ -63,6 +66,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     loadAvatarsFromMessages(userId : string) {
+        if (userId === null || userId === undefined) {
+            return;
+        }
+
         this.http.get(`https://localhost:7045/User/getUsername/${userId}`, { withCredentials: true })
         .subscribe((user: any) => {
             if (this.avatars[user.username] == null) {
@@ -164,7 +171,15 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             );
     }
 
-    getAvatarEverywhere(userName: string) {
-        return userName;
+    searchInConnectedUsers() {
+        if (this.searchTerm.trim() === '') {
+            this.chatService.connectedUsers.subscribe(users => {
+                this.connectedUsers = users;
+            });
+        } else {
+            this.connectedUsers = this.chatService.connectedUsers.value.filter(user => 
+                user.includes(this.searchTerm)
+            );
+        }
     }
 }
