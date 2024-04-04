@@ -21,7 +21,10 @@
                         </div>
                         <div class="mb-3">
                             <label id="passwordlabel" for="password">Password</label>
-                            <input type="password" formControlName="password" class="form-control" id="passwordlabel" placeholder="password"/>
+                            <div class="password-show-container">
+                                <input [type]="showPassword ? 'text' : 'password'" formControlName="password" class="form-control password-box" id="passwordlabel" placeholder="password"/>
+                                <button class="button-box btn btn-color w-100 button-box" (click)="toggleShowPassword()">{{ showPassword ? 'Hide' : 'Show' }} password</button>
+                            </div>
                         </div>
                         <div class="text-center">
                             <button [disabled]="joinRoomForm.invalid" (click)="joinRoom()" class="btn btn-color px-5 mb-5 w-100" type="button">Join</button>

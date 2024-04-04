@@ -149,3 +149,20 @@ a {
 .text-style {
     font-family: Cursive;
 }
+
+.password-show-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 1fr;
+    grid-column-gap: 0px;
+    grid-row-gap: 0px;
+}
+
+.password-box {
+    grid-area: 1 / 1 / 2 / 4;
+}
+
+.button-box {
+    margin: 0px 5px 0px 5px;
+    grid-area: 1 / 4 / 2 / 5;
+}

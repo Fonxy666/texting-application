@@ -131,13 +131,11 @@ export class ProfileComponent implements OnInit {
 
     changePassword(data: ChangePasswordRequest) {
         data.id = this.user.id;
-        console.log(data);
         this.http.patch('https://localhost:7045/User/ChangePassword', data, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401()
         )
         .subscribe((response: any) => {
-            console.log(response);
             if (response) {
                 this.router.navigate(['/']);
             }
@@ -152,6 +150,10 @@ export class ProfileComponent implements OnInit {
     }
 
     changeEmail(data: ChangeEmailRequest) {
+        if (data.newEmail === data.oldEmail) {
+            alert("This is your actual e-mail.");
+            return;
+        }
         this.http.patch('https://localhost:7045/User/ChangeEmail', data, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401()
@@ -159,11 +161,14 @@ export class ProfileComponent implements OnInit {
         .subscribe((response: any) => {
             if (response) {
                 alert("Email change succeeded!");
+                location.reload();
             }
         }, 
         (error) => {
             if (error.status === 403) {
                 this.errorHandler.handleError403(error);
+            } else if (error.status === 400) {
+                alert("This email is already in use.");
             }
         })
     }
