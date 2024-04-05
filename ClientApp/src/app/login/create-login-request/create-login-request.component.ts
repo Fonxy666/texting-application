@@ -10,9 +10,10 @@ import { LoginRequest } from '../../model/LoginRequest';
 
 export class CreateLoginRequestComponent implements OnInit {
     constructor(private fb: FormBuilder) { }
-    
+
     loginRequest!: FormGroup;
-    
+    showPassword: boolean = false;
+
     ngOnInit(): void {
         this.loginRequest = this.fb.group({
             username: ['', Validators.required],
@@ -31,5 +32,9 @@ export class CreateLoginRequestComponent implements OnInit {
             this.loginRequest.get('rememberme')?.value
             );
         this.SendLoginRequest.emit(loginRequest);
+    }
+
+    toggleShowPassword() {
+        this.showPassword = !this.showPassword;
     }
 }
