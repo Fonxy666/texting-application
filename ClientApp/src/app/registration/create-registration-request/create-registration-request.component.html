@@ -89,7 +89,7 @@
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary m-3" [disabled]="!registrationRequest.valid">Submit</button>
-                
+                <button type="submit" class="btn btn-primary m-3" (click)="handleCancel()">Cancel</button>
             </form>
         </div>
     </div>
