@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-create-registration-request',
   templateUrl: './create-registration-request.component.html',
-  styleUrl: './create-registration-request.component.css'
+  styleUrls: ['./create-registration-request.component.css', '../../../styles.css']
 })
 
 export class CreateRegistrationRequestComponent {

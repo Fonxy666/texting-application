@@ -5,7 +5,7 @@ import { LoginRequest } from '../../model/LoginRequest';
 @Component({
   selector: 'app-create-login-request',
   templateUrl: './create-login-request.component.html',
-  styleUrl: './create-login-request.component.css'
+  styleUrls: ['./create-login-request.component.css', '../../../styles.css']
 })
 
 export class CreateLoginRequestComponent implements OnInit {
