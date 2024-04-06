@@ -7,8 +7,7 @@ import { LoginAuthTokenRequest } from '../model/LoginAuthTokenRequest';
 
 @Component({
   selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  templateUrl: './login.component.html'
 })
 
 export class LoginComponent implements OnInit {

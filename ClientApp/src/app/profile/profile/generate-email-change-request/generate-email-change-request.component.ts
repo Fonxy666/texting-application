@@ -4,8 +4,7 @@ import { ChangeEmailRequest } from '../../../model/ChangeEmailRequest';
 
 @Component({
   selector: 'app-generate-email-change-request',
-  templateUrl: './generate-email-change-request.component.html',
-  styleUrl: './generate-email-change-request.component.css'
+  templateUrl: './generate-email-change-request.component.html'
 })
 export class GenerateEmailChangeRequestComponent implements OnInit {
     constructor(private fb: FormBuilder) { }

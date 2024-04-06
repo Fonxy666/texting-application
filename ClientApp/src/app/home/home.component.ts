@@ -4,7 +4,7 @@ import { CookieService } from 'ngx-cookie-service';
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css', '../../styles.css']
+  styleUrl: '../../styles.css'
 })
 export class HomeComponent implements OnInit {
     constructor(private cookieService: CookieService) { }
