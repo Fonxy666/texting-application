@@ -181,3 +181,19 @@ a {
     margin: 0px 5px 0px 5px;
     grid-area: 1 / 4 / 2 / 5;
 }
+
+.token-container {
+    background: rgb(90, 148, 225);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Cursive;
+}
+
+.token-card {
+    padding: 30px;
+    text-align: center;
+    width: 500px;
+    height: 300px;
+}

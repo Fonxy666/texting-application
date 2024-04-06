@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-create-email-verification-request',
   templateUrl: './create-email-verification-request.component.html',
-  styleUrl: './create-email-verification-request.component.css'
+  styleUrl: '../../../styles.css'
 })
 export class CreateEmailVerificationRequestComponent {
     constructor(private fb: FormBuilder, private router: Router) {}
