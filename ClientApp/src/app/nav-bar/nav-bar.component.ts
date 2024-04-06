@@ -7,7 +7,7 @@ import { ErrorHandlerService } from '../services/error-handler.service';
 @Component({
   selector: 'app-nav-bar',
   templateUrl: './nav-bar.component.html',
-  styleUrl: './nav-bar.component.css'
+  styleUrls: ['./nav-bar.component.css', '../../styles.css']
 })
 
 export class NavBarComponent implements OnInit {
