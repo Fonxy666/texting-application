@@ -9,7 +9,7 @@ import { ErrorHandlerService } from '../../services/error-handler.service';
 @Component({
   selector: 'app-create-room',
   templateUrl: './create-room.component.html',
-  styleUrls: ['./create-room.component.css', '../../shared-css.css']
+  styleUrls: ['./create-room.component.css', '../../../styles.css']
 })
 export class CreateRoomComponent implements OnInit {
     constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private http: HttpClient, private errorHandler: ErrorHandlerService) { }
