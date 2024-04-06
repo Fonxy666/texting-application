@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-provide-login-auth-token',
   templateUrl: './provide-login-auth-token.component.html',
-  styleUrl: './provide-login-auth-token.component.css'
+  styleUrl: '../../../styles.css'
 })
 export class ProvideLoginAuthTokenComponent implements OnInit {
     constructor(private fb: FormBuilder, private router: Router) { }

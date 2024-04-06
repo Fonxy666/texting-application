@@ -6,8 +6,7 @@ import { TokenValidatorRequest } from '../model/TokenValidatorRequest';
 
 @Component({
   selector: 'app-registration',
-  templateUrl: './registration.component.html',
-  styleUrl: './registration.component.css'
+  templateUrl: './registration.component.html'
 })
 
 export class RegistrationComponent {

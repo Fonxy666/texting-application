@@ -4,15 +4,16 @@ import { RegistrationRequest } from '../../model/RegistrationRequest';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { DomSanitizer } from '@angular/platform-browser';
 import { passwordValidator, passwordMatchValidator } from '../../validators/ValidPasswordValidator';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-create-registration-request',
   templateUrl: './create-registration-request.component.html',
-  styleUrl: './create-registration-request.component.css'
+  styleUrls: ['./create-registration-request.component.css', '../../../styles.css']
 })
 
 export class CreateRegistrationRequestComponent {
-    constructor(private fb: FormBuilder, private sanitizer: DomSanitizer) { }
+    constructor(private fb: FormBuilder, private sanitizer: DomSanitizer, private router: Router) { }
     
     showPassword: boolean = false;
     registrationRequest!: FormGroup;
@@ -71,5 +72,9 @@ export class CreateRegistrationRequestComponent {
             reader.onloadend = () => resolve(reader.result as string);
             reader.onerror = (error) => reject(error);
         });
+    }
+
+    handleCancel() {
+        this.router.navigate(['/login']);
     }
 }

@@ -6,8 +6,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-generate-avatar-change-request',
-  templateUrl: './generate-avatar-change-request.component.html',
-  styleUrl: './generate-avatar-change-request.component.css'
+  templateUrl: './generate-avatar-change-request.component.html'
 })
 export class GenerateAvatarChangeRequestComponent {
     profilePic: string = "";

@@ -26,7 +26,7 @@
                             </div>
                         </div>
                         <div class="text-center">
-                            <button (click)="sendCreateRoomRequest()" class="btn btn-color px-5 mb-5 w-100" type="button">Create room</button>
+                            <button (click)="sendCreateRoomRequest()" [disabled]="createRoomForm.invalid" class="btn btn-color px-5 mb-5 w-100" type="button">Create room</button>
                         </div>
                         <div class="text-center">
                             <button (click)="handleCancel()" class="btn btn-color px-5 mb-5 w-100" type="button">Cancel</button>

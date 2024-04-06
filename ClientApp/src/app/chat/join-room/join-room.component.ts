@@ -10,7 +10,7 @@ import { ErrorHandlerService } from '../../services/error-handler.service';
 @Component({
   selector: 'app-join-room',
   templateUrl: './join-room.component.html',
-  styleUrl: './join-room.component.css'
+  styleUrl: '../../../styles.css'
 })
 
 export class JoinRoomComponent implements OnInit {
