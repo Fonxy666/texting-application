@@ -4,7 +4,7 @@ import { CookieService } from 'ngx-cookie-service';
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrl: './home.component.css'
+  styleUrls: ['./home.component.css', '../shared-css.css']
 })
 export class HomeComponent implements OnInit {
     constructor(private cookieService: CookieService) { }
@@ -16,7 +16,7 @@ export class HomeComponent implements OnInit {
     animation: boolean = true;
 
     ngOnInit() {
-        this.animation = this.cookieService.get("Animation") == "True";
+        this.animation = this.cookieService.get("Animation") != "False";
         
         this.toggleImageClasses();
 

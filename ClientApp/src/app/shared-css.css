@@ -1,0 +1,137 @@
+@keyframes dayTime {
+    0% {
+        background-color: rgb(114, 69, 50);
+    }
+    25% {
+        background-color: rgb(26, 26, 51);
+    }
+    50% {
+        background-color: rgb(114, 69, 50);
+    }
+    65% {
+        background-color: rgb(230, 203, 129);
+    }
+    85% {
+        background-color: rgb(230, 203, 129);
+    }
+    100% {
+        background-color: rgb(114, 69, 50);
+    }
+}
+
+@keyframes moveLeft {
+    0% {
+        top: 20%;
+        right: -30%;
+    }
+    30% {
+        top: 12%;
+    }
+    45% {
+        top: 8%;
+    }
+    55% {
+        top: 8%;
+    }
+    70% {
+        top: 12%;
+    }
+    100% {
+        top: 20%;
+        right: 100%;
+    }
+}
+
+@keyframes colorAnimation {
+    0% {
+        color: white;
+    }
+    40% {
+        color: white;
+    }
+    50% {
+        color: black;
+    }
+    90% {
+        color: black;
+    }
+    100% {
+        color: white;
+    }
+}
+
+.cont {
+    position: relative;
+    min-width: 100%;
+    min-height: 100vh;
+    overflow: hidden;
+}
+  
+.animate-image {
+    min-width: 100vh;
+    min-height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: -3;
+    animation: 
+        dayTime 20s linear infinite;
+}
+
+.nonanimate-image {
+    min-width: 100vh;
+    min-height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: -3;
+    background-color: rgb(26, 26, 51);
+}
+
+.sun_img {
+    width: 10%;
+    position: absolute;
+    animation: 
+        moveLeft 10s linear infinite;
+    z-index: -1;
+    animation-timing-function: cubic-bezier(0.47, 0.03, 0.49, 1);
+
+    @media (max-width: 1000px) {
+        width: 15%;
+    };
+    @media (max-width: 650px) {
+        width: 20%;
+    };
+}
+
+.animate-welcome-text {
+    margin-top: 10%;
+    color: white;
+    @media (max-width: 1300px) {
+        margin-top: 20%;
+    };
+    @media (max-width: 850px) {
+        margin-top: 40%;
+    };
+    @media (min-width: 850px) {
+        animation: 
+            colorAnimation 20s linear infinite;
+    }
+}
+
+.nonanimate-welcome-text {
+    margin-top: 10%;
+    color: white;
+    @media (max-width: 1300px) {
+        margin-top: 20%;
+    };
+    @media (max-width: 850px) {
+        margin-top: 40%;
+    };
+}
+
+.text-style {
+    font-family: Cursive;
+}
