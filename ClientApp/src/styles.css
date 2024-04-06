@@ -192,6 +192,8 @@ a {
 }
 
 .token-card {
+    border-radius: 15px;
+    background-color: white;
     padding: 30px;
     text-align: center;
     width: 500px;
