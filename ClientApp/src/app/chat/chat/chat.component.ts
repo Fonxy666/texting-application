@@ -34,6 +34,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     ngOnInit(): void {
         this.loggedInUserId = this.cookieService.get("UserId");
         this.chatService.message$.subscribe(res => {
+            console.log(res);
             this.messages = res;
             this.messages.forEach(message => {
                 this.loadAvatarsFromMessages(message.userId);
@@ -181,5 +182,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 user.toLowerCase().includes(this.searchTerm.toLowerCase())
             );
         }
+    }
+
+    handleSVGClick() {
+        console.log("yo");
     }
 }

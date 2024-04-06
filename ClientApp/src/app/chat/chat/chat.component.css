@@ -229,9 +229,13 @@ img {
 }
 
 .sent_msg {
-    border-radius: 3px;
     float: right;
     width: 57%;
+    border-radius: 3px;
+}
+
+.sent_withd_msg svg:hover {
+    cursor: pointer;
 }
 
 .sent_withd_msg p {
@@ -242,6 +246,15 @@ img {
     margin: 0;
     padding: 5px 10px 5px 10px;
     width: 100%;
+    flex-grow: 1;
+}
+
+.bot_msg {
+    float: none;
+    width: 57%;
+    margin: 0 auto;
+    color: white;
+    text-align: center;
 }
 
 .input_msg_write input {
