@@ -238,7 +238,7 @@ img {
     cursor: pointer;
 }
 
-.sent_withd_msg p {
+.sent_withd_msg div {
     background: #585bb4 none repeat scroll 0 0;
     border-radius: 3px;
     color: #ffffff;
@@ -304,4 +304,12 @@ img {
     object-position: top center;
     z-index: -1;
     overflow: hidden;
+}
+
+.not_decorated_button {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    color:#2c1971;
 }
