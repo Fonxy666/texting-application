@@ -68,13 +68,17 @@
 }
   
 .animate-image {
-    min-width: 100vh;
-    min-height: 100vh;
+    min-width: 100%;
+    min-height: 100%;
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    z-index: -3;
+    height: 100%;
+    height: auto;
+    object-fit: cover;
+    object-position: top center;
+    z-index: -2;
     animation: 
         dayTime 20s linear infinite;
 }
@@ -134,4 +138,46 @@
 
 .text-style {
     font-family: Cursive;
+}
+
+.btn-color {
+    background-color: #0e1c36;
+    color: #fff;
+}
+
+.profile-image-pic {
+    height: 200px;
+    width: 200px;
+    object-fit: cover;
+    border-radius: 100%;
+}
+
+a {
+    text-decoration: none;
+}
+
+.moon_img {
+    width: 8%;
+    position: absolute;
+    animation: 
+        moveLeft 10s linear infinite;
+    z-index: -1;
+    animation-timing-function: cubic-bezier(0.47, 0.03, 0.49, 1);
+}
+
+.password-show-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 1fr;
+    grid-column-gap: 0px;
+    grid-row-gap: 0px;
+}
+
+.password-box {
+    grid-area: 1 / 1 / 2 / 4;
+}
+
+.button-box {
+    margin: 0px 5px 0px 5px;
+    grid-area: 1 / 4 / 2 / 5;
 }
