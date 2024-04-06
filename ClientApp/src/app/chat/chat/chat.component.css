@@ -197,7 +197,7 @@ img {
 .time_date {
     color:rgb(0, 0, 0);
     display: block;
-    font-size: 12px;
+    font-size: 12.5px;
     margin: 8px 0 0;
     margin-bottom: 6px;
 }
@@ -282,6 +282,10 @@ img {
     right: 0;
     top: 11px;
     width: 33px;
+}
+
+.dropdown-menu {
+    padding: 0px;
 }
 
 .messaging {
