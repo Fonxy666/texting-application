@@ -34,7 +34,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     ngOnInit(): void {
         this.loggedInUserId = this.cookieService.get("UserId");
         this.chatService.message$.subscribe(res => {
-            console.log(res);
             this.messages = res;
             this.messages.forEach(message => {
                 this.loadAvatarsFromMessages(message.userId);
@@ -138,6 +137,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     
                 forkJoin(observables).subscribe((usernames: any) => {
                     const fetchedMessages = response.map((element: any, index: number) => ({
+                        messageId: element.messageId,
                         user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
                         userId: element.senderId,
                         message: element.text,
@@ -184,7 +184,30 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }
     }
 
-    handleSVGClick() {
-        console.log("yo");
+    handleMessageModify(messageId: any) {
+        console.log(messageId);
+    }
+
+    handleMessageDelete(messageId: any) {
+        this.http.delete(`https://localhost:7045/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(() => {
+            this.chatService.message$.value.forEach((message: any) => {
+                if (message.messageId == messageId) {
+                    message.message = "Deleted message.";
+                }
+            })
+        }, 
+        (error) => {
+            if (error.status === 403) {
+                this.errorHandler.handleError403(error);
+            } else if (error.status === 400) {
+                this.errorHandler.errorAlert("Invalid username or password.");
+            } else {
+                console.error("An error occurred:", error);
+            }
+        });
     }
 }

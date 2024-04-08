@@ -73,9 +73,9 @@ public class MessageController(IMessageService messageRepository) : ControllerBa
 
         if (result.Success == false)
         {
-            return BadRequest(new { error = "Invalid login credentials." });
+            return BadRequest(new { error = "There is no message with this id." });
         }
 
-        return Ok(result);
+        return Ok(new MessageResponse(true, ""));
     }
 }
