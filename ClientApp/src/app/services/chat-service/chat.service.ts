@@ -8,25 +8,26 @@ import { MessageRequest } from '../../model/MessageRequest';
 })
 
 export class ChatService {
-    public connection : any = new signalR.HubConnectionBuilder()
-        .withUrl('https://localhost:7045/chat')
-        .configureLogging(signalR.LogLevel.Information)
-        .build();
-
+    public connection: signalR.HubConnection;
     public message$ = new BehaviorSubject<any>([]);
     public connectedUsers = new BehaviorSubject<string[]>([]);
     public messages: any[] = [];
     public users: string[] = [];
 
     constructor() {
-        this.start();
+        this.connection = new signalR.HubConnectionBuilder()
+            .withUrl('https://localhost:7045/chat')
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
 
-        this.connection.on("ReceiveMessage", (user: String, message: String, messageTime: String, userId: String) => {
-            this.messages = [...this.messages, {user, message, messageTime, userId}];
+        this.initializeConnection();
+
+        this.connection.on("ReceiveMessage", (user: string, message: string, messageTime: string, userId: string) => {
+            this.messages.push({ user, message, messageTime, userId });
             this.message$.next(this.messages);
         });
 
-        this.connection.on("ConnectedUser", (users: any) => {
+        this.connection.on("ConnectedUser", (users: string[]) => {
             this.connectedUsers.next(users);
         });
 
@@ -36,26 +37,71 @@ export class ChatService {
         });
     }
 
-    public async start() {
-        try{
+    private initializeConnection() {
+        this.start().then(() => {
+            const roomName = sessionStorage.getItem("room");
+            const userName = sessionStorage.getItem("user");
+            if (roomName && userName) {
+                this.joinRoom(userName, roomName);
+            }
+        }).catch(error => {
+            console.error('SignalR connection failed to start:', error);
+        });
+
+        this.connection.onclose(async () => {
+            console.log('SignalR connection closed, attempting to reconnect...');
+            await this.reconnect();
+        });
+
+        this.connection.onreconnecting(() => {
+            console.log('SignalR connection is attempting to reconnect...');
+        });
+    }
+
+    private async start() {
+        try {
             await this.connection.start();
+            console.log('SignalR connection established.');
         } catch (error) {
-            console.log(error);
-            setTimeout(() => {
-                this.start();
-            }, 0);
+            console.error('Error starting SignalR connection:', error);
+            throw error;
+        }
+    }
+
+    private async reconnect() {
+        try {
+            await this.start();
+            console.log('SignalR reconnected successfully.');
+        } catch (error) {
+            console.error('SignalR reconnection failed:', error);
+            setTimeout(() => this.reconnect(), 5000);
         }
     }
 
     public async joinRoom(user: string, room: string) {
-        this.connection.invoke("JoinRoom", {user, room});
+        try {
+            await this.connection.invoke("JoinRoom", { user, room });
+        } catch (error) {
+            console.error('Error joining room:', error);
+        }
     }
 
     public async sendMessage(message: MessageRequest) {
-        return this.connection.invoke("SendMessage", message);
+        try {
+            await this.connection.invoke("SendMessage", message);
+        } catch (error) {
+            console.error('Error sending message:', error);
+        }
     }
 
     public async leaveChat() {
-        return this.connection.stop();
+        try {
+            sessionStorage.removeItem("room");
+            sessionStorage.removeItem("user");
+            await this.connection.stop();
+            console.log('SignalR connection stopped.');
+        } catch (error) {
+            console.error('Error stopping SignalR connection:', error);
+        }
     }
 }

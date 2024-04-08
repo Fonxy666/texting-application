@@ -8,12 +8,14 @@ namespace Server.Hub;
 public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessageService messageRepository)
     : Microsoft.AspNetCore.SignalR.Hub
 {
-    public async Task JoinRoom(UserRoomConnection userConnection)
+    public async Task<string> JoinRoom(UserRoomConnection userConnection)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, userConnection.Room!);
         connection[Context.ConnectionId] = userConnection;
         await Clients.Group(userConnection.Room!).SendAsync("ReceiveMessage", "Textinger bot", $"{userConnection.User} has joined the room!", DateTime.Now);
         await SendConnectedUser(userConnection.Room!);
+
+        return Context.ConnectionId;
     }
 
     public async Task SendMessage(MessageRequest request)
