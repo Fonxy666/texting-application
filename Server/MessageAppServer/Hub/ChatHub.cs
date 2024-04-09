@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Server.Model;
+using Server.Model.Chat;
 using Server.Model.Requests.Message;
 using Server.Services.Chat.MessageService;
 
@@ -30,6 +31,14 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessag
     {
         var messageRequest = new MessageRequest(request.RoomId, request.UserName, request.Message, request.AsAnonymous);
         await messageRepository.SendMessage(messageRequest);
+    }
+
+    public async Task DeleteMessage(string messageId)
+    {
+        if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
+        {
+            await Clients.Group(userRoomConnection.Room!).SendAsync("DeleteMessage", messageId);
+        }
     }
 
      public override async Task OnDisconnectedAsync(Exception? exp)

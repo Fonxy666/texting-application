@@ -34,6 +34,14 @@ export class ChatService {
             this.connectedUsers.next(users);
         });
 
+        this.connection.on("DeleteMessage", (messageId: string) => {
+            this.messages.forEach((message) => {
+                if (message.messageId == messageId) {
+                    message.text = "Deleted message.";
+                }
+            })
+        })
+
         this.connection.on("UserDisconnected", (username: string) => {
             const updatedUsers = this.connectedUsers.value.filter(user => user !== username);
             this.connectedUsers.next(updatedUsers);
@@ -92,6 +100,14 @@ export class ChatService {
     public async sendMessage(message: MessageRequest) {
         try {
             await this.connection.invoke("SendMessage", message);
+        } catch (error) {
+            console.error('Error sending message:', error);
+        }
+    }
+
+    public async deleteMessage(messageId: string) {
+        try {
+            await this.connection.invoke("DeleteMessage", messageId);
         } catch (error) {
             console.error('Error sending message:', error);
         }

@@ -41,6 +41,14 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             })
         });
 
+        this.chatService.connection.on("DeleteMessage", (messageId: string) => {
+            this.messages.forEach((message: any) => {
+                if (message.messageId == messageId) {
+                    message.message = "Deleted message.";
+                }
+            });
+        });
+
         this.route.params.subscribe(params => {
             this.roomId = params['id'];
         })
@@ -202,9 +210,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             this.errorHandler.handleError401()
         )
         .subscribe(() => {
-            this.chatService.message$.value.forEach((message: any) => {
+            this.chatService.messages.forEach((message: any) => {
                 if (message.messageId == messageId) {
-                    message.message = "Deleted message.";
+                    this.chatService.deleteMessage(messageId);
                 }
             })
         }, 
