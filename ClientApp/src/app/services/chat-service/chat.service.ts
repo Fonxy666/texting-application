@@ -23,9 +23,10 @@ export class ChatService {
 
         this.initializeConnection();
 
-        this.connection.on("ReceiveMessage", (user: string, message: string, messageTime: string, userId: string) => {
+        this.connection.on("ReceiveMessage", (user: string, message: string, messageTime: string, userId: string, messageId: string) => {
             if (userId !== this.cookieService.get("UserId")) {
-                this.messages.push({ user, message, messageTime, userId });
+                this.messages.push({ user, message, messageTime, userId, messageId });
+                console.log(messageId);
             }
             this.message$.next(this.messages);
         });

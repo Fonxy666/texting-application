@@ -96,36 +96,41 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     sendMessage() {
         var request = new MessageRequest(this.roomId, this.cookieService.get("UserId"), this.inputMessage, this.cookieService.get("Anonymous") === "True");
-        this.chatService.sendMessage(request)
-            .then(() => {
+        this.saveMessage(request)
+            .then((messageId) => {
+                this.chatService.sendMessage(new MessageRequest(this.roomId, this.cookieService.get("UserId"), this.inputMessage, this.cookieService.get("Anonymous") === "True", messageId));
                 this.inputMessage = "";
-                this.saveMessage(request);
-            }).catch((err) => {
+            }).catch((err: any) => {
                 console.log(err);
             })
     }
 
-    saveMessage(request: MessageRequest) {
-        this.http.post('https://localhost:7045/Message/SendMessage', request, { withCredentials: true})
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe((res) => {
-            this.chatService.messages.push({ 
-                messageId: res.message.messageId,
-                userId: res.message.senderId,
-                message: res.message.text,
-                messageTime: res.message.sendTime
-            });
-        }, 
-        (error) => {
-            if (error.status === 403) {
-                this.errorHandler.handleError403(error);
-            } else if (error.status === 400) {
-                this.errorHandler.errorAlert("Invalid username or password.");
-            } else {
-                console.error("An error occurred:", error);
-            }
+    saveMessage(request: MessageRequest): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            this.http.post('https://localhost:7045/Message/SendMessage', request, { withCredentials: true})
+                .pipe(
+                    this.errorHandler.handleError401()
+                )
+                .subscribe((res: any) => {
+                    this.chatService.messages.push({ 
+                        messageId: res.message.messageId,
+                        userId: res.message.senderId,
+                        message: res.message.text,
+                        messageTime: res.message.sendTime
+                    });
+    
+                    resolve(res.message.messageId);
+                }, 
+                (error) => {
+                    if (error.status === 403) {
+                        this.errorHandler.handleError403(error);
+                    } else if (error.status === 400) {
+                        this.errorHandler.errorAlert("Invalid username or password.");
+                    } else {
+                        console.error("An error occurred:", error);
+                    }
+                    reject(error);
+                });
         });
     }
 
