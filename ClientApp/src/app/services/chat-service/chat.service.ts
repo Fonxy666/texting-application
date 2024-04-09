@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject } from 'rxjs';
 import { MessageRequest } from '../../model/MessageRequest';
+import { CookieService } from 'ngx-cookie-service';
 
 @Injectable({
     providedIn: 'root'
@@ -14,7 +15,7 @@ export class ChatService {
     public messages: any[] = [];
     public users: string[] = [];
 
-    constructor() {
+    constructor(private cookieService: CookieService) {
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl('https://localhost:7045/chat')
             .configureLogging(signalR.LogLevel.Information)
@@ -23,7 +24,9 @@ export class ChatService {
         this.initializeConnection();
 
         this.connection.on("ReceiveMessage", (user: string, message: string, messageTime: string, userId: string) => {
-            this.messages.push({ user, message, messageTime, userId });
+            if (userId !== this.cookieService.get("UserId")) {
+                this.messages.push({ user, message, messageTime, userId });
+            }
             this.message$.next(this.messages);
         });
 

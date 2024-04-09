@@ -35,6 +35,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.loggedInUserId = this.cookieService.get("UserId");
         this.chatService.message$.subscribe(res => {
             this.messages = res;
+            console.log(res);
             this.messages.forEach(message => {
                 this.loadAvatarsFromMessages(message.userId);
             })
@@ -101,7 +102,14 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         .pipe(
             this.errorHandler.handleError401()
         )
-        .subscribe(() => { }, 
+        .subscribe((res) => {
+            this.chatService.messages.push({ 
+                messageId: res.message.messageId,
+                userId: res.message.senderId,
+                message: res.message.text,
+                messageTime: res.message.sendTime
+            });
+        }, 
         (error) => {
             if (error.status === 403) {
                 this.errorHandler.handleError403(error);
@@ -204,7 +212,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             if (error.status === 403) {
                 this.errorHandler.handleError403(error);
             } else if (error.status === 400) {
-                this.errorHandler.errorAlert("Invalid username or password.");
+                this.errorHandler.errorAlert("Something unusual happened.");
             } else {
                 console.error("An error occurred:", error);
             }

@@ -26,20 +26,19 @@ public class MessageController(IMessageService messageRepository) : ControllerBa
     [HttpPost("SendMessage"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<MessageResponse>> SendMessage([FromBody]MessageRequest request)
     {
-        Console.WriteLine(request.UserName);
-        Console.WriteLine(request.Message);
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
         var result = await messageRepository.SendMessage(request);
+        Console.WriteLine($"Result: {result}");
 
         if (result.Success == false)
         {
-            return BadRequest(new { error = "Invalid login credentials." });
+            return BadRequest(new { error = "Something unusual happened." });
         }
-
+        
         return Ok(result);
     }
     
