@@ -28,6 +28,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     messageModifyRequest: ChangeMessageRequest = {id: "", message: ""};
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
+    @ViewChild('messageInput') public inputElement!: ElementRef;
 
     constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute, private errorHandler: ErrorHandlerService, private cookieService: CookieService) { }
     
@@ -220,6 +221,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.messageModifyBool = true;
         this.messageModifyRequest.id = messageId;
         this.inputMessage = messageText;
+        this.inputElement.nativeElement.focus();
     }
 
     sendMessageModifyHttpRequest(request: ChangeMessageRequest) {
@@ -233,6 +235,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 if (message.messageId == request.id) {
                     this.chatService.modifyMessage(request);
                     this.inputMessage = "";
+                    this.messageModifyBool = false;
                 }
             })
         },
@@ -245,6 +248,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 console.error("An error occurred:", error);
             }
         });
+    }
+
+    handleCloseMessageModify() {
+        this.inputMessage = "";
+        this.messageModifyBool = false;
     }
 
     handleMessageDelete(messageId: any) {
