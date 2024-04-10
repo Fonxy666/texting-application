@@ -7,6 +7,7 @@ import { catchError, switchMap, tap } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
 import { CookieService } from 'ngx-cookie-service';
+import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
 
 @Component({
   selector: 'app-chat',
@@ -35,7 +36,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.loggedInUserId = this.cookieService.get("UserId");
         this.chatService.message$.subscribe(res => {
             this.messages = res;
-            console.log(res);
             this.messages.forEach(message => {
                 this.loadAvatarsFromMessages(message.userId);
             })
@@ -205,8 +205,29 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }
     }
 
-    handleMessageModify(messageId: any) {
-        console.log(messageId);
+    handleMessageModify(messageId: string, messageText: string) {
+        this.inputMessage = messageText;
+        
+        this.http.patch(`https://localhost:7045/Message/EditMessage`, new ChangeMessageRequest(messageId, "testChange"), { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(() => {
+            this.chatService.messages.forEach((message: any) => {
+                if (message.messageId == messageId) {
+                    this.chatService.deleteMessage(messageId);
+                }
+            })
+        },
+        (error) => {
+            if (error.status === 403) {
+                this.errorHandler.handleError403(error);
+            } else if (error.status === 400) {
+                this.errorHandler.errorAlert("Something unusual happened.");
+            } else {
+                console.error("An error occurred:", error);
+            }
+        });
     }
 
     handleMessageDelete(messageId: any) {

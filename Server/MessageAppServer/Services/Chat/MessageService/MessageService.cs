@@ -52,14 +52,12 @@ public class MessageService(MessagesContext context) : IMessageService
         
         try
         {
-            existingMessage.RoomId = request.RoomId;
-            existingMessage.SenderId = request.Id;
             existingMessage.Text = request.Message;
 
             Context.Messages.Update(existingMessage);
             await Context.SaveChangesAsync();
 
-            return new MessageResponse(true, request.RoomId);
+            return new MessageResponse(true, "");
         }
         catch (Exception ex)
         {

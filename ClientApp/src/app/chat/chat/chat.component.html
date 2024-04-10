@@ -59,7 +59,7 @@
                                                 </svg>
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-dark">
-                                                <li><a class="dropdown-item" (click)="handleMessageModify(message.messageId)">Modify</a></li>
+                                                <li><a class="dropdown-item" (click)="handleMessageModify(message.messageId, message.message)">Modify</a></li>
                                                 <li><a class="dropdown-item" (click)="handleMessageDelete(message.messageId)">Delete</a></li>
                                             </ul>
                                             {{message.message}}

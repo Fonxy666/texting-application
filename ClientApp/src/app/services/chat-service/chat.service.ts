@@ -26,7 +26,6 @@ export class ChatService {
         this.connection.on("ReceiveMessage", (user: string, message: string, messageTime: string, userId: string, messageId: string) => {
             if (userId !== this.cookieService.get("UserId")) {
                 this.messages.push({ user, message, messageTime, userId, messageId });
-                console.log(messageId);
             }
             this.message$.next(this.messages);
         });
@@ -34,6 +33,14 @@ export class ChatService {
         this.connection.on("ConnectedUser", (users: string[]) => {
             this.connectedUsers.next(users);
         });
+
+        this.connection.on("ModifyMessage", (messageId: string) => {
+            this.messages.forEach((message) => {
+                if (message.messageId == messageId) {
+                    message.text = "haha"
+                }
+            })
+        })
 
         this.connection.on("DeleteMessage", (messageId: string) => {
             this.messages.forEach((message) => {
