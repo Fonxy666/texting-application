@@ -74,9 +74,9 @@
                             </div>
                         </ng-container>
                     </div>
+                    <div *ngIf="this.messageModifyBool"><button type="button" class="btn-close" aria-label="Close" (click)="this.handleCloseMessageModify()"></button>Message modification </div>
                     <div class="type_msg">
                         <div class="input_msg_write">
-                            <div *ngIf="this.messageModifyBool"><button type="button" class="btn-close" aria-label="Close" (click)="this.handleCloseMessageModify()"></button>Message modification </div>
                             <input #messageInput (keydown.enter)="this.messageModifyBool? sendMessageModifyHttpRequest(this.messageModifyRequest) : sendMessage()" [(ngModel)]="inputMessage" type="text" class="text-primary" placeholder="Type a message" />
                             <button (click)="this.messageModifyBool? sendMessageModifyHttpRequest(this.messageModifyRequest) : sendMessage()" class="msg_send_btn" type="button"> <i class="fa fa-paper-plane-o" aria-hidden="true"></i> </button>
                         </div>
