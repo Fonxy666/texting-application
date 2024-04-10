@@ -9,7 +9,7 @@ namespace Server.Services.Chat.MessageService;
 public class MessageService(MessagesContext context) : IMessageService
 {
     private MessagesContext Context { get; } = context;
-    public async Task<MessageResponse> SendMessage(MessageRequest request)
+    public async Task<SaveMessageResponse> SendMessage(MessageRequest request)
     {
         try
         {
@@ -20,12 +20,13 @@ public class MessageService(MessagesContext context) : IMessageService
             await Context.Messages.AddAsync(message);
             await Context.SaveChangesAsync();
 
-            return new MessageResponse(true, request.RoomId);
+            Console.WriteLine(message.MessageId);
+            return new SaveMessageResponse(true, message);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
-            return new MessageResponse(false, "");
+            return new SaveMessageResponse(false, null);
         }
     }
 
@@ -51,14 +52,12 @@ public class MessageService(MessagesContext context) : IMessageService
         
         try
         {
-            existingMessage.RoomId = request.RoomId;
-            existingMessage.SenderId = request.Id;
             existingMessage.Text = request.Message;
 
             Context.Messages.Update(existingMessage);
             await Context.SaveChangesAsync();
 
-            return new MessageResponse(true, request.RoomId);
+            return new MessageResponse(true, "");
         }
         catch (Exception ex)
         {

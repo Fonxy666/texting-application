@@ -7,6 +7,7 @@ import { catchError, switchMap, tap } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
 import { CookieService } from 'ngx-cookie-service';
+import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
 
 @Component({
   selector: 'app-chat',
@@ -23,8 +24,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     myImage: string = "./assets/images/chat-mountain.jpg";
     connectedUsers: string[] = [];
     searchTerm: string = '';
+    messageModifyBool: boolean = false;
+    messageModifyRequest: ChangeMessageRequest = {id: "", message: ""};
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
+    @ViewChild('messageInput') public inputElement!: ElementRef;
 
     constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute, private errorHandler: ErrorHandlerService, private cookieService: CookieService) { }
     
@@ -32,12 +36,29 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     avatars: { [userId: string]: string } = {};
 
     ngOnInit(): void {
+        console.log(this.messageModifyBool);
         this.loggedInUserId = this.cookieService.get("UserId");
         this.chatService.message$.subscribe(res => {
             this.messages = res;
             this.messages.forEach(message => {
                 this.loadAvatarsFromMessages(message.userId);
             })
+        });
+
+        this.chatService.connection.on("ModifyMessage", (messageId: any, messageText: any) => {
+            this.messages.forEach((message) => {
+                if (message.messageId == messageId) {
+                    message.message = messageText;
+                }
+            })
+        });
+
+        this.chatService.connection.on("DeleteMessage", (messageId: string) => {
+            this.messages.forEach((message: any) => {
+                if (message.messageId == messageId) {
+                    message.message = "Deleted message.";
+                }
+            });
         });
 
         this.route.params.subscribe(params => {
@@ -87,29 +108,41 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     sendMessage() {
         var request = new MessageRequest(this.roomId, this.cookieService.get("UserId"), this.inputMessage, this.cookieService.get("Anonymous") === "True");
-        this.chatService.sendMessage(request)
-            .then(() => {
+        this.saveMessage(request)
+            .then((messageId) => {
+                this.chatService.sendMessage(new MessageRequest(this.roomId, this.cookieService.get("UserId"), this.inputMessage, this.cookieService.get("Anonymous") === "True", messageId));
                 this.inputMessage = "";
-                this.saveMessage(request);
-            }).catch((err) => {
+            }).catch((err: any) => {
                 console.log(err);
             })
     }
 
-    saveMessage(request: MessageRequest) {
-        this.http.post('https://localhost:7045/Message/SendMessage', request, { withCredentials: true})
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe(() => { }, 
-        (error) => {
-            if (error.status === 403) {
-                this.errorHandler.handleError403(error);
-            } else if (error.status === 400) {
-                this.errorHandler.errorAlert("Invalid username or password.");
-            } else {
-                console.error("An error occurred:", error);
-            }
+    saveMessage(request: MessageRequest): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            this.http.post('https://localhost:7045/Message/SendMessage', request, { withCredentials: true})
+                .pipe(
+                    this.errorHandler.handleError401()
+                )
+                .subscribe((res: any) => {
+                    this.chatService.messages.push({ 
+                        messageId: res.message.messageId,
+                        userId: res.message.senderId,
+                        message: res.message.text,
+                        messageTime: res.message.sendTime
+                    });
+    
+                    resolve(res.message.messageId);
+                }, 
+                (error) => {
+                    if (error.status === 403) {
+                        this.errorHandler.handleError403(error);
+                    } else if (error.status === 400) {
+                        this.errorHandler.errorAlert("You cannot send empty messages.");
+                    } else {
+                        console.error("An error occurred:", error);
+                    }
+                    reject(error);
+                });
         });
     }
 
@@ -137,6 +170,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     
                 forkJoin(observables).subscribe((usernames: any) => {
                     const fetchedMessages = response.map((element: any, index: number) => ({
+                        messageId: element.messageId,
                         user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
                         userId: element.senderId,
                         message: element.text,
@@ -181,5 +215,66 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 user.toLowerCase().includes(this.searchTerm.toLowerCase())
             );
         }
+    }
+
+    handleMessageModify(messageId: string, messageText: string) {
+        this.messageModifyBool = true;
+        this.messageModifyRequest.id = messageId;
+        this.inputMessage = messageText;
+        this.inputElement.nativeElement.focus();
+    }
+
+    sendMessageModifyHttpRequest(request: ChangeMessageRequest) {
+        request.message = this.inputMessage;
+        this.http.patch(`https://localhost:7045/Message/EditMessage`, request, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(() => {
+            this.chatService.messages.forEach((message: any) => {
+                if (message.messageId == request.id) {
+                    this.chatService.modifyMessage(request);
+                    this.inputMessage = "";
+                    this.messageModifyBool = false;
+                }
+            })
+        },
+        (error) => {
+            if (error.status === 403) {
+                this.errorHandler.handleError403(error);
+            } else if (error.status === 400) {
+                this.errorHandler.errorAlert("Something unusual happened.");
+            } else {
+                console.error("An error occurred:", error);
+            }
+        });
+    }
+
+    handleCloseMessageModify() {
+        this.inputMessage = "";
+        this.messageModifyBool = false;
+    }
+
+    handleMessageDelete(messageId: any) {
+        this.http.delete(`https://localhost:7045/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(() => {
+            this.chatService.messages.forEach((message: any) => {
+                if (message.messageId == messageId) {
+                    this.chatService.deleteMessage(messageId);
+                }
+            })
+        }, 
+        (error) => {
+            if (error.status === 403) {
+                this.errorHandler.handleError403(error);
+            } else if (error.status === 400) {
+                this.errorHandler.errorAlert("Something unusual happened.");
+            } else {
+                console.error("An error occurred:", error);
+            }
+        });
     }
 }

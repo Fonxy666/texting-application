@@ -7,7 +7,6 @@ public class Message
 {
     [Key]
     public string MessageId { get; set; } = Guid.NewGuid().ToString();
-
     public string RoomId { get; set; } 
     public string SenderId { get; set; } 
     public string Text { get; set; } 

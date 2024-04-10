@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Server.Model;
+using Server.Model.Chat;
 using Server.Model.Requests.Message;
 using Server.Services.Chat.MessageService;
 
@@ -8,19 +9,29 @@ namespace Server.Hub;
 public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessageService messageRepository)
     : Microsoft.AspNetCore.SignalR.Hub
 {
-    public async Task JoinRoom(UserRoomConnection userConnection)
+    public async Task<string> JoinRoom(UserRoomConnection userConnection)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, userConnection.Room!);
         connection[Context.ConnectionId] = userConnection;
         await Clients.Group(userConnection.Room!).SendAsync("ReceiveMessage", "Textinger bot", $"{userConnection.User} has joined the room!", DateTime.Now);
         await SendConnectedUser(userConnection.Room!);
+
+        return Context.ConnectionId;
     }
 
     public async Task SendMessage(MessageRequest request)
     {
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
         {
-            await Clients.Group(userRoomConnection.Room!).SendAsync("ReceiveMessage", userRoomConnection.User, request.Message, DateTime.Now, request.UserName);
+            await Clients.Group(userRoomConnection.Room!).SendAsync("ReceiveMessage", userRoomConnection.User, request.Message, DateTime.Now, request.UserName, request.MessageId);
+        }
+    }
+    
+    public async Task ModifyMessage(EditMessageRequest request)
+    {
+        if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
+        {
+            await Clients.Group(userRoomConnection.Room!).SendAsync("ModifyMessage", request.Id, request.Message);
         }
     }
 
@@ -28,6 +39,14 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessag
     {
         var messageRequest = new MessageRequest(request.RoomId, request.UserName, request.Message, request.AsAnonymous);
         await messageRepository.SendMessage(messageRequest);
+    }
+
+    public async Task DeleteMessage(string messageId)
+    {
+        if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
+        {
+            await Clients.Group(userRoomConnection.Room!).SendAsync("DeleteMessage", messageId);
+        }
     }
 
      public override async Task OnDisconnectedAsync(Exception? exp)

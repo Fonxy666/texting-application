@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, Renderer2 } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
@@ -11,11 +11,14 @@ import { ErrorHandlerService } from '../services/error-handler.service';
 })
 
 export class NavBarComponent implements OnInit {
-    constructor(private cookieService : CookieService, private router: Router, private http: HttpClient, private errorHandler: ErrorHandlerService) {}
+    constructor(private cookieService : CookieService, private router: Router, private http: HttpClient, private errorHandler: ErrorHandlerService, private renderer: Renderer2) {}
+
+    isDropstart: boolean = true;
 
     ngOnInit(): void {
         this.isLoggedIn();
         this.loadProfileData();
+        this.checkScreenSize();
     }
 
     profilePic: string = "";
@@ -63,5 +66,18 @@ export class NavBarComponent implements OnInit {
         (error) => {
             console.error("An error occurred:", error);
         });
+    }
+
+    @HostListener('window:resize', ['$event'])
+    onResize() {
+        this.checkScreenSize();
+    }
+
+    checkScreenSize() {
+        if (window.innerWidth <= 992) {
+            this.isDropstart = false;
+        } else {
+            this.isDropstart = true;
+        }
     }
 }

@@ -197,7 +197,7 @@ img {
 .time_date {
     color:rgb(0, 0, 0);
     display: block;
-    font-size: 12px;
+    font-size: 12.5px;
     margin: 8px 0 0;
     margin-bottom: 6px;
 }
@@ -229,12 +229,16 @@ img {
 }
 
 .sent_msg {
-    border-radius: 3px;
     float: right;
     width: 57%;
+    border-radius: 3px;
 }
 
-.sent_withd_msg p {
+.sent_withd_msg svg:hover {
+    cursor: pointer;
+}
+
+.sent_withd_msg div {
     background: #585bb4 none repeat scroll 0 0;
     border-radius: 3px;
     color: #ffffff;
@@ -242,6 +246,15 @@ img {
     margin: 0;
     padding: 5px 10px 5px 10px;
     width: 100%;
+    flex-grow: 1;
+}
+
+.bot_msg {
+    float: none;
+    width: 57%;
+    margin: 0 auto;
+    color: white;
+    text-align: center;
 }
 
 .input_msg_write input {
@@ -271,6 +284,10 @@ img {
     width: 33px;
 }
 
+.dropdown-menu {
+    padding: 0px;
+}
+
 .messaging {
     padding: 0 0 50px 0;
 }
@@ -291,4 +308,12 @@ img {
     object-position: top center;
     z-index: -1;
     overflow: hidden;
+}
+
+.not_decorated_button {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    color:#2c1971;
 }
