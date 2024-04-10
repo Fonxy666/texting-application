@@ -24,6 +24,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     myImage: string = "./assets/images/chat-mountain.jpg";
     connectedUsers: string[] = [];
     searchTerm: string = '';
+    messageModifyBool: boolean = false;
+    messageModifyRequest: ChangeMessageRequest = {id: "", message: ""};
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
 
@@ -33,6 +35,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     avatars: { [userId: string]: string } = {};
 
     ngOnInit(): void {
+        console.log(this.messageModifyBool);
         this.loggedInUserId = this.cookieService.get("UserId");
         this.chatService.message$.subscribe(res => {
             this.messages = res;
@@ -44,8 +47,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.chatService.connection.on("ModifyMessage", (messageId: any, messageText: any) => {
             this.messages.forEach((message) => {
                 if (message.messageId == messageId) {
-                    console.log(message);
-                    message.message = messageText
+                    message.message = messageText;
                 }
             })
         });
@@ -215,13 +217,13 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     handleMessageModify(messageId: string, messageText: string) {
-        console.log(messageId);
+        this.messageModifyBool = true;
+        this.messageModifyRequest.id = messageId;
         this.inputMessage = messageText;
-        var request = new ChangeMessageRequest(messageId, "test1");
-        this.sendMessageModifyHttpRequest(request);
     }
 
     sendMessageModifyHttpRequest(request: ChangeMessageRequest) {
+        request.message = this.inputMessage;
         this.http.patch(`https://localhost:7045/Message/EditMessage`, request, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
@@ -230,6 +232,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             this.chatService.messages.forEach((message: any) => {
                 if (message.messageId == request.id) {
                     this.chatService.modifyMessage(request);
+                    this.inputMessage = "";
                 }
             })
         },
