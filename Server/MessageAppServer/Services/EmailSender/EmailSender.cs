@@ -13,6 +13,7 @@ public class EmailSender(IConfiguration configuration) : IEmailSender
         var client = new SmtpClient("smtp-mail.outlook.com", 587)
         {
             EnableSsl = true,
+            UseDefaultCredentials = false,
             Credentials = new NetworkCredential(mail, pw)
         };
         

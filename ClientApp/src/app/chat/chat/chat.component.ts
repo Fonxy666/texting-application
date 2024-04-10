@@ -41,6 +41,15 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             })
         });
 
+        this.chatService.connection.on("ModifyMessage", (messageId: any, messageText: any) => {
+            this.messages.forEach((message) => {
+                if (message.messageId == messageId) {
+                    console.log(message);
+                    message.message = messageText
+                }
+            })
+        });
+
         this.chatService.connection.on("DeleteMessage", (messageId: string) => {
             this.messages.forEach((message: any) => {
                 if (message.messageId == messageId) {
@@ -125,7 +134,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     if (error.status === 403) {
                         this.errorHandler.handleError403(error);
                     } else if (error.status === 400) {
-                        this.errorHandler.errorAlert("Invalid username or password.");
+                        this.errorHandler.errorAlert("You cannot send empty messages.");
                     } else {
                         console.error("An error occurred:", error);
                     }
@@ -206,16 +215,21 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     handleMessageModify(messageId: string, messageText: string) {
+        console.log(messageId);
         this.inputMessage = messageText;
-        
-        this.http.patch(`https://localhost:7045/Message/EditMessage`, new ChangeMessageRequest(messageId, "testChange"), { withCredentials: true })
+        var request = new ChangeMessageRequest(messageId, "test1");
+        this.sendMessageModifyHttpRequest(request);
+    }
+
+    sendMessageModifyHttpRequest(request: ChangeMessageRequest) {
+        this.http.patch(`https://localhost:7045/Message/EditMessage`, request, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )
         .subscribe(() => {
             this.chatService.messages.forEach((message: any) => {
-                if (message.messageId == messageId) {
-                    this.chatService.deleteMessage(messageId);
+                if (message.messageId == request.id) {
+                    this.chatService.modifyMessage(request);
                 }
             })
         },

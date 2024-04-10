@@ -3,6 +3,7 @@ import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject } from 'rxjs';
 import { MessageRequest } from '../../model/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
+import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
 
 @Injectable({
     providedIn: 'root'
@@ -33,22 +34,6 @@ export class ChatService {
         this.connection.on("ConnectedUser", (users: string[]) => {
             this.connectedUsers.next(users);
         });
-
-        this.connection.on("ModifyMessage", (messageId: string) => {
-            this.messages.forEach((message) => {
-                if (message.messageId == messageId) {
-                    message.text = "haha"
-                }
-            })
-        })
-
-        this.connection.on("DeleteMessage", (messageId: string) => {
-            this.messages.forEach((message) => {
-                if (message.messageId == messageId) {
-                    message.text = "Deleted message.";
-                }
-            })
-        })
 
         this.connection.on("UserDisconnected", (username: string) => {
             const updatedUsers = this.connectedUsers.value.filter(user => user !== username);
@@ -113,11 +98,19 @@ export class ChatService {
         }
     }
 
+    public async modifyMessage(request: ChangeMessageRequest) {
+        try {
+            await this.connection.invoke("ModifyMessage", request);
+        } catch (error) {
+            console.error('Error modifying the message:', error);
+        }
+    }
+
     public async deleteMessage(messageId: string) {
         try {
             await this.connection.invoke("DeleteMessage", messageId);
         } catch (error) {
-            console.error('Error sending message:', error);
+            console.error('Error deleting message:', error);
         }
     }
 

@@ -26,6 +26,14 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessag
             await Clients.Group(userRoomConnection.Room!).SendAsync("ReceiveMessage", userRoomConnection.User, request.Message, DateTime.Now, request.UserName, request.MessageId);
         }
     }
+    
+    public async Task ModifyMessage(EditMessageRequest request)
+    {
+        if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
+        {
+            await Clients.Group(userRoomConnection.Room!).SendAsync("ModifyMessage", request.Id, request.Message);
+        }
+    }
 
     public async Task SaveMessage(MessageRequest request)
     {

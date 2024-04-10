@@ -45,8 +45,6 @@ public class MessageController(IMessageService messageRepository) : ControllerBa
     [HttpPatch("EditMessage"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<MessageResponse>> ModifyMessage([FromBody]EditMessageRequest request)
     {
-        Console.WriteLine(request.Id);
-        Console.WriteLine(request.Message);
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
