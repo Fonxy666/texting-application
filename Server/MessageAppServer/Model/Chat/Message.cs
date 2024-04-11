@@ -34,4 +34,9 @@ public class Message
         SentAsAnonymous = sentAsAnonymous;
         Seen = new List<Guid>();
     }
+
+    public void AddUserToSeen(Guid userId)
+    {
+        Seen.Add(userId);
+    }
 }

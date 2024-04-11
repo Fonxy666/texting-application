@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { ChatService } from '../../services/chat-service/chat.service';
 import { Router, ActivatedRoute  } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -26,11 +26,14 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     searchTerm: string = '';
     messageModifyBool: boolean = false;
     messageModifyRequest: ChangeMessageRequest = {id: "", message: ""};
+    isPageVisible = true;
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
 
-    constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute, private errorHandler: ErrorHandlerService, private cookieService: CookieService) { }
+    constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute, private errorHandler: ErrorHandlerService, private cookieService: CookieService) {
+        document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
+    }
     
     messages: any[] = [];
     avatars: { [userId: string]: string } = {};
@@ -89,13 +92,21 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         const observer = new IntersectionObserver(entries => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    console.log("seen");
+                    this.examineMessages();
                 }
             });
         });
     
         observer.observe(this.inputElement.nativeElement);
-      }
+    }
+
+    examineMessages() {
+        this.chatService.messages.forEach((message) => {
+            if (message.userId != this.cookieService.get("UserId")) {
+                console.log(message.message);
+            }
+        })
+    }
 
     loadAvatarsFromMessages(userId : string) {
         if (userId === null || userId === undefined) {
@@ -185,7 +196,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                         user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
                         userId: element.senderId,
                         message: element.text,
-                        messageTime: element.sendTime
+                        messageTime: element.sendTime,
+                        seenList: element.seen
                     }));
                     this.chatService.messages = [...fetchedMessages, ...this.chatService.messages];
     
@@ -287,5 +299,27 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 console.error("An error occurred:", error);
             }
         });
+    }
+
+    
+
+    handleVisibilityChange() {
+        if (document.visibilityState === 'hidden') {
+            this.isPageVisible = false;
+            console.log('User is not on the page/tab');
+        } else {
+            this.isPageVisible = true;
+            console.log('User is on the page/tab');
+        }
+    }
+    
+    @HostListener('window:focus', ['$event'])
+    onFocus(event: FocusEvent): void {
+        console.log('Window focused');
+    }
+    
+    @HostListener('window:blur', ['$event'])
+    onBlur(event: FocusEvent): void {
+        console.log('Window blurred');
     }
 }
