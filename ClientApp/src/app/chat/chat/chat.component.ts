@@ -36,7 +36,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     avatars: { [userId: string]: string } = {};
 
     ngOnInit(): void {
-        console.log(this.messageModifyBool);
         this.loggedInUserId = this.cookieService.get("UserId");
         this.chatService.message$.subscribe(res => {
             this.messages = res;
@@ -85,6 +84,18 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     ngAfterViewChecked(): void {
         this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
     }
+
+    ngAfterViewInit(): void {
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    console.log("seen");
+                }
+            });
+        });
+    
+        observer.observe(this.inputElement.nativeElement);
+      }
 
     loadAvatarsFromMessages(userId : string) {
         if (userId === null || userId === undefined) {

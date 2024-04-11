@@ -17,12 +17,12 @@
                         </div>
                         <div class="mb-3">
                             <label id="roomNameLabel" for="Roomname">Roomname</label>
-                            <input type="text" formControlName="room" class="form-control" id="roomNameLabel" placeholder="Roomname"/>
+                            <input type="text" (keydown.enter)="joinRoom()" formControlName="room" class="form-control" id="roomNameLabel" placeholder="Roomname"/>
                         </div>
                         <div class="mb-3">
                             <label id="passwordlabel" for="password">Password</label>
                             <div class="password-show-container">
-                                <input [type]="showPassword ? 'text' : 'password'" formControlName="password" class="form-control password-box" id="passwordlabel" placeholder="password"/>
+                                <input (keydown.enter)="joinRoom()" [type]="showPassword ? 'text' : 'password'" formControlName="password" class="form-control password-box" id="passwordlabel" placeholder="password"/>
                                 <button class="button-box btn btn-color w-100 button-box" (click)="toggleShowPassword()">{{ showPassword ? 'Hide' : 'Show' }} password</button>
                             </div>
                         </div>
