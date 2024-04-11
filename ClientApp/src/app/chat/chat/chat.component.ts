@@ -9,6 +9,7 @@ import { ErrorHandlerService } from '../../services/error-handler.service';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
 import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
+import { ConnectedUser } from '../../model/ConnectedUser';
 
 @Component({
   selector: 'app-chat',
@@ -23,7 +24,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     loggedInUserId:string = "";
     roomName = sessionStorage.getItem("room");
     myImage: string = "./assets/images/chat-mountain.jpg";
-    connectedUsers: string[] = [];
+    connectedUsers: ConnectedUser[] = [];
     searchTerm: string = '';
     messageModifyBool: boolean = false;
     messageModifyRequest: ChangeMessageRequest = {id: "", message: ""};
@@ -82,9 +83,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.chatService.connectedUsers.subscribe((users) => {
             this.connectedUsers = users;
             users.forEach((user) => {
-                this.getAvatarImage(user).subscribe(
+                this.getAvatarImage(user.userId).subscribe(
                     (avatar) => {
-                        this.avatars[user] = avatar;
+                        this.avatars[user.userId] = avatar;
                     },
                     (error) => {
                         console.log(error);
@@ -113,19 +114,26 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             return;
         }
 
-        this.http.get(`https://localhost:7045/User/getUsername/${userId}`, { withCredentials: true })
-        .subscribe((user: any) => {
-            if (this.avatars[user.username] == null) {
-                this.getAvatarImage(user.username).subscribe(
-                    (avatar) => {
-                        this.avatars[user.username] = avatar;
-                    },
-                    (error) => {
-                        console.log(error);
-                    }
-                );
-            }
-        });
+        if (this.avatars[userId] == null) {
+            this.getAvatarImage(userId).subscribe(
+                (avatar) => {
+                    this.avatars[userId] = avatar;
+                })
+        }
+
+        // this.http.get(`https://localhost:7045/User/getUsername/${userId}`, { withCredentials: true })
+        // .subscribe((user: any) => {
+        //     if (this.avatars[user.username] == null) {
+        //         this.getAvatarImage(user.username).subscribe(
+        //             (avatar) => {
+        //                 this.avatars[userId] = avatar;
+        //             },
+        //             (error) => {
+        //                 console.log(error);
+        //             }
+        //         );
+        //     }
+        // });
     }
 
     sendMessage() {
@@ -206,8 +214,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             });
     }
 
-    getAvatarImage(userName: string): Observable<string> {
-        return this.http.get(`https://localhost:7045/User/GetImageWithUsername/${userName}`, { withCredentials: true, responseType: 'blob' })
+    getAvatarImage(userId: string): Observable<string> {
+        return this.http.get(`https://localhost:7045/User/GetImage/${userId}`, { withCredentials: true, responseType: 'blob' })
             .pipe(
                 this.errorHandler.handleError401(),
                 switchMap((response: Blob) => {
@@ -229,15 +237,15 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     searchInConnectedUsers() {
-        if (this.searchTerm.trim() === '') {
-            this.chatService.connectedUsers.subscribe(users => {
-                this.connectedUsers = users;
-            });
-        } else {
-            this.connectedUsers = this.chatService.connectedUsers.value.filter(user => 
-                user.toLowerCase().includes(this.searchTerm.toLowerCase())
-            );
-        }
+        // if (this.searchTerm.trim() === '') {
+        //     this.chatService.connectedUsers.subscribe(users => {
+        //         this.connectedUsers = users;
+        //     });
+        // } else {
+        //     this.connectedUsers = this.chatService.connectedUsers.value.filter(user => 
+        //         user.toLowerCase().includes(this.searchTerm.toLowerCase())
+        //     );
+        // }
     }
 
     handleMessageModify(messageId: string, messageText: string) {
@@ -303,6 +311,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     
     @HostListener('window:focus', ['$event'])
     onFocus(event: FocusEvent): void {
+        console.log(this.avatars);
         this.chatService.messages.forEach((message) => {
             const userId = this.cookieService.get("UserId");
             const anonym = this.cookieService.get("Anonymous") == "True";

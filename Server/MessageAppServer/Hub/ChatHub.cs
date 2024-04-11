@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Server.Model;
-using Server.Model.Chat;
 using Server.Model.Requests.Message;
 using Server.Services.Chat.MessageService;
 
 namespace Server.Hub;
 
-public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessageService messageRepository)
+public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessageService messageRepository, UserManager<ApplicationUser> userManager)
     : Microsoft.AspNetCore.SignalR.Hub
 {
     public async Task<string> JoinRoom(UserRoomConnection userConnection)
@@ -75,6 +75,11 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessag
     public Task SendConnectedUser(string room)
     {
         var users = connection.Values.Where(user => user.Room == room).Select(connection => connection.User);
-        return Clients.Group(room).SendAsync("ConnectedUser", users);
+        var newDictionary = new Dictionary<string, string>();
+        foreach (var user in users)
+        {
+            newDictionary.TryAdd(user!, userManager.Users.FirstOrDefault(applicationUser => applicationUser.UserName == user)!.Id);
+        }
+        return Clients.Group(room).SendAsync("ConnectedUser", newDictionary);
     }
 }

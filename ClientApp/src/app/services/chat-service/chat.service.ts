@@ -5,6 +5,7 @@ import { MessageRequest } from '../../model/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
 import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
+import { ConnectedUser } from '../../model/ConnectedUser';
 
 @Injectable({
     providedIn: 'root'
@@ -13,9 +14,9 @@ import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
 export class ChatService {
     public connection: signalR.HubConnection;
     public message$ = new BehaviorSubject<any>([]);
-    public connectedUsers = new BehaviorSubject<string[]>([]);
+    public connectedUsers = new BehaviorSubject<ConnectedUser[]>([]);
     public messages: any[] = [];
-    public users: string[] = [];
+    public users: ConnectedUser[] = [];
 
     constructor(private cookieService: CookieService) {
         this.connection = new signalR.HubConnectionBuilder()
@@ -32,12 +33,16 @@ export class ChatService {
             this.message$.next(this.messages);
         });
 
-        this.connection.on("ConnectedUser", (users: string[]) => {
+        this.connection.on("ConnectedUser", (userDictionary: { [key: string]: string }) => {
+            const users = Object.keys(userDictionary).map(userName => ({
+                userId: userDictionary[userName],
+                userName: userName
+            }));
             this.connectedUsers.next(users);
         });
 
         this.connection.on("UserDisconnected", (username: string) => {
-            const updatedUsers = this.connectedUsers.value.filter(user => user !== username);
+            const updatedUsers = this.connectedUsers.value.filter(user => user.userName !== username);
             this.connectedUsers.next(updatedUsers);
         });
     }

@@ -27,10 +27,10 @@
                           <div class="chat_list">
                             <div class="chat_people">
                               <div class="chat_img">
-                                <img class="user_image" [src]="avatars[user] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
+                                <img class="user_image" [src]="avatars[user.userId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
                               </div>
                               <div class="chat_ib mt-3">
-                                <h5>{{user}} <span class="online"></span> </h5>
+                                <h5>{{user.userName}} <span class="online"></span> </h5>
                               </div>
                             </div>
                           </div>
@@ -42,7 +42,7 @@
                         <ng-container *ngFor="let message of this.chatService.message$ | async">
                             <div [ngClass]="{'incoming_msg': message.UserName != loggedInUserId && message.user !== 'Textinger bot', 'outgoing_msg': message.userId === loggedInUserId}">
                                 <div *ngIf="message.userId != loggedInUserId && message.user !== 'Textinger bot'" class="incoming_msg_img">
-                                    <img class="user_image" [src]="avatars[message.user] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
+                                    <img class="user_image" [src]="avatars[message.userId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
                                 </div>
                                 <div *ngIf="message.userId != loggedInUserId && message.user !== 'Textinger bot'" class="received_msg">
                                     <div class="received_withd_msg">
