@@ -301,8 +301,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         });
     }
 
-    
-
     handleVisibilityChange() {
         if (document.visibilityState === 'hidden') {
             this.isPageVisible = false;

@@ -106,6 +106,14 @@ export class ChatService {
         }
     }
 
+    public async modifyMessageSeen(request: ChangeMessageRequest) {
+        try {
+            await this.connection.invoke("MessageSeen", request);
+        } catch (error) {
+            console.error('Error modifying the message:', error);
+        }
+    }
+
     public async deleteMessage(messageId: string) {
         try {
             await this.connection.invoke("DeleteMessage", messageId);
