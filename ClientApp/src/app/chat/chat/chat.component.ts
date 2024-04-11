@@ -8,6 +8,7 @@ import { MessageRequest } from '../../model/MessageRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
+import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
 
 @Component({
   selector: 'app-chat',
@@ -31,9 +32,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
 
-    constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute, private errorHandler: ErrorHandlerService, private cookieService: CookieService) {
-        document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
-    }
+    constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute, private errorHandler: ErrorHandlerService, private cookieService: CookieService) { }
     
     messages: any[] = [];
     avatars: { [userId: string]: string } = {};
@@ -47,13 +46,26 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             })
         });
 
-        this.chatService.connection.on("ModifyMessage", (messageId: any, messageText: any) => {
+        this.chatService.connection.on("ModifyMessage", (messageId: string, messageText: string) => {
             this.messages.forEach((message) => {
                 if (message.messageId == messageId) {
                     message.message = messageText;
                 }
             })
         });
+
+        this.chatService.connection.on("ModifyMessageSeen", () => {
+            this.chatService.messages.forEach((message) => {
+                if (!message.seenList) {
+                    return;
+                } else if (message.seenList.length == 0 && message.userId != this.cookieService.get("UserId")) {
+                    message.seenList.push(this.cookieService.get("UserId"));
+                    console.log("egybol mehet");
+                } else if (message.userId != this.cookieService.get("UserId") && !message.seenList.includes(message.userId)) {
+                    console.log("van mar benne");
+                }
+            })
+        })
 
         this.chatService.connection.on("DeleteMessage", (messageId: string) => {
             this.messages.forEach((message: any) => {
@@ -86,18 +98,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     ngAfterViewChecked(): void {
         this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
-    }
-
-    ngAfterViewInit(): void {
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    this.examineMessages();
-                }
-            });
-        });
-    
-        observer.observe(this.inputElement.nativeElement);
     }
 
     examineMessages() {
@@ -196,7 +196,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                         user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
                         userId: element.senderId,
                         message: element.text,
-                        messageTime: element.sendTime,
+                        messageTime: element.sendTime,                    
                         seenList: element.seen
                     }));
                     this.chatService.messages = [...fetchedMessages, ...this.chatService.messages];
@@ -300,24 +300,21 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             }
         });
     }
-
-    handleVisibilityChange() {
-        if (document.visibilityState === 'hidden') {
-            this.isPageVisible = false;
-            console.log('User is not on the page/tab');
-        } else {
-            this.isPageVisible = true;
-            console.log('User is on the page/tab');
-        }
-    }
     
     @HostListener('window:focus', ['$event'])
     onFocus(event: FocusEvent): void {
-        console.log('Window focused');
-    }
-    
-    @HostListener('window:blur', ['$event'])
-    onBlur(event: FocusEvent): void {
-        console.log('Window blurred');
+        this.chatService.messages.forEach((message) => {
+            const userId = this.cookieService.get("UserId");
+            const anonym = this.cookieService.get("Anonymous") == "True";
+            if (!message.seenList) {
+                return;
+            } else if (message.seenList.length == 0 && message.userId != userId) {
+                message.seenList.push(userId);
+                this.chatService.modifyMessageSeen(new ChangeMessageSeenRequest(userId, anonym, message.messageId));
+            } else if (message.userId != userId && !message.seenList.includes(userId)) {
+                message.seenList.push(userId);
+                this.chatService.modifyMessageSeen(new ChangeMessageSeenRequest(userId, anonym, message.messageId));
+            }
+        })
     }
 }

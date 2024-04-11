@@ -1,3 +1,0 @@
-export class ChangeMessageSeenRequest {
-    constructor(public roomId: string, public messageId: string, public asAnonym: boolean) { }
-}

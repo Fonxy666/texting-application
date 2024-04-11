@@ -4,6 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 import { MessageRequest } from '../../model/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
+import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
 
 @Injectable({
     providedIn: 'root'
@@ -106,9 +107,9 @@ export class ChatService {
         }
     }
 
-    public async modifyMessageSeen(request: ChangeMessageRequest) {
+    public async modifyMessageSeen(request: ChangeMessageSeenRequest) {
         try {
-            await this.connection.invoke("MessageSeen", request);
+            await this.connection.invoke("ModifyMessageSeen", request);
         } catch (error) {
             console.error('Error modifying the message:', error);
         }

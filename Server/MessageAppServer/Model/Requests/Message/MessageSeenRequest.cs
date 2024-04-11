@@ -2,4 +2,4 @@
 
 namespace Server.Model.Requests.Message;
 
-public record MessageSeenRequest([Required]string RoomId, [Required]bool AsAnonymous, [Required]string MessageId);
+public record MessageSeenRequest([Required]string UserId, [Required]bool AsAnonymous, [Required]string MessageId);

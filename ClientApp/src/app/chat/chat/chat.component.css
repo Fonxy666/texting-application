@@ -200,6 +200,7 @@ img {
     font-size: 12.5px;
     margin: 8px 0 0;
     margin-bottom: 6px;
+    min-width: 60%;
 }
 
 .reveived_withd_msg {
@@ -316,4 +317,14 @@ img {
     padding: 0;
     cursor: pointer;
     color:#2c1971;
+}
+
+.seen-image {
+    border-radius: 50%;
+    width: 15%;
+    margin-top: 10px;
+}
+
+.message-data-container {
+    display: flex;
 }

@@ -47,7 +47,12 @@
                                 <div *ngIf="message.userId != loggedInUserId && message.user !== 'Textinger bot'" class="received_msg">
                                     <div class="received_withd_msg">
                                         <p> {{message.message}} </p>
-                                        <span class="time_date"> {{message.user}} | {{message.messageTime | date: 'medium'}}</span>
+                                        <div class="message-data-container">
+                                            <span class="time_date"> {{message.user}} | {{message.messageTime | date: 'medium'}} </span>
+                                            <div *ngFor="let userId of message.seenList" class="seen-image-container">
+                                                <img class="seen-image" [src]="avatars[userId]">
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div *ngIf="message.userId === loggedInUserId" class="sent_msg">
