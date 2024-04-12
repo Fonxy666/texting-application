@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Server.Model;
 using Server.Model.Requests.Message;
 using Server.Services.Chat.MessageService;
@@ -23,7 +24,16 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessag
     {
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
         {
-            await Clients.Group(userRoomConnection.Room!).SendAsync("ReceiveMessage", userRoomConnection.User, request.Message, DateTime.Now, request.UserName, request.MessageId, new List<string>());
+            await Clients.Group(userRoomConnection.Room!).SendAsync("ReceiveMessage", 
+                userRoomConnection.User,
+                request.Message,
+                DateTime.Now,
+                request.UserName,
+                request.MessageId,
+                new List<string>
+                {
+                    request.UserName
+                });
         }
     }
     
@@ -39,7 +49,7 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessag
     {
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
         {
-            await Clients.Group(userRoomConnection.Room!).SendAsync("ModifyMessageSeen", request.MessageId, request.UserId, request.AsAnonymous);
+            await Clients.Group(userRoomConnection.Room!).SendAsync("ModifyMessageSeen", request.UserId);
         }
     }
 

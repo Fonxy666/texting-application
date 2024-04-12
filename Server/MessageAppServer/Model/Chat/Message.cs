@@ -23,6 +23,12 @@ public class Message
         Text = text;
         SentAsAnonymous = sentAsAnonymous;
         Seen = new List<Guid>();
+        
+        Guid senderGuid;
+        if (Guid.TryParse(senderId, out senderGuid))
+        {
+            Seen.Add(senderGuid);
+        }
     }
     
     public Message(string roomId, string senderId, string text, string messageId, bool sentAsAnonymous)
@@ -33,6 +39,12 @@ public class Message
         Text = text;
         SentAsAnonymous = sentAsAnonymous;
         Seen = new List<Guid>();
+        
+        Guid senderGuid;
+        if (Guid.TryParse(senderId, out senderGuid))
+        {
+            Seen.Add(senderGuid);
+        }
     }
 
     public void AddUserToSeen(Guid userId)

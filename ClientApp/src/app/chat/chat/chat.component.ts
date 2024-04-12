@@ -41,6 +41,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     ngOnInit(): void {
         this.loggedInUserId = this.cookieService.get("UserId");
         this.chatService.message$.subscribe(res => {
+            console.log(res);
             this.messages = res;
             this.messages.forEach(message => {
                 this.loadAvatarsFromMessages(message.userId);
@@ -49,15 +50,13 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
         this.chatService.connection.on("ModifyMessage", (messageId: string, messageText: string) => {
             this.messages.forEach((message) => {
-                console.log(message);
                 if (message.messageId == messageId) {
                     message.message = messageText;
                 }
             })
         });
 
-        this.chatService.connection.on("ModifyMessageSeen", (messageId: string, userIdFromSignalR: string, asAnonym: boolean) => {
-            console.log(this.chatService.messages);
+        this.chatService.connection.on("ModifyMessageSeen", (userIdFromSignalR: string) => {
             this.chatService.messages.forEach((message) => {
                 if (!message.seenList) {
                     return;
@@ -334,15 +333,12 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     
     @HostListener('window:focus', ['$event'])
     onFocus(): void {
-        console.log("oki")
         this.chatService.messages.forEach((message) => {
-            console.log(message);
             const userId = this.cookieService.get("UserId");
             const anonym = this.cookieService.get("Anonymous") == "True";
             if (!message.seenList) {
                 return;
             } else if (!message.seenList.includes(userId)) {
-                console.log(message);
                 var request = new ChangeMessageSeenRequest(userId, anonym, message.messageId);
                 this.chatService.modifyMessageSeen(request);
                 this.sendMessageSeenModifyHttpRequest(request);

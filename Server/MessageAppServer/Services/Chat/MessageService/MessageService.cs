@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Server.Database;
+using Server.Model;
 using Server.Model.Chat;
 using Server.Model.Requests.Message;
 using Server.Model.Responses.Message;
