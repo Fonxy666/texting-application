@@ -57,8 +57,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         });
 
         this.chatService.connection.on("ModifyMessageSeen", (messageId: string, userIdFromSignalR: string, asAnonym: boolean) => {
-            const userId = this.cookieService.get("UserId");
-            const anonym = this.cookieService.get("Anonymous") == "True";
+            console.log(this.chatService.messages);
             this.chatService.messages.forEach((message) => {
                 if (!message.seenList) {
                     return;
@@ -335,12 +334,15 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     
     @HostListener('window:focus', ['$event'])
     onFocus(): void {
+        console.log("oki")
         this.chatService.messages.forEach((message) => {
+            console.log(message);
             const userId = this.cookieService.get("UserId");
             const anonym = this.cookieService.get("Anonymous") == "True";
             if (!message.seenList) {
                 return;
             } else if (!message.seenList.includes(userId)) {
+                console.log(message);
                 var request = new ChangeMessageSeenRequest(userId, anonym, message.messageId);
                 this.chatService.modifyMessageSeen(request);
                 this.sendMessageSeenModifyHttpRequest(request);

@@ -50,7 +50,7 @@
                                         <div class="message-data-container">
                                             <span class="time_date">{{message.user}} | {{message.messageTime | date: 'medium'}}</span>
                                             <div class="seen-images-container">
-                                                <ng-container *ngIf="message.seenList.length >= 2">
+                                                <ng-container *ngIf="message.seenList != null && message.seenList.length > 2">
                                                     <div *ngFor="let userId of message.seenList.slice(0, 2)" class="seen-image-container">
                                                         <img class="seen-image" [src]="avatars[userId]">
                                                     </div>
@@ -58,7 +58,7 @@
                                                         +{{message.seenList.length - 2}}
                                                     </div>
                                                 </ng-container>
-                                                <ng-container *ngIf="message.seenList.length <= 2">
+                                                <ng-container *ngIf="message.seenList != null && 2 >= message.seenList.length">
                                                     <div *ngFor="let userId of message.seenList" class="seen-image-container">
                                                         <img class="seen-image" [src]="avatars[userId]">
                                                     </div>
