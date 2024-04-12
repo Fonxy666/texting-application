@@ -62,13 +62,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             this.chatService.messages.forEach((message) => {
                 if (!message.seenList) {
                     return;
-                } else if (message.seenList.length == 0 && message.userId != userIdFromSignalR) {
-                    message.seenList.push(userIdFromSignalR);
-                } else if (message.userId != userIdFromSignalR && !message.seenList.includes(userIdFromSignalR)) {
+                } else if (!message.seenList.includes(userIdFromSignalR)) {
                     message.seenList.push(userIdFromSignalR);
                 }
             })
-            console.log(this.chatService.messages);
         })
 
         this.chatService.connection.on("DeleteMessage", (messageId: string) => {
@@ -339,16 +336,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     @HostListener('window:focus', ['$event'])
     onFocus(): void {
         this.chatService.messages.forEach((message) => {
-            console.log(message);
             const userId = this.cookieService.get("UserId");
             const anonym = this.cookieService.get("Anonymous") == "True";
             if (!message.seenList) {
                 return;
-            } else if (message.seenList.length == 0 && message.userId != userId) {
-                var request = new ChangeMessageSeenRequest(userId, anonym, message.messageId);
-                this.chatService.modifyMessageSeen(request);
-                this.sendMessageSeenModifyHttpRequest(request);
-            } else if (message.userId != userId && !message.seenList.includes(userId)) {
+            } else if (!message.seenList.includes(userId)) {
                 var request = new ChangeMessageSeenRequest(userId, anonym, message.messageId);
                 this.chatService.modifyMessageSeen(request);
                 this.sendMessageSeenModifyHttpRequest(request);
