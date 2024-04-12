@@ -49,23 +49,26 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
         this.chatService.connection.on("ModifyMessage", (messageId: string, messageText: string) => {
             this.messages.forEach((message) => {
+                console.log(message);
                 if (message.messageId == messageId) {
                     message.message = messageText;
                 }
             })
         });
 
-        this.chatService.connection.on("ModifyMessageSeen", () => {
+        this.chatService.connection.on("ModifyMessageSeen", (messageId: string, userIdFromSignalR: string, asAnonym: boolean) => {
+            const userId = this.cookieService.get("UserId");
+            const anonym = this.cookieService.get("Anonymous") == "True";
             this.chatService.messages.forEach((message) => {
                 if (!message.seenList) {
                     return;
-                } else if (message.seenList.length == 0 && message.userId != this.cookieService.get("UserId")) {
-                    message.seenList.push(this.cookieService.get("UserId"));
-                    console.log("egybol mehet");
-                } else if (message.userId != this.cookieService.get("UserId") && !message.seenList.includes(message.userId)) {
-                    console.log("van mar benne");
+                } else if (message.seenList.length == 0 && message.userId != userIdFromSignalR) {
+                    message.seenList.push(userIdFromSignalR);
+                } else if (message.userId != userIdFromSignalR && !message.seenList.includes(userIdFromSignalR)) {
+                    message.seenList.push(userIdFromSignalR);
                 }
             })
+            console.log(this.chatService.messages);
         })
 
         this.chatService.connection.on("DeleteMessage", (messageId: string) => {
@@ -237,15 +240,15 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     searchInConnectedUsers() {
-        // if (this.searchTerm.trim() === '') {
-        //     this.chatService.connectedUsers.subscribe(users => {
-        //         this.connectedUsers = users;
-        //     });
-        // } else {
-        //     this.connectedUsers = this.chatService.connectedUsers.value.filter(user => 
-        //         user.toLowerCase().includes(this.searchTerm.toLowerCase())
-        //     );
-        // }
+        if (this.searchTerm.trim() === '') {
+            this.chatService.connectedUsers.subscribe(users => {
+                this.connectedUsers = users;
+            });
+        } else {
+            this.connectedUsers = this.chatService.connectedUsers.value.filter(user => 
+                user.userName.toLowerCase().includes(this.searchTerm.toLowerCase())
+            );
+        }
     }
 
     handleMessageModify(messageId: string, messageText: string) {
@@ -286,6 +289,30 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.messageModifyBool = false;
     }
 
+    sendMessageSeenModifyHttpRequest(request: ChangeMessageSeenRequest) {
+        this.http.patch(`https://localhost:7045/Message/EditMessageSeen`, request, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(() => {
+            this.chatService.messages.forEach((message: any) => {
+                if (message.messageId == request.userId) {
+                    this.inputMessage = "";
+                    this.messageModifyBool = false;
+                }
+            })
+        },
+        (error) => {
+            if (error.status === 403) {
+                this.errorHandler.handleError403(error);
+            } else if (error.status === 400) {
+                this.errorHandler.errorAlert("Something unusual happened.");
+            } else {
+                console.error("An error occurred:", error);
+            }
+        });
+    }
+
     handleMessageDelete(messageId: any) {
         this.http.delete(`https://localhost:7045/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
         .pipe(
@@ -310,19 +337,21 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
     
     @HostListener('window:focus', ['$event'])
-    onFocus(event: FocusEvent): void {
-        console.log(this.avatars);
+    onFocus(): void {
         this.chatService.messages.forEach((message) => {
+            console.log(message);
             const userId = this.cookieService.get("UserId");
             const anonym = this.cookieService.get("Anonymous") == "True";
             if (!message.seenList) {
                 return;
             } else if (message.seenList.length == 0 && message.userId != userId) {
-                message.seenList.push(userId);
-                this.chatService.modifyMessageSeen(new ChangeMessageSeenRequest(userId, anonym, message.messageId));
+                var request = new ChangeMessageSeenRequest(userId, anonym, message.messageId);
+                this.chatService.modifyMessageSeen(request);
+                this.sendMessageSeenModifyHttpRequest(request);
             } else if (message.userId != userId && !message.seenList.includes(userId)) {
-                message.seenList.push(userId);
-                this.chatService.modifyMessageSeen(new ChangeMessageSeenRequest(userId, anonym, message.messageId));
+                var request = new ChangeMessageSeenRequest(userId, anonym, message.messageId);
+                this.chatService.modifyMessageSeen(request);
+                this.sendMessageSeenModifyHttpRequest(request);
             }
         })
     }

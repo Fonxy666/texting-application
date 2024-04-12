@@ -328,3 +328,11 @@ img {
 .message-data-container {
     display: flex;
 }
+
+.seen-images-container {
+    display: flex; /* Use flexbox to arrange images in a row */
+}
+
+.seen-image-container {
+    margin-right: 5px; /* Add some spacing between images */
+}

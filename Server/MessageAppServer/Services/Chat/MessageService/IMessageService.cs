@@ -9,5 +9,6 @@ public interface IMessageService
     Task<SaveMessageResponse> SendMessage(MessageRequest request);
     Task<IQueryable<Message>> GetLast10Messages(string roomId);
     Task<MessageResponse> EditMessage(EditMessageRequest request);
+    Task<MessageResponse> EditMessageSeen(EditMessageSeenRequest request);
     Task<MessageResponse> DeleteMessage(string roomId);
 }

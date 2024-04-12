@@ -49,8 +49,10 @@
                                         <p> {{message.message}} </p>
                                         <div class="message-data-container">
                                             <span class="time_date"> {{message.user}} | {{message.messageTime | date: 'medium'}} </span>
-                                            <div *ngFor="let userId of message.seenList" class="seen-image-container">
-                                                <img class="seen-image" [src]="avatars[userId]">
+                                            <div class="seen-images-container">
+                                                <div *ngFor="let userId of message.seenList" class="seen-image-container">
+                                                    <img class="seen-image" [src]="avatars[userId]">
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

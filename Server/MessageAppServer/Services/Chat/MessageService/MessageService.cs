@@ -66,6 +66,32 @@ public class MessageService(MessagesContext context) : IMessageService
         }
     }
 
+    public async Task<MessageResponse> EditMessageSeen(EditMessageSeenRequest request)
+    {
+        var existingMessage = Context.Messages.FirstOrDefault(message => message.MessageId == request.messageId);
+        
+        if (existingMessage!.RoomId.Length < 1)
+        {
+            return new MessageResponse(false, "");
+        }
+        
+        try
+        {
+            var sawId = new Guid(request.userId);
+            existingMessage.AddUserToSeen(sawId);
+
+            Context.Messages.Update(existingMessage);
+            await Context.SaveChangesAsync();
+
+            return new MessageResponse(true, "");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return new MessageResponse(false, "");
+        }
+    }
+
     public async Task<MessageResponse> DeleteMessage(string id)
     {
         var existingMessage = Context.Messages.FirstOrDefault(message => message.MessageId == id);
