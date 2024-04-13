@@ -152,11 +152,13 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     this.errorHandler.handleError401()
                 )
                 .subscribe((res: any) => {
+                    console.log(res);
                     this.chatService.messages.push({ 
                         messageId: res.message.messageId,
                         userId: res.message.senderId,
                         message: res.message.text,
-                        messageTime: res.message.sendTime
+                        messageTime: res.message.sendTime,
+                        seenList: res.message.seen
                     });
     
                     resolve(res.message.messageId);
@@ -344,5 +346,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 this.sendMessageSeenModifyHttpRequest(request);
             }
         })
+    }
+
+    examineIfNextMessageContainsUserId(userId: string, index: number) {
+        console.log(this.chatService.messages[index + 1].seenList)
     }
 }

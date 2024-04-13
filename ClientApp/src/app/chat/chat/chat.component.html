@@ -81,8 +81,25 @@
                                             </ul>
                                             {{message.message}}
                                         </div>
-                                        <div *ngIf="message.message == 'Deleted message.'">{{message.message}}</div>
-                                        <span class="time_date">{{message.user}} | {{message.messageTime | date: 'medium'}}</span>
+                                        <div *ngIf="message.message == 'Deleted message.'" class="dropstart">{{message.message}}</div>
+                                        <div class="message-data-container">
+                                            <span class="time_date">{{message.user}} | {{message.messageTime | date: 'medium'}}</span>
+                                            <div class="seen-images-container">
+                                                <ng-container *ngIf="message.seenList != null && message.seenList.length > 3 && message.message != 'Deleted message.'">
+                                                    <div *ngFor="let userId of message.seenList.slice(0, 3)" class="seen-image-container">
+                                                        <img *ngIf="userId != loggedInUserId" class="seen-image" [src]="avatars[userId]">
+                                                    </div>
+                                                    <div class="plus-seen-user">
+                                                        +{{message.seenList.length - 3}}
+                                                    </div>
+                                                </ng-container>
+                                                <ng-container *ngIf="message.seenList != null && 3 >= message.seenList.length && message.message != 'Deleted message.'">
+                                                    <div *ngFor="let userId of message.seenList" class="seen-image-container">
+                                                        <img *ngIf="userId != loggedInUserId" class="seen-image" [src]="avatars[userId]">
+                                                    </div>
+                                                </ng-container>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div *ngIf="message.user === 'Textinger bot'" class="bot_msg">

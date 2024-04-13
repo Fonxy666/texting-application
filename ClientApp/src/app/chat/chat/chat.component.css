@@ -235,14 +235,10 @@ img {
 }
 
 .sent_withd_msg div {
-    background: #585bb4 none repeat scroll 0 0;
     border-radius: 3px;
     color: #ffffff;
     font-size: 14px;
     margin: 0;
-    padding: 5px 10px 5px 10px;
-    width: 100%;
-    flex-grow: 1;
 }
 
 .bot_msg {
@@ -328,7 +324,7 @@ img {
 
 .seen-image-container {
     float: right;
-    margin: 2px;
+    margin: 2px !important;
 }
 
 .time_date {
@@ -347,4 +343,9 @@ img {
 
 .plus-seen-user {
     margin: auto auto auto 10px;
+}
+
+.dropstart {
+    background: #585bb4 none repeat scroll 0 0;
+    padding: 5px 10px 5px 10px;
 }
