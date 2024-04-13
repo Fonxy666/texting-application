@@ -29,6 +29,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     messageModifyBool: boolean = false;
     messageModifyRequest: ChangeMessageRequest = {id: "", message: ""};
     isPageVisible = true;
+    showPlusSeenUser: boolean = false;
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
@@ -41,7 +42,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     ngOnInit(): void {
         this.loggedInUserId = this.cookieService.get("UserId");
         this.chatService.message$.subscribe(res => {
-            console.log(res);
             this.messages = res;
             this.messages.forEach(message => {
                 this.loadAvatarsFromMessages(message.userId);
@@ -118,20 +118,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     this.avatars[userId] = avatar;
                 })
         }
-
-        // this.http.get(`https://localhost:7045/User/getUsername/${userId}`, { withCredentials: true })
-        // .subscribe((user: any) => {
-        //     if (this.avatars[user.username] == null) {
-        //         this.getAvatarImage(user.username).subscribe(
-        //             (avatar) => {
-        //                 this.avatars[userId] = avatar;
-        //             },
-        //             (error) => {
-        //                 console.log(error);
-        //             }
-        //         );
-        //     }
-        // });
     }
 
     sendMessage() {
@@ -152,7 +138,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     this.errorHandler.handleError401()
                 )
                 .subscribe((res: any) => {
-                    console.log(res);
                     this.chatService.messages.push({ 
                         messageId: res.message.messageId,
                         userId: res.message.senderId,
@@ -199,6 +184,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 );
     
                 forkJoin(observables).subscribe((usernames: any) => {
+                    console.log(response);
                     const fetchedMessages = response.map((element: any, index: number) => ({
                         messageId: element.messageId,
                         user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
@@ -348,7 +334,19 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         })
     }
 
-    examineIfNextMessageContainsUserId(userId: string, index: number) {
-        console.log(this.chatService.messages[index + 1].seenList)
+    examineIfNextMessageNotContainsUserId(userId: string, index: number) {
+        const slicedMessages = this.chatService.messages.slice(index + 1);
+    
+        for (const message of slicedMessages) {
+            if (message.seenList == null) {
+                continue;
+            }
+    
+            if (message.seenList.includes(userId)) {
+                return false;
+            }
+        }
+    
+        return true;
     }
 }
