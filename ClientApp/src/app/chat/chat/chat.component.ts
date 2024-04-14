@@ -349,4 +349,21 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     
         return true;
     }
+
+    examineIfNextMessageNotContainsUserIdCount(userId: string, index: number) {
+        const slicedMessages = this.chatService.messages.slice(index + 1);
+        let imageCount = 0;
+
+        for (const message of slicedMessages) {
+            if (message.seenList == null) {
+                continue;
+            }
+
+            if (!message.seenList.includes(userId)) {
+                imageCount++;
+            }
+        }
+    
+        return imageCount;
+    }
 }
