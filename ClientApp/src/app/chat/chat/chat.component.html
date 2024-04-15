@@ -51,11 +51,8 @@
                                             <span class="time_date">{{message.user}} | {{message.messageTime | date: 'medium'}}</span>
                                             <div class="seen-images-container">
                                                 <ng-container *ngIf="message.seenList != null && message.seenList.length > 2">
-                                                    <div *ngFor="let userId of message.seenList.slice(0, 2)" class="seen-image-container">
+                                                    <div *ngFor="let userId of message.seenList.slice().reverse().slice(0, 2)" class="seen-image-container">
                                                         <img *ngIf="this.examineIfNextMessageNotContainsUserId(userId, i)" class="seen-image" [src]="avatars[userId] || this.loadAvatarsFromMessages(userId)">
-                                                    </div>
-                                                    <div class="plus-seen-user">
-                                                        +{{message.seenList.length - 2}}
                                                     </div>
                                                 </ng-container>
                                                 <ng-container *ngIf="message.seenList != null && 2 >= message.seenList.length">
@@ -86,11 +83,8 @@
                                             <span class="time_date">{{message.user}} | {{message.messageTime | date: 'medium'}}</span>
                                             <div class="seen-images-container">
                                                 <ng-container *ngIf="message.seenList != null && message.seenList.length > 3 && message.message != 'Deleted message.'">
-                                                    <div *ngFor="let userId of message.seenList.slice(0, 3)" class="seen-image-container">
+                                                    <div *ngFor="let userId of message.seenList.slice().reverse().slice(0, 3)" class="seen-image-container">
                                                         <img *ngIf="this.examineIfNextMessageNotContainsUserId(userId, i) && userId != loggedInUserId" class="seen-image" [src]="avatars[userId] || this.loadAvatarsFromMessages(userId)">
-                                                        <div *ngIf="userId == message.seenList[2]" class="plus-seen-user">
-                                                            +{{message.seenList.length - 3}}
-                                                        </div>
                                                     </div>
                                                 </ng-container>
                                                 <ng-container *ngIf="message.seenList != null && 3 >= message.seenList.length && message.message != 'Deleted message.'">

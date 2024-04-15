@@ -278,7 +278,14 @@ img {
 
 .dropdown-menu {
     justify-content: center;
+    padding-left: auto;
     padding: 0px;
+}
+
+.dropdown-menu-dark {
+    padding-left: auto;
+    justify-content: center;
+    --bs-dropdown-item-padding-y: unset;
 }
 
 .messaging {
@@ -348,4 +355,8 @@ img {
 .dropstart {
     background: #585bb4 none repeat scroll 0 0;
     padding: 5px 10px 5px 10px;
+}
+
+.dropdown-item {
+    padding-left: 40px;
 }
