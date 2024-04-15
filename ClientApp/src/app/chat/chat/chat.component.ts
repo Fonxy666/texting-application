@@ -29,7 +29,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     messageModifyBool: boolean = false;
     messageModifyRequest: ChangeMessageRequest = {id: "", message: ""};
     isPageVisible = true;
-    showPlusSeenUser: boolean = false;
+    imageCount: number = 0;
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
@@ -184,7 +184,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 );
     
                 forkJoin(observables).subscribe((usernames: any) => {
-                    console.log(response);
                     const fetchedMessages = response.map((element: any, index: number) => ({
                         messageId: element.messageId,
                         user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
@@ -347,6 +346,21 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             }
         }
     
+        this.imageCount++;
         return true;
+    }
+
+    checkImageCount() {
+        return this.imageCount >= 2;
+    }
+
+    resetImageCountDeferred() {
+        setTimeout(() => {
+            this.resetImageCount();
+        }, 0);
+    }
+
+    resetImageCount() {
+        this.imageCount = 0;
     }
 }
