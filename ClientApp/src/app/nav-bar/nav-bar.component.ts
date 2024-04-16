@@ -11,7 +11,7 @@ import { ErrorHandlerService } from '../services/error-handler.service';
 })
 
 export class NavBarComponent implements OnInit {
-    constructor(private cookieService : CookieService, private router: Router, private http: HttpClient, private errorHandler: ErrorHandlerService, private renderer: Renderer2) {}
+    constructor(private cookieService : CookieService, private router: Router, private http: HttpClient, private errorHandler: ErrorHandlerService) {}
 
     isDropstart: boolean = true;
 
