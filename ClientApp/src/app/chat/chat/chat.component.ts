@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { ChatService } from '../../services/chat-service/chat.service';
 import { Router, ActivatedRoute  } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -8,6 +8,8 @@ import { MessageRequest } from '../../model/MessageRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
+import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
+import { ConnectedUser } from '../../model/ConnectedUser';
 
 @Component({
   selector: 'app-chat',
@@ -22,10 +24,12 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     loggedInUserId:string = "";
     roomName = sessionStorage.getItem("room");
     myImage: string = "./assets/images/chat-mountain.jpg";
-    connectedUsers: string[] = [];
+    connectedUsers: ConnectedUser[] = [];
     searchTerm: string = '';
     messageModifyBool: boolean = false;
     messageModifyRequest: ChangeMessageRequest = {id: "", message: ""};
+    isPageVisible = true;
+    imageCount: number = 0;
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
@@ -36,22 +40,32 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     avatars: { [userId: string]: string } = {};
 
     ngOnInit(): void {
-        console.log(this.messageModifyBool);
         this.loggedInUserId = this.cookieService.get("UserId");
         this.chatService.message$.subscribe(res => {
+            console.log(res);
             this.messages = res;
             this.messages.forEach(message => {
                 this.loadAvatarsFromMessages(message.userId);
             })
         });
 
-        this.chatService.connection.on("ModifyMessage", (messageId: any, messageText: any) => {
+        this.chatService.connection.on("ModifyMessage", (messageId: string, messageText: string) => {
             this.messages.forEach((message) => {
                 if (message.messageId == messageId) {
                     message.message = messageText;
                 }
             })
         });
+
+        this.chatService.connection.on("ModifyMessageSeen", (userIdFromSignalR: string) => {
+            this.chatService.messages.forEach((message) => {
+                if (!message.seenList) {
+                    return;
+                } else if (!message.seenList.includes(userIdFromSignalR)) {
+                    message.seenList.push(userIdFromSignalR);
+                }
+            })
+        })
 
         this.chatService.connection.on("DeleteMessage", (messageId: string) => {
             this.messages.forEach((message: any) => {
@@ -68,9 +82,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.chatService.connectedUsers.subscribe((users) => {
             this.connectedUsers = users;
             users.forEach((user) => {
-                this.getAvatarImage(user).subscribe(
+                this.getAvatarImage(user.userId).subscribe(
                     (avatar) => {
-                        this.avatars[user] = avatar;
+                        this.avatars[user.userId] = avatar;
                     },
                     (error) => {
                         console.log(error);
@@ -86,24 +100,25 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
     }
 
+    examineMessages() {
+        this.chatService.messages.forEach((message) => {
+            if (message.userId != this.cookieService.get("UserId")) {
+                console.log(message.message);
+            }
+        })
+    }
+
     loadAvatarsFromMessages(userId : string) {
         if (userId === null || userId === undefined) {
             return;
         }
 
-        this.http.get(`https://localhost:7045/User/getUsername/${userId}`, { withCredentials: true })
-        .subscribe((user: any) => {
-            if (this.avatars[user.username] == null) {
-                this.getAvatarImage(user.username).subscribe(
-                    (avatar) => {
-                        this.avatars[user.username] = avatar;
-                    },
-                    (error) => {
-                        console.log(error);
-                    }
-                );
-            }
-        });
+        if (this.avatars[userId] == null) {
+            this.getAvatarImage(userId).subscribe(
+                (avatar) => {
+                    this.avatars[userId] = avatar;
+                })
+        }
     }
 
     sendMessage() {
@@ -128,7 +143,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                         messageId: res.message.messageId,
                         userId: res.message.senderId,
                         message: res.message.text,
-                        messageTime: res.message.sendTime
+                        messageTime: res.message.sendTime,
+                        seenList: res.message.seen
                     });
     
                     resolve(res.message.messageId);
@@ -174,7 +190,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                         user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
                         userId: element.senderId,
                         message: element.text,
-                        messageTime: element.sendTime
+                        messageTime: element.sendTime,                    
+                        seenList: element.seen
                     }));
                     this.chatService.messages = [...fetchedMessages, ...this.chatService.messages];
     
@@ -183,8 +200,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             });
     }
 
-    getAvatarImage(userName: string): Observable<string> {
-        return this.http.get(`https://localhost:7045/User/GetImageWithUsername/${userName}`, { withCredentials: true, responseType: 'blob' })
+    getAvatarImage(userId: string): Observable<string> {
+        return this.http.get(`https://localhost:7045/User/GetImage/${userId}`, { withCredentials: true, responseType: 'blob' })
             .pipe(
                 this.errorHandler.handleError401(),
                 switchMap((response: Blob) => {
@@ -212,7 +229,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             });
         } else {
             this.connectedUsers = this.chatService.connectedUsers.value.filter(user => 
-                user.toLowerCase().includes(this.searchTerm.toLowerCase())
+                user.userName.toLowerCase().includes(this.searchTerm.toLowerCase())
             );
         }
     }
@@ -255,6 +272,30 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.messageModifyBool = false;
     }
 
+    sendMessageSeenModifyHttpRequest(request: ChangeMessageSeenRequest) {
+        this.http.patch(`https://localhost:7045/Message/EditMessageSeen`, request, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(() => {
+            this.chatService.messages.forEach((message: any) => {
+                if (message.messageId == request.userId) {
+                    this.inputMessage = "";
+                    this.messageModifyBool = false;
+                }
+            })
+        },
+        (error) => {
+            if (error.status === 403) {
+                this.errorHandler.handleError403(error);
+            } else if (error.status === 400) {
+                this.errorHandler.errorAlert("Something unusual happened.");
+            } else {
+                console.error("An error occurred:", error);
+            }
+        });
+    }
+
     handleMessageDelete(messageId: any) {
         this.http.delete(`https://localhost:7045/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
         .pipe(
@@ -276,5 +317,41 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 console.error("An error occurred:", error);
             }
         });
+    }
+    
+    @HostListener('window:focus', ['$event'])
+    onFocus(): void {
+        this.chatService.messages.forEach((message) => {
+            const userId = this.cookieService.get("UserId");
+            const anonym = this.cookieService.get("Anonymous") == "True";
+            if (!message.seenList) {
+                return;
+            } else if (!message.seenList.includes(userId)) {
+                var request = new ChangeMessageSeenRequest(userId, anonym, message.messageId);
+                this.chatService.modifyMessageSeen(request);
+                this.sendMessageSeenModifyHttpRequest(request);
+            }
+        })
+    }
+
+    examineIfNextMessageNotContainsUserId(userId: string, index: number) {
+        const slicedMessages = this.chatService.messages.slice(index + 1);
+    
+        for (const message of slicedMessages) {
+            if (message.seenList == null) {
+                continue;
+            }
+    
+            if (message.seenList.includes(userId)) {
+                return false;
+            }
+        }
+    
+        this.imageCount++;
+        return true;
+    }
+
+    resetImageCount() {
+        this.imageCount = 0;
     }
 }

@@ -4,6 +4,8 @@ import { BehaviorSubject } from 'rxjs';
 import { MessageRequest } from '../../model/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
+import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
+import { ConnectedUser } from '../../model/ConnectedUser';
 
 @Injectable({
     providedIn: 'root'
@@ -12,9 +14,9 @@ import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
 export class ChatService {
     public connection: signalR.HubConnection;
     public message$ = new BehaviorSubject<any>([]);
-    public connectedUsers = new BehaviorSubject<string[]>([]);
+    public connectedUsers = new BehaviorSubject<ConnectedUser[]>([]);
     public messages: any[] = [];
-    public users: string[] = [];
+    public users: ConnectedUser[] = [];
 
     constructor(private cookieService: CookieService) {
         this.connection = new signalR.HubConnectionBuilder()
@@ -24,19 +26,23 @@ export class ChatService {
 
         this.initializeConnection();
 
-        this.connection.on("ReceiveMessage", (user: string, message: string, messageTime: string, userId: string, messageId: string) => {
+        this.connection.on("ReceiveMessage", (user: string, message: string, messageTime: string, userId: string, messageId: string, seenList: string[]) => {
             if (userId !== this.cookieService.get("UserId")) {
-                this.messages.push({ user, message, messageTime, userId, messageId });
+                this.messages.push({ user, message, messageTime, userId, messageId, seenList });
             }
             this.message$.next(this.messages);
         });
 
-        this.connection.on("ConnectedUser", (users: string[]) => {
+        this.connection.on("ConnectedUser", (userDictionary: { [key: string]: string }) => {
+            const users = Object.keys(userDictionary).map(userName => ({
+                userId: userDictionary[userName],
+                userName: userName
+            }));
             this.connectedUsers.next(users);
         });
 
         this.connection.on("UserDisconnected", (username: string) => {
-            const updatedUsers = this.connectedUsers.value.filter(user => user !== username);
+            const updatedUsers = this.connectedUsers.value.filter(user => user.userName !== username);
             this.connectedUsers.next(updatedUsers);
         });
     }
@@ -101,6 +107,14 @@ export class ChatService {
     public async modifyMessage(request: ChangeMessageRequest) {
         try {
             await this.connection.invoke("ModifyMessage", request);
+        } catch (error) {
+            console.error('Error modifying the message:', error);
+        }
+    }
+
+    public async modifyMessageSeen(request: ChangeMessageSeenRequest) {
+        try {
+            await this.connection.invoke("ModifyMessageSeen", request);
         } catch (error) {
             console.error('Error modifying the message:', error);
         }

@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Server.Database;
+using Server.Model;
 using Server.Model.Chat;
 using Server.Model.Requests.Message;
 using Server.Model.Responses.Message;
@@ -53,6 +55,32 @@ public class MessageService(MessagesContext context) : IMessageService
         try
         {
             existingMessage.Text = request.Message;
+
+            Context.Messages.Update(existingMessage);
+            await Context.SaveChangesAsync();
+
+            return new MessageResponse(true, "");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return new MessageResponse(false, "");
+        }
+    }
+
+    public async Task<MessageResponse> EditMessageSeen(EditMessageSeenRequest request)
+    {
+        var existingMessage = Context.Messages.FirstOrDefault(message => message.MessageId == request.messageId);
+        
+        if (existingMessage!.RoomId.Length < 1)
+        {
+            return new MessageResponse(false, "");
+        }
+        
+        try
+        {
+            var sawId = new Guid(request.userId);
+            existingMessage.AddUserToSeen(sawId);
 
             Context.Messages.Update(existingMessage);
             await Context.SaveChangesAsync();

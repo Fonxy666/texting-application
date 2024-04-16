@@ -60,6 +60,27 @@ public class MessageController(IMessageService messageRepository) : ControllerBa
         return Ok(result);
     }
     
+    [HttpPatch("EditMessageSeen"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<MessageResponse>> ModifyMessageSeen([FromBody]EditMessageSeenRequest request)
+    {
+        Console.WriteLine("-------------------------------------------");
+        Console.WriteLine(request);
+        Console.WriteLine("-------------------------------------------");
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var result = await messageRepository.EditMessageSeen(request);
+
+        if (result.Success == false)
+        {
+            return BadRequest(new { error = "Something unusual happened." });
+        }
+
+        return Ok(result);
+    }
+    
     [HttpDelete("DeleteMessage"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<MessageResponse>> DeleteMessage([FromQuery]string id)
     {

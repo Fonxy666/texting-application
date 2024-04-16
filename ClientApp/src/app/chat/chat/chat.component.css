@@ -177,6 +177,10 @@ img {
     width: 6%;
 }
 
+.incoming_msg {
+    margin: 8px 0 8px;
+}
+
 .received_msg {
     display: inline-block;
     padding: 0 0 0 10px;
@@ -192,14 +196,6 @@ img {
     margin: 0;
     padding: 5px 10px 5px 10px;
     width: 100%;
-}
-
-.time_date {
-    color:rgb(0, 0, 0);
-    display: block;
-    font-size: 12.5px;
-    margin: 8px 0 0;
-    margin-bottom: 6px;
 }
 
 .reveived_withd_msg {
@@ -239,14 +235,10 @@ img {
 }
 
 .sent_withd_msg div {
-    background: #585bb4 none repeat scroll 0 0;
     border-radius: 3px;
     color: #ffffff;
     font-size: 14px;
     margin: 0;
-    padding: 5px 10px 5px 10px;
-    width: 100%;
-    flex-grow: 1;
 }
 
 .bot_msg {
@@ -285,7 +277,15 @@ img {
 }
 
 .dropdown-menu {
+    justify-content: center;
+    padding-left: auto;
     padding: 0px;
+}
+
+.dropdown-menu-dark {
+    padding-left: auto;
+    justify-content: center;
+    --bs-dropdown-item-padding-y: unset;
 }
 
 .messaging {
@@ -316,4 +316,47 @@ img {
     padding: 0;
     cursor: pointer;
     color:#2c1971;
+}
+
+.seen-image {
+    border-radius: 50%;
+    width: auto;
+    height: 20px;
+}
+
+.message-data-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.seen-image-container {
+    float: right;
+    margin: 2px !important;
+}
+
+.time_date {
+    color: rgb(0, 0, 0);
+    font-size: 12.5px;
+    margin: 0;
+    margin-right: 10px;
+    min-width: 60%;
+}
+
+.seen-images-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.plus-seen-user {
+    margin: auto auto auto 10px;
+}
+
+.dropstart {
+    background: #585bb4 none repeat scroll 0 0;
+    padding: 5px 10px 5px 10px;
+}
+
+.dropdown-item {
+    padding-left: 40px;
 }
