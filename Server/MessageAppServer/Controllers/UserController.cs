@@ -60,8 +60,9 @@ public class UserController(
         if (System.IO.File.Exists(imagePath))
         {
             var imageBytes = System.IO.File.ReadAllBytes(imagePath);
-
             var contentType = GetContentType(imagePath);
+            
+            Response.Headers.Add("Cache-Control", "max-age=3600, public");
 
             result = File(imageBytes, contentType);
         }
@@ -79,8 +80,9 @@ public class UserController(
         if (System.IO.File.Exists(imagePath))
         {
             var imageBytes = System.IO.File.ReadAllBytes(imagePath);
-
             var contentType = GetContentType(imagePath);
+            
+            Response.Headers.Add("Cache-Control", "max-age=3600, public");
 
             result = File(imageBytes, contentType);
         }
