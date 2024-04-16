@@ -52,12 +52,16 @@
                                             <div class="seen-images-container">
                                                 <ng-container *ngIf="message.seenList != null && message.seenList.length > 2">
                                                     {{this.resetImageCount()}}
-                                                    <div *ngFor="let userId of message.seenList" class="seen-image-container">
+                                                    <div *ngFor="let userId of message.seenList; let last = last" class="seen-image-container">
                                                         <ng-container *ngIf="2 > this.imageCount">
-                                                            <img *ngIf="this.examineIfNextMessageNotContainsUserId(userId, i)" class="seen-image" [src]="avatars[userId] || this.loadAvatarsFromMessages(userId)">                                                     
-                                                            <ng-container *ngIf="this.imageCount >= 2">
-                                                                +{{this.message.seenList.length - 2}}
-                                                            </ng-container>                                                     
+                                                            <img *ngIf="this.examineIfNextMessageNotContainsUserId(userId, i)" class="seen-image" [src]="avatars[userId] || this.loadAvatarsFromMessages(userId)">
+                                                        </ng-container>
+                                                        <ng-container *ngIf="this.imageCount >= 2" >
+                                                            <ng-container *ngIf="examineIfNextMessageNotContainsUserId(userId, i)">
+                                                                <ng-container *ngIf="last">
+                                                                    + {{ this.imageCount - 2 }}
+                                                                </ng-container>
+                                                            </ng-container>
                                                         </ng-container>
                                                     </div>
                                                 </ng-container>
@@ -86,7 +90,7 @@
                                         </div>
                                         <div *ngIf="message.message == 'Deleted message.'" class="dropstart">{{message.message}}</div>
                                         <div class="message-data-container">
-                                            <span class="time_date">{{message.user}} | {{message.messageTime | date: 'medium'}}</span>
+                                            <span class="time_date">Myself | {{message.messageTime | date: 'medium'}}</span>
                                             <div class="seen-images-container">
                                                 <ng-container *ngIf="message.seenList != null && message.seenList.length > 3 && message.message != 'Deleted message.'">
                                                     {{this.resetImageCount()}}
