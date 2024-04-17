@@ -98,14 +98,14 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
-        var passwordRequest = new ChangeUserPasswordRequest("3e91f179-18f5-423d-9b36-1c2977f62fb4", "testUserPassword123###", "testUserPassword123###!@#");
+        var passwordRequest = new ChangeUserPasswordRequest("3e91f179-18f5-423d-9b36-1c2977f62fb4", "testUserPassword123###", "testUserPassword123###!@#", "testUserPassword123###!@#");
         var jsonRequestRegister = JsonConvert.SerializeObject(passwordRequest);
         var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var getUserResponse = await _client.PatchAsync("/User/ChangePassword", userChangeEmail);
         getUserResponse.EnsureSuccessStatusCode();
         
-        var passwordRequest1 = new ChangeUserPasswordRequest("3e91f179-18f5-423d-9b36-1c2977f62fb4", "testUserPassword123###!@#", "testUserPassword123###");
+        var passwordRequest1 = new ChangeUserPasswordRequest("3e91f179-18f5-423d-9b36-1c2977f62fb4", "testUserPassword123###!@#", "testUserPassword123###", "testUserPassword123###!@#");
         var jsonRequestRegister1 = JsonConvert.SerializeObject(passwordRequest1);
         var userChangeEmail1 = new StringContent(jsonRequestRegister1, Encoding.UTF8, "application/json");
         
