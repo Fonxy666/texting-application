@@ -24,6 +24,7 @@ import { CreateEmailVerificationRequestComponent } from './registration/create-e
 import { CreateRoomComponent } from './chat/create-room/create-room.component';
 import { ProvideLoginAuthTokenComponent } from './login/provide-login-auth-token/provide-login-auth-token.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { MaterialModule } from './material/material.module';
 
 @NgModule({
   declarations: [
@@ -51,7 +52,8 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
     FormsModule,
     HttpClientModule,
     ReactiveFormsModule,
-    ImageCropperModule
+    ImageCropperModule,
+    MaterialModule
   ],
   providers: [
     CookieService,

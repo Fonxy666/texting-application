@@ -6,3 +6,13 @@
     background: rgb(90, 148, 225);
     font-family: Cursive;
 }
+
+mat-card {
+    max-width: 400px;
+    margin: 2em auto;
+    text-align: center;
+}
+
+mat-form-field {
+    display: block;
+}
