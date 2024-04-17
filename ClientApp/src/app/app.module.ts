@@ -23,6 +23,7 @@ import { GenerateEmailChangeRequestComponent } from './profile/profile/generate-
 import { CreateEmailVerificationRequestComponent } from './registration/create-email-verification-request/create-email-verification-request.component';
 import { CreateRoomComponent } from './chat/create-room/create-room.component';
 import { ProvideLoginAuthTokenComponent } from './login/provide-login-auth-token/provide-login-auth-token.component';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 @NgModule({
   declarations: [
@@ -53,7 +54,8 @@ import { ProvideLoginAuthTokenComponent } from './login/provide-login-auth-token
     ImageCropperModule
   ],
   providers: [
-    CookieService
+    CookieService,
+    provideAnimationsAsync()
   ],
   bootstrap: [AppComponent]
 })
