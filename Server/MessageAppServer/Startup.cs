@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -97,9 +98,14 @@ namespace Server
             services.AddDbContext<MessagesContext>(options => options.UseSqlServer(connection));
             services.AddDbContext<RoomsContext>(options => options.UseSqlServer(connection));
             
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddCookie("Authorization", options =>
-                {
+            services.AddAuthentication(o => {
+                    o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                })
+                .AddCookie(options => {
+                    options.Cookie.Name = "Authorization";
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                    options.Cookie.SameSite = SameSiteMode.None;
                     options.Cookie.HttpOnly = true;
                 })
                 .AddGoogle("Google", options =>
@@ -170,7 +176,7 @@ namespace Server
             });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor)
         {
             if (env.IsDevelopment())
             {
@@ -190,8 +196,12 @@ namespace Server
                        .AllowCredentials();
             });
             
-            app.UseRefreshTokenMiddleware();
-            app.UseJwtRefreshMiddleware();
+            if (httpContextAccessor.HttpContext != null)
+            {
+                app.UseRefreshTokenMiddleware();
+                app.UseJwtRefreshMiddleware();
+            }
+            
             app.UseAuthentication();
             app.UseAuthorization();
 

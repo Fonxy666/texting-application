@@ -165,12 +165,15 @@ public class AuthController(
             claim.Type,
             claim.Value
         });
-        Console.WriteLine("----------------------------------------------------");
+        
         foreach (var claim in claims)
         {
-            Console.WriteLine(claim);
+            var splittedClaim = claim.Type.Split("/");
+            if (splittedClaim[^1] == "emailaddress")
+            {
+                await authenticationService.LoginWithGoogle(claim.Value);
+            }
         }
-        Console.WriteLine("----------------------------------------------------");
 
         return Redirect("http://localhost:4200");
     }

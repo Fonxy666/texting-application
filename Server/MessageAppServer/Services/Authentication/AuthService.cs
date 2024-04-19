@@ -73,6 +73,29 @@ public class AuthService(
         return new AuthResult(true, managedUser.Id, "");
     }
 
+    public async Task<AuthResult> LoginWithGoogle(string emailAddress)
+    {
+        var managedUser = await userManager.FindByEmailAsync(emailAddress);
+        
+        if (managedUser == null)
+        {
+            return new AuthResult(false, "", "");
+        }
+        
+        var roles = await userManager.GetRolesAsync(managedUser);
+        var accessToken = tokenService.CreateJwtToken(managedUser, roles[0], true);
+        
+        cookieService.SetRefreshToken(managedUser);
+        await userManager.UpdateAsync(managedUser);
+
+        cookieService.SetRememberMeCookie(true);
+        cookieService.SetUserId(managedUser.Id, true);
+        cookieService.SetAnimateAndAnonymous(true);
+        await cookieService.SetJwtToken(accessToken, true);
+        
+        return new AuthResult(true, managedUser.Id, "");
+    }
+
     public Task<string?> GetEmailFromUserName(string username)
     {
         return Task.FromResult(userManager.Users.FirstOrDefault(user => user.UserName == username)?.Email);
