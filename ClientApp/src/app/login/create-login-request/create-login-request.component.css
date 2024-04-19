@@ -7,12 +7,13 @@
     font-family: Cursive;
 }
 
-mat-card {
-    max-width: 250px;
-    margin: 2em auto;
-    text-align: center;
+.google-icon {
+    width: 30px;
+    margin-right: 10px;
 }
 
-mat-form-field {
-    display: block;
+.btn {
+    margin: 5px;
+    width: 250px;
+    border-radius: 40px;
 }

@@ -12,6 +12,7 @@ import { HttpClient } from '@angular/common/http';
 export class CreateLoginRequestComponent implements OnInit {
     constructor(private fb: FormBuilder, private http: HttpClient) { }
 
+    googleIcon: string = "./assets/images/google_icon.png";
     loginRequest!: FormGroup;
     showPassword: boolean = false;
 
@@ -37,25 +38,5 @@ export class CreateLoginRequestComponent implements OnInit {
 
     toggleShowPassword() {
         this.showPassword = !this.showPassword;
-    }
-
-    loginWithGoogle() {
-        window.location.href = "https://localhost:7045/Auth/LoginWithGoogle";
-        // this.http.get('https://localhost:7045/Auth/LoginWithGoogle', { withCredentials: true })
-        // .subscribe((response: any) => {
-        //     console.log(response);
-        // }, 
-        // (error: any) => {
-        //     if (error.status === 404) {
-        //         if (!isNaN(error.error)) {
-        //             alert(`Invalid username or password, you have ${5-error.error} tries.`);
-        //         } else {
-        //             var errorMessage = error.error.split(".")[0] + "." + error.error.split(".")[1];
-        //             alert(errorMessage);
-        //         }
-        //     } else {
-        //         console.error("An error occurred:", error);
-        //     }
-        // });
     }
 }
