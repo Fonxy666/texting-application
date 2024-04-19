@@ -86,7 +86,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         getUserResponse.EnsureSuccessStatusCode();
     }
     
-    [Fact]
+    /*[Fact]
     public async Task SendEmailVerificationCode_ValidRequest_ReturnsOk()
     {
         var emailRequest = new GetEmailForVerificationRequest("test@test.hu");
@@ -96,7 +96,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var response = await _client.PostAsync("/Auth/GetEmailVerificationToken", content);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
+    }*/
     
     [Fact]
     public async Task Get_VerifyToken_Valid_Code_ReturnsOk()

@@ -11,8 +11,8 @@ export class AuthService {
 
     constructor(private httpClient: HttpClient) { }
 
-    loginWithGoogle(credentials: string): Observable<any> {
-        const header = new HttpHeaders().set('Content-Type', 'application/json');
-        return this.httpClient.post<any>(this.path + '/LoginWithGoogle', JSON.stringify(credentials), { headers: header });
-    }
+    // loginWithGoogle(credentials: string): Observable<any> {
+    //     const header = new HttpHeaders().set('Content-Type', 'application/json');
+    //     return this.httpClient.post<any>('https://localhost:7045/Auth/LoginWithGoogle', JSON.stringify(credentials), { headers: header });
+    // }
 }

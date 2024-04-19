@@ -1,6 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LoginRequest } from '../../model/LoginRequest';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-create-login-request',
@@ -9,7 +10,7 @@ import { LoginRequest } from '../../model/LoginRequest';
 })
 
 export class CreateLoginRequestComponent implements OnInit {
-    constructor(private fb: FormBuilder) { }
+    constructor(private fb: FormBuilder, private http: HttpClient) { }
 
     loginRequest!: FormGroup;
     showPassword: boolean = false;
@@ -36,5 +37,25 @@ export class CreateLoginRequestComponent implements OnInit {
 
     toggleShowPassword() {
         this.showPassword = !this.showPassword;
+    }
+
+    loginWithGoogle() {
+        window.location.href = "https://localhost:7045/Auth/LoginWithGoogle";
+        // this.http.get('https://localhost:7045/Auth/LoginWithGoogle', { withCredentials: true })
+        // .subscribe((response: any) => {
+        //     console.log(response);
+        // }, 
+        // (error: any) => {
+        //     if (error.status === 404) {
+        //         if (!isNaN(error.error)) {
+        //             alert(`Invalid username or password, you have ${5-error.error} tries.`);
+        //         } else {
+        //             var errorMessage = error.error.split(".")[0] + "." + error.error.split(".")[1];
+        //             alert(errorMessage);
+        //         }
+        //     } else {
+        //         console.error("An error occurred:", error);
+        //     }
+        // });
     }
 }

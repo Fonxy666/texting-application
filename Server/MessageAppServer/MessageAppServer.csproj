@@ -14,8 +14,10 @@
         <PackageReference Include="DotNetEnv" Version="3.0.0" />
         <PackageReference Include="Microsoft.AspNet.SignalR" Version="2.4.3" />
         <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.4.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.4" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.14" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.1" />

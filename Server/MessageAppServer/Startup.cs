@@ -102,6 +102,11 @@ namespace Server
                 {
                     options.Cookie.HttpOnly = true;
                 })
+                .AddGoogle("Google", options =>
+                {
+                    options.ClientId = configuration["GoogleClientId"]!;
+                    options.ClientSecret = configuration["GoogleClientSecret"]!;
+                })
                 .AddJwtBearer(options =>
                 {
                     options.TokenValidationParameters = new TokenValidationParameters

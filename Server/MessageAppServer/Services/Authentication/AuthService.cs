@@ -58,7 +58,7 @@ public class AuthService(
         
         var roles = await userManager.GetRolesAsync(managedUser);
         var accessToken = tokenService.CreateJwtToken(managedUser, roles[0], rememberMe);
-
+        
         if (rememberMe)
         {
             cookieService.SetRefreshToken(managedUser);
@@ -71,18 +71,6 @@ public class AuthService(
         await cookieService.SetJwtToken(accessToken, rememberMe);
         
         return new AuthResult(true, managedUser.Id, "");
-    }
-
-    public void ChangeCookies(string cookieName)
-    {
-        if (cookieName == "animation")
-        {
-            cookieService.ChangeAnimation();
-        }
-        else
-        {
-            cookieService.ChangeUserAnonymous();
-        }
     }
 
     public Task<string?> GetEmailFromUserName(string username)
