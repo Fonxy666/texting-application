@@ -58,7 +58,7 @@ public class AuthService(
         
         var roles = await userManager.GetRolesAsync(managedUser);
         var accessToken = tokenService.CreateJwtToken(managedUser, roles[0], rememberMe);
-
+        
         if (rememberMe)
         {
             cookieService.SetRefreshToken(managedUser);
@@ -73,16 +73,27 @@ public class AuthService(
         return new AuthResult(true, managedUser.Id, "");
     }
 
-    public void ChangeCookies(string cookieName)
+    public async Task<AuthResult> LoginWithGoogle(string emailAddress)
     {
-        if (cookieName == "animation")
+        var managedUser = await userManager.FindByEmailAsync(emailAddress);
+        
+        if (managedUser == null)
         {
-            cookieService.ChangeAnimation();
+            return new AuthResult(false, "", "");
         }
-        else
-        {
-            cookieService.ChangeUserAnonymous();
-        }
+        
+        var roles = await userManager.GetRolesAsync(managedUser);
+        var accessToken = tokenService.CreateJwtToken(managedUser, roles[0], true);
+        
+        cookieService.SetRefreshToken(managedUser);
+        await userManager.UpdateAsync(managedUser);
+
+        cookieService.SetRememberMeCookie(true);
+        cookieService.SetUserId(managedUser.Id, true);
+        cookieService.SetAnimateAndAnonymous(true);
+        await cookieService.SetJwtToken(accessToken, true);
+        
+        return new AuthResult(true, managedUser.Id, "");
     }
 
     public Task<string?> GetEmailFromUserName(string username)

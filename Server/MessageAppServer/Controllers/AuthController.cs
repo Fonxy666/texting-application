@@ -1,4 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Server.Model;
 using Server.Model.Requests.Auth;
 using Server.Model.Responses.Auth;
 using Server.Model.Responses.User;
@@ -11,9 +17,11 @@ namespace Server.Controllers;
 [ApiController]
 [Route("[controller]")]
 public class AuthController(
+    IConfiguration configuration,
     IAuthService authenticationService,
     IUserServices userServices,
-    IEmailSender emailSender) : ControllerBase
+    IEmailSender emailSender,
+    UserManager<ApplicationUser> userManager) : ControllerBase
 {
     [HttpPost("GetEmailVerificationToken")]
     public async Task<ActionResult<GetEmailForVerificationResponse>> SendEmailVerificationCode([FromBody]GetEmailForVerificationRequest receiver)
@@ -43,8 +51,6 @@ public class AuthController(
     [HttpPost("ExamineVerifyToken")]
     public async Task<ActionResult<string>> VerifyToken([FromBody]VerifyTokenRequest credentials)
     {
-        Console.WriteLine(credentials.Email);
-        Console.WriteLine(credentials.VerifyCode);
         var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(credentials.Email, credentials.VerifyCode, "registration");
         if (!result)
         {
@@ -120,7 +126,7 @@ public class AuthController(
         
         if (!result)
         {
-            return BadRequest(new AuthResponse(false, "loginResult.Id"));
+            return BadRequest(new AuthResponse(false, "Bad request"));
         }
 
         EmailSenderCodeGenerator.RemoveVerificationCode(email!, "login");
@@ -136,6 +142,40 @@ public class AuthController(
         }
 
         return Ok(new AuthResponse(true, loginResult.Id));
+    }
+    
+    [HttpGet("LoginWithGoogle")]
+    public async Task Login()
+    {
+        await HttpContext.ChallengeAsync(GoogleDefaults.AuthenticationScheme,
+            new AuthenticationProperties
+            {
+                RedirectUri = Url.Action(nameof(GoogleResponse))
+            });
+    }
+
+    [HttpGet("GoogleResponse")]
+    public async Task<IActionResult> GoogleResponse()
+    {
+        var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        var claims = result.Principal!.Identities.FirstOrDefault()!.Claims.Select(claim => new
+        {
+            claim.Issuer,
+            claim.OriginalIssuer,
+            claim.Type,
+            claim.Value
+        });
+        
+        foreach (var claim in claims)
+        {
+            var splittedClaim = claim.Type.Split("/");
+            if (splittedClaim[^1] == "emailaddress")
+            {
+                await authenticationService.LoginWithGoogle(claim.Value);
+            }
+        }
+
+        return Redirect("http://localhost:4200");
     }
     
     [HttpPost("Logout")]

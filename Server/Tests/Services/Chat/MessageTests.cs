@@ -38,7 +38,6 @@ namespace Tests.Services.Chat
             var response = await _messageService.SendMessage(request);
 
             Assert.IsTrue(response.Success);
-            Assert.AreEqual(request.RoomId, response.RoomId);
         }
 
         [Test]

@@ -1,6 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LoginRequest } from '../../model/LoginRequest';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-create-login-request',
@@ -9,8 +10,9 @@ import { LoginRequest } from '../../model/LoginRequest';
 })
 
 export class CreateLoginRequestComponent implements OnInit {
-    constructor(private fb: FormBuilder) { }
+    constructor(private fb: FormBuilder, private http: HttpClient) { }
 
+    googleIcon: string = "./assets/images/google_icon.png";
     loginRequest!: FormGroup;
     showPassword: boolean = false;
 

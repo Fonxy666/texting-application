@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { LoginRequest } from '../model/LoginRequest';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
@@ -11,12 +11,13 @@ import { LoginAuthTokenRequest } from '../model/LoginAuthTokenRequest';
 })
 
 export class LoginComponent implements OnInit {
-    constructor(private http: HttpClient, private cookieService: CookieService, private router: Router) { }
+    loadGoogleSigninLibrary: any;
+    constructor(private http: HttpClient, private cookieService: CookieService, private router: Router, private _ngZone: NgZone) { }
 
     loginStarted: boolean = false;
     loginRequest: LoginRequest = new LoginRequest("", "", false);
 
-    ngOnInit() {
+    ngOnInit(): void {        
         if (this.isLoggedIn()) {
             this.router.navigate(['/']);
         }
@@ -62,7 +63,6 @@ export class LoginComponent implements OnInit {
         .subscribe((response: any) => {
             if (response.success) {
                 this.loginStarted = false;
-                this.loginRequest = new LoginRequest("", "", false);
                 this.router.navigate(['/']);
             }
         }, 
