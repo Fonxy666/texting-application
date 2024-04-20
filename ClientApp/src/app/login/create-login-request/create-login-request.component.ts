@@ -13,6 +13,7 @@ export class CreateLoginRequestComponent implements OnInit {
     constructor(private fb: FormBuilder, private http: HttpClient) { }
 
     googleIcon: string = "./assets/images/google_icon.png";
+    facebookIcon: string = "./assets/images/facebook_image.png";
     loginRequest!: FormGroup;
     showPassword: boolean = false;
 
