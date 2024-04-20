@@ -113,6 +113,11 @@ namespace Server
                     options.ClientId = configuration["GoogleClientId"]!;
                     options.ClientSecret = configuration["GoogleClientSecret"]!;
                 })
+                .AddFacebook("Facebook", options =>
+                {
+                    options.ClientId = configuration["FacebookClientId"]!;
+                    options.ClientSecret = configuration["FacebookClientSecret"]!;
+                })
                 .AddJwtBearer(options =>
                 {
                     options.TokenValidationParameters = new TokenValidationParameters
