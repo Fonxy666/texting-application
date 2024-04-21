@@ -20,6 +20,8 @@ export class ProvideLoginAuthTokenComponent implements OnInit {
 
     @Output()
     SendToken: EventEmitter<string> = new EventEmitter<string>();
+    @Output()
+    cancelLogin: EventEmitter<void> = new EventEmitter<void>();
 
     OnFormSubmit() {
         const token = this.token.get('token')?.value
@@ -27,6 +29,6 @@ export class ProvideLoginAuthTokenComponent implements OnInit {
     }
 
     HandleBackClick() {
-        this.router.navigate(['/login']);
+        this.cancelLogin.emit();
     }
 }

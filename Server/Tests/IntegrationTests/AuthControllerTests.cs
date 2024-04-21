@@ -15,14 +15,12 @@ namespace Tests.IntegrationTests;
 public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
     private readonly WebApplicationFactory<Startup> _factory;
-    private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _client;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
 
-    public AuthControllerTests(WebApplicationFactory<Startup> factory, ITestOutputHelper testOutputHelper)
+    public AuthControllerTests(WebApplicationFactory<Startup> factory)
     {
         _factory = factory;
-        _testOutputHelper = testOutputHelper;
         _client = _factory.CreateClient();
     }
     
@@ -86,7 +84,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         getUserResponse.EnsureSuccessStatusCode();
     }
     
-    /*[Fact]
+    [Fact]
     public async Task SendEmailVerificationCode_ValidRequest_ReturnsOk()
     {
         var emailRequest = new GetEmailForVerificationRequest("test@test.hu");
@@ -96,7 +94,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var response = await _client.PostAsync("/Auth/GetEmailVerificationToken", content);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }*/
+    }
     
     [Fact]
     public async Task Get_VerifyToken_Valid_Code_ReturnsOk()

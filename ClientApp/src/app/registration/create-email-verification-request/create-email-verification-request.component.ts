@@ -29,7 +29,7 @@ export class CreateEmailVerificationRequestComponent {
         this.SendVerificationCode.emit(registrationRequest);
     }
 
-    HandleBackClick() {
+    handleBackClick() {
         this.router.navigate(['/']);
     }
 }

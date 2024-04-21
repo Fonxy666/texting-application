@@ -15,11 +15,11 @@ export class RegistrationComponent {
     user: any;
     showVerifyPage: boolean = false;
 
-    GetVerifyTokenAndGoToVerifyPage(data: RegistrationRequest) {
-        this.SendVerifyEmail(data);
+    getVerifyTokenAndGoToVerifyPage(data: RegistrationRequest) {
+        this.sendVerifyEmail(data);
     }
 
-    SendVerifyEmail(data: any) {
+    sendVerifyEmail(data: any) {
         const requestData = { Email: data.email };
         const headers = new HttpHeaders({
             'Content-Type': 'application/json'
@@ -34,7 +34,7 @@ export class RegistrationComponent {
         });
     }
 
-    GetVerifyTokenAndSendRegistration(verifyCode: String) {
+    getVerifyTokenAndSendRegistration(verifyCode: String) {
         const request = new TokenValidatorRequest(this.user.email, verifyCode.toString());
         const headers = new HttpHeaders({
             'Content-Type': 'application/json'
@@ -43,13 +43,13 @@ export class RegistrationComponent {
         .subscribe((response: any) => {
             if (response) {
                 console.log(response);
-                this.SendRegistration();
+                this.sendRegistration();
                 this.router.navigate(['login']);
             }
         });
     }
 
-    SendRegistration() {
+    sendRegistration() {
         this.http.post('https://localhost:7045/Auth/Register', this.user)
         .subscribe((response) => {
             if (response) {

@@ -31,7 +31,7 @@ export class LoginComponent implements OnInit {
         return this.loginStarted;
     }
     
-    CreateTask(data: LoginRequest) {
+    createTask(data: LoginRequest) {
         this.http.post('https://localhost:7045/Auth/SendLoginToken', data, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {
@@ -54,7 +54,7 @@ export class LoginComponent implements OnInit {
         });
     }
 
-    SendLoginToken(token: string) {
+    sendLoginToken(token: string) {
         const expirationDate = new Date();
         expirationDate.setFullYear(expirationDate.getFullYear() + 10);
         const request = new LoginAuthTokenRequest(this.loginRequest.username, this.loginRequest.password, this.loginRequest.rememberme, token);
@@ -70,5 +70,9 @@ export class LoginComponent implements OnInit {
             alert(["Wrong token!"]);
             console.error("An error occurred:", error);
         });
+    }
+
+    cancelLogin() {
+        this.loginStarted = false;
     }
 }
