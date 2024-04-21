@@ -63,9 +63,6 @@ public class MessageController(IMessageService messageRepository) : ControllerBa
     [HttpPatch("EditMessageSeen"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<MessageResponse>> ModifyMessageSeen([FromBody]EditMessageSeenRequest request)
     {
-        Console.WriteLine("-------------------------------------------");
-        Console.WriteLine(request);
-        Console.WriteLine("-------------------------------------------");
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);

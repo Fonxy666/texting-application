@@ -31,7 +31,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
-        var getUserResponse = await _client.GetAsync($"/User/getUserCredentials?userId=3e91f179-18f5-423d-9b36-1c2977f62fb4");
+        var getUserResponse = await _client.GetAsync($"/User/getUserCredentials?userId=38db530c-b6bb-4e8a-9c19-a5cd4d0fa916");
         getUserResponse.EnsureSuccessStatusCode();
     }
     
@@ -98,19 +98,34 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
-        var passwordRequest = new ChangeUserPasswordRequest("3e91f179-18f5-423d-9b36-1c2977f62fb4", "testUserPassword123###", "testUserPassword123###!@#", "testUserPassword123###!@#");
+        var passwordRequest = new ChangeUserPasswordRequest("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "testUserPassword123###", "testUserPassword123###!@#", "testUserPassword123###!@#");
         var jsonRequestRegister = JsonConvert.SerializeObject(passwordRequest);
         var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var getUserResponse = await _client.PatchAsync("/User/ChangePassword", userChangeEmail);
         getUserResponse.EnsureSuccessStatusCode();
         
-        var passwordRequest1 = new ChangeUserPasswordRequest("3e91f179-18f5-423d-9b36-1c2977f62fb4", "testUserPassword123###!@#", "testUserPassword123###", "testUserPassword123###!@#");
+        var passwordRequest1 = new ChangeUserPasswordRequest("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "testUserPassword123###!@#", "testUserPassword123###", "testUserPassword123###!@#");
         var jsonRequestRegister1 = JsonConvert.SerializeObject(passwordRequest1);
         var userChangeEmail1 = new StringContent(jsonRequestRegister1, Encoding.UTF8, "application/json");
         
         var getUserResponse1 = await _client.PatchAsync("/User/ChangePassword", userChangeEmail1);
         getUserResponse1.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task Change_Password_For_Invalid_User_Return_BadRequest()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var passwordRequest = new ChangeUserPasswordRequest("123", "testUserPassword123###", "testUserPassword123###!@#", "testUserPassword123###!@#");
+        var jsonRequestRegister = JsonConvert.SerializeObject(passwordRequest);
+        var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
+
+        var getUserResponse = await _client.PatchAsync("/User/ChangePassword", userChangeEmail);
+        Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
     
     [Fact]
@@ -128,7 +143,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task GetImage_With_Id_ReturnSuccessStatusCode()
     {
-        const string userId = "b0f2e6d8-dae6-4ffb-809c-9c2a096dc28c";
+        const string userId = "347045a9-f051-4a0e-aa93-3dfe59cd43c2";
         
         Directory.SetCurrentDirectory("D:/after codecool/texting-application/Server/MessageAppServer");
     
@@ -152,5 +167,76 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         var getUserResponse = await _client.DeleteAsync(deleteUrl);
         getUserResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task Delete_Invalid_User_Return_BadRequest()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        const string email = "123";
+        const string username = "123";
+        const string password = "123";
+
+        var deleteUrl = $"/User/DeleteUser?email={Uri.EscapeDataString(email)}&username={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}";
+
+        var getUserResponse = await _client.DeleteAsync(deleteUrl);
+        Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Get_User_Name_Valid_Id_Returns_Name()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        const string userId = "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916";
+
+        var getUserResponse = await _client.GetAsync($"/User/getUsername/{userId}");
+        getUserResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task Get_User_Name_Not_Valid_Id_Returns_NotFound()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        const string userId = "123";
+
+        var getUserResponse = await _client.GetAsync($"/User/getUsername/{userId}");
+        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Change_Avatar_Return_Ok()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+        var request = new AvatarChange("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "-");
+        var jsonRequestRegister = JsonConvert.SerializeObject(request);
+        var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
+        
+        var getUserResponse = await _client.PatchAsync("/User/ChangeAvatar", userChangeEmail);
+        getUserResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task Change_Avatar_With_Invalid_User_Return_Bad_Request()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+        var request = new AvatarChange("123", "image");
+        var jsonRequestRegister = JsonConvert.SerializeObject(request);
+        var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
+        
+        var getUserResponse = await _client.PatchAsync("/User/ChangeAvatar", userChangeEmail);
+        Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
 }

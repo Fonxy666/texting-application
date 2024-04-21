@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Server.Services.Cookie;
 
 namespace Server.Controllers;
@@ -7,21 +8,17 @@ namespace Server.Controllers;
 [Route("[controller]")]
 public class CookieController(ICookieService cookieService) : ControllerBase
 {
-    [HttpPost("ChangeCookies")]
+    [HttpPost("ChangeCookies"), Authorize(Roles = "User, Admin")]
     public Task<ActionResult<bool>> ChangeAnimateOrAnonymousCookie([FromQuery]string request)
     {
-        if (!ModelState.IsValid)
+        switch (request)
         {
-            return Task.FromResult<ActionResult<bool>>(BadRequest(ModelState)); 
-        }
-
-        if (request == "Animation")
-        {
-            cookieService.ChangeAnimation();
-        }
-        else if (request == "Anonymous")
-        {
-            cookieService.ChangeUserAnonymous();
+            case "Animation":
+                cookieService.ChangeAnimation();
+                break;
+            case "Anonymous":
+                cookieService.ChangeUserAnonymous();
+                break;
         }
 
         return Task.FromResult<ActionResult<bool>>(Ok(true));

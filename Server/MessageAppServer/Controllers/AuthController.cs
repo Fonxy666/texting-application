@@ -1,11 +1,8 @@
-﻿using System.Text.Json;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Server.Model;
 using Server.Model.Requests.Auth;
 using Server.Model.Responses.Auth;
 using Server.Model.Responses.User;
@@ -18,11 +15,9 @@ namespace Server.Controllers;
 [ApiController]
 [Route("[controller]")]
 public class AuthController(
-    IConfiguration configuration,
     IAuthService authenticationService,
     IUserServices userServices,
-    IEmailSender emailSender,
-    UserManager<ApplicationUser> userManager) : ControllerBase
+    IEmailSender emailSender) : ControllerBase
 {
     [HttpPost("GetEmailVerificationToken")]
     public async Task<ActionResult<GetEmailForVerificationResponse>> SendEmailVerificationCode([FromBody]GetEmailForVerificationRequest receiver)
@@ -38,15 +33,6 @@ public class AuthController(
         }
 
         return Ok(new GetEmailForVerificationResponse("Successfully send."));
-    }
-
-    [HttpGet("CheckCookies")]
-    public ActionResult CheckCookies()
-    {
-        var userIdExists = Request.Cookies.ContainsKey("UserId");
-        var refreshTokenExists = Request.Cookies.ContainsKey("RefreshToken");
-
-        return Ok(userIdExists && refreshTokenExists);
     }
 
     [HttpPost("ExamineVerifyToken")]

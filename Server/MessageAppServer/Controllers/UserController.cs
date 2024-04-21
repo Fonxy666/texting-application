@@ -21,10 +21,10 @@ public class UserController(
     IUserServices userServices,
     ILogger<AuthController> logger) : ControllerBase 
 {
-    [HttpGet("getUsername/{UserId}"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<UsernameResponse>> GetUsername(string UserId)
+    [HttpGet("getUsername/{userId}"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<UsernameResponse>> GetUsername(string userId)
     {
-        var existingUser = await userManager.FindByIdAsync(UserId);
+        var existingUser = await userManager.FindByIdAsync(userId);
         if (existingUser == null)
         {
             return NotFound("User not found.");
@@ -156,17 +156,15 @@ public class UserController(
 
             await repository.SaveChangesAsync();
 
-            if (result.Succeeded)
-            {
-                await repository.SaveChangesAsync();
-                var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
-                return Ok(response);
-            }
-            else
+            if (!result.Succeeded)
             {
                 logger.LogError($"Error changing password for user {request.Id}: {string.Join(", ", result.Errors)}");
                 return BadRequest($"Error changing password for user {request.Id}");
             }
+            
+            await repository.SaveChangesAsync();
+            var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
+            return Ok(response);
         }
         catch (Exception e)
         {
@@ -175,7 +173,7 @@ public class UserController(
         }
     }
 
-    [HttpPost("ChangeAvatar"), Authorize(Roles = "User, Admin")]
+    [HttpPatch("ChangeAvatar"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<AuthResponse>> ChangeAvatar([FromBody]AvatarChange request)
     {
         try
