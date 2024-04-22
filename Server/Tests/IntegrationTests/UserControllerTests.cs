@@ -218,7 +218,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
-        var request = new AvatarChange("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "-");
+        var request = new AvatarChange("347045a9-f051-4a0e-aa93-3dfe59cd43c2", "-");
         var jsonRequestRegister = JsonConvert.SerializeObject(request);
         var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
         

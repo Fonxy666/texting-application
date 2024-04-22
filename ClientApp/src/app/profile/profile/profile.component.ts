@@ -113,7 +113,7 @@ export class ProfileComponent implements OnInit {
 
     changeAvatar() {
         const request = new ChangeAvatarRequest(this.user.id, this.profilePic);
-        this.http.post('https://localhost:7045/User/ChangeAvatar', request, { withCredentials: true})
+        this.http.patch('https://localhost:7045/User/ChangeAvatar', request, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401()
         )

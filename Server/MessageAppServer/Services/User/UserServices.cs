@@ -1,4 +1,6 @@
-﻿namespace Server.Services.User;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+
+namespace Server.Services.User;
 
 public class UserServices : IUserServices
 {
@@ -15,6 +17,11 @@ public class UserServices : IUserServices
 
         try
         {
+            if (base64Image.Length <= 1)
+            {
+                return "";
+            }
+            
             base64Image = base64Image.Replace("data:image/png;base64,", "");
             var imageBytes = Convert.FromBase64String(base64Image);
 
