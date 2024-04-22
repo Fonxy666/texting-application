@@ -5,7 +5,9 @@ using Newtonsoft.Json;
 using Server;
 using Server.Model.Requests.Auth;
 using Server.Model.Requests.User;
+using Server.Model.Responses.User;
 using Xunit;
+using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
 namespace Tests.IntegrationTests;
@@ -14,13 +16,15 @@ namespace Tests.IntegrationTests;
 public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
     private readonly WebApplicationFactory<Startup> _factory;
+    private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _client;
     private readonly AuthRequest _testUser1 = new ("TestUsername1", "testUserPassword123###");
     private readonly AuthRequest _testUser3 = new ("TestUsername3", "testUserPassword123###");
 
-    public UserControllerTests(WebApplicationFactory<Startup> factory)
+    public UserControllerTests(WebApplicationFactory<Startup> factory, ITestOutputHelper testOutputHelper)
     {
         _factory = factory;
+        _testOutputHelper = testOutputHelper;
         _client = _factory.CreateClient();
     }
     
@@ -59,6 +63,14 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         var getUserResponse = await _client.PatchAsync("/User/ChangeEmail", userChangeEmail);
         getUserResponse.EnsureSuccessStatusCode();
+        
+        var responseContent = await getUserResponse.Content.ReadAsStringAsync();
+    
+        var responseObject = JsonConvert.DeserializeObject<EmailUsernameResponse>(responseContent);
+
+        Assert.NotNull(responseObject);
+        Assert.Equal("test1@hotmail.com", responseObject.Email);
+        Assert.Equal("TestUsername1", responseObject.UserName);
     }
     
     [Fact]

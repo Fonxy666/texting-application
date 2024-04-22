@@ -118,20 +118,12 @@ public class UserController(
             }
             
             var token = await userManager.GenerateChangeEmailTokenAsync(existingUser, request.NewEmail);
-            var result = await userManager.ChangeEmailAsync(existingUser, request.NewEmail, token);
-
-            if (result.Succeeded)
-            {
-                existingUser.NormalizedEmail = request.NewEmail.ToUpper();
-                await repository.SaveChangesAsync();
-                var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
-                return Ok(response);
-            }
-            else
-            {
-                logger.LogError($"Error changing e-mail for user {request.OldEmail}: {string.Join(", ", result.Errors)}");
-                return BadRequest($"Error changing e-mail for user {request.OldEmail}");
-            }
+            await userManager.ChangeEmailAsync(existingUser, request.NewEmail, token);
+            
+            existingUser.NormalizedEmail = request.NewEmail.ToUpper();
+            await repository.SaveChangesAsync();
+            var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
+            return Ok(response);
         }
         catch (Exception e)
         {
@@ -152,15 +144,9 @@ public class UserController(
                 return BadRequest(ModelState);
             }
 
-            var result = await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.Password);
+            await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.Password);
 
             await repository.SaveChangesAsync();
-
-            if (!result.Succeeded)
-            {
-                logger.LogError($"Error changing password for user {request.Id}: {string.Join(", ", result.Errors)}");
-                return BadRequest($"Error changing password for user {request.Id}");
-            }
             
             await repository.SaveChangesAsync();
             var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);

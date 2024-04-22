@@ -23,11 +23,6 @@ public class ChatController(IRoomService roomRepository) : ControllerBase
         }
         
         var result = await roomRepository.RegisterRoomAsync(request.RoomName, request.Password);
-        
-        if (result.Success == false)
-        {
-            return BadRequest(result);
-        }
 
         return Ok(result);
     }
@@ -42,11 +37,6 @@ public class ChatController(IRoomService roomRepository) : ControllerBase
         
         var result = await roomRepository.LoginRoomAsync(request.RoomName, request.Password);
 
-        if (!result.Success)
-        {
-            return BadRequest(new { error = "Invalid login credentials." });
-        }
-
         return Ok(result);
     }
     
@@ -58,11 +48,6 @@ public class ChatController(IRoomService roomRepository) : ControllerBase
             return BadRequest(ModelState);
         }
         var result = await roomRepository.DeleteRoomAsync(request.RoomName, request.Password);
-
-        if (result.Success == false)
-        {
-            return BadRequest(new { error = "Invalid login credentials." });
-        }
 
         return Ok(result);
     }

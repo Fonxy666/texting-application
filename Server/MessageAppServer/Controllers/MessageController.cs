@@ -8,38 +8,54 @@ using Server.Model.Responses.Message;
 namespace Server.Controllers;
 
 [Route("[controller]")]
-public class MessageController(IMessageService messageRepository) : ControllerBase
+public class MessageController(IMessageService messageRepository, ILogger<AuthController> logger) : ControllerBase
 {
     [HttpGet("GetMessages/{id}"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<IQueryable<Message>>> GetMessages(string id)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await messageRepository.GetLast10Messages(id);
+
+            return Ok(result);
         }
-
-        var result = await messageRepository.GetLast10Messages(id);
-
-        return Ok(result);
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error getting messages for room: {id}");
+            return NotFound($"Error getting messages for room: {id}");
+        }
     }
     
     [HttpPost("SendMessage"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<MessageResponse>> SendMessage([FromBody]MessageRequest request)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await messageRepository.SendMessage(request);
+            Console.WriteLine($"Result: {result}");
+
+            if (result.Success == false)
+            {
+                return BadRequest(new { error = "Something unusual happened." });
+            }
+            
+            return Ok(result);
         }
-
-        var result = await messageRepository.SendMessage(request);
-        Console.WriteLine($"Result: {result}");
-
-        if (result.Success == false)
+        catch (Exception e)
         {
-            return BadRequest(new { error = "Something unusual happened." });
+            logger.LogError(e, $"Error changing message for id: {request.MessageId}");
+            return NotFound($"Error changing message for id: {request.MessageId}");
         }
-        
-        return Ok(result);
     }
     
     [HttpPatch("EditMessage"), Authorize(Roles = "User, Admin")]
