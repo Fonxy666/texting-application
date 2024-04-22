@@ -17,7 +17,8 @@ namespace Server.Controllers;
 public class AuthController(
     IAuthService authenticationService,
     IUserServices userServices,
-    IEmailSender emailSender) : ControllerBase
+    IEmailSender emailSender,
+    ILogger<AuthController> logger) : ControllerBase
 {
     [HttpPost("GetEmailVerificationToken")]
     public async Task<ActionResult<GetEmailForVerificationResponse>> SendEmailVerificationCode([FromBody]GetEmailForVerificationRequest receiver)
@@ -26,7 +27,7 @@ public class AuthController(
         var message = $"Verification code: {EmailSenderCodeGenerator.GenerateTokenForRegistration(receiver.Email)}";
 
         var result = await emailSender.SendEmailAsync(receiver.Email, subject, message);
-        
+            
         if (!result)
         {
             return BadRequest(ModelState);

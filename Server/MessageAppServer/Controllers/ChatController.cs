@@ -7,7 +7,7 @@ using Server.Services.Chat.RoomService;
 namespace Server.Controllers;
 
 [Route("[controller]")]
-public class ChatController(IRoomService roomRepository) : ControllerBase
+public class ChatController(IRoomService roomRepository, ILogger<AuthController> logger) : ControllerBase
 {
     [HttpPost("RegisterRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> RegisterRoom([FromBody]RoomRequest request)
@@ -34,7 +34,7 @@ public class ChatController(IRoomService roomRepository) : ControllerBase
         {
             return BadRequest(ModelState);
         }
-        
+            
         var result = await roomRepository.LoginRoomAsync(request.RoomName, request.Password);
 
         return Ok(result);

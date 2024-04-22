@@ -11,24 +11,16 @@ public class CookieController(ICookieService cookieService, ILogger<AuthControll
     [HttpPost("ChangeCookies"), Authorize(Roles = "User, Admin")]
     public Task<ActionResult<bool>> ChangeAnimateOrAnonymousCookie([FromQuery]string request)
     {
-        try
+        switch (request)
         {
-            switch (request)
-            {
-                case "Animation":
-                    cookieService.ChangeAnimation();
-                    break;
-                case "Anonymous":
-                    cookieService.ChangeUserAnonymous();
-                    break;
-            }
+            case "Animation":
+                cookieService.ChangeAnimation();
+                break;
+            case "Anonymous":
+                cookieService.ChangeUserAnonymous();
+                break;
+        }
 
-            return Task.FromResult<ActionResult<bool>>(Ok(true));
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, $"Error changing {request} cookie.");
-            return Task.FromResult<ActionResult<bool>>(NotFound(false));
-        }
+        return Task.FromResult<ActionResult<bool>>(Ok(true));
     }
 }
