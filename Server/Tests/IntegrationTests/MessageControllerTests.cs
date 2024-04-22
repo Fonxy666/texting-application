@@ -1,11 +1,13 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using Server;
 using Server.Model.Requests.Auth;
-using Server.Model.Requests.Chat;
 using Server.Model.Requests.Message;
 using Xunit;
+using Xunit.Abstractions;
+using Assert = Xunit.Assert;
 
 namespace Tests.IntegrationTests;
 
@@ -23,13 +25,29 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
+    public async Task Get_Message_ReturnsBadRequest_With_Invalid_RoomId()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        const string roomId = "123";
+
+        var getUserResponse = await _client.GetAsync($"/Message/getMessages/{roomId}");
+        
+        var responseContent = await getUserResponse.Content.ReadAsStringAsync();
+        
+        Assert.Contains($"There is no room with this id: {roomId}", responseContent);
+    }
+    
+    [Fact]
     public async Task Get_Message_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
-        const string roomId = "bbdcc735-d897-45a7-b10d-62c57b52fcca";
+        const string roomId = "233bb449-030d-46d2-bcb5-6742bc3eb3a8";
 
         var getUserResponse = await _client.GetAsync($"/Message/getMessages/{roomId}");
         getUserResponse.EnsureSuccessStatusCode();
@@ -51,6 +69,38 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
+    public async Task Send_Message_ReturnBadRequest_With_Invalid_ModelState()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var messageRequest = "";
+        var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
+        var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
+
+        var sendMessageResponse = await _client.PostAsync("/Message/SendMessage", contentSend);
+        
+        Assert.Equal(HttpStatusCode.BadRequest, sendMessageResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Send_Message_ReturnBadRequest_With_Not_Valid_RoomId()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var messageRequest = new MessageRequest("123", _testUser.UserName, "test", false, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
+        var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
+        var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
+
+        var sendMessageResponse = await _client.PostAsync("/Message/SendMessage", contentSend);
+        
+        Assert.Equal(HttpStatusCode.BadRequest, sendMessageResponse.StatusCode);
+    }
+    
+    [Fact]
     public async Task Edit_Message_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
@@ -63,6 +113,22 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
 
         var getUserResponse = await _client.PatchAsync("/Message/EditMessage", messageChange);
         getUserResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task Edit_Message_ReturnBadRequest_With_Invalid_ModelState()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var messageChangeRequest = "";
+        var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
+        var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
+
+        var editMessageRequest = await _client.PatchAsync("/Message/EditMessage", messageChange);
+        
+        Assert.Equal(HttpStatusCode.BadRequest, editMessageRequest.StatusCode);
     }
     
     [Fact]

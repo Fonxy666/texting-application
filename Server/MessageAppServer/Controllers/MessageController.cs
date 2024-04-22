@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Server.Services.Chat.MessageService;
 using Microsoft.AspNetCore.Authorization;
+using Server.Database;
 using Server.Model.Chat;
 using Server.Model.Requests.Message;
 using Server.Model.Responses.Message;
@@ -8,17 +9,17 @@ using Server.Model.Responses.Message;
 namespace Server.Controllers;
 
 [Route("[controller]")]
-public class MessageController(IMessageService messageRepository) : ControllerBase
+public class MessageController(IMessageService messageRepository, RoomsContext roomsContext) : ControllerBase
 {
-    [HttpGet("GetMessages/{id}"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<IQueryable<Message>>> GetMessages(string id)
+    [HttpGet("GetMessages/{roomId}"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<IQueryable<Message>>> GetMessages(string roomId)
     {
-        if (!ModelState.IsValid)
+        if (!roomsContext.Rooms.Any(room => room.RoomId == roomId))
         {
-            return BadRequest(ModelState);
+            return BadRequest($"There is no room with this id: {roomId}");
         }
 
-        var result = await messageRepository.GetLast10Messages(id);
+        var result = await messageRepository.GetLast10Messages(roomId);
 
         return Ok(result);
     }
@@ -30,13 +31,12 @@ public class MessageController(IMessageService messageRepository) : ControllerBa
         {
             return BadRequest(ModelState);
         }
-
+        
         var result = await messageRepository.SendMessage(request);
-        Console.WriteLine($"Result: {result}");
 
-        if (result.Success == false)
+        if (!result.Success)
         {
-            return BadRequest(new { error = "Something unusual happened." });
+            return BadRequest(result.errorMessage);
         }
         
         return Ok(result);

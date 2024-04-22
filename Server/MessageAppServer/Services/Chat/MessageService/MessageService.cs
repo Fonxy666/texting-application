@@ -8,13 +8,18 @@ using Server.Model.Responses.Message;
 
 namespace Server.Services.Chat.MessageService;
 
-public class MessageService(MessagesContext context) : IMessageService
+public class MessageService(MessagesContext context, RoomsContext roomsContext) : IMessageService
 {
     private MessagesContext Context { get; } = context;
+    private RoomsContext RoomsContext { get; } = roomsContext;
     public async Task<SaveMessageResponse> SendMessage(MessageRequest request)
     {
         try
         {
+            if (RoomsContext.Rooms.Any(room => room.RoomId == request.RoomId))
+            {
+                return new SaveMessageResponse(false, null, $"There is no room with id {request.RoomId}");
+            }
             var message = request.MessageId != null ? 
                 new Message(request.RoomId, request.UserName, request.Message, request.MessageId, request.AsAnonymous) : 
                 new Message(request.RoomId, request.UserName, request.Message, request.AsAnonymous);
@@ -23,12 +28,12 @@ public class MessageService(MessagesContext context) : IMessageService
             await Context.SaveChangesAsync();
 
             Console.WriteLine(message.MessageId);
-            return new SaveMessageResponse(true, message);
+            return new SaveMessageResponse(true, message, null);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
-            return new SaveMessageResponse(false, null);
+            return new SaveMessageResponse(false, null, null);
         }
     }
 
