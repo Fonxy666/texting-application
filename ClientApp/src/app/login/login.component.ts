@@ -45,8 +45,7 @@ export class LoginComponent implements OnInit {
                 if (!isNaN(error.error)) {
                     alert(`Invalid username or password, you have ${5-error.error} tries.`);
                 } else {
-                    var errorMessage = error.error.split(".")[0] + "." + error.error.split(".")[1];
-                    alert(errorMessage);
+                    alert(error.error);
                 }
             } else {
                 console.error("An error occurred:", error);

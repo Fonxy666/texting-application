@@ -34,14 +34,14 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Login_With_Bad_Credentials_ReturnInternalServerError()
+    public async Task Login_With_Bad_Credentials_ReturnBadRequest()
     {
         var token = EmailSenderCodeGenerator.GenerateTokenForLogin("test1@hotmail.com");
         var login = new LoginAuth("TestUs", false, token);
         var authJsonRequest = JsonConvert.SerializeObject(login);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
         var authResponse = await _client.PostAsync("/Auth/Login", authContent);
-        Assert.Equal(HttpStatusCode.InternalServerError, authResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, authResponse.StatusCode);
     }
     
     [Fact]
@@ -120,11 +120,11 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Logout_Returns_Ok()
+    public async Task Logout_Returns_BadRequest_With_Empty_Content()
     {
         var emptyContent = new StringContent("", Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/Auth/Logout", emptyContent);
 
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

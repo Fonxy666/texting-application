@@ -9,7 +9,7 @@ using Server.Model.Responses.Message;
 namespace Server.Controllers;
 
 [Route("[controller]")]
-public class MessageController(IMessageService messageService, RoomsContext roomsContext, ILogger logger) : ControllerBase
+public class MessageController(IMessageService messageService, RoomsContext roomsContext, ILogger<AuthController> logger) : ControllerBase
 {
     [HttpGet("GetMessages/{roomId}"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<IQueryable<Message>>> GetMessages(string roomId)

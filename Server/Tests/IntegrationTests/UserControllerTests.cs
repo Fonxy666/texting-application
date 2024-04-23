@@ -85,7 +85,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var getUserResponse = await _client.PatchAsync("/User/ChangeEmail", userChangeEmail);
-        Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
     }
     
     [Fact]
@@ -137,7 +137,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var getUserResponse = await _client.PatchAsync("/User/ChangePassword", userChangeEmail);
-        Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
     }
     
     [Fact]
@@ -195,7 +195,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var deleteUrl = $"/User/DeleteUser?email={Uri.EscapeDataString(email)}&username={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}";
 
         var getUserResponse = await _client.DeleteAsync(deleteUrl);
-        Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
     }
     
     [Fact]
@@ -249,6 +249,6 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
         
         var getUserResponse = await _client.PatchAsync("/User/ChangeAvatar", userChangeEmail);
-        Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
     }
 }

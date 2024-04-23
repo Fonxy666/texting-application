@@ -16,7 +16,7 @@ public class UserController(
     UserManager<ApplicationUser> userManager,
     UsersContext repository,
     IUserServices userServices,
-    ILogger logger) : ControllerBase 
+    ILogger<AuthController> logger) : ControllerBase
 {
     [HttpGet("getUsername/{userId}"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<UsernameResponse>> GetUsername(string userId)

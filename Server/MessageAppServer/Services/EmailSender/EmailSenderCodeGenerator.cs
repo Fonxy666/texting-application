@@ -87,6 +87,5 @@ public static class EmailSenderCodeGenerator
                 _loginVerificationCodes.Remove(email);
             }
         }
-        
     }
 }

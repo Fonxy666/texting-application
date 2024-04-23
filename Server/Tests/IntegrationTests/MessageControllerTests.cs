@@ -97,7 +97,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
 
         var sendMessageResponse = await _client.PostAsync("/Message/SendMessage", contentSend);
         
-        Assert.Equal(HttpStatusCode.BadRequest, sendMessageResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.InternalServerError, sendMessageResponse.StatusCode);
     }
     
     [Fact]

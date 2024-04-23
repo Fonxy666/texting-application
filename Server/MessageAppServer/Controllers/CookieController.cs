@@ -6,7 +6,7 @@ namespace Server.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class CookieController(ICookieService cookieService, ILogger logger) : ControllerBase
+public class CookieController(ICookieService cookieService, ILogger<AuthController> logger) : ControllerBase
 {
     [HttpPost("ChangeCookies"), Authorize(Roles = "User, Admin")]
     public Task<ActionResult<bool>> ChangeAnimateOrAnonymousCookie([FromQuery]string request)

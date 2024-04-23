@@ -23,193 +23,255 @@ public class AuthController(
     [HttpPost("GetEmailVerificationToken")]
     public async Task<ActionResult<GetEmailForVerificationResponse>> SendEmailVerificationCode([FromBody]GetEmailForVerificationRequest receiver)
     {
-        const string subject = "Verification code";
-        var message = $"Verification code: {EmailSenderCodeGenerator.GenerateTokenForRegistration(receiver.Email)}";
-
-        var result = await emailSender.SendEmailAsync(receiver.Email, subject, message);
-            
-        if (!result)
+        try
         {
-            return BadRequest(ModelState);
-        }
+            const string subject = "Verification code";
+            var message = $"Verification code: {EmailSenderCodeGenerator.GenerateTokenForRegistration(receiver.Email)}";
 
-        return Ok(new GetEmailForVerificationResponse("Successfully send."));
+            await emailSender.SendEmailAsync(receiver.Email, subject, message);
+
+            return Ok(new GetEmailForVerificationResponse("Successfully send."));
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error sending e-mail for : {receiver}.");
+            return BadRequest($"Error sending e-mail for : {receiver}.");
+        }
     }
 
     [HttpPost("ExamineVerifyToken")]
-    public async Task<ActionResult<string>> VerifyToken([FromBody]VerifyTokenRequest credentials)
+    public Task<ActionResult<string>> VerifyToken([FromBody]VerifyTokenRequest credentials)
     {
-        var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(credentials.Email, credentials.VerifyCode, "registration");
-        if (!result)
+        try
         {
-            return BadRequest(ModelState);
+            var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(credentials.Email, credentials.VerifyCode, "registration");
+            if (!result)
+            {
+                return Task.FromResult<ActionResult<string>>(BadRequest(ModelState));
+            }
+            
+            EmailSenderCodeGenerator.RemoveVerificationCode(credentials.Email, "registration");
+            return Task.FromResult<ActionResult<string>>(Ok(new VerifyTokenResponse(true)));
         }
-        
-        EmailSenderCodeGenerator.RemoveVerificationCode(credentials.Email, "registration");
-        return Ok(new VerifyTokenResponse(true));
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Wrong credit for e-mail : {credentials.Email}.");
+            return Task.FromResult<ActionResult<string>>(BadRequest($"Wrong credit for e-mail : {credentials.Email}."));
+        }
     }
         
     [HttpPost("Register")]
     public async Task<ActionResult<EmailUsernameResponse>> Register(RegistrationRequest request)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var imagePath = userServices.SaveImageLocally(request.Username, request.Image);
+            var result = await authenticationService.RegisterAsync(request.Email, request.Username, request.Password, "User", request.PhoneNumber, imagePath);
+
+            if (!result.Success)
+            {
+                return BadRequest(result.ErrorMessages);
+            }
+
+            return Ok(new AuthResponse(true, result.Id));
         }
-
-        var imagePath = userServices.SaveImageLocally(request.Username, request.Image);
-        var result = await authenticationService.RegisterAsync(request.Email, request.Username, request.Password, "User", request.PhoneNumber, imagePath);
-
-        if (!result.Success)
+        catch (Exception e)
         {
-            AddErrors(result);
-            return BadRequest(ModelState);
-        }
-
-        return Ok(new AuthResponse(true, result.Id));
-    }
-
-    private void AddErrors(AuthResult result)
-    {
-        foreach (var resultErrorMessage in result.ErrorMessages)
-        {
-            ModelState.AddModelError(resultErrorMessage.Key, resultErrorMessage.Value);
+            logger.LogError(e, "Error during registration.");
+            return BadRequest("Error during registration.");
         }
     }
     
     [HttpPost("SendLoginToken")]
     public async Task<ActionResult<AuthResponse>> SendLoginToken([FromBody]AuthRequest request)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
-        }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-        var result = await authenticationService.ExamineLoginCredentials(request.UserName, request.Password);
+            var result = await authenticationService.ExamineLoginCredentials(request.UserName, request.Password);
         
-        if (result is FailedAuthResult failedResult)
+            if (result is FailedAuthResult failedResult)
+            {
+                ModelState.AddModelError("InvalidCredentials", "Invalid username or password");
+                return NotFound(failedResult.AdditionalInfo);
+            }
+        
+            const string subject = "Verification code";
+            var message = $"{subject}: {EmailSenderCodeGenerator.GenerateTokenForLogin(result.Email)}";
+
+            await emailSender.SendEmailAsync(result.Email, subject, message);
+
+            return Ok(new AuthResponse(true, result.Id));
+        }
+        catch (Exception e)
         {
-            ModelState.AddModelError("InvalidCredentials", "Invalid username or password");
-            return NotFound(failedResult.AdditionalInfo);
+            logger.LogError(e, $"Error during sending login token for user: {request.UserName}");
+            return BadRequest($"Error during sending login token for user: {request.UserName}");
         }
-        
-        const string subject = "Verification code";
-        var message = $"Verification code: {EmailSenderCodeGenerator.GenerateTokenForLogin(result.Email)}";
-
-        var emailResult = await emailSender.SendEmailAsync(result.Email, subject, message);
-
-        return Ok(new AuthResponse(emailResult, result.Id));
     }
     
     [HttpPost("Login")]
     public async Task<ActionResult<AuthResponse>> Login([FromBody]LoginAuth request)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
-        }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
         
-        var email = await authenticationService.GetEmailFromUserName(request.UserName);
-        var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(email!, request.Token, "login");
+            var email = await authenticationService.GetEmailFromUserName(request.UserName);
+            var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(email!, request.Token, "login");
         
-        if (!result)
-        {
-            return BadRequest(new AuthResponse(false, "Bad request"));
-        }
+            if (!result)
+            {
+                return BadRequest(new AuthResponse(false, "Bad request"));
+            }
 
-        EmailSenderCodeGenerator.RemoveVerificationCode(email!, "login");
+            EmailSenderCodeGenerator.RemoveVerificationCode(email!, "login");
 
-        var loginResult = await authenticationService.LoginAsync(request.UserName, request.RememberMe);
+            var loginResult = await authenticationService.LoginAsync(request.UserName, request.RememberMe);
 
-        if (!loginResult.Success)
-        {
-            AddErrors(loginResult);
-            ModelState.AddModelError("InvalidCredentials", "Invalid username or password");
+            if (!loginResult.Success)
+            {
+                ModelState.AddModelError("InvalidCredentials", "Invalid username or password");
             
-            return NotFound(ModelState);
-        }
+                return NotFound(ModelState);
+            }
 
-        return Ok(new AuthResponse(true, loginResult.Id));
+            return Ok(new AuthResponse(true, loginResult.Id));
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error during login for user: {request.UserName}");
+            return BadRequest($"Error during login for user: {request.UserName}");
+        }
     }
     
     [HttpGet("LoginWithFacebook")]
     public async Task FacebookLogin()
     {
-        await HttpContext.ChallengeAsync(FacebookDefaults.AuthenticationScheme,
-            new AuthenticationProperties
-            {
-                RedirectUri = Url.Action(nameof(FacebookResponse))
-            });
+        try
+        {
+            await HttpContext.ChallengeAsync(FacebookDefaults.AuthenticationScheme,
+                new AuthenticationProperties
+                {
+                    RedirectUri = Url.Action(nameof(FacebookResponse))
+                });
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error during facebook login.");
+        }
     }
     
     [HttpGet("FacebookResponse")]
     public async Task<IActionResult> FacebookResponse()
     {
-        var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        var claims = result.Principal!.Identities.FirstOrDefault()!.Claims.Select(claim => new
+        try
         {
-            claim.Issuer,
-            claim.OriginalIssuer,
-            claim.Type,
-            claim.Value
-        });
-
-        foreach (var claim in claims)
-        {
-            var splittedClaim = claim.Type.Split("/");
-            if (splittedClaim[^1] == "emailaddress")
+            var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            var claims = result.Principal!.Identities.FirstOrDefault()!.Claims.Select(claim => new
             {
-                await authenticationService.LoginWithGoogle(claim.Value);
-            }
-        }
+                claim.Issuer,
+                claim.OriginalIssuer,
+                claim.Type,
+                claim.Value
+            });
 
-        return Redirect("http://localhost:4200");
+            foreach (var claim in claims)
+            {
+                var splittedClaim = claim.Type.Split("/");
+                if (splittedClaim[^1] == "emailaddress")
+                {
+                    await authenticationService.LoginWithGoogle(claim.Value);
+                }
+            }
+
+            return Redirect("http://localhost:4200");
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error during facebook login.");
+            return BadRequest("Error during facebook login.");
+        }
     }
     
     [HttpGet("LoginWithGoogle")]
     public async Task GoogleLogin()
     {
-        await HttpContext.ChallengeAsync(GoogleDefaults.AuthenticationScheme,
-            new AuthenticationProperties
-            {
-                RedirectUri = Url.Action(nameof(GoogleResponse))
-            });
+        try
+        {
+            await HttpContext.ChallengeAsync(GoogleDefaults.AuthenticationScheme,
+                new AuthenticationProperties
+                {
+                    RedirectUri = Url.Action(nameof(GoogleResponse))
+                });
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error during google login.");
+        }
     }
 
     [HttpGet("GoogleResponse")]
     public async Task<IActionResult> GoogleResponse()
     {
-        var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        var claims = result.Principal!.Identities.FirstOrDefault()!.Claims.Select(claim => new
+        try
         {
-            claim.Issuer,
-            claim.OriginalIssuer,
-            claim.Type,
-            claim.Value
-        });
-        
-        foreach (var claim in claims)
-        {
-            var splittedClaim = claim.Type.Split("/");
-            if (splittedClaim[^1] == "emailaddress")
+            var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            var claims = result.Principal!.Identities.FirstOrDefault()!.Claims.Select(claim => new
             {
-                await authenticationService.LoginWithGoogle(claim.Value);
+                claim.Issuer,
+                claim.OriginalIssuer,
+                claim.Type,
+                claim.Value
+            });
+        
+            foreach (var claim in claims)
+            {
+                var splittedClaim = claim.Type.Split("/");
+                if (splittedClaim[^1] == "emailaddress")
+                {
+                    await authenticationService.LoginWithGoogle(claim.Value);
+                }
             }
-        }
 
-        return Redirect("http://localhost:4200");
+            return Redirect("http://localhost:4200");
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error during google login.");
+            return BadRequest("Error during google login.");
+        }
     }
     
     [HttpPost("Logout")]
     public async Task<ActionResult<AuthResponse>> LogOut([FromQuery]string userId)
     {
-        var result = await authenticationService.LogOut(userId);
-        if (!result.Success)
+        try
         {
-            AddErrors(result);
-            return NotFound(ModelState);
-        }
+            var result = await authenticationService.LogOut(userId);
+            if (!result.Success)
+            {
+                return NotFound(ModelState);
+            }
 
-        return Ok(new AuthResponse(true, userId));
+            return Ok(new AuthResponse(true, userId));
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error during logout.");
+            return BadRequest($"Error during logout.");
+        }
     }
 }

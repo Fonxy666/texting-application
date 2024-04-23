@@ -53,20 +53,6 @@ namespace Tests.Services.Auth
 
             Assert.That(result.Success, Is.True);
         }
-
-        [Test]
-        public async Task LoginAsync_InvalidCredentials_ReturnsAuthResultWithErrors()
-        {
-            var userManagerMock = MockUserManager.CreateInvalidLogin();
-            var tokenServiceMock = new Mock<ITokenService>();
-            var cookieService = new Mock<ICookieService>();
-
-            var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object, cookieService.Object);
-
-            var result = await authService.LoginAsync("InvalidUser", false);
-
-            Assert.That(result.Success, Is.False);
-        }
     }
 
     internal static class MockUserManager

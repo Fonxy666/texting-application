@@ -51,22 +51,17 @@ public class AuthService(
     {
         var managedUser = await userManager.FindByNameAsync(username);
         
-        if (managedUser == null)
-        {
-            return new AuthResult(false, "", "");
-        }
-        
-        var roles = await userManager.GetRolesAsync(managedUser);
-        var accessToken = tokenService.CreateJwtToken(managedUser, roles[0], rememberMe);
+        var roles = await userManager.GetRolesAsync(managedUser!);
+        var accessToken = tokenService.CreateJwtToken(managedUser!, roles[0], rememberMe);
         
         if (rememberMe)
         {
-            cookieService.SetRefreshToken(managedUser);
-            await userManager.UpdateAsync(managedUser);
+            cookieService.SetRefreshToken(managedUser!);
+            await userManager.UpdateAsync(managedUser!);
         }
 
         cookieService.SetRememberMeCookie(rememberMe);
-        cookieService.SetUserId(managedUser.Id, rememberMe);
+        cookieService.SetUserId(managedUser!.Id, rememberMe);
         cookieService.SetAnimateAndAnonymous(rememberMe);
         await cookieService.SetJwtToken(accessToken, rememberMe);
         
@@ -109,23 +104,12 @@ public class AuthService(
         {
             return InvalidCredentials("Invalid username or password");
         }
-        
-        var lockoutEndDate = await userManager.GetLockoutEndDateAsync(managedUser);
 
-        if (lockoutEndDate.HasValue && lockoutEndDate.Value > DateTimeOffset.Now)
-        {
-            return InvalidCredentials($"Account is locked. Try again after {lockoutEndDate.Value - DateTimeOffset.Now}");
-        }
+        var lockoutResult = await ExamineLockoutEnabled(managedUser);
 
-        await userManager.SetLockoutEndDateAsync(managedUser, null);
-        
-        var userLockout = userManager.GetAccessFailedCountAsync(managedUser).Result >= 4;
-        
-        if (userLockout)
+        if (!lockoutResult.Success)
         {
-            await userManager.SetLockoutEndDateAsync(managedUser, DateTimeOffset.Now.AddDays(1));
-            await userManager.ResetAccessFailedCountAsync(managedUser);
-            return InvalidCredentials($"Account is locked. Try again after 1 day");
+            return lockoutResult;
         }
 
         var isPasswordValid = await userManager.CheckPasswordAsync(managedUser, password);
@@ -139,6 +123,29 @@ public class AuthService(
         await userManager.ResetAccessFailedCountAsync(managedUser);
 
         return new AuthResult(true, managedUser.Id, managedUser.Email!);
+    }
+
+    private async Task<AuthResult> ExamineLockoutEnabled(ApplicationUser user)
+    {
+        var lockoutEndDate = await userManager.GetLockoutEndDateAsync(user);
+
+        if (lockoutEndDate.HasValue && lockoutEndDate.Value > DateTimeOffset.Now)
+        {
+            return InvalidCredentials($"Account is locked. Try again after {lockoutEndDate.Value - DateTimeOffset.Now}");
+        }
+
+        await userManager.SetLockoutEndDateAsync(user, null);
+        
+        var userLockout = userManager.GetAccessFailedCountAsync(user).Result >= 4;
+        
+        if (userLockout)
+        {
+            await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.Now.AddDays(1));
+            await userManager.ResetAccessFailedCountAsync(user);
+            return InvalidCredentials($"Account is locked. Try again after 1 day");
+        }
+
+        return new AuthResult(true, "", "");
     }
 
     public async Task<AuthResult> LogOut(string userId)
