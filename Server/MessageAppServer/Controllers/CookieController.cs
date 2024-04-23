@@ -6,16 +6,16 @@ namespace Server.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class CookieController(ICookieService cookieService, ILogger<AuthController> logger) : ControllerBase
+public class CookieController(ICookieService cookieService, ILogger<CookieController> logger) : ControllerBase
 {
     [HttpPost("ChangeCookies"), Authorize(Roles = "User, Admin")]
-    public Task<ActionResult<bool>> ChangeAnimateOrAnonymousCookie([FromQuery]string request)
+    public async Task<ActionResult> ChangeAnimateOrAnonymousCookie([FromQuery]string request)
     {
         try
         {
             if (request is not ("Animation" or "Anonymous"))
             {
-                return Task.FromResult<ActionResult<bool>>(BadRequest(false));
+                return BadRequest(false);
             }
             
             switch (request)
@@ -28,12 +28,12 @@ public class CookieController(ICookieService cookieService, ILogger<AuthControll
                     break;
             }
 
-            return Task.FromResult<ActionResult<bool>>(Ok(true));
+            return Ok(true);
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Error changing {request} cookie.");
-            return Task.FromResult<ActionResult<bool>>(BadRequest($"Error changing {request} cookie."));
+            return StatusCode(500);
         }
     }
 }

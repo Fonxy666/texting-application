@@ -7,7 +7,7 @@ using Server.Services.Chat.RoomService;
 namespace Server.Controllers;
 
 [Route("[controller]")]
-public class ChatController(IRoomService roomService, ILogger<AuthController> logger) : ControllerBase
+public class ChatController(IRoomService roomService, ILogger<ChatController> logger) : ControllerBase
 {
     [HttpPost("RegisterRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> RegisterRoom([FromBody]RoomRequest request)
