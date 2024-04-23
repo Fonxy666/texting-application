@@ -52,9 +52,9 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
                 return NotFound(new { error = "There is no room with the given Room name." });
             }
 
-            if (existingRoom.PasswordMatch(existingRoom.Password))
+            if (!existingRoom.PasswordMatch(request.Password))
             {
-                return NotFound(new { error = "Invalid login credentials." });
+                return BadRequest("Incorrect login credentials");
             }
             
             return Ok(new RoomResponse(true, existingRoom.RoomId, existingRoom.RoomName));
@@ -83,9 +83,9 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
                 return NotFound(new { error = "There is no room with the given Room name." });
             }
             
-            if (existingRoom.PasswordMatch(existingRoom.Password))
+            if (!existingRoom.PasswordMatch(request.Password))
             {
-                return NotFound(new { error = "Invalid room credentials." });
+                return BadRequest("Incorrect credentials");
             }
             
             await roomService.DeleteRoomAsync(existingRoom);

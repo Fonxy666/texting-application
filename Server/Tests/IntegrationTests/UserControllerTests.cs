@@ -165,6 +165,18 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
+    public async Task GetImage_With_InvalidId_ReturnNotFounde()
+    {
+        const string userId = "123";
+        
+        Directory.SetCurrentDirectory("D:/after codecool/texting-application/Server/MessageAppServer");
+    
+        var getImageResponse = await _client.GetAsync($"User/GetImage/{userId}");
+
+        Assert.Equal(HttpStatusCode.NotFound, getImageResponse.StatusCode);
+    }
+    
+    [Fact]
     public async Task Delete_User_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
@@ -196,6 +208,23 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         var getUserResponse = await _client.DeleteAsync(deleteUrl);
         Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Delete_User_WithWrongPassword_Return_BadRequest()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        const string email = "test1@hotmail.com";
+        const string username = "TestUsername1";
+        const string password = "123";
+
+        var deleteUrl = $"/User/DeleteUser?email={Uri.EscapeDataString(email)}&username={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}";
+
+        var getUserResponse = await _client.DeleteAsync(deleteUrl);
+        Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
     
     [Fact]

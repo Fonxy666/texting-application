@@ -47,7 +47,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
-        const string roomId = "233bb449-030d-46d2-bcb5-6742bc3eb3a8";
+        const string roomId = "858f76ec-9dec-438a-9e63-72287a69f4d2";
 
         var getUserResponse = await _client.GetAsync($"/Message/getMessages/{roomId}");
         getUserResponse.EnsureSuccessStatusCode();
