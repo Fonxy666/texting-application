@@ -11,5 +11,4 @@ public interface IAuthService
     Task<string?> GetEmailFromUserName(string username);
     Task<AuthResult> ExamineLoginCredentials(string username, string password);
     Task<AuthResult> LogOut(string userId);
-    Task<DeleteUserResponse> DeleteAsync(string username, string password);
 }

@@ -7,7 +7,7 @@ using Server.Services.Chat.RoomService;
 namespace Server.Controllers;
 
 [Route("[controller]")]
-public class ChatController(IRoomService roomService) : ControllerBase
+public class ChatController(IRoomService roomService, ILogger logger) : ControllerBase
 {
     [HttpPost("RegisterRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> RegisterRoom([FromBody]RoomRequest request)
@@ -30,8 +30,8 @@ public class ChatController(IRoomService roomService) : ControllerBase
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            logger.LogError(e, "Error registering the room");
+            return BadRequest("Error registering the room");
         }
     }
 
@@ -61,8 +61,8 @@ public class ChatController(IRoomService roomService) : ControllerBase
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            logger.LogError(e, $"Error login into {request.RoomName} room.");
+            return BadRequest($"Error login into {request.RoomName} room.");
         }
     }
     
@@ -94,8 +94,8 @@ public class ChatController(IRoomService roomService) : ControllerBase
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            logger.LogError(e, $"Error deleting room {request.RoomName}.");
+            return BadRequest($"Error deleting room {request.RoomName}.");
         }
     }
 }

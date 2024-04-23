@@ -9,19 +9,27 @@ using Server.Model.Responses.Message;
 namespace Server.Controllers;
 
 [Route("[controller]")]
-public class MessageController(IMessageService messageService, RoomsContext roomsContext) : ControllerBase
+public class MessageController(IMessageService messageService, RoomsContext roomsContext, ILogger logger) : ControllerBase
 {
     [HttpGet("GetMessages/{roomId}"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<IQueryable<Message>>> GetMessages(string roomId)
     {
-        if (!roomsContext.Rooms.Any(room => room.RoomId == roomId))
+        try
         {
-            return BadRequest($"There is no room with this id: {roomId}");
+            if (!roomsContext.Rooms.Any(room => room.RoomId == roomId))
+            {
+                return BadRequest($"There is no room with this id: {roomId}");
+            }
+
+            var result = await messageService.GetLast10Messages(roomId);
+
+            return Ok(result);
         }
-
-        var result = await messageService.GetLast10Messages(roomId);
-
-        return Ok(result);
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error getting messages for room: {roomId}");
+            return BadRequest($"Error getting messages for room: {roomId}");
+        }
     }
     
     [HttpPost("SendMessage"), Authorize(Roles = "User, Admin")]
