@@ -7,48 +7,95 @@ using Server.Services.Chat.RoomService;
 namespace Server.Controllers;
 
 [Route("[controller]")]
-public class ChatController(IRoomService roomRepository) : ControllerBase
+public class ChatController(IRoomService roomService) : ControllerBase
 {
     [HttpPost("RegisterRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> RegisterRoom([FromBody]RoomRequest request)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
-        }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { error = "New room credentials not valid." });
+            }
 
-        if (roomRepository.RoomNameTaken(request.RoomName).Result.Result)
+            if (roomService.RoomNameTaken(request.RoomName).Result.Result)
+            {
+                return BadRequest(new { error = "This room's name already taken." });
+            }
+            
+            var result = await roomService.RegisterRoomAsync(request.RoomName, request.Password);
+
+            return Ok(result);
+        }
+        catch (Exception e)
         {
-            return BadRequest(new { error = "This room's name already taken." });
+            Console.WriteLine(e);
+            throw;
         }
-        
-        var result = await roomRepository.RegisterRoomAsync(request.RoomName, request.Password);
-
-        return Ok(result);
     }
 
     [HttpPost("JoinRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> LoginRoom([FromBody]RoomRequest request)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
-        }
-            
-        var result = await roomRepository.LoginRoomAsync(request.RoomName, request.Password);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { error = "Room credentials not valid." });
+            }
 
-        return Ok(result);
+            var existingRoom = await roomService.GetRoom(request.RoomName);
+
+            if (existingRoom == null)
+            {
+                return NotFound(new { error = "There is no room with the given Room name." });
+            }
+
+            if (existingRoom.PasswordMatch(existingRoom.Password))
+            {
+                return NotFound(new { error = "Invalid login credentials." });
+            }
+            
+            return Ok(new RoomResponse(true, existingRoom.RoomId, existingRoom.RoomName));
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
     
     [HttpPost("DeleteRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> DeleteRoom([FromBody]RoomRequest request)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
-        }
-        var result = await roomRepository.DeleteRoomAsync(request.RoomName, request.Password);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            
+            var existingRoom = roomService.GetRoom(request.RoomName).Result;
 
-        return Ok(result);
+            if (existingRoom == null)
+            {
+                return NotFound(new { error = "There is no room with the given Room name." });
+            }
+            
+            if (existingRoom.PasswordMatch(existingRoom.Password))
+            {
+                return NotFound(new { error = "Invalid room credentials." });
+            }
+            
+            await roomService.DeleteRoomAsync(existingRoom);
+
+            return Ok(new RoomResponse(true, existingRoom.RoomId, existingRoom.RoomName));
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 }
