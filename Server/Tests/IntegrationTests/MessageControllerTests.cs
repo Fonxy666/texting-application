@@ -60,7 +60,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
-        var messageRequest = new MessageRequest("bbdcc735-d897-45a7-b10d-62c57b52fcca", _testUser.UserName, "test", false, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
+        var messageRequest = new MessageRequest("233bb449-030d-46d2-bcb5-6742bc3eb3a8", _testUser.UserName, "test", false, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
         var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
         var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
 
@@ -107,7 +107,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
-        var messageChangeRequest = new EditMessageRequest("a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "TestChange");
+        var messageChangeRequest = new EditMessageRequest("f3190268-ee9a-4348-b1f6-4b146c09901f", "TestChange");
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 

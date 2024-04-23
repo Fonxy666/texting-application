@@ -14,27 +14,14 @@ public class MessageService(MessagesContext context, RoomsContext roomsContext) 
     private RoomsContext RoomsContext { get; } = roomsContext;
     public async Task<SaveMessageResponse> SendMessage(MessageRequest request)
     {
-        try
-        {
-            if (RoomsContext.Rooms.Any(room => room.RoomId == request.RoomId))
-            {
-                return new SaveMessageResponse(false, null, $"There is no room with id {request.RoomId}");
-            }
-            var message = request.MessageId != null ? 
-                new Message(request.RoomId, request.UserName, request.Message, request.MessageId, request.AsAnonymous) : 
-                new Message(request.RoomId, request.UserName, request.Message, request.AsAnonymous);
-            
-            await Context.Messages.AddAsync(message);
-            await Context.SaveChangesAsync();
+        var message = request.MessageId != null ? 
+            new Message(request.RoomId, request.UserName, request.Message, request.MessageId, request.AsAnonymous) : 
+            new Message(request.RoomId, request.UserName, request.Message, request.AsAnonymous);
+        
+        await Context.Messages.AddAsync(message);
+        await Context.SaveChangesAsync();
 
-            Console.WriteLine(message.MessageId);
-            return new SaveMessageResponse(true, message, null);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-            return new SaveMessageResponse(false, null, null);
-        }
+        return new SaveMessageResponse(true, message, null);
     }
 
     public async Task<IQueryable<Message>> GetLast10Messages(string roomId)
@@ -51,10 +38,15 @@ public class MessageService(MessagesContext context, RoomsContext roomsContext) 
     public async Task<MessageResponse> EditMessage(EditMessageRequest request)
     {
         var existingMessage = Context.Messages.FirstOrDefault(message => message.MessageId == request.Id);
+
+        if (existingMessage == null)
+        {
+            return new MessageResponse(false, "", $"There is no message with id: {request.Id}");
+        }
         
         if (existingMessage!.RoomId.Length < 1)
         {
-            return new MessageResponse(false, "");
+            return new MessageResponse(false, "", $"There is no room with the id: {request.Id}");
         }
         
         try
@@ -64,23 +56,18 @@ public class MessageService(MessagesContext context, RoomsContext roomsContext) 
             Context.Messages.Update(existingMessage);
             await Context.SaveChangesAsync();
 
-            return new MessageResponse(true, "");
+            return new MessageResponse(true, "", null);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
-            return new MessageResponse(false, "");
+            return new MessageResponse(false, "", "Unexpected error happened.");
         }
     }
 
     public async Task<MessageResponse> EditMessageSeen(EditMessageSeenRequest request)
     {
         var existingMessage = Context.Messages.FirstOrDefault(message => message.MessageId == request.messageId);
-        
-        if (existingMessage!.RoomId.Length < 1)
-        {
-            return new MessageResponse(false, "");
-        }
         
         try
         {
@@ -90,12 +77,12 @@ public class MessageService(MessagesContext context, RoomsContext roomsContext) 
             Context.Messages.Update(existingMessage);
             await Context.SaveChangesAsync();
 
-            return new MessageResponse(true, "");
+            return new MessageResponse(true, "", null);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
-            return new MessageResponse(false, "");
+            return new MessageResponse(false, "", "Unexpected error happened.");
         }
     }
 
@@ -105,7 +92,7 @@ public class MessageService(MessagesContext context, RoomsContext roomsContext) 
         
         if (existingMessage!.RoomId.Length < 1)
         {
-            return new MessageResponse(false, "");
+            return new MessageResponse(false, "", null);
         }
         
         try
@@ -113,12 +100,12 @@ public class MessageService(MessagesContext context, RoomsContext roomsContext) 
             Context.Messages.Remove(existingMessage);
             await Context.SaveChangesAsync();
 
-            return new MessageResponse(true, id);
+            return new MessageResponse(true, id, null);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
-            return new MessageResponse(false, "");
+            return new MessageResponse(false, "", null);
         }
     }
 }

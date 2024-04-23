@@ -6,11 +6,16 @@ namespace Server.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class CookieController(ICookieService cookieService, ILogger<AuthController> logger) : ControllerBase
+public class CookieController(ICookieService cookieService) : ControllerBase
 {
     [HttpPost("ChangeCookies"), Authorize(Roles = "User, Admin")]
     public Task<ActionResult<bool>> ChangeAnimateOrAnonymousCookie([FromQuery]string request)
     {
+        if (request is not ("Animation" or "Anonymous"))
+        {
+            return Task.FromResult<ActionResult<bool>>(BadRequest(false));
+        }
+        
         switch (request)
         {
             case "Animation":

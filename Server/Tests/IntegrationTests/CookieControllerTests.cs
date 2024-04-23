@@ -43,4 +43,18 @@ public class CookieControllerTests : IClassFixture<WebApplicationFactory<Startup
         Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
         Assert.Equal(HttpStatusCode.OK, secondResponse.StatusCode);
     }
+    
+    [Fact]
+    public async Task Change_Cookies_Return_BadRequest_With_Invalid_Param()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var jsonRequestRegister = JsonConvert.SerializeObject("asd");
+        var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
+
+        var roomRegistrationResponse = await _client.PostAsync("/Cookie/ChangeCookies", contentRegister);
+        Assert.Equal(HttpStatusCode.BadRequest, roomRegistrationResponse.StatusCode);
+    }
 }

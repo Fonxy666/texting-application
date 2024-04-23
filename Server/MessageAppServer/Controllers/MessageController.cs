@@ -9,7 +9,7 @@ using Server.Model.Responses.Message;
 namespace Server.Controllers;
 
 [Route("[controller]")]
-public class MessageController(IMessageService messageRepository, RoomsContext roomsContext) : ControllerBase
+public class MessageController(IMessageService messageService, RoomsContext roomsContext) : ControllerBase
 {
     [HttpGet("GetMessages/{roomId}"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<IQueryable<Message>>> GetMessages(string roomId)
@@ -19,7 +19,7 @@ public class MessageController(IMessageService messageRepository, RoomsContext r
             return BadRequest($"There is no room with this id: {roomId}");
         }
 
-        var result = await messageRepository.GetLast10Messages(roomId);
+        var result = await messageService.GetLast10Messages(roomId);
 
         return Ok(result);
     }
@@ -32,7 +32,7 @@ public class MessageController(IMessageService messageRepository, RoomsContext r
             return BadRequest(ModelState);
         }
         
-        var result = await messageRepository.SendMessage(request);
+        var result = await messageService.SendMessage(request);
 
         if (!result.Success)
         {
@@ -50,7 +50,12 @@ public class MessageController(IMessageService messageRepository, RoomsContext r
             return BadRequest(ModelState);
         }
 
-        var result = await messageRepository.EditMessage(request);
+        var result = await messageService.EditMessage(request);
+
+        if (!result.Success)
+        {
+            return new MessageResponse(false, null, null);
+        }
 
         return Ok(result);
     }
@@ -63,7 +68,7 @@ public class MessageController(IMessageService messageRepository, RoomsContext r
             return BadRequest(ModelState);
         }
 
-        var result = await messageRepository.EditMessageSeen(request);
+        var result = await messageService.EditMessageSeen(request);
 
         return Ok(result);
     }
@@ -76,8 +81,8 @@ public class MessageController(IMessageService messageRepository, RoomsContext r
             return BadRequest(ModelState);
         }
         
-        await messageRepository.DeleteMessage(id);
+        await messageService.DeleteMessage(id);
 
-        return Ok(new MessageResponse(true, ""));
+        return Ok(new MessageResponse(true, "", null));
     }
 }
