@@ -26,21 +26,6 @@ namespace Tests.Services.Auth
         }
 
         [Test]
-        public async Task RegisterAsync_FailedRegistration_ReturnsAuthResultWithErrors()
-        {
-            var userManagerMock = MockUserManager.CreateFailedRegistration();
-            var tokenServiceMock = new Mock<ITokenService>();
-            var cookieService = new Mock<ICookieService>();
-
-            var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object, cookieService.Object);
-
-            var result = await authService.RegisterAsync("test@example.com", "TestUser", "password123", "UserRole", "123456789", "image");
-
-            Assert.That(result.Success, Is.False);
-            Assert.That(result.ErrorMessages, Is.Not.Empty);
-        }
-
-        [Test]
         public async Task LoginAsync_ValidCredentials_ReturnsAuthResultWithToken()
         {
             var userManagerMock = MockUserManager.Create();

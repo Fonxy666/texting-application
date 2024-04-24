@@ -21,7 +21,7 @@ public class AuthController(
     ILogger<AuthController> logger) : ControllerBase
 {
     [HttpPost("GetEmailVerificationToken")]
-    public async Task<ActionResult<GetEmailForVerificationResponse>> SendEmailVerificationCode([FromBody]GetEmailForVerificationRequest receiver)
+    public async Task<ActionResult<string>> SendEmailVerificationCode([FromBody]GetEmailForVerificationRequest receiver)
     {
         try
         {
@@ -35,7 +35,7 @@ public class AuthController(
 
             await emailSender.SendEmailAsync(receiver.Email, subject, message);
 
-            return Ok(new GetEmailForVerificationResponse("Successfully send."));
+            return Ok("Successfully send.");
         }
         catch (Exception e)
         {
@@ -61,7 +61,7 @@ public class AuthController(
             }
             
             EmailSenderCodeGenerator.RemoveVerificationCode(credentials.Email, "registration");
-            return await Task.FromResult<ActionResult<string>>(Ok(new VerifyTokenResponse(true)));
+            return await Task.FromResult<ActionResult<string>>(Ok(true));
         }
         catch (Exception e)
         {

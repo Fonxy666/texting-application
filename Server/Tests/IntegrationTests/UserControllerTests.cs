@@ -100,6 +100,22 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var getUserResponse = await _client.PatchAsync("/User/ChangeEmail", userChangeEmail);
+        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task ChangeEmail_WithNotValidEmail_ReturnBadRequest()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser3, _client, "test3@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var emailRequest = "";
+        var jsonRequestRegister = JsonConvert.SerializeObject(emailRequest);
+        var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
+
+        var getUserResponse = await _client.PatchAsync("/User/ChangeEmail", userChangeEmail);
+        _testOutputHelper.WriteLine(getUserResponse.ToString());
         Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
     
@@ -117,7 +133,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var getUserResponse = await _client.PatchAsync("/User/ChangePassword", userChangeEmail);
         getUserResponse.EnsureSuccessStatusCode();
         
-        var passwordRequest1 = new ChangeUserPasswordRequest("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "testUserPassword123###!@#", "testUserPassword123###", "testUserPassword123###!@#");
+        var passwordRequest1 = new ChangeUserPasswordRequest("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "testUserPassword123###!@#", "testUserPassword123###", "testUserPassword123###");
         var jsonRequestRegister1 = JsonConvert.SerializeObject(passwordRequest1);
         var userChangeEmail1 = new StringContent(jsonRequestRegister1, Encoding.UTF8, "application/json");
         
@@ -132,7 +148,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
-        var passwordRequest = new ChangeUserPasswordRequest("123", "testUserPassword123###", "testUserPassword123###!@#", "testUserPassword123###!@#");
+        var passwordRequest = new ChangeUserPasswordRequest("123", "testUserPassword123###", "testUserPassword123###!@#", "otherTestUserPassword123###!@#");
         var jsonRequestRegister = JsonConvert.SerializeObject(passwordRequest);
         var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
@@ -141,15 +157,18 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task GetImage_With_Name_ReturnSuccessStatusCode()
+    public async Task Change_Password_ReturnBadrequest_WithNotMatchingPasswords()
     {
-        const string imageName = "Fonxy666";
-        
-        Directory.SetCurrentDirectory("D:/after codecool/texting-application/Server/MessageAppServer");
-    
-        var getImageResponse = await _client.GetAsync($"User/GetImageWithUsername/{imageName}");
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
-        getImageResponse.EnsureSuccessStatusCode();
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var passwordRequest = new ChangeUserPasswordRequest("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "testUserPassword123###", "testUserPassword123###!@#", "testUserPassword123###!@#123");
+        var jsonRequestRegister = JsonConvert.SerializeObject(passwordRequest);
+        var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
+
+        var getUserResponse = await _client.PatchAsync("/User/ChangePassword", userChangeEmail);
+        Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
     
     [Fact]
@@ -159,19 +178,19 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         
         Directory.SetCurrentDirectory("D:/after codecool/texting-application/Server/MessageAppServer");
     
-        var getImageResponse = await _client.GetAsync($"User/GetImage/{userId}");
+        var getImageResponse = await _client.GetAsync($"User/GetImage?userId={userId}");
 
         getImageResponse.EnsureSuccessStatusCode();
     }
     
     [Fact]
-    public async Task GetImage_With_InvalidId_ReturnNotFounde()
+    public async Task GetImage_With_InvalidId_ReturnNotFound()
     {
         const string userId = "123";
         
         Directory.SetCurrentDirectory("D:/after codecool/texting-application/Server/MessageAppServer");
     
-        var getImageResponse = await _client.GetAsync($"User/GetImage/{userId}");
+        var getImageResponse = await _client.GetAsync($"User/GetImage?userId={userId}");
 
         Assert.Equal(HttpStatusCode.NotFound, getImageResponse.StatusCode);
     }
@@ -184,10 +203,9 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
         const string email = "test2@hotmail.com";
-        const string username = "TestUsername2";
         const string password = "testUserPassword123###";
 
-        var deleteUrl = $"/User/DeleteUser?email={Uri.EscapeDataString(email)}&username={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}";
+        var deleteUrl = $"/User/DeleteUser?email={Uri.EscapeDataString(email)}&password={Uri.EscapeDataString(password)}";
 
         var getUserResponse = await _client.DeleteAsync(deleteUrl);
         getUserResponse.EnsureSuccessStatusCode();
@@ -201,10 +219,9 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
         const string email = "123";
-        const string username = "123";
         const string password = "123";
 
-        var deleteUrl = $"/User/DeleteUser?email={Uri.EscapeDataString(email)}&username={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}";
+        var deleteUrl = $"/User/DeleteUser?email={Uri.EscapeDataString(email)}&password={Uri.EscapeDataString(password)}";
 
         var getUserResponse = await _client.DeleteAsync(deleteUrl);
         Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
@@ -218,10 +235,9 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
         const string email = "test1@hotmail.com";
-        const string username = "TestUsername1";
         const string password = "123";
 
-        var deleteUrl = $"/User/DeleteUser?email={Uri.EscapeDataString(email)}&username={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}";
+        var deleteUrl = $"/User/DeleteUser?email={Uri.EscapeDataString(email)}&password={Uri.EscapeDataString(password)}";
 
         var getUserResponse = await _client.DeleteAsync(deleteUrl);
         Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
@@ -236,7 +252,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         const string userId = "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916";
 
-        var getUserResponse = await _client.GetAsync($"/User/getUsername/{userId}");
+        var getUserResponse = await _client.GetAsync($"/User/GetUsername?userId={userId}");
         getUserResponse.EnsureSuccessStatusCode();
     }
     
@@ -249,7 +265,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         const string userId = "123";
 
-        var getUserResponse = await _client.GetAsync($"/User/getUsername/{userId}");
+        var getUserResponse = await _client.GetAsync($"/User/GetUsername?userId={userId}");
         Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
     }
     

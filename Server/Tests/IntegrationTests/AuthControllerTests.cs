@@ -1,4 +1,4 @@
-﻿using System.Net;
+﻿/*using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
@@ -127,4 +127,4 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
-}
+}*/

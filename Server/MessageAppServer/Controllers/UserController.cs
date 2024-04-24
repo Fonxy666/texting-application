@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Server.Database;
@@ -18,8 +19,8 @@ public class UserController(
     IUserServices userServices,
     ILogger<UserController> logger) : ControllerBase
 {
-    [HttpGet("getUsername/{userId}"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<UsernameResponse>> GetUsername(string userId)
+    [HttpGet("GetUsername"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<UsernameResponse>> GetUsername([FromQuery]string userId)
     {
         try
         {
@@ -40,7 +41,7 @@ public class UserController(
         }
     }
     
-    [HttpGet("getUserCredentials"), Authorize(Roles = "User, Admin")]
+    [HttpGet("GetUserCredentials"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<UserResponse>> GetUserEmail([FromQuery]string userId)
     {
         try
@@ -62,8 +63,8 @@ public class UserController(
         }
     }
 
-    [HttpGet("GetImage/{userId}")]
-    public async Task<IActionResult> GetImageWithId(string userId)
+    [HttpGet("GetImage")]
+    public async Task<IActionResult> GetImageWithId([FromQuery]string userId)
     {
         try
         {
@@ -96,34 +97,6 @@ public class UserController(
         }
     }
     
-    [HttpGet("GetImageWithUsername/{userName}")]
-    public async Task<IActionResult> GetImageWithUsername(string userName)
-    {
-        try
-        {
-            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
-            var imagePath = Path.Combine(folderPath, $"{userName}.png");
-            FileContentResult result = null;
-
-            if (System.IO.File.Exists(imagePath))
-            {
-                var imageBytes = await System.IO.File.ReadAllBytesAsync(imagePath);
-                var contentType = userServices.GetContentType(imagePath);
-                
-                Response.Headers.Add("Cache-Control", "max-age=3600, public");
-
-                result = File(imageBytes, contentType);
-            }
-            
-            return result ?? (IActionResult)NotFound();
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, $"Error getting avatar image for user {userName}");
-            return StatusCode(500);
-        }
-    }
-    
     [HttpPatch("ChangeEmail"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<ChangeEmailRequest>> ChangeUserEmail([FromBody]ChangeEmailRequest request)
     {
@@ -137,7 +110,7 @@ public class UserController(
 
             if (!existingUser.TwoFactorEnabled)
             {
-                return BadRequest($"2FA not enabled for user: {existingUser.Id}");
+                return NotFound($"2FA not enabled for user: {existingUser.Id}");
             }
                 
             var token = await userManager.GenerateChangeEmailTokenAsync(existingUser, request.NewEmail);
@@ -166,9 +139,12 @@ public class UserController(
                 return NotFound("User not found.");
             }
 
-            await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.Password);
+            if (request.Password != request.PasswordRepeat)
+            {
+                return BadRequest("Passwords do not match.");
+            }
 
-            await repository.SaveChangesAsync();
+            await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.Password);
                 
             await repository.SaveChangesAsync();
             var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
