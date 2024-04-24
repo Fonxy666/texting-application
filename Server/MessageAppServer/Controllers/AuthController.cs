@@ -20,7 +20,7 @@ public class AuthController(
     IEmailSender emailSender,
     ILogger<AuthController> logger) : ControllerBase
 {
-    [HttpPost("GetEmailVerificationToken")]
+    [HttpPost("SendEmailVerificationToken")]
     public async Task<ActionResult<string>> SendEmailVerificationCode([FromBody]GetEmailForVerificationRequest receiver)
     {
         try
@@ -49,11 +49,6 @@ public class AuthController(
     {
         try
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest("Invalid e-mail or token.");
-            }
-            
             var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(credentials.Email, credentials.VerifyCode, "registration");
             if (!result)
             {
@@ -134,12 +129,12 @@ public class AuthController(
     {
         try
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-        
             var email = await authenticationService.GetEmailFromUserName(request.UserName);
+            if (email == null)
+            {
+                return BadRequest("invalid e-mail");
+            }
+            
             var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(email!, request.Token, "login");
         
             if (!result)
@@ -150,13 +145,6 @@ public class AuthController(
             EmailSenderCodeGenerator.RemoveVerificationCode(email!, "login");
 
             var loginResult = await authenticationService.LoginAsync(request.UserName, request.RememberMe);
-
-            if (!loginResult.Success)
-            {
-                ModelState.AddModelError("InvalidCredentials", "Invalid username or password");
-            
-                return NotFound(ModelState);
-            }
 
             return Ok(new AuthResponse(true, loginResult.Id));
         }
@@ -266,15 +254,10 @@ public class AuthController(
     }
     
     [HttpPost("Logout")]
-    public async Task<ActionResult<AuthResponse>> LogOut([FromQuery]string userId)
+    public async Task<ActionResult<AuthResponse>> LogOut([FromBody]string userId)
     {
         try
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            
             if (!userServices.ExistingUser(userId).Result)
             {
                 return NotFound($"There is no user with the given id: {userId}");

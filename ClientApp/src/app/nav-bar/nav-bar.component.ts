@@ -31,7 +31,7 @@ export class NavBarComponent implements OnInit {
         const userId = this.cookieService.get('UserId');
         
         if (userId) {
-            this.http.get(`https://localhost:7045/User/GetImage/${userId}`, { withCredentials: true, responseType: 'blob' })
+            this.http.get(`https://localhost:7045/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
             .pipe(
                 this.errorHandler.handleError401()
             )
@@ -57,7 +57,7 @@ export class NavBarComponent implements OnInit {
 
     logout() {
         var request = this.cookieService.get('UserId');
-        this.http.post(`https://localhost:7045/Auth/Logout?userId=${request}`, request, { withCredentials: true })
+        this.http.post(`https://localhost:7045/Auth/Logout`, request, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {
                 this.router.navigate(['/']);

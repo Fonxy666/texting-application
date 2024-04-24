@@ -1,4 +1,4 @@
-﻿/*using System.Net;
+﻿using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
@@ -45,6 +45,17 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
+    public async Task Login_With_BadAuthToken_ReturnBadRequest()
+    {
+        var token = EmailSenderCodeGenerator.GenerateTokenForLogin("test1@hotmail.com");
+        var login = new LoginAuth(_testUser.UserName, false, "asd");
+        var authJsonRequest = JsonConvert.SerializeObject(login);
+        var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
+        var authResponse = await _client.PostAsync("/Auth/Login", authContent);
+        Assert.Equal(HttpStatusCode.BadRequest, authResponse.StatusCode);
+    }
+    
+    [Fact]
     public async Task Register_Test_User_ReturnSuccessStatusCode()
     {
         var testUser = new RegistrationRequest("unique@hotmail.com", "uniqueTestUsername", "TestUserPassword123666$$$", "01234567890", "");
@@ -83,29 +94,29 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         getUserResponse.EnsureSuccessStatusCode();
     }
     
-    [Fact]
+    /*[Fact]
     public async Task SendEmailVerificationCode_ValidRequest_ReturnsOk()
     {
         var emailRequest = new GetEmailForVerificationRequest("test@test.hu");
         var jsonRequest = JsonConvert.SerializeObject(emailRequest);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/Auth/GetEmailVerificationToken", content);
+        var response = await _client.PostAsync("/Auth/SendEmailVerificationToken", content);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
     
     [Fact]
-    public async Task Get_VerifyToken_Valid_Code_ReturnsOk()
+    public async Task SendEmailVerificationCode_EmptyRequest_ReturnsBadRequest()
     {
-        var request = new GetEmailForVerificationRequest("test1@hotmail.com");
-        var jsonRequest = JsonConvert.SerializeObject(request);
+        var emailRequest = new GetEmailForVerificationRequest("");
+        var jsonRequest = JsonConvert.SerializeObject(emailRequest);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/Auth/GetEmailVerificationToken", content);
+        var response = await _client.PostAsync("/Auth/SendEmailVerificationToken", content);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }*/
     
     [Fact]
     public async Task Send_VerifyToken_Valid_Code_ReturnsOk()
@@ -119,12 +130,71 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
     
-    [Fact]
-    public async Task Logout_Returns_BadRequest_With_Empty_Content()
+    /*[Fact]
+    public async Task Examine_VerifyToken_Valid_Code_ReturnsOk()
     {
-        var emptyContent = new StringContent("", Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/Auth/Logout", emptyContent);
+        var token = EmailSenderCodeGenerator.GenerateTokenForLogin("test1@hotmail.com");
+        var request = new VerifyTokenRequest("test1@hotmail.com", token);
+        var jsonRequest = JsonConvert.SerializeObject(request);
+        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/Auth/ExamineVerifyToken", content);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }*/
+    
+    [Fact]
+    public async Task Examine_VerifyToken_ReturnBadRequest_WithWrongToken()
+    {
+        var token = EmailSenderCodeGenerator.GenerateTokenForLogin("test1@hotmail.com");
+        var request = new VerifyTokenRequest("test1@hotmail.com", "asd");
+        var jsonRequest = JsonConvert.SerializeObject(request);
+        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/Auth/ExamineVerifyToken", content);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
-}*/
+    
+    [Fact]
+    public async Task Send_VerifyToken_EmptyParams_ReturnsBadRequest()
+    {
+        var request = new AuthRequest("", "");
+        var jsonRequest = JsonConvert.SerializeObject(request);
+        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/Auth/SendLoginToken", content);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Logout_Returns_Ok()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        const string userId = "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916";
+        var jsonRequest = JsonConvert.SerializeObject(userId);
+        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/Auth/Logout", content);
+        response.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task Logout_Returns_BadRequest_With_Empty_Content()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        const string userId = "123";
+        var jsonRequest = JsonConvert.SerializeObject(userId);
+        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/Auth/Logout", content);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+}

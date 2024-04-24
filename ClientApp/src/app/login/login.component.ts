@@ -12,7 +12,7 @@ import { LoginAuthTokenRequest } from '../model/LoginAuthTokenRequest';
 
 export class LoginComponent implements OnInit {
     loadGoogleSigninLibrary: any;
-    constructor(private http: HttpClient, private cookieService: CookieService, private router: Router, private _ngZone: NgZone) { }
+    constructor(private http: HttpClient, private cookieService: CookieService, private router: Router) { }
 
     loginStarted: boolean = false;
     loginRequest: LoginRequest = new LoginRequest("", "", false);
