@@ -25,6 +25,11 @@ public class AuthController(
     {
         try
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("The provided string is not an email.");
+            }
+            
             const string subject = "Verification code";
             var message = $"Verification code: {EmailSenderCodeGenerator.GenerateTokenForRegistration(receiver.Email)}";
 
@@ -35,28 +40,33 @@ public class AuthController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error sending e-mail for : {receiver}.");
-            return BadRequest($"Error sending e-mail for : {receiver}.");
+            return StatusCode(500);
         }
     }
 
     [HttpPost("ExamineVerifyToken")]
-    public Task<ActionResult<string>> VerifyToken([FromBody]VerifyTokenRequest credentials)
+    public async Task<ActionResult<string>> VerifyToken([FromBody]VerifyTokenRequest credentials)
     {
         try
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid e-mail or token.");
+            }
+            
             var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(credentials.Email, credentials.VerifyCode, "registration");
             if (!result)
             {
-                return Task.FromResult<ActionResult<string>>(BadRequest(ModelState));
+                return await Task.FromResult<ActionResult<string>>(BadRequest("Invalid e-mail or token."));
             }
             
             EmailSenderCodeGenerator.RemoveVerificationCode(credentials.Email, "registration");
-            return Task.FromResult<ActionResult<string>>(Ok(new VerifyTokenResponse(true)));
+            return await Task.FromResult<ActionResult<string>>(Ok(new VerifyTokenResponse(true)));
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Wrong credit for e-mail : {credentials.Email}.");
-            return Task.FromResult<ActionResult<string>>(BadRequest($"Wrong credit for e-mail : {credentials.Email}."));
+            return StatusCode(500);
         }
     }
         
@@ -67,7 +77,7 @@ public class AuthController(
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest("Invalid request for registration.");
             }
 
             var imagePath = userServices.SaveImageLocally(request.Username, request.Image);
@@ -153,7 +163,7 @@ public class AuthController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error during login for user: {request.UserName}");
-            return BadRequest($"Error during login for user: {request.UserName}");
+            return StatusCode(500);
         }
     }
     
@@ -260,18 +270,24 @@ public class AuthController(
     {
         try
         {
-            var result = await authenticationService.LogOut(userId);
-            if (!result.Success)
+            if (!ModelState.IsValid)
             {
-                return NotFound(ModelState);
+                return BadRequest(ModelState);
             }
+            
+            if (!userServices.ExistingUser(userId).Result)
+            {
+                return NotFound($"There is no user with the given id: {userId}");
+            }
+            
+            await authenticationService.LogOut(userId);
 
             return Ok(new AuthResponse(true, userId));
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Error during logout.");
-            return BadRequest($"Error during logout.");
+            return StatusCode(500);
         }
     }
 }

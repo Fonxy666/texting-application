@@ -24,12 +24,7 @@ public class AuthService(
             LockoutEnabled = false
         };
         
-        var result = await userManager.CreateAsync(user, password);
-
-        if (!result.Succeeded)
-        {
-            return FailedRegistration(result);
-        }
+        await userManager.CreateAsync(user, password);
 
         await userManager.AddToRoleAsync(user, role);
         return new AuthResult(true, "", "");
