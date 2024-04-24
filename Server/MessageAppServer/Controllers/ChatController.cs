@@ -31,7 +31,7 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
         catch (Exception e)
         {
             logger.LogError(e, "Error registering the room");
-            return BadRequest("Error registering the room");
+            return StatusCode(500);
         }
     }
 
@@ -62,7 +62,7 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
         catch (Exception e)
         {
             logger.LogError(e, $"Error login into {request.RoomName} room.");
-            return BadRequest($"Error login into {request.RoomName} room.");
+            return StatusCode(500);
         }
     }
     
@@ -95,7 +95,7 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
         catch (Exception e)
         {
             logger.LogError(e, $"Error deleting room {request.RoomName}.");
-            return BadRequest($"Error deleting room {request.RoomName}.");
+            return StatusCode(500);
         }
     }
 }

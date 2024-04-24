@@ -1,22 +1,24 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Server.Database;
-using Server.Model;
 using Server.Model.Chat;
 using Server.Model.Requests.Message;
 using Server.Model.Responses.Message;
 
 namespace Server.Services.Chat.MessageService;
 
-public class MessageService(MessagesContext context, RoomsContext roomsContext) : IMessageService
+public class MessageService(MessagesContext context) : IMessageService
 {
     private MessagesContext Context { get; } = context;
-    private RoomsContext RoomsContext { get; } = roomsContext;
+    public Task<bool> MessageExisting(string id)
+    {
+        return context.Messages.AnyAsync(message => message.MessageId == id);
+    }
+
     public async Task<SaveMessageResponse> SendMessage(MessageRequest request)
     {
         var message = request.MessageId != null ? 
-            new Message(request.RoomId, request.UserName, request.Message, request.MessageId, request.AsAnonymous) : 
-            new Message(request.RoomId, request.UserName, request.Message, request.AsAnonymous);
+            new Message(request.RoomId, request.UserId, request.Message, request.MessageId, request.AsAnonymous) : 
+            new Message(request.RoomId, request.UserId, request.Message, request.AsAnonymous);
         
         await Context.Messages.AddAsync(message);
         await Context.SaveChangesAsync();
@@ -38,74 +40,35 @@ public class MessageService(MessagesContext context, RoomsContext roomsContext) 
     public async Task<MessageResponse> EditMessage(EditMessageRequest request)
     {
         var existingMessage = Context.Messages.FirstOrDefault(message => message.MessageId == request.Id);
-
-        if (existingMessage == null)
-        {
-            return new MessageResponse(false, "", $"There is no message with id: {request.Id}");
-        }
         
-        if (existingMessage!.RoomId.Length < 1)
-        {
-            return new MessageResponse(false, "", $"There is no room with the id: {request.Id}");
-        }
-        
-        try
-        {
-            existingMessage.Text = request.Message;
+        existingMessage!.Text = request.Message;
 
-            Context.Messages.Update(existingMessage);
-            await Context.SaveChangesAsync();
+        Context.Messages.Update(existingMessage);
+        await Context.SaveChangesAsync();
 
-            return new MessageResponse(true, "", null);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-            return new MessageResponse(false, "", "Unexpected error happened.");
-        }
+        return new MessageResponse(true, "", null);
     }
 
     public async Task<MessageResponse> EditMessageSeen(EditMessageSeenRequest request)
     {
-        var existingMessage = Context.Messages.FirstOrDefault(message => message.MessageId == request.messageId);
+        var existingMessage = Context.Messages.FirstOrDefault(message => message.MessageId == request.MessageId);
         
-        try
-        {
-            var sawId = new Guid(request.userId);
-            existingMessage.AddUserToSeen(sawId);
+        var sawId = new Guid(request.UserId);
+        existingMessage!.AddUserToSeen(sawId);
 
-            Context.Messages.Update(existingMessage);
-            await Context.SaveChangesAsync();
+        Context.Messages.Update(existingMessage);
+        await Context.SaveChangesAsync();
 
-            return new MessageResponse(true, "", null);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-            return new MessageResponse(false, "", "Unexpected error happened.");
-        }
+        return new MessageResponse(true, "", null);
     }
 
     public async Task<MessageResponse> DeleteMessage(string id)
     {
         var existingMessage = Context.Messages.FirstOrDefault(message => message.MessageId == id);
         
-        if (existingMessage!.RoomId.Length < 1)
-        {
-            return new MessageResponse(false, "", null);
-        }
-        
-        try
-        {
-            Context.Messages.Remove(existingMessage);
-            await Context.SaveChangesAsync();
+        Context.Messages.Remove(existingMessage!);
+        await Context.SaveChangesAsync();
 
-            return new MessageResponse(true, id, null);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-            return new MessageResponse(false, "", null);
-        }
+        return new MessageResponse(true, id, null);
     }
 }

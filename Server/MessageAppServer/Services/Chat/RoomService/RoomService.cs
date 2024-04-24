@@ -8,6 +8,11 @@ namespace Server.Services.Chat.RoomService;
 public class RoomService(RoomsContext context) : IRoomService
 {
     private RoomsContext Context { get; set; } = context;
+    public Task<bool> ExistingRoom(string id)
+    {
+        return Context.Rooms.AnyAsync(room => room.RoomId == id);
+    }
+
     public async Task<Room?> GetRoom(string roomName)
     {
         var existingRoom = await Context.Rooms.FirstOrDefaultAsync(room => room.RoomName == roomName);

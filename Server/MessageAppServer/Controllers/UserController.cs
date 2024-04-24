@@ -36,7 +36,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error getting username for user {userId}");
-            return BadRequest($"Error getting username for user {userId}");
+            return StatusCode(500);
         }
     }
     
@@ -58,7 +58,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error getting e-mail for user {userId}");
-            return BadRequest($"Error getting e-mail for user {userId}");
+            return StatusCode(500);
         }
     }
 
@@ -92,7 +92,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error getting avatar image for user {userId}");
-            return BadRequest($"Error getting avatar image for user {userId}");
+            return StatusCode(500);
         }
     }
     
@@ -120,7 +120,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error getting avatar image for user {userName}");
-            return BadRequest($"Error getting avatar image for user {userName}");
+            return StatusCode(500);
         }
     }
     
@@ -151,7 +151,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error changing e-mail for user {request.OldEmail}");
-            return BadRequest($"Error changing password for user {request.OldEmail}");
+            return StatusCode(500);
         }
     }
     
@@ -177,7 +177,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error changing password for user {request.Id}");
-            return BadRequest($"Error changing password for user {request.Id}");
+            return StatusCode(500);
         }
     }
 
@@ -198,7 +198,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error changing avatar for user {request.UserId}");
-            return BadRequest($"Error changing avatar for user {request.UserId}");
+            return StatusCode(500);
         }
     } 
     
@@ -227,7 +227,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error changing e-mail for user {email}");
-            return BadRequest($"Error changing e-mail for user {email}");
+            return StatusCode(500);
         }
     }
 }

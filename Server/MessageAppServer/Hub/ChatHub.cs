@@ -28,11 +28,11 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessag
                 userRoomConnection.User,
                 request.Message,
                 DateTime.Now,
-                request.UserName,
+                request.UserId,
                 request.MessageId,
                 new List<string>
                 {
-                    request.UserName
+                    request.UserId
                 });
         }
     }
@@ -55,7 +55,7 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessag
 
     public async Task SaveMessage(MessageRequest request)
     {
-        var messageRequest = new MessageRequest(request.RoomId, request.UserName, request.Message, request.AsAnonymous);
+        var messageRequest = new MessageRequest(request.RoomId, request.UserId, request.Message, request.AsAnonymous);
         await messageRepository.SendMessage(messageRequest);
     }
 

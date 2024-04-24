@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.EntityFrameworkCore;
 using Server.Model;
 using Server.Model.Responses.User;
 
@@ -7,6 +8,11 @@ namespace Server.Services.User;
 
 public class UserServices(UserManager<ApplicationUser> userManager) : IUserServices
 {
+    public Task<bool> ExistingUser(string id)
+    {
+        return userManager.Users.AnyAsync(user => user.Id == id);
+    }
+
     public string SaveImageLocally(string userNameFileName, string base64Image)
     {
         var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");

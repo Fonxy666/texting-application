@@ -10,7 +10,6 @@ namespace Tests.Services.Chat
     public class MessageServiceTests
     {
         private MessagesContext _dbContext;
-        private RoomsContext _roomsContext;
         private MessageService _messageService;
 
         [SetUp]
@@ -21,13 +20,8 @@ namespace Tests.Services.Chat
                 .Options;
 
             _dbContext = new MessagesContext(options);
-            
-            var optionsRooms = new DbContextOptionsBuilder<RoomsContext>()
-                .UseInMemoryDatabase(databaseName: "InMemoryDatabase")
-                .Options;
 
-            _roomsContext = new RoomsContext(optionsRooms);
-            _messageService = new MessageService(_dbContext, _roomsContext);
+            _messageService = new MessageService(_dbContext);
         }
 
         [TearDown]

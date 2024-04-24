@@ -6,7 +6,6 @@ using Server;
 using Server.Model.Requests.Auth;
 using Server.Model.Requests.Message;
 using Xunit;
-using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
 namespace Tests.IntegrationTests;
@@ -60,7 +59,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
-        var messageRequest = new MessageRequest("233bb449-030d-46d2-bcb5-6742bc3eb3a8", _testUser.UserName, "test", false, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
+        var messageRequest = new MessageRequest("5f843042-f674-4539-ae39-28d722c6c959", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "test", false, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
         var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
         var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
 
@@ -97,7 +96,23 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
 
         var sendMessageResponse = await _client.PostAsync("/Message/SendMessage", contentSend);
         
-        Assert.Equal(HttpStatusCode.InternalServerError, sendMessageResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, sendMessageResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Send_Message_ReturnBadRequest_With_Not_Valid_UserId()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var messageRequest = new MessageRequest("5f843042-f674-4539-ae39-28d722c6c959", _testUser.UserName, "test", false, "123");
+        var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
+        var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
+
+        var sendMessageResponse = await _client.PostAsync("/Message/SendMessage", contentSend);
+        
+        Assert.Equal(HttpStatusCode.NotFound, sendMessageResponse.StatusCode);
     }
     
     [Fact]
@@ -107,12 +122,27 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
-        var messageChangeRequest = new EditMessageRequest("f3190268-ee9a-4348-b1f6-4b146c09901f", "TestChange");
+        var messageChangeRequest = new EditMessageRequest("a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "TestChange");
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 
         var getUserResponse = await _client.PatchAsync("/Message/EditMessage", messageChange);
         getUserResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task Edit_Message_WithNotExistingId_ReturnNotFound()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var messageChangeRequest = new EditMessageRequest("1", "TestChange");
+        var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
+        var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
+
+        var getUserResponse = await _client.PatchAsync("/Message/EditMessage", messageChange);
+        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
     }
     
     [Fact]
@@ -132,6 +162,51 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
+    public async Task Edit_MessageSeen_ReturnSuccessStatusCode()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var messageChangeRequest = new EditMessageSeenRequest("a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916");
+        var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
+        var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
+
+        var editMessageRequest = await _client.PatchAsync("/Message/EditMessageSeen", messageChange);
+        editMessageRequest.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task Edit_MessageSeen_WithInvalidMessageId_ReturnNotFound()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var messageChangeRequest = new EditMessageSeenRequest("1", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916");
+        var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
+        var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
+
+        var editMessageRequest = await _client.PatchAsync("/Message/EditMessageSeen", messageChange);
+        Assert.Equal(HttpStatusCode.NotFound, editMessageRequest.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Edit_MessageSeen_WithInvalidModel_ReturnBadRequest()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var messageChangeRequest = "";
+        var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
+        var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
+
+        var editMessageRequest = await _client.PatchAsync("/Message/EditMessageSeen", messageChange);
+        Assert.Equal(HttpStatusCode.BadRequest, editMessageRequest.StatusCode);
+    }
+    
+    [Fact]
     public async Task Delete_Message_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
@@ -142,5 +217,18 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
 
         var getUserResponse = await _client.DeleteAsync($"/Message/DeleteMessage?id={messageDeleteRequestId}");
         getUserResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task Delete_Message__WithInvalidModel_ReturnBadRequest()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var messageDeleteRequestId = new EditMessageSeenRequest("", "");
+
+        var getUserResponse = await _client.DeleteAsync($"/Message/DeleteMessage?id={messageDeleteRequestId}");
+        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
     }
 }
