@@ -6,7 +6,6 @@ using Server;
 using Server.Model.Requests.Auth;
 using Server.Model.Requests.Chat;
 using Xunit;
-using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
 namespace Tests.IntegrationTests;
@@ -15,15 +14,13 @@ namespace Tests.IntegrationTests;
 public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
     private readonly WebApplicationFactory<Startup> _factory;
-    private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _client;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
     private readonly RoomRequest _testRoom = new ("TestRoom1", "TestRoomPassword");
 
-    public ChatControllerTests(WebApplicationFactory<Startup> factory, ITestOutputHelper testOutputHelper)
+    public ChatControllerTests(WebApplicationFactory<Startup> factory)
     {
         _factory = factory;
-        _testOutputHelper = testOutputHelper;
         _client = _factory.CreateClient();
     }
     
@@ -44,7 +41,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
         var roomLoginResponse = await _client.PostAsync("/Chat/JoinRoom", content);
-        _testOutputHelper.WriteLine(roomLoginResponse.StatusCode.ToString());
+        
         roomLoginResponse.EnsureSuccessStatusCode();
         
         var jsonRequestDelete = JsonConvert.SerializeObject(_testRoom);
@@ -55,7 +52,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Create_Room_Taken_RoomName_Return_BadRequest()
+    public async Task CreateRoom_WithTakenRoomName_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -69,7 +66,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Create_Room_Invalid_Credentials_Return_BadRequest()
+    public async Task CreateRoom_WithInvalidCredentials_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -83,7 +80,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
 
     [Fact]
-    public async Task Join_Room_Invalid_Credentials_Return_BadRequest()
+    public async Task JoinRoom_WithInvalidCredentials_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -97,7 +94,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Join_Room_Invalid_Credentials_Return_NotFound()
+    public async Task JoinRoom_WithInvalidCredentials_ReturnNotFound()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -111,7 +108,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Join_Room_Invalid_Password_Return_BadRequest()
+    public async Task JoinRoom_WithInvalidPassword_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -125,7 +122,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task DeleteRoom_Invalid_Credentials_Return_NotFound()
+    public async Task DeleteRoom_WithInvalidCredentials_ReturnNotFound()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -139,7 +136,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Delete_Room_Invalid_Credentials_Return_BadRequest()
+    public async Task DeleteRoom_WithInvalidCredentials_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -153,7 +150,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Delete_Room_Invalid_Password_Return_BadRequest()
+    public async Task DeleteRoom_WithInvalidPassword_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 

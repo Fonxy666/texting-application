@@ -1,16 +1,10 @@
 ﻿using System.Net;
 using System.Text;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Logging;
-using Moq;
 using Newtonsoft.Json;
 using Server;
-using Server.Controllers;
 using Server.Model.Requests.Auth;
-using Server.Services.Cookie;
 using Xunit;
-using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
 namespace Tests.IntegrationTests;
@@ -18,19 +12,17 @@ namespace Tests.IntegrationTests;
 public class CookiesControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
     private readonly WebApplicationFactory<Startup> _factory;
-    private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _client;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
 
-    public CookiesControllerTests(WebApplicationFactory<Startup> factory, ITestOutputHelper testOutputHelper)
+    public CookiesControllerTests(WebApplicationFactory<Startup> factory)
     {
         _factory = factory;
-        _testOutputHelper = testOutputHelper;
         _client = _factory.CreateClient();
     }
     
     [Fact]
-    public async Task ChangeCookies_WithValidRequest_ReturnsOkStatusCode()
+    public async Task ChangeCookies_WithValidRequest_ReturnOkStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -53,7 +45,7 @@ public class CookiesControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
-    public async Task Change_Cookies_Return_BadRequest_With_Invalid_Param()
+    public async Task ChangeCookies_WithInvalidParams_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 

@@ -7,7 +7,6 @@ using Server.Model.Requests.Auth;
 using Server.Model.Requests.User;
 using Server.Model.Responses.User;
 using Xunit;
-using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
 namespace Tests.IntegrationTests;
@@ -16,20 +15,18 @@ namespace Tests.IntegrationTests;
 public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
     private readonly WebApplicationFactory<Startup> _factory;
-    private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _client;
     private readonly AuthRequest _testUser1 = new ("TestUsername1", "testUserPassword123###");
     private readonly AuthRequest _testUser3 = new ("TestUsername3", "testUserPassword123###");
 
-    public UserControllerTests(WebApplicationFactory<Startup> factory, ITestOutputHelper testOutputHelper)
+    public UserControllerTests(WebApplicationFactory<Startup> factory)
     {
         _factory = factory;
-        _testOutputHelper = testOutputHelper;
         _client = _factory.CreateClient();
     }
     
     [Fact]
-    public async Task Get_User_Credentials_ReturnSuccessStatusCode()
+    public async Task GetUserCredentials_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
@@ -40,7 +37,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Get_User_Credentials_ReturnNotFound()
+    public async Task GetUser_Credentials_ReturnNotFound()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
@@ -51,7 +48,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Change_Email_For_User_ReturnSuccessStatusCode()
+    public async Task ChangeEmail_WithValidModelState_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
@@ -74,7 +71,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Change_Email_For_Not_Registered_User_Returns_NotFound()
+    public async Task ChangeEmail_WithNotRegisteredUser_ReturnNotFound()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
@@ -89,7 +86,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Change_Email_For_Not_2FA_User_Returns_NotFound()
+    public async Task ChangeEmail_ForNotActivated2FAUser_ReturnNotFound()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser3, _client, "test3@hotmail.com");
 
@@ -115,12 +112,12 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var getUserResponse = await _client.PatchAsync("/User/ChangeEmail", userChangeEmail);
-        _testOutputHelper.WriteLine(getUserResponse.ToString());
+        
         Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
     
     [Fact]
-    public async Task Change_Password_For_User_ReturnSuccessStatusCode()
+    public async Task ChangePassword_ForValidUser_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
@@ -142,7 +139,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Change_Password_For_Invalid_User_Return_BadRequest()
+    public async Task ChangePassword_ForInvalidUser_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
@@ -157,7 +154,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Change_Password_ReturnBadrequest_WithNotMatchingPasswords()
+    public async Task ChangePassword_WithNotMatchingPasswords_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
@@ -172,7 +169,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task GetImage_With_Id_ReturnSuccessStatusCode()
+    public async Task GetImage_WithValidId_ReturnSuccessStatusCode()
     {
         const string userId = "347045a9-f051-4a0e-aa93-3dfe59cd43c2";
         
@@ -184,7 +181,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task GetImage_With_InvalidId_ReturnNotFound()
+    public async Task GetImage_WithInvalidId_ReturnNotFound()
     {
         const string userId = "123";
         
@@ -196,7 +193,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Delete_User_ReturnSuccessStatusCode()
+    public async Task DeleteUser_WithValidUser_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
@@ -212,7 +209,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Delete_Invalid_User_Return_BadRequest()
+    public async Task Delete_WithInvalidUser_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
@@ -228,7 +225,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Delete_User_WithWrongPassword_Return_BadRequest()
+    public async Task DeleteUser_WithWrongPassword_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
@@ -244,7 +241,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Get_User_Name_Valid_Id_Returns_Name()
+    public async Task GetUserName_WithValidId_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
@@ -257,7 +254,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Get_User_Name_Not_Valid_Id_Returns_NotFound()
+    public async Task GetUserName_WithNotValidId_ReturnsNotFound()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
@@ -270,7 +267,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Change_Avatar_Return_Ok()
+    public async Task ChangeAvatar_WithValidId_ReturnReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
@@ -284,7 +281,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Change_Avatar_With_Invalid_User_Return_Bad_Request()
+    public async Task ChangeAvatar_WithInvalidUser_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 

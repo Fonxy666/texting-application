@@ -24,7 +24,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
-    public async Task Get_Message_ReturnsBadRequest_With_Invalid_RoomId()
+    public async Task GetMessage_WithInvalidRoomId_ReturnsBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -40,7 +40,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
-    public async Task Get_Message_ReturnSuccessStatusCode()
+    public async Task GetMessage_WithValidId_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -53,7 +53,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
-    public async Task Send_Message_ReturnSuccessStatusCode()
+    public async Task SendMessage_WithValidRequest_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -68,7 +68,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
-    public async Task Send_Message_ReturnBadRequest_With_Invalid_ModelState()
+    public async Task SendMessage_WithInvalidModelState_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -84,7 +84,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
-    public async Task Send_Message_ReturnBadRequest_With_Not_Valid_RoomId()
+    public async Task SendMessage_WithNotValidRoomId_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -100,7 +100,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
-    public async Task Send_Message_ReturnBadRequest_With_Not_Valid_UserId()
+    public async Task SendMessage_WithNotValidUserId_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -116,7 +116,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
-    public async Task Edit_Message_ReturnSuccessStatusCode()
+    public async Task EditMessage_WithValidCredentials_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -131,7 +131,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
-    public async Task Edit_Message_WithNotExistingId_ReturnNotFound()
+    public async Task EditMessage_WithNotExistingId_ReturnNotFound()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -146,7 +146,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
-    public async Task Edit_Message_ReturnBadRequest_With_Invalid_ModelState()
+    public async Task EditMessage_WithInvalidModelState_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -162,7 +162,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
-    public async Task Edit_MessageSeen_ReturnSuccessStatusCode()
+    public async Task EditMessageSeen_WithValidRequest_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -177,7 +177,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
-    public async Task Edit_MessageSeen_WithInvalidMessageId_ReturnNotFound()
+    public async Task EditMessageSeen_WithInvalidMessageId_ReturnNotFound()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -192,7 +192,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
-    public async Task Edit_MessageSeen_WithInvalidModel_ReturnBadRequest()
+    public async Task EditMessageSeen_WithInvalidModel_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -207,7 +207,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
-    public async Task Delete_Message_ReturnSuccessStatusCode()
+    public async Task DeleteMessage_WithValidMessageId_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -220,7 +220,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
-    public async Task Delete_Message__WithInvalidModel_ReturnBadRequest()
+    public async Task DeleteMessage_WithInvalidModel_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 

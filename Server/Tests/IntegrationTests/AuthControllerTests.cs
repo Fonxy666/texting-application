@@ -6,7 +6,6 @@ using Server;
 using Server.Model.Requests.Auth;
 using Server.Services.EmailSender;
 using Xunit;
-using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
 namespace Tests.IntegrationTests;
@@ -15,19 +14,17 @@ namespace Tests.IntegrationTests;
 public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
     private readonly WebApplicationFactory<Startup> _factory;
-    private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _client;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
 
-    public AuthControllerTests(WebApplicationFactory<Startup> factory, ITestOutputHelper testOutputHelper)
+    public AuthControllerTests(WebApplicationFactory<Startup> factory)
     {
         _factory = factory;
-        _testOutputHelper = testOutputHelper;
         _client = _factory.CreateClient();
     }
 
     [Fact]
-    public async Task Login_With_Invalid_User_ReturnBadRequestStatusCode()
+    public async Task Login_WithInvalidUser_ReturnBadRequestStatusCode()
     {
         var request = new AuthRequest("", "");
         var authJsonRequest = JsonConvert.SerializeObject(request);
@@ -37,7 +34,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
 
     [Fact]
-    public async Task Login_With_Bad_Credentials_ReturnBadRequest()
+    public async Task Login_WithBadCredentials_ReturnBadRequest()
     {
         var token = EmailSenderCodeGenerator.GenerateTokenForLogin("test1@hotmail.com");
         var login = new LoginAuth("TestUs", false, token);
@@ -48,7 +45,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
 
     [Fact]
-    public async Task Login_With_BadAuthToken_ReturnBadRequest()
+    public async Task Login_WithBadAuthToken_ReturnBadRequest()
     {
         var token = EmailSenderCodeGenerator.GenerateTokenForLogin("test1@hotmail.com");
         var login = new LoginAuth(_testUser.UserName, false, "asd");
@@ -59,7 +56,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
 
     [Fact]
-    public async Task Register_Test_User_ReturnSuccessStatusCode()
+    public async Task Register_TestUser_ReturnSuccessStatusCode()
     {
         var testUser = new RegistrationRequest("unique@hotmail.com", "uniqueTestUsername", "TestUserPassword123666$$$", "01234567890", "");
         var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
@@ -70,7 +67,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
 
     [Fact]
-    public async Task Register_Invalid_Test_User_ReturnBadRequest()
+    public async Task Register_InvalidTestUser_ReturnBadRequest()
     {
         var testUser = new RegistrationRequest("", "", "", "", "");
         var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
@@ -81,33 +78,31 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
 
     [Fact]
-    public async Task Register_InvalidEmail_Test_User_ReturnBadRequest()
+    public async Task Register_TestUserWithInvalidEmail_ReturnBadRequest()
     {
         var testUser = new RegistrationRequest("uniquaeotmail", "uniqueTestUsername123", "asdASD123%%%", "01234567890", "");
         var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
         var userLogin = new StringContent(jsonLoginRequest, Encoding.UTF8, "application/json");
 
         var getUserResponse = await _client.PostAsync("/Auth/Register", userLogin);
-        _testOutputHelper.WriteLine(getUserResponse.Headers.ToString());
-        _testOutputHelper.WriteLine(getUserResponse.Content.ToString());
+        
         Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
 
     [Fact]
-    public async Task Register_InvalidPassword_Test_User_ReturnBadRequest()
+    public async Task Register_TestUserWithInvalidPassword_ReturnBadRequest()
     {
         var testUser = new RegistrationRequest("uniquaeotmail@hotmail.com", "uniqueTestUsername123", "asdASD123", "01234567890", "");
         var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
         var userLogin = new StringContent(jsonLoginRequest, Encoding.UTF8, "application/json");
 
         var getUserResponse = await _client.PostAsync("/Auth/Register", userLogin);
-        _testOutputHelper.WriteLine(getUserResponse.Headers.ToString());
-        _testOutputHelper.WriteLine(getUserResponse.Content.ToString());
+        
         Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
 
     [Fact]
-    public async Task Delete_User_ReturnSuccessStatusCode()
+    public async Task Delete_TestUser_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -124,7 +119,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
 
     [Fact]
-    public async Task SendEmailVerificationCode_ValidRequest_ReturnsOk()
+    public async Task SendEmailVerificationCode_WithValidRequest_ReturnOk()
     {
         var emailRequest = new GetEmailForVerificationRequest("test@test.hu");
         var jsonRequest = JsonConvert.SerializeObject(emailRequest);
@@ -136,7 +131,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
 
     [Fact]
-    public async Task SendEmailVerificationCode_EmptyRequest_ReturnsBadRequest()
+    public async Task SendEmailVerificationCode_WithEmptyRequest_ReturnBadRequest()
     {
         var emailRequest = new GetEmailForVerificationRequest("");
         var jsonRequest = JsonConvert.SerializeObject(emailRequest);
@@ -147,10 +142,8 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-
-
     [Fact]
-    public async Task Examine_VerifyToken_Valid_Code_ReturnsOk()
+    public async Task ExamineVerifyToken_WithValidCode_ReturnOk()
     {
         var token = EmailSenderCodeGenerator.GenerateTokenForRegistration("test1@hotmail.com");
         var request = new VerifyTokenRequest("test1@hotmail.com", token);
@@ -163,7 +156,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
 
     [Fact]
-    public async Task Examine_VerifyToken_ReturnBadRequest_WithWrongToken()
+    public async Task ExamineVerifyToken_WithWrongToken_ReturnBadRequest()
     {
         var token = EmailSenderCodeGenerator.GenerateTokenForRegistration("test1@hotmail.com");
         var request = new VerifyTokenRequest("test1@hotmail.com", "asd");
@@ -176,7 +169,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
 
     [Fact]
-    public async Task Send_VerifyToken_Valid_Code_ReturnsOk()
+    public async Task Send_VerifyTokenWithValidCode_ReturnOk()
     {
         var request = new AuthRequest(_testUser.UserName, _testUser.Password);
         var jsonRequest = JsonConvert.SerializeObject(request);
@@ -188,7 +181,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
 
     [Fact]
-    public async Task Send_VerifyToken_WrongPassword_ReturnsBadRequest()
+    public async Task Send_VerifyTokenWithWrongPassword_ReturnsBadRequest()
     {
         var request = new AuthRequest("TestUsername1", "asd");
         var jsonRequest = JsonConvert.SerializeObject(request);
@@ -201,7 +194,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
 
     [Fact]
-    public async Task Logout_Returns_Ok()
+    public async Task Logout_Return_Ok()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
@@ -214,7 +207,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
 
     [Fact]
-    public async Task Logout_Returns_BadRequest_With_Empty_Content()
+    public async Task Logout_WithEmptyContent_ReturnBadRequest()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
 
