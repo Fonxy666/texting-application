@@ -181,7 +181,7 @@ namespace Server
             });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -200,9 +200,20 @@ namespace Server
                        .AllowAnyHeader()
                        .AllowCredentials();
             });
-
-            app.UseRefreshTokenMiddleware();
-            app.UseJwtRefreshMiddleware();
+            
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Cookies.TryGetValue("Authorization", out string? userId))
+                {
+                    app.UseRefreshTokenMiddleware();
+                    app.UseJwtRefreshMiddleware();
+                    await next();
+                }
+                else
+                {
+                    await next();
+                }
+            });
             
             app.UseAuthentication();
             app.UseAuthorization();
