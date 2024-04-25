@@ -6,6 +6,7 @@ using Server;
 using Server.Model.Requests.Auth;
 using Server.Services.EmailSender;
 using Xunit;
+using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
 namespace Tests.IntegrationTests;
@@ -14,12 +15,14 @@ namespace Tests.IntegrationTests;
 public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
     private readonly WebApplicationFactory<Startup> _factory;
+    private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _client;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
 
-    public AuthControllerTests(WebApplicationFactory<Startup> factory)
+    public AuthControllerTests(WebApplicationFactory<Startup> factory, ITestOutputHelper testOutputHelper)
     {
         _factory = factory;
+        _testOutputHelper = testOutputHelper;
         _client = _factory.CreateClient();
     }
     
@@ -78,6 +81,32 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
+    public async Task Register_InvalidEmail_Test_User_ReturnBadRequest()
+    {
+        var testUser = new RegistrationRequest("uniquaeotmail", "uniqueTestUsername123", "asdASD123%%%", "01234567890", "");
+        var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
+        var userLogin = new StringContent(jsonLoginRequest, Encoding.UTF8, "application/json");
+
+        var getUserResponse = await _client.PostAsync("/Auth/Register", userLogin);
+        _testOutputHelper.WriteLine(getUserResponse.Headers.ToString());
+        _testOutputHelper.WriteLine(getUserResponse.Content.ToString());
+        Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Register_InvalidPassword_Test_User_ReturnBadRequest()
+    {
+        var testUser = new RegistrationRequest("uniquaeotmail@hotmail.com", "uniqueTestUsername123", "asdASD123", "01234567890", "");
+        var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
+        var userLogin = new StringContent(jsonLoginRequest, Encoding.UTF8, "application/json");
+
+        var getUserResponse = await _client.PostAsync("/Auth/Register", userLogin);
+        _testOutputHelper.WriteLine(getUserResponse.Headers.ToString());
+        _testOutputHelper.WriteLine(getUserResponse.Content.ToString());
+        Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
+    }
+    
+    [Fact]
     public async Task Delete_User_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
@@ -118,17 +147,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
     
-    [Fact]
-    public async Task Send_VerifyToken_Valid_Code_ReturnsOk()
-    {
-        var request = new AuthRequest(_testUser.UserName, _testUser.Password);
-        var jsonRequest = JsonConvert.SerializeObject(request);
-        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-
-        var response = await _client.PostAsync("/Auth/SendLoginToken", content);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
+    
     
     [Fact]
     public async Task Examine_VerifyToken_Valid_Code_ReturnsOk()
@@ -157,14 +176,27 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task Send_VerifyToken_EmptyParams_ReturnsBadRequest()
+    public async Task Send_VerifyToken_Valid_Code_ReturnsOk()
     {
-        var request = new AuthRequest("", "");
+        var request = new AuthRequest(_testUser.UserName, _testUser.Password);
         var jsonRequest = JsonConvert.SerializeObject(request);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
         var response = await _client.PostAsync("/Auth/SendLoginToken", content);
 
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Send_VerifyToken_WrongPassword_ReturnsBadRequest()
+    {
+        var request = new AuthRequest("TestUsername1", "asd");
+        var jsonRequest = JsonConvert.SerializeObject(request);
+        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/Auth/SendLoginToken", content);
+
+        
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
     

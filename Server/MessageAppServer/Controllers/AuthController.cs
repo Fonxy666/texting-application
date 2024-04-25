@@ -25,11 +25,6 @@ public class AuthController(
     {
         try
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest("The provided string is not an email.");
-            }
-            
             const string subject = "Verification code";
             var message = $"Verification code: {EmailSenderCodeGenerator.GenerateTokenForRegistration(receiver.Email)}";
 
@@ -70,18 +65,8 @@ public class AuthController(
     {
         try
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest("Invalid request for registration.");
-            }
-
             var imagePath = userServices.SaveImageLocally(request.Username, request.Image);
             var result = await authenticationService.RegisterAsync(request.Email, request.Username, request.Password, "User", request.PhoneNumber, imagePath);
-
-            if (!result.Success)
-            {
-                return BadRequest(result.ErrorMessages);
-            }
 
             return Ok(new AuthResponse(true, result.Id));
         }
@@ -101,8 +86,7 @@ public class AuthController(
         
             if (result is FailedAuthResult failedResult)
             {
-                ModelState.AddModelError("InvalidCredentials", "Invalid username or password");
-                return NotFound(failedResult.AdditionalInfo);
+                return BadRequest(failedResult.AdditionalInfo);
             }
         
             const string subject = "Verification code";

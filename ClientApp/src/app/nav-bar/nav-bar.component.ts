@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit, Renderer2 } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { ErrorHandlerService } from '../services/error-handler.service';
 
@@ -56,8 +56,8 @@ export class NavBarComponent implements OnInit {
     }
 
     logout() {
-        var request = this.cookieService.get('UserId');
-        this.http.post(`https://localhost:7045/Auth/Logout`, request, { withCredentials: true })
+        var userId = this.cookieService.get('UserId');
+        this.http.get(`https://localhost:7045/Auth/Logout?userId=${userId}`, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {
                 this.router.navigate(['/']);

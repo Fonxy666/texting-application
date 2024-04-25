@@ -28,25 +28,25 @@ namespace Server
             var issueAudience = configuration["IssueAudience"];
             var localhost = connection.Split("=")[1].Split(",")[0] == "localhost";
             
-            /*if (localhost)
+            if (localhost)
             {
                 if (!DockerContainerHelperClass.IsSqlServerContainerRunning())
                 {
                     DockerContainerHelperClass.StopAllRunningContainers();
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
                     DockerContainerHelperClass.StartSqlServerContainer();
                 }
             
                 while (!DockerContainerHelperClass.IsSqlServerContainerRunning())
                 {
                     Thread.Sleep(1000);
+                    if (!DockerContainerHelperClass.IsSqlServerContainerRunning()) continue;
+                    if (DockerContainerHelperClass.IsSqlServerContainerRunning())
+                    {
+                        Thread.Sleep(3000);
+                    }
                 }
-                
-                if (DockerContainerHelperClass.IsSqlServerContainerRunning())
-                {
-                    Thread.Sleep(10000);
-                }
-            }*/
+            }
 
             services.AddHttpContextAccessor();
             services.AddControllers(options =>
