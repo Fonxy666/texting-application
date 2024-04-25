@@ -22,15 +22,13 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     {
         _factory = factory;
         _client = _factory.CreateClient();
+        var cookies = TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com").Result;
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
     }
     
     [Fact]
     public async Task ChatFunctions_ReturnSuccessStatusCode()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
-        
-        _client.DefaultRequestHeaders.Add("Cookie", cookies);
-        
         var jsonRequestRegister = JsonConvert.SerializeObject(_testRoom);
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
@@ -54,11 +52,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task CreateRoom_WithTakenRoomName_ReturnBadRequest()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
-
-        _client.DefaultRequestHeaders.Add("Cookie", cookies);
-
-        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "test"));
+         var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "test"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var roomRegistrationResponse = await _client.PostAsync("/Chat/RegisterRoom", contentRegister);
@@ -68,10 +62,6 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task CreateRoom_WithInvalidCredentials_ReturnBadRequest()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
-
-        _client.DefaultRequestHeaders.Add("Cookie", cookies);
-
         var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("", ""));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
@@ -82,10 +72,6 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task JoinRoom_WithInvalidCredentials_ReturnBadRequest()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
-
-        _client.DefaultRequestHeaders.Add("Cookie", cookies);
-
         var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("", ""));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
@@ -96,10 +82,6 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task JoinRoom_WithInvalidCredentials_ReturnNotFound()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
-
-        _client.DefaultRequestHeaders.Add("Cookie", cookies);
-
         var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("wrongRoomName", "asd"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
@@ -110,10 +92,6 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task JoinRoom_WithInvalidPassword_ReturnBadRequest()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
-
-        _client.DefaultRequestHeaders.Add("Cookie", cookies);
-
         var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "asd"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
@@ -124,10 +102,6 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task DeleteRoom_WithInvalidCredentials_ReturnNotFound()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
-
-        _client.DefaultRequestHeaders.Add("Cookie", cookies);
-
         var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("wrongRoomName", "asd"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
@@ -138,10 +112,6 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task DeleteRoom_WithInvalidCredentials_ReturnBadRequest()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
-
-        _client.DefaultRequestHeaders.Add("Cookie", cookies);
-
         var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("", ""));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
@@ -152,10 +122,6 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task DeleteRoom_WithInvalidPassword_ReturnBadRequest()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
-
-        _client.DefaultRequestHeaders.Add("Cookie", cookies);
-
         var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "wrongPassword"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 

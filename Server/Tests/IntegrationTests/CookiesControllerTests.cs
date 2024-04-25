@@ -19,15 +19,13 @@ public class CookiesControllerTests : IClassFixture<WebApplicationFactory<Startu
     {
         _factory = factory;
         _client = _factory.CreateClient();
+        var cookies = TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com").Result;
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
     }
     
     [Fact]
     public async Task ChangeCookies_WithValidRequest_ReturnOkStatusCode()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
-
-        _client.DefaultRequestHeaders.Add("Cookie", cookies);
-
         var firstRequestData = new { request = "Animation" };
         var firstJsonRequest = JsonConvert.SerializeObject(firstRequestData);
         var firstContent = new StringContent(firstJsonRequest, Encoding.UTF8, "application/json");
@@ -47,10 +45,6 @@ public class CookiesControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task ChangeCookies_WithInvalidParams_ReturnBadRequest()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
-
-        _client.DefaultRequestHeaders.Add("Cookie", cookies);
-
         var jsonRequestRegister = JsonConvert.SerializeObject("asd");
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
