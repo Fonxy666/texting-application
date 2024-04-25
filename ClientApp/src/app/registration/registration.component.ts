@@ -25,7 +25,7 @@ export class RegistrationComponent {
             'Content-Type': 'application/json'
         });
 
-        this.http.post('https://localhost:7045/Auth/GetEmailVerificationToken', requestData, { headers: headers, responseType: 'text' })
+        this.http.post('https://localhost:7045/Auth/SendEmailVerificationToken', requestData, { headers: headers, responseType: 'text' })
         .subscribe((response: any) => {
             if (response) {
                 this.user = data;

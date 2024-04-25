@@ -28,7 +28,7 @@ namespace Server
             var issueAudience = configuration["IssueAudience"];
             var localhost = connection.Split("=")[1].Split(",")[0] == "localhost";
             
-            if (localhost)
+            /*if (localhost)
             {
                 if (!DockerContainerHelperClass.IsSqlServerContainerRunning())
                 {
@@ -46,7 +46,7 @@ namespace Server
                 {
                     Thread.Sleep(10000);
                 }
-            }
+            }*/
 
             services.AddHttpContextAccessor();
             services.AddControllers(options =>

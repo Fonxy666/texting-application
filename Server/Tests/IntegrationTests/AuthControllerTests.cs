@@ -94,7 +94,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         getUserResponse.EnsureSuccessStatusCode();
     }
     
-    /*[Fact]
+    [Fact]
     public async Task SendEmailVerificationCode_ValidRequest_ReturnsOk()
     {
         var emailRequest = new GetEmailForVerificationRequest("test@test.hu");
@@ -116,7 +116,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var response = await _client.PostAsync("/Auth/SendEmailVerificationToken", content);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }*/
+    }
     
     [Fact]
     public async Task Send_VerifyToken_Valid_Code_ReturnsOk()
@@ -130,10 +130,10 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
     
-    /*[Fact]
+    [Fact]
     public async Task Examine_VerifyToken_Valid_Code_ReturnsOk()
     {
-        var token = EmailSenderCodeGenerator.GenerateTokenForLogin("test1@hotmail.com");
+        var token = EmailSenderCodeGenerator.GenerateTokenForRegistration("test1@hotmail.com");
         var request = new VerifyTokenRequest("test1@hotmail.com", token);
         var jsonRequest = JsonConvert.SerializeObject(request);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
@@ -141,12 +141,12 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var response = await _client.PostAsync("/Auth/ExamineVerifyToken", content);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }*/
+    }
     
     [Fact]
     public async Task Examine_VerifyToken_ReturnBadRequest_WithWrongToken()
     {
-        var token = EmailSenderCodeGenerator.GenerateTokenForLogin("test1@hotmail.com");
+        var token = EmailSenderCodeGenerator.GenerateTokenForRegistration("test1@hotmail.com");
         var request = new VerifyTokenRequest("test1@hotmail.com", "asd");
         var jsonRequest = JsonConvert.SerializeObject(request);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
@@ -176,10 +176,8 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
         const string userId = "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916";
-        var jsonRequest = JsonConvert.SerializeObject(userId);
-        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/Auth/Logout", content);
+        var response = await _client.GetAsync($"/Auth/Logout?userId={userId}");
         response.EnsureSuccessStatusCode();
     }
     
@@ -191,10 +189,8 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
         const string userId = "123";
-        var jsonRequest = JsonConvert.SerializeObject(userId);
-        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/Auth/Logout", content);
+        var response = await _client.GetAsync($"/Auth/Logout?userId={userId}");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

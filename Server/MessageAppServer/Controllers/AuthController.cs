@@ -97,11 +97,6 @@ public class AuthController(
     {
         try
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var result = await authenticationService.ExamineLoginCredentials(request.UserName, request.Password);
         
             if (result is FailedAuthResult failedResult)
@@ -253,8 +248,8 @@ public class AuthController(
         }
     }
     
-    [HttpPost("Logout")]
-    public async Task<ActionResult<AuthResponse>> LogOut([FromBody]string userId)
+    [HttpGet("Logout")]
+    public async Task<ActionResult<AuthResponse>> LogOut([FromQuery]string userId)
     {
         try
         {
