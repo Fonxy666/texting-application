@@ -170,7 +170,7 @@ public class AuthController(
                 var splittedClaim = claim.Type.Split("/");
                 if (splittedClaim[^1] == "emailaddress")
                 {
-                    await authenticationService.LoginWithGoogle(claim.Value);
+                    await authenticationService.LoginWithExternal(claim.Value);
                 }
             }
 
@@ -219,7 +219,7 @@ public class AuthController(
                 var splittedClaim = claim.Type.Split("/");
                 if (splittedClaim[^1] == "emailaddress")
                 {
-                    await authenticationService.LoginWithGoogle(claim.Value);
+                    await authenticationService.LoginWithExternal(claim.Value);
                 }
             }
 

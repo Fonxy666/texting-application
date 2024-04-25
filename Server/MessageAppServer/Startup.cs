@@ -43,7 +43,7 @@ namespace Server
                     if (!DockerContainerHelperClass.IsSqlServerContainerRunning()) continue;
                     if (DockerContainerHelperClass.IsSqlServerContainerRunning())
                     {
-                        Thread.Sleep(3000);
+                        Thread.Sleep(10000);
                     }
                 }
             }
@@ -130,7 +130,7 @@ namespace Server
                         ValidIssuer = issueAudience,
                         ValidAudience = issueAudience,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(issueSign)),
-                        RequireExpirationTime = false
+                        RequireExpirationTime = true
                     };
 
                     options.Events = new JwtBearerEvents
@@ -200,12 +200,9 @@ namespace Server
                        .AllowAnyHeader()
                        .AllowCredentials();
             });
-            
-            if (httpContextAccessor.HttpContext != null)
-            {
-                app.UseRefreshTokenMiddleware();
-                app.UseJwtRefreshMiddleware();
-            }
+
+            app.UseRefreshTokenMiddleware();
+            app.UseJwtRefreshMiddleware();
             
             app.UseAuthentication();
             app.UseAuthorization();

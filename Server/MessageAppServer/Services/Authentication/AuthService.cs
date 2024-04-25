@@ -30,18 +30,6 @@ public class AuthService(
         return new AuthResult(true, "", "");
     }
 
-    private static AuthResult FailedRegistration(IdentityResult result)
-    {
-        var authenticationResult = new AuthResult(false, "", "");
-
-        foreach (var identityError in result.Errors)
-        {
-            authenticationResult.ErrorMessages.Add(identityError.Code, identityError.Description);
-        }
-
-        return authenticationResult;
-    }
-
     public async Task<AuthResult> LoginAsync(string username, bool rememberMe)
     {
         var managedUser = await userManager.FindByNameAsync(username);
@@ -63,7 +51,7 @@ public class AuthService(
         return new AuthResult(true, managedUser.Id, "");
     }
 
-    public async Task<AuthResult> LoginWithGoogle(string emailAddress)
+    public async Task<AuthResult> LoginWithExternal(string emailAddress)
     {
         var managedUser = await userManager.FindByEmailAsync(emailAddress);
         

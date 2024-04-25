@@ -17,7 +17,7 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
         
     public string CreateJwtToken(IdentityUser user, string? role, bool rememberMe)
     {
-        var expiration = rememberMe? DateTime.UtcNow.AddHours(ExpirationHours) : (DateTime?)null;
+        var expiration = rememberMe? DateTime.UtcNow.AddHours(3) : (DateTime?)null;
         var token = CreateJwtToken(CreateClaims(user, role), CreateSigningCredentials(), expiration);
 
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -40,45 +40,37 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
             audience: configuration["IssueAudience"],
             claims: claims,
             notBefore: DateTime.UtcNow,
-            expires: null,
+            expires: expiration,
             signingCredentials: credentials
         );
     }
 
     public List<Claim> CreateClaims(IdentityUser user, string? role)
     {
-        try
+        var claims = new List<Claim>
         {
-            var claims = new List<Claim>
-            {
-                new(JwtRegisteredClaimNames.Sub, configuration["IssueAudience"]!),
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)),
-                new(ClaimTypes.NameIdentifier, user.Id)
-            };
+            new(JwtRegisteredClaimNames.Sub, configuration["IssueAudience"]!),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)),
+            new(ClaimTypes.NameIdentifier, user.Id)
+        };
 
-            if (!string.IsNullOrEmpty(user.UserName))
-            {
-                claims.Add(new(ClaimTypes.Name, user.UserName));
-            }
-
-            if (!string.IsNullOrEmpty(user.Email))
-            {
-                claims.Add(new(ClaimTypes.Email, user.Email));
-            }
-
-            if (role != null)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role));
-            }
-
-            return claims;
-        }
-        catch (Exception e)
+        if (!string.IsNullOrEmpty(user.UserName))
         {
-            Console.WriteLine(e);
-            throw;
+            claims.Add(new(ClaimTypes.Name, user.UserName));
         }
+
+        if (!string.IsNullOrEmpty(user.Email))
+        {
+            claims.Add(new(ClaimTypes.Email, user.Email));
+        }
+
+        if (role != null)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+
+        return claims;
     }
 
     private SigningCredentials CreateSigningCredentials()

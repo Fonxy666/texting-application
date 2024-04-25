@@ -25,7 +25,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         _testOutputHelper = testOutputHelper;
         _client = _factory.CreateClient();
     }
-    
+
     [Fact]
     public async Task Login_With_Invalid_User_ReturnBadRequestStatusCode()
     {
@@ -35,7 +35,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var authResponse = await _client.PostAsync("/Auth/Login", authContent);
         Assert.Equal(HttpStatusCode.BadRequest, authResponse.StatusCode);
     }
-    
+
     [Fact]
     public async Task Login_With_Bad_Credentials_ReturnBadRequest()
     {
@@ -46,7 +46,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var authResponse = await _client.PostAsync("/Auth/Login", authContent);
         Assert.Equal(HttpStatusCode.BadRequest, authResponse.StatusCode);
     }
-    
+
     [Fact]
     public async Task Login_With_BadAuthToken_ReturnBadRequest()
     {
@@ -57,7 +57,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var authResponse = await _client.PostAsync("/Auth/Login", authContent);
         Assert.Equal(HttpStatusCode.BadRequest, authResponse.StatusCode);
     }
-    
+
     [Fact]
     public async Task Register_Test_User_ReturnSuccessStatusCode()
     {
@@ -68,7 +68,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var getUserResponse = await _client.PostAsync("/Auth/Register", userLogin);
         getUserResponse.EnsureSuccessStatusCode();
     }
-    
+
     [Fact]
     public async Task Register_Invalid_Test_User_ReturnBadRequest()
     {
@@ -79,7 +79,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var getUserResponse = await _client.PostAsync("/Auth/Register", userLogin);
         Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
-    
+
     [Fact]
     public async Task Register_InvalidEmail_Test_User_ReturnBadRequest()
     {
@@ -92,7 +92,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         _testOutputHelper.WriteLine(getUserResponse.Content.ToString());
         Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
-    
+
     [Fact]
     public async Task Register_InvalidPassword_Test_User_ReturnBadRequest()
     {
@@ -105,7 +105,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         _testOutputHelper.WriteLine(getUserResponse.Content.ToString());
         Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
-    
+
     [Fact]
     public async Task Delete_User_ReturnSuccessStatusCode()
     {
@@ -122,7 +122,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var getUserResponse = await _client.DeleteAsync(deleteUrl);
         getUserResponse.EnsureSuccessStatusCode();
     }
-    
+
     [Fact]
     public async Task SendEmailVerificationCode_ValidRequest_ReturnsOk()
     {
@@ -134,7 +134,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-    
+
     [Fact]
     public async Task SendEmailVerificationCode_EmptyRequest_ReturnsBadRequest()
     {
@@ -146,9 +146,9 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
-    
-    
-    
+
+
+
     [Fact]
     public async Task Examine_VerifyToken_Valid_Code_ReturnsOk()
     {
@@ -161,7 +161,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-    
+
     [Fact]
     public async Task Examine_VerifyToken_ReturnBadRequest_WithWrongToken()
     {
@@ -174,7 +174,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
-    
+
     [Fact]
     public async Task Send_VerifyToken_Valid_Code_ReturnsOk()
     {
@@ -186,7 +186,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-    
+
     [Fact]
     public async Task Send_VerifyToken_WrongPassword_ReturnsBadRequest()
     {
@@ -196,10 +196,10 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         var response = await _client.PostAsync("/Auth/SendLoginToken", content);
 
-        
+
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
-    
+
     [Fact]
     public async Task Logout_Returns_Ok()
     {
@@ -212,7 +212,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var response = await _client.GetAsync($"/Auth/Logout?userId={userId}");
         response.EnsureSuccessStatusCode();
     }
-    
+
     [Fact]
     public async Task Logout_Returns_BadRequest_With_Empty_Content()
     {
