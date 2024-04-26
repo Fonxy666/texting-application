@@ -2,4 +2,8 @@
 
 namespace Server.Model.Requests.User;
 
-public record ChangeEmailRequest([Required]string OldEmail, [Required]string NewEmail);
+public record ChangeEmailRequest(
+    [Required(ErrorMessage = "Old e-mail cannot be null.")]
+    [EmailAddress(ErrorMessage = "The provided string is not an e-mail.")]string OldEmail,
+    [Required(ErrorMessage = "New e-mail cannot be null.")]
+    [EmailAddress(ErrorMessage = "The provided string is not an e-mail.")]string NewEmail);

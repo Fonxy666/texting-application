@@ -2,8 +2,8 @@
 
 public static class EmailSenderCodeGenerator
 {
-    private static Dictionary<string, string> _regVerificationCodes = new();
-    private static Dictionary<string, string> _loginVerificationCodes = new();
+    public static Dictionary<string, string> _regVerificationCodes = new();
+    public static Dictionary<string, string> _loginVerificationCodes = new();
     public static string GenerateTokenForRegistration(string email)
     {
         const string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -87,6 +87,5 @@ public static class EmailSenderCodeGenerator
                 _loginVerificationCodes.Remove(email);
             }
         }
-        
     }
 }

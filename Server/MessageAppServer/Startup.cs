@@ -33,18 +33,18 @@ namespace Server
                 if (!DockerContainerHelperClass.IsSqlServerContainerRunning())
                 {
                     DockerContainerHelperClass.StopAllRunningContainers();
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
                     DockerContainerHelperClass.StartSqlServerContainer();
                 }
             
                 while (!DockerContainerHelperClass.IsSqlServerContainerRunning())
                 {
                     Thread.Sleep(1000);
-                }
-                
-                if (DockerContainerHelperClass.IsSqlServerContainerRunning())
-                {
-                    Thread.Sleep(10000);
+                    if (!DockerContainerHelperClass.IsSqlServerContainerRunning()) continue;
+                    if (DockerContainerHelperClass.IsSqlServerContainerRunning())
+                    {
+                        Thread.Sleep(10000);
+                    }
                 }
             }
 
@@ -130,7 +130,7 @@ namespace Server
                         ValidIssuer = issueAudience,
                         ValidAudience = issueAudience,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(issueSign)),
-                        RequireExpirationTime = false
+                        RequireExpirationTime = true
                     };
 
                     options.Events = new JwtBearerEvents
@@ -181,7 +181,7 @@ namespace Server
             });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -201,11 +201,19 @@ namespace Server
                        .AllowCredentials();
             });
             
-            if (httpContextAccessor.HttpContext != null)
+            app.Use(async (context, next) =>
             {
-                app.UseRefreshTokenMiddleware();
-                app.UseJwtRefreshMiddleware();
-            }
+                if (context.Request.Cookies.TryGetValue("Authorization", out string? userId))
+                {
+                    app.UseRefreshTokenMiddleware();
+                    app.UseJwtRefreshMiddleware();
+                    await next();
+                }
+                else
+                {
+                    await next();
+                }
+            });
             
             app.UseAuthentication();
             app.UseAuthorization();

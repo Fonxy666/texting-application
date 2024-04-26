@@ -20,6 +20,7 @@ namespace Tests.Services.Chat
                 .Options;
 
             _dbContext = new MessagesContext(options);
+
             _messageService = new MessageService(_dbContext);
         }
 

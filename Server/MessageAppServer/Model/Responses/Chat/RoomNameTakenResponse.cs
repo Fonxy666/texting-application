@@ -1,3 +1,3 @@
-﻿namespace Server.Services.Chat;
+﻿namespace Server.Model.Responses.Chat;
 
 public record RoomNameTakenResponse(bool Result);

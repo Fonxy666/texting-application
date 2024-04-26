@@ -78,7 +78,7 @@ export class JoinRoomComponent implements OnInit {
     }
 
     getUsername(user: any) {
-        this.http.get(`https://localhost:7045/User/getUsername/${user}`, { withCredentials: true})
+        this.http.get(`https://localhost:7045/User/GetUsername?userId=${user}`, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401()
         )

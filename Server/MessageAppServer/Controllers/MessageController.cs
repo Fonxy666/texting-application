@@ -4,98 +4,142 @@ using Microsoft.AspNetCore.Authorization;
 using Server.Model.Chat;
 using Server.Model.Requests.Message;
 using Server.Model.Responses.Message;
+using Server.Services.Chat.RoomService;
+using Server.Services.User;
 
 namespace Server.Controllers;
 
 [Route("[controller]")]
-public class MessageController(IMessageService messageRepository) : ControllerBase
+public class MessageController(
+    IMessageService messageService,
+    IRoomService roomService,
+    ILogger<MessageController> logger,
+    IUserServices userServices
+    ) : ControllerBase
 {
-    [HttpGet("GetMessages/{id}"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<IQueryable<Message>>> GetMessages(string id)
+    [HttpGet("GetMessages/{roomId}"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<IQueryable<Message>>> GetMessages(string roomId)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
+            if (!roomService.ExistingRoom(roomId).Result)
+            {
+                return NotFound($"There is no room with this id: {roomId}");
+            }
+
+            var result = await messageService.GetLast10Messages(roomId);
+
+            return Ok(result);
         }
-
-        var result = await messageRepository.GetLast10Messages(id);
-
-        return Ok(result);
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error getting messages for room: {roomId}");
+            return StatusCode(500);
+        }
     }
     
     [HttpPost("SendMessage"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<MessageResponse>> SendMessage([FromBody]MessageRequest request)
     {
-        if (!ModelState.IsValid)
+        Console.WriteLine(request);
+        try
         {
-            return BadRequest(ModelState);
-        }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            
+            if (!roomService.ExistingRoom(request.RoomId).Result)
+            {
+                return NotFound($"There is no room with this id: {request.RoomId}");
+            }
 
-        var result = await messageRepository.SendMessage(request);
-        Console.WriteLine($"Result: {result}");
-
-        if (result.Success == false)
-        {
-            return BadRequest(new { error = "Something unusual happened." });
-        }
+            if (!userServices.ExistingUser(request.UserId).Result)
+            {
+                return NotFound($"There is no user with this id: {request.UserId}");
+            }
         
-        return Ok(result);
+            var result = await messageService.SendMessage(request);
+        
+            return Ok(result);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error sending message for room: {request.RoomId}");
+            return StatusCode(500);
+        }
     }
     
     [HttpPatch("EditMessage"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<MessageResponse>> ModifyMessage([FromBody]EditMessageRequest request)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!messageService.MessageExisting(request.Id).Result)
+            {
+                return NotFound($"There is no message with this given id: {request.Id}");
+            }
+            
+            var result = await messageService.EditMessage(request);
+
+            return Ok(result);
         }
-
-        var result = await messageRepository.EditMessage(request);
-
-        if (result.Success == false)
+        catch (Exception e)
         {
-            return BadRequest(new { error = "Something unusual happened." });
+            logger.LogError(e, $"Error editing message with id: {request.Id}");
+            return StatusCode(500);
         }
-
-        return Ok(result);
     }
     
     [HttpPatch("EditMessageSeen"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<MessageResponse>> ModifyMessageSeen([FromBody]EditMessageSeenRequest request)
     {
-        Console.WriteLine("-------------------------------------------");
-        Console.WriteLine(request);
-        Console.WriteLine("-------------------------------------------");
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            
+            if (!messageService.MessageExisting(request.MessageId).Result)
+            {
+                return NotFound($"There is no message with this given id: {request.MessageId}");
+            }
+
+            var result = await messageService.EditMessageSeen(request);
+
+            return Ok(result);
         }
-
-        var result = await messageRepository.EditMessageSeen(request);
-
-        if (result.Success == false)
+        catch (Exception e)
         {
-            return BadRequest(new { error = "Something unusual happened." });
+            logger.LogError(e, $"Error editing message seen list with id: {request.MessageId}");
+            return StatusCode(500);
         }
-
-        return Ok(result);
     }
     
     [HttpDelete("DeleteMessage"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<MessageResponse>> DeleteMessage([FromQuery]string id)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
+            if (!messageService.MessageExisting(id).Result)
+            {
+                return NotFound($"There is no message with this given id: {id}");
+            }
+            
+            await messageService.DeleteMessage(id);
+
+            return Ok(new MessageResponse(true, "", null));
         }
-
-        var result = await messageRepository.DeleteMessage(id);
-
-        if (result.Success == false)
+        catch (Exception e)
         {
-            return BadRequest(new { error = "There is no message with this id." });
+            logger.LogError(e, $"Error deleting message with id: {id}");
+            return StatusCode(500);
         }
-
-        return Ok(new MessageResponse(true, ""));
     }
 }

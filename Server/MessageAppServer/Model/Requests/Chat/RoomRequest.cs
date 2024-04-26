@@ -2,4 +2,6 @@
 
 namespace Server.Model.Requests.Chat;
 
-public record RoomRequest([Required]string RoomName, [Required]string Password);
+public record RoomRequest(
+    [Required(ErrorMessage = "Room name cannot be null.")]string RoomName,
+    [Required(ErrorMessage = "Password cannot be null.")]string Password);

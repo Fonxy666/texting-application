@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles;
 using Server.Database;
 using Server.Model;
 using Server.Model.Requests.User;
 using Server.Model.Responses.Auth;
 using Server.Model.Responses.User;
-using Server.Services.Authentication;
 using Server.Services.User;
 
 namespace Server.Controllers;
@@ -17,87 +16,85 @@ namespace Server.Controllers;
 public class UserController(
     UserManager<ApplicationUser> userManager,
     UsersContext repository,
-    IAuthService authenticationService,
     IUserServices userServices,
-    ILogger<AuthController> logger) : ControllerBase 
+    ILogger<UserController> logger) : ControllerBase
 {
-    [HttpGet("getUsername/{UserId}"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<UsernameResponse>> GetUsername(string UserId)
+    [HttpGet("GetUsername"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<UsernameResponse>> GetUsername([FromQuery]string userId)
     {
-        var existingUser = await userManager.FindByIdAsync(UserId);
-        if (existingUser == null)
+        try
         {
-            return NotFound("User not found.");
+            var existingUser = await userManager.FindByIdAsync(userId);
+            if (existingUser == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var response = new UsernameResponse(existingUser.UserName!);
+
+            return response;
         }
-
-        var response = new UsernameResponse(existingUser.UserName!);
-
-        return response;
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error getting username for user {userId}");
+            return StatusCode(500);
+        }
     }
     
-    [HttpGet("getUserCredentials"), Authorize(Roles = "User, Admin")]
+    [HttpGet("GetUserCredentials"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<UserResponse>> GetUserEmail([FromQuery]string userId)
     {
-        var existingUser = await userManager.FindByIdAsync(userId);
-        if (existingUser == null)
+        try
         {
-            return NotFound("User not found.");
+            var existingUser = await userManager.FindByIdAsync(userId);
+            if (existingUser == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var response = new UserResponse(existingUser.UserName, existingUser.Email, existingUser.TwoFactorEnabled);
+
+            return response;
         }
-
-        var response = new UserResponse(existingUser.UserName, existingUser.Email, existingUser.TwoFactorEnabled);
-
-        return response;
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error getting e-mail for user {userId}");
+            return StatusCode(500);
+        }
     }
 
-    [HttpGet("GetImage/{userId}")]
-    public async Task<IActionResult> GetImageWithId(string userId)
+    [HttpGet("GetImage")]
+    public async Task<IActionResult> GetImageWithId([FromQuery]string userId)
     {
-        var existingUser = await userManager.FindByIdAsync(userId);
-        var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
-        var imagePath = Path.Combine(folderPath, $"{existingUser!.UserName}.png");
-        FileContentResult result = null;
-
-        if (System.IO.File.Exists(imagePath))
+        try
         {
-            var imageBytes = System.IO.File.ReadAllBytes(imagePath);
-            var contentType = GetContentType(imagePath);
+            var existingUser = await userManager.FindByIdAsync(userId);
+            if (existingUser == null)
+            {
+                return NotFound("User not found.");
+            }
             
-            Response.Headers.Add("Cache-Control", "max-age=3600, public");
+            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
+            var imagePath = Path.Combine(folderPath, $"{existingUser!.UserName}.png");
+            FileContentResult result = null;
 
-            result = File(imageBytes, contentType);
-        }
-        
-        return result ?? (IActionResult)NotFound();
-    }
-    
-    [HttpGet("GetImageWithUsername/{userName}")]
-    public async Task<IActionResult> GetImageWithUsername(string userName)
-    {
-        var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
-        var imagePath = Path.Combine(folderPath, $"{userName}.png");
-        FileContentResult result = null;
+            if (System.IO.File.Exists(imagePath))
+            {
+                var imageBytes = await System.IO.File.ReadAllBytesAsync(imagePath);
+                var contentType = userServices.GetContentType(imagePath);
+                
+                Response.Headers.Add("Cache-Control", "max-age=3600, public");
 
-        if (System.IO.File.Exists(imagePath))
-        {
-            var imageBytes = System.IO.File.ReadAllBytes(imagePath);
-            var contentType = GetContentType(imagePath);
+                result = File(imageBytes, contentType);
+            }
             
-            Response.Headers.Add("Cache-Control", "max-age=3600, public");
-
-            result = File(imageBytes, contentType);
+            return result ?? (IActionResult)NotFound();
         }
-        
-        return result ?? (IActionResult)NotFound();
-    }
-
-    private string GetContentType(string filePath)
-    {
-        var provider = new FileExtensionContentTypeProvider();
-        if (!provider.TryGetContentType(filePath, out var contentType))
+        catch (Exception e)
         {
-            contentType = "application/octet-stream";
+            logger.LogError(e, $"Error getting avatar image for user {userId}");
+            return StatusCode(500);
         }
-        return contentType;
     }
     
     [HttpPatch("ChangeEmail"), Authorize(Roles = "User, Admin")]
@@ -108,35 +105,26 @@ public class UserController(
             var existingUser = await userManager.FindByEmailAsync(request.OldEmail);
             if (existingUser == null)
             {
-                logger.LogInformation($"Data for email: {request.OldEmail} doesnt't exists in the database.");
-                return BadRequest(ModelState);
+                return NotFound("User not found.");
             }
 
             if (!existingUser.TwoFactorEnabled)
             {
-                return BadRequest(ModelState);
+                return NotFound($"2FA not enabled for user: {existingUser.Id}");
             }
-            
+                
             var token = await userManager.GenerateChangeEmailTokenAsync(existingUser, request.NewEmail);
-            var result = await userManager.ChangeEmailAsync(existingUser, request.NewEmail, token);
-
-            if (result.Succeeded)
-            {
-                existingUser.NormalizedEmail = request.NewEmail.ToUpper();
-                await repository.SaveChangesAsync();
-                var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
-                return Ok(response);
-            }
-            else
-            {
-                logger.LogError($"Error changing e-mail for user {request.OldEmail}: {string.Join(", ", result.Errors)}");
-                return BadRequest($"Error changing e-mail for user {request.OldEmail}");
-            }
+            await userManager.ChangeEmailAsync(existingUser, request.NewEmail, token);
+                
+            existingUser.NormalizedEmail = request.NewEmail.ToUpper();
+            await repository.SaveChangesAsync();
+            var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
+            return Ok(response);
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Error changing e-mail for user {request.OldEmail}");
-            return NotFound($"Error changing e-mail for user {request.OldEmail}");
+            return StatusCode(500);
         }
     }
     
@@ -148,34 +136,28 @@ public class UserController(
             var existingUser = await userManager.FindByIdAsync(request.Id);
             if (existingUser == null)
             {
-                logger.LogInformation($"Data for id: {request.Id} doesnt't exists in the database.");
-                return BadRequest(ModelState);
+                return NotFound("User not found.");
             }
 
-            var result = await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.Password);
+            if (request.Password != request.PasswordRepeat)
+            {
+                return BadRequest("Passwords do not match.");
+            }
 
+            await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.Password);
+                
             await repository.SaveChangesAsync();
-
-            if (result.Succeeded)
-            {
-                await repository.SaveChangesAsync();
-                var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
-                return Ok(response);
-            }
-            else
-            {
-                logger.LogError($"Error changing password for user {request.Id}: {string.Join(", ", result.Errors)}");
-                return BadRequest($"Error changing password for user {request.Id}");
-            }
+            var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
+            return Ok(response);
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Error changing password for user {request.Id}");
-            return NotFound($"Error changing password for user {request.Id}");
+            return StatusCode(500);
         }
     }
 
-    [HttpPost("ChangeAvatar"), Authorize(Roles = "User, Admin")]
+    [HttpPatch("ChangeAvatar"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<AuthResponse>> ChangeAvatar([FromBody]AvatarChange request)
     {
         try
@@ -183,8 +165,7 @@ public class UserController(
             var existingUser = await userManager.FindByIdAsync(request.UserId);
             if (existingUser == null)
             {
-                logger.LogInformation($"Data for id: {request.UserId} doesnt't exists in the database.");
-                return BadRequest(ModelState);
+                return NotFound("User not found.");
             }
 
             userServices.SaveImageLocally(existingUser.UserName!, request.Image);
@@ -192,39 +173,37 @@ public class UserController(
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error changing password for user {request.UserId}");
-            return NotFound($"Error changing password for user {request.UserId}");
+            logger.LogError(e, $"Error changing avatar for user {request.UserId}");
+            return StatusCode(500);
         }
     } 
     
     [HttpDelete("DeleteUser"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<EmailUsernameResponse>> DeleteUser([FromQuery]string email, [FromQuery]string username, [FromQuery]string password)
+    public async Task<ActionResult<EmailUsernameResponse>> DeleteUser([FromQuery]string email, [FromQuery]string password)
     {
         try
         {
             var existingUser = await userManager.FindByEmailAsync(email);
             if (existingUser == null)
             {
-                logger.LogInformation($"Data for email: {email} doesn't exist in the database.");
-                return BadRequest(ModelState);
+                return NotFound("User not found.");
             }
 
-            var result = await authenticationService.DeleteAsync(username, password);
-
-            if (!result.Successful)
+            if (!userManager.CheckPasswordAsync(existingUser, password).Result)
             {
-                logger.LogError($"Error deleting user {email}: {string.Join(", ", result)}");
-                return BadRequest($"Error deleting user {email}");
+                return BadRequest("Invalid credentials.");
             }
-        
+
+            await userServices.DeleteAsync(existingUser);
+            
             await repository.SaveChangesAsync();
             var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
             return Ok(response);
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error deleting user {email}");
-            return NotFound($"Error deleting user {email}");
+            logger.LogError(e, $"Error changing e-mail for user {email}");
+            return StatusCode(500);
         }
     }
 }

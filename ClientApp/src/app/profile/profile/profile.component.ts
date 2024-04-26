@@ -40,7 +40,7 @@ export class ProfileComponent implements OnInit {
 
     getUser(userId: string) {
         if (userId) {
-            this.http.get(`https://localhost:7045/User/getUserCredentials?userId=${userId}`, { withCredentials: true })
+            this.http.get(`https://localhost:7045/User/GetUserCredentials?userId=${userId}`, { withCredentials: true })
             .pipe(
                 this.errorHandler.handleError401()
             )
@@ -61,9 +61,9 @@ export class ProfileComponent implements OnInit {
         }
     }
 
-    loadProfileData(username: string) {
-        if (username) {
-            this.http.get(`https://localhost:7045/User/GetImage/${username}`, { withCredentials: true, responseType: 'blob' })
+    loadProfileData(userId: string) {
+        if (userId) {
+            this.http.get(`https://localhost:7045/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
             .pipe(
                 this.errorHandler.handleError401()
             )
@@ -113,7 +113,7 @@ export class ProfileComponent implements OnInit {
 
     changeAvatar() {
         const request = new ChangeAvatarRequest(this.user.id, this.profilePic);
-        this.http.post('https://localhost:7045/User/ChangeAvatar', request, { withCredentials: true})
+        this.http.patch('https://localhost:7045/User/ChangeAvatar', request, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401()
         )

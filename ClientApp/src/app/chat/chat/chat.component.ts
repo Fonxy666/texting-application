@@ -122,6 +122,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     sendMessage() {
         var request = new MessageRequest(this.roomId, this.cookieService.get("UserId"), this.inputMessage, this.cookieService.get("Anonymous") === "True");
+        console.log(this.cookieService.get("UserId"));
         this.saveMessage(request)
             .then((messageId) => {
                 this.chatService.sendMessage(new MessageRequest(this.roomId, this.cookieService.get("UserId"), this.inputMessage, this.cookieService.get("Anonymous") === "True", messageId));
@@ -180,7 +181,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             )
             .subscribe((response: any) => {
                 const observables = response.map((element: any) =>
-                    this.http.get(`https://localhost:7045/User/getUsername/${element.senderId}`, { withCredentials: true })
+                    this.http.get(`https://localhost:7045/User/GetUsername?userId=${element.senderId}`, { withCredentials: true })
                 );
     
                 forkJoin(observables).subscribe((usernames: any) => {
@@ -200,7 +201,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     getAvatarImage(userId: string): Observable<string> {
-        return this.http.get(`https://localhost:7045/User/GetImage/${userId}`, { withCredentials: true, responseType: 'blob' })
+        return this.http.get(`https://localhost:7045/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
             .pipe(
                 this.errorHandler.handleError401(),
                 switchMap((response: Blob) => {

@@ -3,12 +3,12 @@ using Server.Services.Authentication;
 
 namespace Server.Services.Cookie;
 
-public class CookieService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, ITokenService tokenService) : ICookieService
+public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenService tokenService) : ICookieService
 {
     private HttpRequest Request => httpContextAccessor.HttpContext?.Request ?? throw new InvalidOperationException("HttpContext or Request is null");
     private HttpResponse Response => httpContextAccessor.HttpContext?.Response ?? throw new InvalidOperationException("HttpContext or Response is null");
     
-    private const int ExpirationHours = 2;
+    private const int ExpirationHours = 3;
 
     public void SetUserId(string userId, bool rememberMe)
     {

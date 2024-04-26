@@ -7,63 +7,95 @@ using Server.Services.Chat.RoomService;
 namespace Server.Controllers;
 
 [Route("[controller]")]
-public class ChatController(IRoomService roomRepository) : ControllerBase
+public class ChatController(IRoomService roomService, ILogger<ChatController> logger) : ControllerBase
 {
     [HttpPost("RegisterRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> RegisterRoom([FromBody]RoomRequest request)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
-        }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { error = "New room credentials not valid." });
+            }
 
-        if (roomRepository.RoomNameTaken(request.RoomName).Result.Result)
-        {
-            return BadRequest(new { error = "This room's name already taken." });
-        }
-        
-        var result = await roomRepository.RegisterRoomAsync(request.RoomName, request.Password);
-        
-        if (result.Success == false)
-        {
-            return BadRequest(result);
-        }
+            if (roomService.RoomNameTaken(request.RoomName).Result.Result)
+            {
+                return BadRequest(new { error = "This room's name already taken." });
+            }
+            
+            var result = await roomService.RegisterRoomAsync(request.RoomName, request.Password);
 
-        return Ok(result);
+            return Ok(result);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error registering the room");
+            return StatusCode(500);
+        }
     }
 
     [HttpPost("JoinRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> LoginRoom([FromBody]RoomRequest request)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
-        }
-        
-        var result = await roomRepository.LoginRoomAsync(request.RoomName, request.Password);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { error = "Room credentials not valid." });
+            }
 
-        if (!result.Success)
+            var existingRoom = await roomService.GetRoom(request.RoomName);
+
+            if (existingRoom == null)
+            {
+                return NotFound(new { error = "There is no room with the given Room name." });
+            }
+
+            if (!existingRoom.PasswordMatch(request.Password))
+            {
+                return BadRequest("Incorrect login credentials");
+            }
+            
+            return Ok(new RoomResponse(true, existingRoom.RoomId, existingRoom.RoomName));
+        }
+        catch (Exception e)
         {
-            return BadRequest(new { error = "Invalid login credentials." });
+            logger.LogError(e, $"Error login into {request.RoomName} room.");
+            return StatusCode(500);
         }
-
-        return Ok(result);
     }
     
     [HttpPost("DeleteRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> DeleteRoom([FromBody]RoomRequest request)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
-        }
-        var result = await roomRepository.DeleteRoomAsync(request.RoomName, request.Password);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            
+            var existingRoom = roomService.GetRoom(request.RoomName).Result;
 
-        if (result.Success == false)
+            if (existingRoom == null)
+            {
+                return NotFound(new { error = "There is no room with the given Room name." });
+            }
+            
+            if (!existingRoom.PasswordMatch(request.Password))
+            {
+                return BadRequest("Incorrect credentials");
+            }
+            
+            await roomService.DeleteRoomAsync(existingRoom);
+
+            return Ok(new RoomResponse(true, existingRoom.RoomId, existingRoom.RoomName));
+        }
+        catch (Exception e)
         {
-            return BadRequest(new { error = "Invalid login credentials." });
+            logger.LogError(e, $"Error deleting room {request.RoomName}.");
+            return StatusCode(500);
         }
-
-        return Ok(result);
     }
 }
