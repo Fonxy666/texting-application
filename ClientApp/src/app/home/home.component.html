@@ -1,12 +1,17 @@
 <div class="cont">
-    <app-nav-bar></app-nav-bar>
-    <img [src]="isSunActive ? 'assets/images/sun.png' : 'assets/images/moon.png'" 
-         alt="{{ isSunActive ? 'sun' : 'moon' }}"
-         class="sun_img" 
-         *ngIf="animation">
-    <div [ngClass]="{ 'animate-welcome-text': animation, 'nonanimate-welcome-text': !animation }" class="text-center">
-        <h1 class="text-style">Hello & Welcome</h1>
-        <h2 class="text-style">Chat with your friends day & night.</h2>
+    <div class="blur-content">
+        <app-nav-bar/>
+        <img [src]="isSunActive ? 'assets/images/sun.png' : 'assets/images/moon.png'" 
+             alt="{{ isSunActive ? 'sun' : 'moon' }}"
+             class="sun_img" 
+             *ngIf="animation">
+        <div [ngClass]="{ 'animate-welcome-text': animation, 'nonanimate-welcome-text': !animation }" class="text-center">
+            <h1 class="text-style">Hello & Welcome</h1>
+            <h2 class="text-style">Chat with your friends day & night.</h2>
+        </div>
+        <img [src]="myImage" [class]="animation ? 'animate-image' : 'nonanimate-image'">
     </div>
-    <img [src]="myImage" [class]="animation ? 'animate-image' : 'nonanimate-image'">
+    <div>
+
+    </div>
 </div>

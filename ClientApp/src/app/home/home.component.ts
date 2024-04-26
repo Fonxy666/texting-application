@@ -14,6 +14,7 @@ export class HomeComponent implements OnInit {
     isMoonActive: boolean = false;
     displayHomeText: string = "";
     animation: boolean = true;
+    isLoading: boolean = true;
 
     ngOnInit() {
         this.animation = this.cookieService.get("Animation") != "False";

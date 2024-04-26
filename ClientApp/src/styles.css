@@ -280,3 +280,9 @@ a {
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.blur-content {
+    min-width: 100vw;
+    min-height: 100vh;
+    filter: blur(8px);
+}
