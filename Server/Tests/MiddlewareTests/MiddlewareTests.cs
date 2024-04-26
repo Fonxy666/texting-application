@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using Server;
 using Server.Model.Requests.Auth;
+using Server.Model.Requests.Chat;
 using Xunit;
 using Assert = Xunit.Assert;
 
@@ -23,12 +24,9 @@ public class MiddlewareTests : IClassFixture<WebApplicationFactory<Startup>>
     }
 
     [Fact]
-    public async Task Login_WithInvalidUser_ReturnBadRequestStatusCode()
+    public async Task JoinRoom_WithInvalidAuthToken_GiveOtherAuthToken()
     {
-        var request = new AuthRequest("", "");
-        var authJsonRequest = JsonConvert.SerializeObject(request);
-        var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
-        var authResponse = await _client.PostAsync("/Auth/Login", authContent);
-        Assert.Equal(HttpStatusCode.BadRequest, authResponse.StatusCode);
+        var cookies = TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com").Result;
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
     }
 }

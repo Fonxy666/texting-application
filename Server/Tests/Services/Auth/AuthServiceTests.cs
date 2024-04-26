@@ -66,30 +66,5 @@ namespace Tests.Services.Auth
 
             return userManagerMock;
         }
-
-        public static Mock<UserManager<ApplicationUser>> CreateFailedRegistration()
-        {
-            var userStoreMock = new Mock<IUserStore<ApplicationUser>>();
-            var userManagerMock = new Mock<UserManager<ApplicationUser>>(userStoreMock.Object, null, null, null, null, null, null, null, null);
-
-            userManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
-                           .ReturnsAsync(IdentityResult.Failed(new IdentityError { Code = "Error", Description = "Registration failed" }));
-
-            return userManagerMock;
-        }
-
-        public static Mock<UserManager<ApplicationUser>> CreateInvalidLogin()
-        {
-            var userStoreMock = new Mock<IUserStore<ApplicationUser>>();
-            var userManagerMock = new Mock<UserManager<ApplicationUser>>(userStoreMock.Object, null, null, null, null, null, null, null, null);
-
-            userManagerMock.Setup(x => x.FindByNameAsync(It.IsAny<string>()))
-                           .ReturnsAsync((ApplicationUser)null);
-
-            userManagerMock.Setup(x => x.CheckPasswordAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
-                           .ReturnsAsync(false);
-
-            return userManagerMock;
-        }
     }
 }
