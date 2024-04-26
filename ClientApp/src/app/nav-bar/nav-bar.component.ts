@@ -1,17 +1,19 @@
-import { Component, HostListener, OnInit, Renderer2 } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { ErrorHandlerService } from '../services/error-handler.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
-  selector: 'app-nav-bar',
-  templateUrl: './nav-bar.component.html',
-  styleUrls: ['./nav-bar.component.css', '../../styles.css']
+    selector: 'app-nav-bar',
+    templateUrl: './nav-bar.component.html',
+    styleUrls: ['./nav-bar.component.css', '../../styles.css'],
+    providers: [MessageService]
 })
 
 export class NavBarComponent implements OnInit {
-    constructor(private cookieService : CookieService, private router: Router, private http: HttpClient, private errorHandler: ErrorHandlerService) {}
+    constructor(private cookieService : CookieService, private router: Router, private http: HttpClient, private errorHandler: ErrorHandlerService, private messageService: MessageService) {}
 
     isDropstart: boolean = true;
 
@@ -60,6 +62,7 @@ export class NavBarComponent implements OnInit {
         this.http.get(`https://localhost:7045/Auth/Logout?userId=${userId}`, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {
+                this.messageService.add({ severity: 'success', summary: 'Heading', detail: 'Goodbye :('})
                 this.router.navigate(['/']);
             }
         }, 

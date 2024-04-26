@@ -14,7 +14,7 @@ export class HomeComponent implements OnInit {
     isMoonActive: boolean = false;
     displayHomeText: string = "";
     animation: boolean = true;
-    isLoading: boolean = true;
+    isLoading: boolean = false;
 
     ngOnInit() {
         this.animation = this.cookieService.get("Animation") != "False";
@@ -24,6 +24,7 @@ export class HomeComponent implements OnInit {
         setInterval(() => {
             this.toggleImageClasses();
         }, 10000);
+
     }
     
     toggleImageClasses() {

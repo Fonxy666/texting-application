@@ -17,7 +17,7 @@ import { ErrorHandlerService } from '../../services/error-handler.service';
 })
 
 export class ProfileComponent implements OnInit {
-
+    isLoading: boolean = false;
     profilePic: string = "";
     imageChangedEvent: any = '';
     croppedImage: any = '';
@@ -30,12 +30,14 @@ export class ProfileComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.isLoading = true;
         this.getUser(this.user.id);
         this.loadProfileData(this.user.id);
         this.passwordChangeRequest = this.fb.group({
             oldPassword: ['', Validators.required],
             newPassword: ['', Validators.required]
         })
+        this.isLoading = false;
     }
 
     getUser(userId: string) {
@@ -130,6 +132,7 @@ export class ProfileComponent implements OnInit {
     }
 
     changePassword(data: ChangePasswordRequest) {
+        this.isLoading = true;
         data.id = this.user.id;
         this.http.patch('https://localhost:7045/User/ChangePassword', data, { withCredentials: true})
         .pipe(
@@ -137,7 +140,7 @@ export class ProfileComponent implements OnInit {
         )
         .subscribe((response: any) => {
             if (response) {
-                this.router.navigate(['/']);
+                this.isLoading = false;
             }
         }, 
         (error) => {
