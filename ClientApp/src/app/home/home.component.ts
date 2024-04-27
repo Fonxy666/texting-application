@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
 import { MessageService } from 'primeng/api';
-import { NotificationService } from '../services/toast-message.service';
-import { ToastMessage } from '../model/ToastMessage';
 
 @Component({
   selector: 'app-home',
@@ -12,7 +10,7 @@ import { ToastMessage } from '../model/ToastMessage';
 })
 
 export class HomeComponent implements OnInit {
-    constructor(private cookieService: CookieService, private messageService: MessageService, private notificationService: NotificationService) { }
+    constructor(private cookieService: CookieService, private messageService: MessageService) { }
 
     myImage: string = "./assets/images/backgroundpng.png";
     isSunActive: boolean = true;
@@ -33,23 +31,16 @@ export class HomeComponent implements OnInit {
         setTimeout(() => {
             const urlParams = new URLSearchParams(window.location.search);
             const loginSuccessParam = urlParams.get('loginSuccess');
+
             if (loginSuccessParam === 'true') {
-                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successfull login.' });
+                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successfull login.', styleClass: 'ui-toast-message-success' });
             } else if (loginSuccessParam === 'false') {
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Unsuccessful login, please try again later.' });
             }
-        }, 0);
 
-
-        setTimeout(() => {
-            this.notificationService.message$.subscribe(message => {
-                this.show(message);
-            });
+            const newUrl = window.location.pathname + window.location.search.replace('?loginSuccess=true', '').replace('?loginSuccess=false', '');
+            history.replaceState({}, document.title, newUrl);
         }, 0);
-    }
-    
-    show(message: ToastMessage) {
-        this.messageService.add({ severity: message['Severity'], summary: message['Summary'], detail: message['Detail'] });
     }
 
 

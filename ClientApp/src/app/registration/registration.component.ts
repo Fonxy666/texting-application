@@ -4,7 +4,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { TokenValidatorRequest } from '../model/TokenValidatorRequest';
 import { MessageService } from 'primeng/api';
-import { NotificationService } from '../services/toast-message.service';
 
 @Component({
   selector: 'app-registration',
@@ -13,7 +12,7 @@ import { NotificationService } from '../services/toast-message.service';
 })
 
 export class RegistrationComponent {
-    constructor(private http: HttpClient, private router: Router, private messageService: MessageService, private notificationService: NotificationService) { }
+    constructor(private http: HttpClient, private router: Router, private messageService: MessageService) { }
 
     isLoading: boolean = false;
     user: any;
@@ -52,8 +51,7 @@ export class RegistrationComponent {
             if (response) {
                 this.sendRegistration();
                 this.isLoading = false;
-                this.notificationService.setMessage({ severity: 'success', summary: 'Success', detail: 'Successfully registered.' });
-                this.router.navigate(['login']);
+                this.router.navigate(['login'], { queryParams: { registrationSuccess: 'true' } });
             }
         },
         (error) => {

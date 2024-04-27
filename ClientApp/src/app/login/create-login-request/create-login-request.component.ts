@@ -1,8 +1,6 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LoginRequest } from '../../model/LoginRequest';
-import { HttpClient } from '@angular/common/http';
-import { NotificationService } from '../../services/toast-message.service';
 
 @Component({
   selector: 'app-create-login-request',
@@ -11,7 +9,7 @@ import { NotificationService } from '../../services/toast-message.service';
 })
 
 export class CreateLoginRequestComponent implements OnInit {
-    constructor(private fb: FormBuilder, private http: HttpClient, private notificationService: NotificationService) { }
+    constructor(private fb: FormBuilder) { }
 
     googleIcon: string = "./assets/images/google_icon.png";
     facebookIcon: string = "./assets/images/facebook_image.png";

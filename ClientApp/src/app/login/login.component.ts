@@ -5,7 +5,6 @@ import { CookieService } from 'ngx-cookie-service';
 import { Router } from '@angular/router';
 import { LoginAuthTokenRequest } from '../model/LoginAuthTokenRequest';
 import { MessageService } from 'primeng/api';
-import { NotificationService } from '../services/toast-message.service';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +15,7 @@ import { NotificationService } from '../services/toast-message.service';
 
 export class LoginComponent implements OnInit {
     loadGoogleSigninLibrary: any;
-    constructor(private http: HttpClient, private cookieService: CookieService, private router: Router, private messageService: MessageService, private notificationService: NotificationService) { }
+    constructor(private http: HttpClient, private cookieService: CookieService, private router: Router, private messageService: MessageService) { }
 
     isLoading: boolean = false;
     loginStarted: boolean = false;
@@ -27,9 +26,19 @@ export class LoginComponent implements OnInit {
             this.router.navigate(['/']);
         }
 
-        this.notificationService.message$.subscribe(message => {
-            this.messageService.add(message);
-        });
+        setTimeout(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const loginSuccessParam = urlParams.get('registrationSuccess');
+
+            if (loginSuccessParam === 'true') {
+                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successfull registration.', styleClass: 'ui-toast-message-success' });
+            } else if (loginSuccessParam === 'false') {
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Unsuccessful registration, please try again later.' });
+            }
+
+            const newUrl = window.location.pathname + window.location.search.replace('?registrationSuccess=true', '').replace('?registrationSuccess=false', '');
+            history.replaceState({}, document.title, newUrl);
+        }, 0);
     }
 
     isLoggedIn() : boolean {
@@ -75,8 +84,7 @@ export class LoginComponent implements OnInit {
             if (response.success) {
                 this.loginStarted = false;
                 this.isLoading = false;
-                this.notificationService.setMessage({ severity: 'success', summary: 'Success', detail: 'Successfull login.' });
-                this.router.navigate(['/']);
+                this.router.navigate(['/'], { queryParams: { loginSuccess: 'true' } });
             }
         }, 
         (error) => {

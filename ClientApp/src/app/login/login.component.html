@@ -1,7 +1,7 @@
 <ng-container *ngIf="!isLoggedIn();">
-    <p-toast></p-toast>
     <app-loading-screen *ngIf="isLoading"/>
     <ng-container *ngIf="!loginStarted">
+        <p-toast  position="top-center"></p-toast>
         <app-create-login-request [ngClass]="{'blur-content': isLoading}"
             (SendLoginRequest)="createTask($event)"/>
     </ng-container>
