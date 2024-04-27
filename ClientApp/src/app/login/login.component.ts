@@ -31,7 +31,7 @@ export class LoginComponent implements OnInit {
             const loginSuccessParam = urlParams.get('registrationSuccess');
 
             if (loginSuccessParam === 'true') {
-                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successfull registration.', styleClass: 'ui-toast-message-success' });
+                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successful registration.', styleClass: 'ui-toast-message-success' });
             } else if (loginSuccessParam === 'false') {
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Unsuccessful registration, please try again later.' });
             }

@@ -288,6 +288,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 .ui-toast-message-success {
-    background-color: #90d392; /* Green */
+    background-color: #aaf5ad;
+    color: white;
+}
+
+.ui-toast-message-info {
+    background-color: #5ba4e9;
     color: white;
 }

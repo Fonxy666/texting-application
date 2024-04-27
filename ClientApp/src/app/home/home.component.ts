@@ -33,7 +33,7 @@ export class HomeComponent implements OnInit {
             const loginSuccessParam = urlParams.get('loginSuccess');
 
             if (loginSuccessParam === 'true') {
-                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successfull login.', styleClass: 'ui-toast-message-success' });
+                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successful login.', styleClass: 'ui-toast-message-success' });
             } else if (loginSuccessParam === 'false') {
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Unsuccessful login, please try again later.' });
             }
