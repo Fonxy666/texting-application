@@ -76,7 +76,6 @@ export class LoginComponent implements OnInit {
                 this.loginStarted = false;
                 this.isLoading = false;
                 this.notificationService.setMessage({ severity: 'success', summary: 'Success', detail: 'Successfull login.' });
-                console.log("settelve");
                 this.router.navigate(['/']);
             }
         }, 

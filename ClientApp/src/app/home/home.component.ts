@@ -31,6 +31,17 @@ export class HomeComponent implements OnInit {
         }, 10000);
 
         setTimeout(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const loginSuccessParam = urlParams.get('loginSuccess');
+            if (loginSuccessParam === 'true') {
+                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successfull login.' });
+            } else if (loginSuccessParam === 'false') {
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Unsuccessful login, please try again later.' });
+            }
+        }, 0);
+
+
+        setTimeout(() => {
             this.notificationService.message$.subscribe(message => {
                 this.show(message);
             });
