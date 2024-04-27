@@ -1,13 +1,13 @@
-import { Component, HostListener, OnInit, Renderer2 } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { ErrorHandlerService } from '../services/error-handler.service';
 
 @Component({
-  selector: 'app-nav-bar',
-  templateUrl: './nav-bar.component.html',
-  styleUrls: ['./nav-bar.component.css', '../../styles.css']
+    selector: 'app-nav-bar',
+    templateUrl: './nav-bar.component.html',
+    styleUrls: ['./nav-bar.component.css', '../../styles.css']
 })
 
 export class NavBarComponent implements OnInit {
@@ -60,7 +60,7 @@ export class NavBarComponent implements OnInit {
         this.http.get(`https://localhost:7045/Auth/Logout?userId=${userId}`, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {
-                this.router.navigate(['/']);
+                this.router.navigate(['/'], { queryParams: { logout: 'true' } });
             }
         }, 
         (error) => {

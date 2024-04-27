@@ -112,6 +112,11 @@ public class UserController(
             {
                 return NotFound($"2FA not enabled for user: {existingUser.Id}");
             }
+
+            if (userManager.Users.Any(user => user.Email == request.NewEmail))
+            {
+                return StatusCode(400);
+            }
                 
             var token = await userManager.GenerateChangeEmailTokenAsync(existingUser, request.NewEmail);
             await userManager.ChangeEmailAsync(existingUser, request.NewEmail, token);

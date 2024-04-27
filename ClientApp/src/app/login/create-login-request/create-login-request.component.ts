@@ -1,7 +1,6 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LoginRequest } from '../../model/LoginRequest';
-import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-create-login-request',
@@ -10,7 +9,7 @@ import { HttpClient } from '@angular/common/http';
 })
 
 export class CreateLoginRequestComponent implements OnInit {
-    constructor(private fb: FormBuilder, private http: HttpClient) { }
+    constructor(private fb: FormBuilder) { }
 
     googleIcon: string = "./assets/images/google_icon.png";
     facebookIcon: string = "./assets/images/facebook_image.png";
@@ -39,5 +38,13 @@ export class CreateLoginRequestComponent implements OnInit {
 
     toggleShowPassword() {
         this.showPassword = !this.showPassword;
+    }
+
+    handleGoogleLogin() {
+        window.location.href = "https://localhost:7045/Auth/LoginWithGoogle";
+    }
+
+    handleFacebookLogin() {
+        window.location.href = "https://localhost:7045/Auth/LoginWithFacebook";
     }
 }

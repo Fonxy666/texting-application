@@ -174,12 +174,12 @@ public class AuthController(
                 }
             }
 
-            return Redirect("http://localhost:4200");
+            return Redirect("http://localhost:4200?loginSuccess=true");
         }
         catch (Exception e)
         {
             logger.LogError(e, "Error during facebook login.");
-            return BadRequest("Error during facebook login.");
+            return Redirect("http://localhost:4200?loginSuccess=false");
         }
     }
     
@@ -223,12 +223,12 @@ public class AuthController(
                 }
             }
 
-            return Redirect("http://localhost:4200");
+            return Redirect("http://localhost:4200?loginSuccess=true");
         }
         catch (Exception e)
         {
             logger.LogError(e, "Error during google login.");
-            return BadRequest("Error during google login.");
+            return Redirect("http://localhost:4200?loginSuccess=false");
         }
     }
     

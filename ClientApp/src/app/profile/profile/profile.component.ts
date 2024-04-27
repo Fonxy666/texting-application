@@ -9,15 +9,17 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { ChangeAvatarRequest } from '../../model/ChangeAvatarRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
-  selector: 'app-profile',
-  templateUrl: './profile.component.html',
-  styleUrl: './profile.component.css'
+    selector: 'app-profile',
+    templateUrl: './profile.component.html',
+    styleUrl: './profile.component.css',
+    providers: [ MessageService ]
 })
 
 export class ProfileComponent implements OnInit {
-
+    isLoading: boolean = false;
     profilePic: string = "";
     imageChangedEvent: any = '';
     croppedImage: any = '';
@@ -25,17 +27,19 @@ export class ProfileComponent implements OnInit {
     user: { id: string, name: string, image: string, token: string, email: string, twoFactorEnabled: boolean } = { id: "", name: '', image: '', token: '', email: '', twoFactorEnabled: false };
     passwordChangeRequest!: FormGroup;
 
-    constructor(private http: HttpClient, private cookieService: CookieService, private fb: FormBuilder, private router: Router, private sanitizer: DomSanitizer, private errorHandler: ErrorHandlerService) {
+    constructor(private http: HttpClient, private cookieService: CookieService, private fb: FormBuilder, private router: Router, private sanitizer: DomSanitizer, private errorHandler: ErrorHandlerService, private messageService: MessageService) {
         this.user.id = this.cookieService.get('UserId');
     }
 
     ngOnInit(): void {
+        this.isLoading = true;
         this.getUser(this.user.id);
         this.loadProfileData(this.user.id);
         this.passwordChangeRequest = this.fb.group({
             oldPassword: ['', Validators.required],
             newPassword: ['', Validators.required]
         })
+        this.isLoading = false;
     }
 
     getUser(userId: string) {
@@ -119,7 +123,8 @@ export class ProfileComponent implements OnInit {
         )
         .subscribe((response: any) => {
             if (response && response.status === 'Ok') {
-                location.reload();
+                this.getUser(this.user.id);
+                this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Avatar change succeeded :)', styleClass: 'ui-toast-message-info' });
             }
         }, 
         (error) => {
@@ -130,6 +135,7 @@ export class ProfileComponent implements OnInit {
     }
 
     changePassword(data: ChangePasswordRequest) {
+        this.isLoading = true;
         data.id = this.user.id;
         this.http.patch('https://localhost:7045/User/ChangePassword', data, { withCredentials: true})
         .pipe(
@@ -137,21 +143,23 @@ export class ProfileComponent implements OnInit {
         )
         .subscribe((response: any) => {
             if (response) {
-                this.router.navigate(['/']);
+                this.isLoading = false;
+                this.getUser(this.user.id);
+                this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Your password changed.', styleClass: 'ui-toast-message-info' });
             }
         }, 
         (error) => {
             if (error.status === 403) {
                 this.errorHandler.handleError403(error);
             } else if (error.status === 400) {
-                alert("Wrong password.");
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Unsuccessful change, wrong password(s).' });
             }
         });
     }
 
     changeEmail(data: ChangeEmailRequest) {
         if (data.newEmail === data.oldEmail) {
-            alert("This is your actual e-mail.");
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'This is your actual e-mail. Try with another.' });
             return;
         }
         this.http.patch('https://localhost:7045/User/ChangeEmail', data, { withCredentials: true})
@@ -160,15 +168,15 @@ export class ProfileComponent implements OnInit {
         )
         .subscribe((response: any) => {
             if (response) {
-                alert("Email change succeeded!");
-                location.reload();
+                this.getUser(this.user.id);
+                this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Your e-mail changed.', styleClass: 'ui-toast-message-info' });
             }
         }, 
         (error) => {
             if (error.status === 403) {
                 this.errorHandler.handleError403(error);
             } else if (error.status === 400) {
-                alert("This email is already in use.");
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'This new e-mail is already in use. Try with another.' });
             }
         })
     }

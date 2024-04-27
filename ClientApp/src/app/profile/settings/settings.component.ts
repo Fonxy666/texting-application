@@ -1,15 +1,17 @@
 import { Component } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { MessageService } from 'primeng/api';
 
 @Component({
-  selector: 'app-settings',
-  templateUrl: './settings.component.html',
-  styleUrl: './settings.component.css'
+    selector: 'app-settings',
+    templateUrl: './settings.component.html',
+    styleUrl: './settings.component.css',
+    providers: [ MessageService ]
 })
 export class SettingsComponent {
 
-    constructor(private cookieService : CookieService, private http: HttpClient) {}
+    constructor(private cookieService : CookieService, private http: HttpClient, private messageService: MessageService) {}
     myImage: string = "./assets/images/chat-mountain.jpg";
     animate: boolean = (this.cookieService.get('Animation') === 'True');
     anonymous: boolean = (this.cookieService.get('Anonymous') === 'True');
@@ -24,9 +26,9 @@ export class SettingsComponent {
             if (response) {
                 this.animate = !this.animate;
                 if (this.animate) {
-                    alert(["All animations enabled in the webpage."]);
+                    this.messageService.add({ severity: 'info', summary: 'Info', detail: 'All animations enabled in the webpage.', styleClass: 'ui-toast-message-info' });
                 } else {
-                    alert(["All animations disabled in the webpage."]);
+                    this.messageService.add({ severity: 'info', summary: 'Info', detail: 'All animations disabled in the webpage.', styleClass: 'ui-toast-message-info' });
                 }
             }
         });
@@ -42,9 +44,9 @@ export class SettingsComponent {
             if (response) {
                 this.anonymous = !this.anonymous;
                 if (this.anonymous) {
-                    alert(["Now other users cannot see your username/e-mail."]);
+                    this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Now other users cannot see your username/e-mail.', styleClass: 'ui-toast-message-info' });
                 } else {
-                    alert(["Now other users can see your username/e-mail."]);
+                    this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Now other users can see your username/e-mail.', styleClass: 'ui-toast-message-info' });
                 }
             }
         });

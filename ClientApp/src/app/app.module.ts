@@ -24,7 +24,10 @@ import { CreateEmailVerificationRequestComponent } from './registration/create-e
 import { CreateRoomComponent } from './chat/create-room/create-room.component';
 import { ProvideLoginAuthTokenComponent } from './login/provide-login-auth-token/provide-login-auth-token.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { MaterialModule } from './material/material.module';
+import { LoadingScreenComponent } from './loading-screen/loading-screen.component';
+import { ToastModule } from 'primeng/toast';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ButtonModule } from 'primeng/button';
 
 @NgModule({
   declarations: [
@@ -45,6 +48,7 @@ import { MaterialModule } from './material/material.module';
     CreateEmailVerificationRequestComponent,
     CreateRoomComponent,
     ProvideLoginAuthTokenComponent,
+    LoadingScreenComponent
   ],
   imports: [
     BrowserModule,
@@ -53,7 +57,9 @@ import { MaterialModule } from './material/material.module';
     HttpClientModule,
     ReactiveFormsModule,
     ImageCropperModule,
-    MaterialModule
+    BrowserAnimationsModule,
+    ToastModule,
+    ButtonModule
   ],
   providers: [
     CookieService,

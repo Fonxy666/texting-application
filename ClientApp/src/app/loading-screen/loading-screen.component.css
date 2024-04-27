@@ -1,0 +1,14 @@
+.spinner-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100vw;
+    min-height: 100vh;
+    z-index: 10;
+    position: fixed;
+}
+
+.spinner-border {
+    width: 6rem;
+    height: 6rem;
+}
