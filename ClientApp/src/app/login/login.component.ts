@@ -4,16 +4,19 @@ import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { Router } from '@angular/router';
 import { LoginAuthTokenRequest } from '../model/LoginAuthTokenRequest';
+import { MessageService } from 'primeng/api';
+import { NotificationService } from '../services/toast-message.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrl: '../../styles.css'
+  styleUrl: '../../styles.css',
+  providers: [ MessageService ]
 })
 
 export class LoginComponent implements OnInit {
     loadGoogleSigninLibrary: any;
-    constructor(private http: HttpClient, private cookieService: CookieService, private router: Router) { }
+    constructor(private http: HttpClient, private cookieService: CookieService, private router: Router, private messageService: MessageService, private notificationService: NotificationService) { }
 
     isLoading: boolean = false;
     loginStarted: boolean = false;
@@ -23,6 +26,10 @@ export class LoginComponent implements OnInit {
         if (this.isLoggedIn()) {
             this.router.navigate(['/']);
         }
+
+        this.notificationService.message$.subscribe(message => {
+            this.messageService.add(message);
+        });
     }
 
     isLoggedIn() : boolean {
@@ -68,6 +75,8 @@ export class LoginComponent implements OnInit {
             if (response.success) {
                 this.loginStarted = false;
                 this.isLoading = false;
+                this.notificationService.setMessage({ severity: 'success', summary: 'Success', detail: 'Successfull login.' });
+                console.log("settelve");
                 this.router.navigate(['/']);
             }
         }, 

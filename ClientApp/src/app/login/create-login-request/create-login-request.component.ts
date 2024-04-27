@@ -40,4 +40,12 @@ export class CreateLoginRequestComponent implements OnInit {
     toggleShowPassword() {
         this.showPassword = !this.showPassword;
     }
+
+    handleGoogleLogin() {
+        window.location.href = "https://localhost:7045/Auth/LoginWithGoogle";
+    }
+
+    handleFacebookLogin() {
+        window.location.href = "https://localhost:7045/Auth/LoginWithFacebook";
+    }
 }

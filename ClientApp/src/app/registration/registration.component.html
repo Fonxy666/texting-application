@@ -1,8 +1,12 @@
-<ng-container *ngIf="this.showVerifyPage === false">
-    <app-create-registration-request
-        (SendRegistrationRequest)="getVerifyTokenAndGoToVerifyPage($event)" />
-</ng-container>
-<ng-container *ngIf="this.showVerifyPage === true">
-    <app-create-email-verification-request
-        (SendVerificationCode)="getVerifyTokenAndSendRegistration($event)" />
-</ng-container>
+<div>
+    <p-toast></p-toast>
+    <app-loading-screen *ngIf="isLoading"/>
+    <ng-container *ngIf="this.showVerifyPage === false">
+        <app-create-registration-request [ngClass]="{'blur-content': isLoading}"
+            (SendRegistrationRequest)="getVerifyTokenAndGoToVerifyPage($event)"/>
+    </ng-container>
+    <ng-container *ngIf="this.showVerifyPage === true">
+        <app-create-email-verification-request [ngClass]="{'blur-content': isLoading}"
+            (SendVerificationCode)="getVerifyTokenAndSendRegistration($event)"/>
+    </ng-container>
+</div>
