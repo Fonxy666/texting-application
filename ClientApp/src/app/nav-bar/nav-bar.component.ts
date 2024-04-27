@@ -60,7 +60,7 @@ export class NavBarComponent implements OnInit {
         this.http.get(`https://localhost:7045/Auth/Logout?userId=${userId}`, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {
-                this.router.navigate(['/']);
+                this.router.navigate(['/'], { queryParams: { logout: 'true' } });
             }
         }, 
         (error) => {

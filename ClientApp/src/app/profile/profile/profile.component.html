@@ -2,6 +2,7 @@
     <app-loading-screen *ngIf="this.isLoading"/>
     <div [ngClass]="{'blur-content': isLoading}">
         <app-nav-bar />
+        <p-toast></p-toast>
         <div class="card">
             <div class="m-3">
                 Username: {{this.user.name}}

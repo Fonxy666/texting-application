@@ -31,6 +31,11 @@ export class HomeComponent implements OnInit {
         setTimeout(() => {
             const urlParams = new URLSearchParams(window.location.search);
             const loginSuccessParam = urlParams.get('loginSuccess');
+            const logoutParam = urlParams.get('logout');
+
+            if (logoutParam === 'true') {
+                this.messageService.add({ severity: 'info', summary: 'Info', detail: 'You logged out. Goodbye, hopefully we will meet later on ! :)', styleClass: 'ui-toast-message-info' });
+            }
 
             if (loginSuccessParam === 'true') {
                 this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successful login.', styleClass: 'ui-toast-message-success' });
@@ -38,7 +43,7 @@ export class HomeComponent implements OnInit {
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Unsuccessful login, please try again later.' });
             }
 
-            const newUrl = window.location.pathname + window.location.search.replace('?loginSuccess=true', '').replace('?loginSuccess=false', '');
+            const newUrl = window.location.pathname + window.location.search.replace('?loginSuccess=true', '').replace('?loginSuccess=false', '').replace('?logout=true', '');
             history.replaceState({}, document.title, newUrl);
         }, 0);
     }

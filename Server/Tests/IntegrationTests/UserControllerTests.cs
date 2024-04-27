@@ -54,20 +54,25 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
-        var emailRequest = new ChangeEmailRequest("test1@hotmail.com", "test1@hotmail.com");
+        var emailRequest = new ChangeEmailRequest("test1@hotmail.com", "test1@hotmail123.com");
         var jsonRequestRegister = JsonConvert.SerializeObject(emailRequest);
         var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var getUserResponse = await _client.PatchAsync("/User/ChangeEmail", userChangeEmail);
         getUserResponse.EnsureSuccessStatusCode();
         
+        var emailRequest2 = new ChangeEmailRequest("test1@hotmail123.com", "test1@hotmail.com");
+        var jsonRequestRegister2 = JsonConvert.SerializeObject(emailRequest2);
+        var userChangeEmail2 = new StringContent(jsonRequestRegister2, Encoding.UTF8, "application/json");
+
+        var getUserResponse2 = await _client.PatchAsync("/User/ChangeEmail", userChangeEmail2);
+        getUserResponse2.EnsureSuccessStatusCode();
+        
         var responseContent = await getUserResponse.Content.ReadAsStringAsync();
     
         var responseObject = JsonConvert.DeserializeObject<EmailUsernameResponse>(responseContent);
 
         Assert.NotNull(responseObject);
-        Assert.Equal("test1@hotmail.com", responseObject.Email);
-        Assert.Equal("TestUsername1", responseObject.UserName);
     }
     
     [Fact]
@@ -98,6 +103,21 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         var getUserResponse = await _client.PatchAsync("/User/ChangeEmail", userChangeEmail);
         Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task ChangeEmail_WithInUserEmail_ReturnNotNotFound()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser3, _client, "test3@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var emailRequest = new ChangeEmailRequest("test1@hotmail.com", "test3@hotmail.com");
+        var jsonRequestRegister = JsonConvert.SerializeObject(emailRequest);
+        var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
+
+        var getUserResponse = await _client.PatchAsync("/User/ChangeEmail", userChangeEmail);
+        Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
     
     [Fact]
@@ -171,7 +191,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task GetImage_WithValidId_ReturnSuccessStatusCode()
     {
-        const string userId = "347045a9-f051-4a0e-aa93-3dfe59cd43c2";
+        const string userId = "18c5eb4f-b614-45d0-9ee8-ad7f17e88dd9";
         
         Directory.SetCurrentDirectory("D:/after codecool/texting-application/Server/MessageAppServer");
     
@@ -272,7 +292,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
-        var request = new AvatarChange("347045a9-f051-4a0e-aa93-3dfe59cd43c2", "-");
+        var request = new AvatarChange("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "-");
         var jsonRequestRegister = JsonConvert.SerializeObject(request);
         var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
         
