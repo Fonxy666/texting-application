@@ -1,10 +1,11 @@
 <ng-container *ngIf="!isLoggedIn();">
-    <ng-container *ngIf="!loginStarted;">
-        <app-create-login-request
+    <app-loading-screen *ngIf="isLoading"/>
+    <ng-container *ngIf="!loginStarted">
+        <app-create-login-request [ngClass]="{'blur-content': isLoading}"
             (SendLoginRequest)="createTask($event)"/>
     </ng-container>
-    <ng-container *ngIf="loginStarted;">
-        <app-provide-login-auth-token
+    <ng-container *ngIf="loginStarted">
+        <app-provide-login-auth-token [ngClass]="{'blur-content': isLoading}"
             (SendToken)="sendLoginToken($event)"
             (cancelLogin)="cancelLogin()"/>
     </ng-container>

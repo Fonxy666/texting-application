@@ -46,7 +46,7 @@ import { LoadingScreenComponent } from './loading-screen/loading-screen.componen
     CreateEmailVerificationRequestComponent,
     CreateRoomComponent,
     ProvideLoginAuthTokenComponent,
-    LoadingScreenComponent,
+    LoadingScreenComponent
   ],
   imports: [
     BrowserModule,

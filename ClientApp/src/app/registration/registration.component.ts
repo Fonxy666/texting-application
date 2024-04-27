@@ -12,6 +12,7 @@ import { TokenValidatorRequest } from '../model/TokenValidatorRequest';
 export class RegistrationComponent {
     constructor(private http: HttpClient, private router: Router) { }
 
+    isLoading: boolean = false;
     user: any;
     showVerifyPage: boolean = false;
 
