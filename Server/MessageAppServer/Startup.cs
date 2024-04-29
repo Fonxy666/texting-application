@@ -26,7 +26,7 @@ namespace Server
             var connection = configuration["ConnectionString"];
             var issueSign = configuration["IssueSign"];
             var issueAudience = configuration["IssueAudience"];
-            var localhost = connection.Split("=")[1].Split(",")[0] == "localhost";
+            /*var localhost = connection.Split("=")[1].Split(",")[0] == "localhost";
             
             if (localhost)
             {
@@ -46,7 +46,7 @@ namespace Server
                         Thread.Sleep(10000);
                     }
                 }
-            }
+            }*/
 
             services.AddHttpContextAccessor();
             services.AddControllers(options =>
