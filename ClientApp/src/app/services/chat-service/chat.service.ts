@@ -6,6 +6,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
 import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
 import { ConnectedUser } from '../../model/ConnectedUser';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
     providedIn: 'root'
@@ -20,7 +21,7 @@ export class ChatService {
 
     constructor(private cookieService: CookieService) {
         this.connection = new signalR.HubConnectionBuilder()
-            .withUrl('https://localhost:7045/chat')
+            .withUrl(`https://localhost:${environment.port}/chat`)
             .configureLogging(signalR.LogLevel.Information)
             .build();
 

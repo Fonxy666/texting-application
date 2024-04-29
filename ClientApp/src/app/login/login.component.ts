@@ -5,6 +5,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { Router } from '@angular/router';
 import { LoginAuthTokenRequest } from '../model/LoginAuthTokenRequest';
 import { MessageService } from 'primeng/api';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -51,7 +52,7 @@ export class LoginComponent implements OnInit {
     
     createTask(data: LoginRequest) {
         this.isLoading = true;
-        this.http.post('https://localhost:7045/Auth/SendLoginToken', data, { withCredentials: true })
+        this.http.post(`https://localhost:${environment.port}/Auth/SendLoginToken`, data, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {
                 this.loginRequest.username = data.username;
@@ -79,7 +80,7 @@ export class LoginComponent implements OnInit {
         expirationDate.setFullYear(expirationDate.getFullYear() + 10);
         const request = new LoginAuthTokenRequest(this.loginRequest.username, this.loginRequest.password, this.loginRequest.rememberme, token);
 
-        this.http.post('https://localhost:7045/Auth/Login', request, { withCredentials: true })
+        this.http.post(`https://localhost:${environment.port}/Auth/Login`, request, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {
                 this.loginStarted = false;

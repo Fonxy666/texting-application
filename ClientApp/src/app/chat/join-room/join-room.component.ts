@@ -6,6 +6,7 @@ import { ChatService } from '../../services/chat-service/chat.service';
 import { HttpClient } from '@angular/common/http';
 import { JoinRoomRequest } from '../../model/JoinRoomRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-join-room',
@@ -53,7 +54,7 @@ export class JoinRoomComponent implements OnInit {
 
     joinRoom() {
         const data = this.createForm();
-        this.http.post('https://localhost:7045/Chat/JoinRoom', data, { withCredentials: true })
+        this.http.post(`https://localhost:${environment.port}/Chat/JoinRoom`, data, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )
@@ -78,7 +79,7 @@ export class JoinRoomComponent implements OnInit {
     }
 
     getUsername(user: any) {
-        this.http.get(`https://localhost:7045/User/GetUsername?userId=${user}`, { withCredentials: true})
+        this.http.get(`https://localhost:${environment.port}/User/GetUsername?userId=${user}`, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401()
         )

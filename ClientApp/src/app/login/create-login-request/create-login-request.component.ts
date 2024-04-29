@@ -1,6 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LoginRequest } from '../../model/LoginRequest';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-create-login-request',
@@ -41,10 +42,10 @@ export class CreateLoginRequestComponent implements OnInit {
     }
 
     handleGoogleLogin() {
-        window.location.href = "https://localhost:7045/Auth/LoginWithGoogle";
+        window.location.href = `https://localhost:${environment.port}/Auth/LoginWithGoogle`;
     }
 
     handleFacebookLogin() {
-        window.location.href = "https://localhost:7045/Auth/LoginWithFacebook";
+        window.location.href = `https://localhost:${environment.port}/Auth/LoginWithFacebook`;
     }
 }
