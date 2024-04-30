@@ -26,6 +26,23 @@ namespace Server
             var connection = configuration["ConnectionString"];
             var issueSign = configuration["IssueSign"];
             var issueAudience = configuration["IssueAudience"];
+
+            Console.WriteLine("-----------------------------------------------------------------");
+            Console.WriteLine(configuration["IssueAudience"]);
+            Console.WriteLine(configuration["ConnectionString"]);
+            Console.WriteLine(configuration["IssueSign"]);
+            Console.WriteLine(configuration["AdminEmail"]);
+            Console.WriteLine(configuration["AdminUserName"]);
+            Console.WriteLine(configuration["AdminPassword"]);
+            Console.WriteLine(configuration["DeveloperEmail"]);
+            Console.WriteLine(configuration["DeveloperPassword"]);
+            Console.WriteLine(configuration["GoogleClientId"]);
+            Console.WriteLine(configuration["GoogleClientSecret"]);
+            Console.WriteLine(configuration["FacebookClientId"]);
+            Console.WriteLine(configuration["FacebookClientSecret"]);
+            Console.WriteLine(configuration["ImageFolderPath"]);
+            Console.WriteLine("-----------------------------------------------------------------");
+            
             /*var localhost = connection.Split("=")[1].Split(",")[0] == "localhost";
             
             if (localhost)

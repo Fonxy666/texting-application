@@ -17,7 +17,8 @@ public class UserController(
     UserManager<ApplicationUser> userManager,
     UsersContext repository,
     IUserServices userServices,
-    ILogger<UserController> logger) : ControllerBase
+    ILogger<UserController> logger,
+    IConfiguration configuration) : ControllerBase
 {
     [HttpGet("GetUsername"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<UsernameResponse>> GetUsername([FromQuery]string userId)
@@ -73,8 +74,12 @@ public class UserController(
             {
                 return NotFound("User not found.");
             }
-            
-            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
+
+            Console.WriteLine("-----------------------------------------------");
+            Console.WriteLine(Directory.GetCurrentDirectory());
+            Console.WriteLine("-----------------------------------------------");
+            var folderPath = configuration["ImageFolderPath"] ??
+                             Path.Combine(Directory.GetCurrentDirectory(), "Images");
             var imagePath = Path.Combine(folderPath, $"{existingUser!.UserName}.png");
             FileContentResult result = null;
 

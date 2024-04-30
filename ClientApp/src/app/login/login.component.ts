@@ -65,11 +65,14 @@ export class LoginComponent implements OnInit {
             if (error.status === 404) {
                 if (!isNaN(error.error)) {
                     alert(`Invalid username or password, you have ${5-error.error} tries.`);
+                    this.isLoading = false;
                 } else {
                     alert(error.error);
+                    this.isLoading = false;
                 }
             } else {
-                console.error("An error occurred:", error);
+                alert(error.error);
+                this.isLoading = false;
             }
         });
     }
