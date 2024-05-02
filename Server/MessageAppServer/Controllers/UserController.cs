@@ -12,7 +12,7 @@ using Server.Services.User;
 namespace Server.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/v1/[controller]")]
 public class UserController(
     UserManager<ApplicationUser> userManager,
     UsersContext repository,
@@ -74,10 +74,7 @@ public class UserController(
             {
                 return NotFound("User not found.");
             }
-
-            Console.WriteLine("-----------------------------------------------");
-            Console.WriteLine(Directory.GetCurrentDirectory());
-            Console.WriteLine("-----------------------------------------------");
+            
             var folderPath = configuration["ImageFolderPath"] ??
                              Path.Combine(Directory.GetCurrentDirectory(), "Images");
             var imagePath = Path.Combine(folderPath, $"{existingUser!.UserName}.png");

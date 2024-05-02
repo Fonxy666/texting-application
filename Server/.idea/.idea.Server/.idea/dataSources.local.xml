@@ -16,9 +16,6 @@
           </node>
         </introspection-scope>
       </schema-mapping>
-      <ssh-properties>
-        <enabled>true</enabled>
-      </ssh-properties>
       <ssl-config use-ide-store="true" use-java-store="true" use-system-store="true">
         <ca-cert>D:\after codecool\texting-application\Server\MessageAppServer\ssl\server.crt</ca-cert>
         <client-cert>D:\after codecool\texting-application\Server\MessageAppServer\ssl\server.csr</client-cert>

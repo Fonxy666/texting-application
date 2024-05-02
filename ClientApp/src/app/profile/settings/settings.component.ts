@@ -22,7 +22,7 @@ export class SettingsComponent {
             'Content-Type': 'application/json'
         });
         const params = new HttpParams().set('request', 'Animation');
-        this.http.post(`https://localhost:${environment.port}/Cookie/ChangeCookies`, null, { headers: headers, params: params, responseType: 'text', withCredentials: true })
+        this.http.post(`/api/v1/Cookie/ChangeCookies`, null, { headers: headers, params: params, responseType: 'text', withCredentials: true })
         .subscribe((response: any) => {
             if (response) {
                 this.animate = !this.animate;
@@ -40,7 +40,7 @@ export class SettingsComponent {
             'Content-Type': 'application/json'
         });
         const params = new HttpParams().set('request', 'Anonymous');
-        this.http.post(`https://localhost:${environment.port}/Cookie/ChangeCookies`, null, { headers: headers, params: params, responseType: 'text', withCredentials: true })
+        this.http.post(`/api/v1/Cookie/ChangeCookies`, null, { headers: headers, params: params, responseType: 'text', withCredentials: true })
         .subscribe((response: any) => {
             if (response) {
                 this.anonymous = !this.anonymous;

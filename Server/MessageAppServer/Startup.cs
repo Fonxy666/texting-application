@@ -1,10 +1,13 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Server.Database;
 using Server.DockerHelper;
 using Server.Hub;
@@ -26,22 +29,6 @@ namespace Server
             var connection = configuration["ConnectionString"];
             var issueSign = configuration["IssueSign"];
             var issueAudience = configuration["IssueAudience"];
-
-            Console.WriteLine("-----------------------------------------------------------------");
-            Console.WriteLine(configuration["IssueAudience"]);
-            Console.WriteLine(configuration["ConnectionString"]);
-            Console.WriteLine(configuration["IssueSign"]);
-            Console.WriteLine(configuration["AdminEmail"]);
-            Console.WriteLine(configuration["AdminUserName"]);
-            Console.WriteLine(configuration["AdminPassword"]);
-            Console.WriteLine(configuration["DeveloperEmail"]);
-            Console.WriteLine(configuration["DeveloperPassword"]);
-            Console.WriteLine(configuration["GoogleClientId"]);
-            Console.WriteLine(configuration["GoogleClientSecret"]);
-            Console.WriteLine(configuration["FacebookClientId"]);
-            Console.WriteLine(configuration["FacebookClientSecret"]);
-            Console.WriteLine(configuration["ImageFolderPath"]);
-            Console.WriteLine("-----------------------------------------------------------------");
             
             /*var localhost = connection.Split("=")[1].Split(",")[0] == "localhost";
             
@@ -98,8 +85,23 @@ namespace Server
                     }
                 });
             });
+            
+            services.AddCors(options =>
+            {
+                options.AddPolicy("WebSocketPolicy",
+                    builder =>
+                    {
+                        builder.WithOrigins("http://localhost:4200")
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .AllowCredentials();
+                    });
+            });
 
-            services.AddSignalR();
+            services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
 
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
@@ -209,14 +211,6 @@ namespace Server
 
             app.UseHttpsRedirection();
             app.UseRouting();
-
-            app.UseCors(builder =>
-            {
-                builder.WithOrigins("http://localhost:4200")
-                       .AllowAnyMethod()
-                       .AllowAnyHeader()
-                       .AllowCredentials();
-            });
             
             app.Use(async (context, next) =>
             {
@@ -234,11 +228,13 @@ namespace Server
             
             app.UseAuthentication();
             app.UseAuthorization();
+            
+            app.UseCors("WebSocketPolicy");
 
-            app.UseEndpoints(endpoint =>
+            app.UseEndpoints(endpoints =>
             {
-                endpoint.MapHub<ChatHub>("/chat");
-                endpoint.MapControllers();
+                endpoints.MapHub<ChatHub>("/chat");
+                endpoints.MapControllers();
             });
 
             AddRolesAndAdminAndTestUserAsync(app).Wait();

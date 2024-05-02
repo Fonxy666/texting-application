@@ -31,7 +31,8 @@ ENV IssueAudience=${IssueAudience} \
     GoogleClientId=${GoogleClientId} \
     GoogleClientSecret=${GoogleClientSecret} \
     FacebookClientId=${FacebookClientId} \
-    FacebookClientSecret=${FacebookClientSecret}
+    FacebookClientSecret=${FacebookClientSecret} \
+    FrontendPort=${FrontendPort}
     
 ENV ImageFolderPath=/app/Images
 

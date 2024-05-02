@@ -13,12 +13,13 @@ using Server.Services.User;
 namespace Server.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/v1/[controller]")]
 public class AuthController(
     IAuthService authenticationService,
     IUserServices userServices,
     IEmailSender emailSender,
-    ILogger<AuthController> logger) : ControllerBase
+    ILogger<AuthController> logger,
+    IConfiguration configuration) : ControllerBase
 {
     [HttpPost("SendEmailVerificationToken")]
     public async Task<ActionResult<string>> SendEmailVerificationCode([FromBody]GetEmailForVerificationRequest receiver)
@@ -174,12 +175,12 @@ public class AuthController(
                 }
             }
 
-            return Redirect("http://localhost:4200?loginSuccess=true");
+            return Redirect($"http://localhost:{configuration["FrontendPort"]}?loginSuccess=true");
         }
         catch (Exception e)
         {
             logger.LogError(e, "Error during facebook login.");
-            return Redirect("http://localhost:4200?loginSuccess=false");
+            return Redirect($"http://localhost:{configuration["FrontendPort"]}?loginSuccess=false");
         }
     }
     
@@ -223,12 +224,12 @@ public class AuthController(
                 }
             }
 
-            return Redirect("http://localhost:4200?loginSuccess=true");
+            return Redirect($"http://localhost:{configuration["FrontendPort"]}?loginSuccess=true");
         }
         catch (Exception e)
         {
             logger.LogError(e, "Error during google login.");
-            return Redirect("http://localhost:4200?loginSuccess=false");
+            return Redirect($"http://localhost:{configuration["FrontendPort"]}?loginSuccess=false");
         }
     }
     

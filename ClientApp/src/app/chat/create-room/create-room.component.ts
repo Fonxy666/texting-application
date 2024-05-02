@@ -44,7 +44,7 @@ export class CreateRoomComponent implements OnInit {
     }
 
     sendCreateRoomRequest() {
-        this.http.post(`https://localhost:${environment.port}/Chat/RegisterRoom`, this.createForm(), { withCredentials: true })
+        this.http.post(`/api/v1/Chat/RegisterRoom`, this.createForm(), { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )

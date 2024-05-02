@@ -54,7 +54,7 @@ export class JoinRoomComponent implements OnInit {
 
     joinRoom() {
         const data = this.createForm();
-        this.http.post(`https://localhost:${environment.port}/Chat/JoinRoom`, data, { withCredentials: true })
+        this.http.post(`/api/v1/Chat/JoinRoom`, data, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )
@@ -79,7 +79,7 @@ export class JoinRoomComponent implements OnInit {
     }
 
     getUsername(user: any) {
-        this.http.get(`https://localhost:${environment.port}/User/GetUsername?userId=${user}`, { withCredentials: true})
+        this.http.get(`/api/v1/User/GetUsername?userId=${user}`, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401()
         )

@@ -6,7 +6,7 @@ using Server.Services.Chat.RoomService;
 
 namespace Server.Controllers;
 
-[Route("[controller]")]
+[Route("api/v1/[controller]")]
 public class ChatController(IRoomService roomService, ILogger<ChatController> logger) : ControllerBase
 {
     [HttpPost("RegisterRoom"), Authorize(Roles = "User, Admin")]

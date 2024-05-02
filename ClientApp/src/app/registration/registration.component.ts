@@ -30,7 +30,7 @@ export class RegistrationComponent {
             'Content-Type': 'application/json'
         });
 
-        this.http.post(`https://localhost:${environment.port}/Auth/SendEmailVerificationToken`, requestData, { headers: headers, responseType: 'text' })
+        this.http.post(`/api/v1/Auth/SendEmailVerificationToken`, requestData, { headers: headers, responseType: 'text' })
         .subscribe((response: any) => {
             if (response) {
                 this.user = data;
@@ -47,7 +47,7 @@ export class RegistrationComponent {
     getVerifyTokenAndSendRegistration(verifyCode: String) {
         this.isLoading = true;
         const request = new TokenValidatorRequest(this.user.email, verifyCode.toString());
-        this.http.post(`https://localhost:${environment.port}/Auth/ExamineVerifyToken`, request)
+        this.http.post(`/api/v1/Auth/ExamineVerifyToken`, request)
         .subscribe((response: any) => {
             if (response) {
                 this.sendRegistration();
@@ -63,7 +63,7 @@ export class RegistrationComponent {
     }
 
     sendRegistration() {
-        this.http.post(`https://localhost:${environment.port}/Auth/Register`, this.user)
+        this.http.post(`/api/v1/Auth/Register`, this.user)
         .subscribe(() => {},
         (error) => {
             this.isLoading = false;

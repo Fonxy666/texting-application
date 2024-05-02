@@ -135,7 +135,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     saveMessage(request: MessageRequest): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            this.http.post(`https://localhost:${environment.port}/Message/SendMessage`, request, { withCredentials: true})
+            this.http.post(`api/v1/Message/SendMessage`, request, { withCredentials: true})
                 .pipe(
                     this.errorHandler.handleError401()
                 )
@@ -176,13 +176,13 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     getMessages() {
-        this.http.get(`https://localhost:${environment.port}/Message/GetMessages/${this.roomId}`, { withCredentials: true })
+        this.http.get(`/api/v1/Message/GetMessages/${this.roomId}`, { withCredentials: true })
             .pipe(
                 this.errorHandler.handleError401()
             )
             .subscribe((response: any) => {
                 const observables = response.map((element: any) =>
-                    this.http.get(`https://localhost:${environment.port}/User/GetUsername?userId=${element.senderId}`, { withCredentials: true })
+                    this.http.get(`/api/v1/User/GetUsername?userId=${element.senderId}`, { withCredentials: true })
                 );
     
                 forkJoin(observables).subscribe((usernames: any) => {
@@ -202,7 +202,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     getAvatarImage(userId: string): Observable<string> {
-        return this.http.get(`https://localhost:${environment.port}/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
+        return this.http.get(`/api/v1/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
             .pipe(
                 this.errorHandler.handleError401(),
                 switchMap((response: Blob) => {
@@ -244,7 +244,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     sendMessageModifyHttpRequest(request: ChangeMessageRequest) {
         request.message = this.inputMessage;
-        this.http.patch(`https://localhost:${environment.port}/Message/EditMessage`, request, { withCredentials: true })
+        this.http.patch(`/api/v1/Message/EditMessage`, request, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )
@@ -274,7 +274,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     sendMessageSeenModifyHttpRequest(request: ChangeMessageSeenRequest) {
-        this.http.patch(`https://localhost:${environment.port}/Message/EditMessageSeen`, request, { withCredentials: true })
+        this.http.patch(`/api/v1/Message/EditMessageSeen`, request, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )
@@ -298,7 +298,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     handleMessageDelete(messageId: any) {
-        this.http.delete(`https://localhost:${environment.port}/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
+        this.http.delete(`/api/v1/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401()
         )
