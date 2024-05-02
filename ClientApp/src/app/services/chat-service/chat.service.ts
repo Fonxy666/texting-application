@@ -20,7 +20,7 @@ export class ChatService {
 
     constructor(private cookieService: CookieService) {
         this.connection = new signalR.HubConnectionBuilder()
-            .withUrl('http://localhost:5000/chat')
+            .withUrl('/chat')
             .configureLogging(signalR.LogLevel.Information)
             .build();
 

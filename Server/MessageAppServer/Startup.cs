@@ -85,18 +85,6 @@ namespace Server
                     }
                 });
             });
-            
-            services.AddCors(options =>
-            {
-                options.AddPolicy("WebSocketPolicy",
-                    builder =>
-                    {
-                        builder.WithOrigins("http://localhost:4200")
-                            .AllowAnyHeader()
-                            .AllowAnyMethod()
-                            .AllowCredentials();
-                    });
-            });
 
             services.AddSignalR(options =>
             {
@@ -228,8 +216,6 @@ namespace Server
             
             app.UseAuthentication();
             app.UseAuthorization();
-            
-            app.UseCors("WebSocketPolicy");
 
             app.UseEndpoints(endpoints =>
             {
