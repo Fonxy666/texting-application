@@ -105,7 +105,7 @@ export class JoinRoomComponent implements OnInit {
         if (this.cookieService.get("Anonymous") === "True") {
             this.chatService.joinRoom("Anonymous", roomName)
             .then(() => {
-                this.router.navigate([`/chat/${roomId}`]);
+                this.router.navigate([`/message-room/${roomId}`]);
                 sessionStorage.setItem("room", roomName);
                 sessionStorage.setItem("user", "Anonymous");
             }).catch((err) => {
@@ -114,7 +114,7 @@ export class JoinRoomComponent implements OnInit {
         } else {
             this.chatService.joinRoom(this.userName, roomName)
             .then(() => {
-                this.router.navigate([`/chat/${roomId}`]);
+                this.router.navigate([`/message-room/${roomId}`]);
                 sessionStorage.setItem("room", roomName);
                 sessionStorage.setItem("user", this.userName);
             }).catch((err) => {

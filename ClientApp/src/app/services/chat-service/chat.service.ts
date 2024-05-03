@@ -47,22 +47,24 @@ export class ChatService {
         });
     }
 
-    private initializeConnection() {
-        this.start().then(() => {
-            const roomName = sessionStorage.getItem("room");
-            const userName = sessionStorage.getItem("user");
+    private async initializeConnection() {
+        try {
+            await this.start();
+    
+            const roomName = sessionStorage.getItem("room")?? "asd";
+            const userName = sessionStorage.getItem("user")?? "Fonxy666";
             if (roomName && userName) {
-                this.joinRoom(userName, roomName);
+                await this.joinRoom(userName, roomName);
             }
-        }).catch(error => {
+        } catch (error) {
             console.error('SignalR connection failed to start:', error);
-        });
-
+        }
+    
         this.connection.onclose(async () => {
             console.log('SignalR connection closed, attempting to reconnect...');
             await this.reconnect();
         });
-
+    
         this.connection.onreconnecting(() => {
             console.log('SignalR connection is attempting to reconnect...');
         });
