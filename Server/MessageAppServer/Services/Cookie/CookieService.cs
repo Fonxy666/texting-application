@@ -16,9 +16,9 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenServi
         {
             Domain = Request.Host.Host,
             HttpOnly = false,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.None,
             IsEssential = true,
-            Secure = false,
+            Secure = true,
             Expires = rememberMe? DateTime.UtcNow.AddDays(7) : null
         });
     }
@@ -31,9 +31,9 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenServi
         {
             Domain = Request.Host.Host,
             HttpOnly = true,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.None,
             IsEssential = true,
-            Secure = false,
+            Secure = true,
             Expires = newRefreshToken.Expires
         });
         
@@ -50,9 +50,9 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenServi
             {
                 Domain = Request.Host.Host,
                 HttpOnly = false,
-                SameSite = SameSiteMode.Strict,
+                SameSite = SameSiteMode.None,
                 IsEssential = true,
-                Secure = false,
+                Secure = true,
                 Expires = rememberMe? DateTime.UtcNow.AddYears(2) : null
             });
         }
@@ -63,9 +63,9 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenServi
             {
                 Domain = Request.Host.Host,
                 HttpOnly = false,
-                SameSite = SameSiteMode.Strict,
+                SameSite = SameSiteMode.None,
                 IsEssential = true,
-                Secure = false,
+                Secure = true,
                 Expires = rememberMe? DateTime.UtcNow.AddYears(2) : null
             });
         }
@@ -79,9 +79,9 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenServi
             {
                 Domain = Request.Host.Host,
                 HttpOnly = false,
-                SameSite = SameSiteMode.Strict,
+                SameSite = SameSiteMode.None,
                 IsEssential = true,
-                Secure = false,
+                Secure = true,
                 Expires = rememberMe? DateTime.UtcNow.AddYears(2) : null
             });
     }
@@ -94,9 +94,9 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenServi
             {
                 Domain = Request.Host.Host,
                 HttpOnly = false,
-                SameSite = SameSiteMode.Strict,
+                SameSite = SameSiteMode.None,
                 IsEssential = true,
-                Secure = false,
+                Secure = true,
                 Expires = rememberMe? DateTime.UtcNow.AddYears(2) : null
             });
     }
@@ -107,9 +107,9 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenServi
         {
             Domain = Request.Host.Host,
             HttpOnly = true,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.None,
             IsEssential = true,
-            Secure = false,
+            Secure = true,
             Expires = rememberMe? DateTimeOffset.UtcNow.AddHours(ExpirationHours) : null
         });
 
@@ -120,8 +120,8 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenServi
     {
         var cookieOptions = new CookieOptions
         {
-            SameSite = SameSiteMode.Strict,
-            Secure = false
+            SameSite = SameSiteMode.None,
+            Secure = true
         };
         
         Response.Cookies.Delete("Authorization", cookieOptions);
@@ -138,9 +138,9 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenServi
         {
             Domain = Request.Host.Host,
             HttpOnly = true,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.None,
             IsEssential = true,
-            Secure = false,
+            Secure = true,
             Expires = rememberMe? DateTime.UtcNow.AddYears(2) : null
         });
     }

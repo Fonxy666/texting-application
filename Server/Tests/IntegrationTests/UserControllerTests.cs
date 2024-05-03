@@ -195,7 +195,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         
         Directory.SetCurrentDirectory("D:/after codecool/texting-application/Server/MessageAppServer");
     
-        var getImageResponse = await _client.GetAsync($"User/GetImage?userId={userId}");
+        var getImageResponse = await _client.GetAsync($"https://localhost:8001/User/GetImage?userId={userId}");
 
         getImageResponse.EnsureSuccessStatusCode();
     }

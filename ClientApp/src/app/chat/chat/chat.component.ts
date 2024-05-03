@@ -3,14 +3,13 @@ import { ChatService } from '../../services/chat-service/chat.service';
 import { Router, ActivatedRoute  } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, forkJoin  } from 'rxjs';
-import { catchError, switchMap, tap } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
 import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
 import { ConnectedUser } from '../../model/ConnectedUser';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-chat',
@@ -65,7 +64,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     message.seenList.push(userIdFromSignalR);
                 }
             })
-        })
+        });
 
         this.chatService.connection.on("DeleteMessage", (messageId: string) => {
             this.messages.forEach((message: any) => {
@@ -77,7 +76,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
         this.route.params.subscribe(params => {
             this.roomId = params['id'];
-        })
+        });
       
         this.chatService.connectedUsers.subscribe((users) => {
             this.connectedUsers = users;
@@ -94,11 +93,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         });
 
         this.getMessages();
-    }
+    };
 
     ngAfterViewChecked(): void {
         this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
-    }
+    };
 
     examineMessages() {
         this.chatService.messages.forEach((message) => {
@@ -106,7 +105,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 console.log(message.message);
             }
         })
-    }
+    };
 
     loadAvatarsFromMessages(userId : string) {
         if (userId === null || userId === undefined) {
@@ -119,7 +118,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     this.avatars[userId] = avatar;
                 })
         }
-    }
+    };
 
     sendMessage() {
         var request = new MessageRequest(this.roomId, this.cookieService.get("UserId"), this.inputMessage, this.cookieService.get("Anonymous") === "True");
@@ -131,7 +130,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             }).catch((err: any) => {
                 console.log(err);
             })
-    }
+    };
 
     saveMessage(request: MessageRequest): Promise<string> {
         return new Promise<string>((resolve, reject) => {
@@ -161,7 +160,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     reject(error);
                 });
         });
-    }
+    };
 
     leaveChat() {
         this.chatService.leaveChat()
@@ -173,7 +172,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }).catch((err) => {
             console.log(err);
         })
-    }
+    };
 
     getMessages() {
         this.http.get(`/api/v1/Message/GetMessages/${this.roomId}`, { withCredentials: true })
@@ -199,7 +198,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     this.chatService.message$.next(this.chatService.messages);
                 });
             });
-    }
+    };
 
     getAvatarImage(userId: string): Observable<string> {
         return this.http.get(`/api/v1/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
@@ -221,7 +220,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     return of("https://ptetutorials.com/images/user-profile.png");
                 })
             );
-    }
+    };
 
     searchInConnectedUsers() {
         if (this.searchTerm.trim() === '') {
@@ -233,14 +232,14 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 user.userName.toLowerCase().includes(this.searchTerm.toLowerCase())
             );
         }
-    }
+    };
 
     handleMessageModify(messageId: string, messageText: string) {
         this.messageModifyBool = true;
         this.messageModifyRequest.id = messageId;
         this.inputMessage = messageText;
         this.inputElement.nativeElement.focus();
-    }
+    };
 
     sendMessageModifyHttpRequest(request: ChangeMessageRequest) {
         request.message = this.inputMessage;
@@ -266,12 +265,12 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 console.error("An error occurred:", error);
             }
         });
-    }
+    };
 
     handleCloseMessageModify() {
         this.inputMessage = "";
         this.messageModifyBool = false;
-    }
+    };
 
     sendMessageSeenModifyHttpRequest(request: ChangeMessageSeenRequest) {
         this.http.patch(`/api/v1/Message/EditMessageSeen`, request, { withCredentials: true })
@@ -295,7 +294,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 console.error("An error occurred:", error);
             }
         });
-    }
+    };
 
     handleMessageDelete(messageId: any) {
         this.http.delete(`/api/v1/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
@@ -318,7 +317,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 console.error("An error occurred:", error);
             }
         });
-    }
+    };
     
     @HostListener('window:focus', ['$event'])
     onFocus(): void {
@@ -333,7 +332,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 this.sendMessageSeenModifyHttpRequest(request);
             }
         })
-    }
+    };
 
     examineIfNextMessageNotContainsUserId(userId: string, index: number) {
         const slicedMessages = this.chatService.messages.slice(index + 1);
@@ -350,9 +349,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     
         this.imageCount++;
         return true;
-    }
+    };
 
     resetImageCount() {
         this.imageCount = 0;
-    }
+    };
 }

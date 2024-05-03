@@ -43,14 +43,14 @@ export class JoinRoomComponent implements OnInit {
 
     toggleImageClasses() {
         this.isSunActive = !this.isSunActive;
-    }
+    };
 
     createForm() {
         return new JoinRoomRequest(
             this.joinRoomForm.get('room')?.value,
             this.joinRoomForm.get('password')?.value
         )
-    }
+    };
 
     joinRoom() {
         const data = this.createForm();
@@ -76,7 +76,7 @@ export class JoinRoomComponent implements OnInit {
                 }
             }
         );
-    }
+    };
 
     getUsername(user: any) {
         this.http.get(`/api/v1/User/GetUsername?userId=${user}`, { withCredentials: true})
@@ -87,7 +87,7 @@ export class JoinRoomComponent implements OnInit {
             this.userName = response.username;
             if (response.status === 403) {
                 alert("Token expired, you need to log in again.");
-                this.router.navigate(['/']);;
+                this.router.navigate(['/']);
             }
         }, 
         (error) => {
@@ -99,7 +99,7 @@ export class JoinRoomComponent implements OnInit {
                 console.error("An error occurred:", error);
             }
         });
-    }
+    };
 
     setRoomCredentialsAndNavigate(roomName: any, roomId: string) {
         if (this.cookieService.get("Anonymous") === "True") {
@@ -121,13 +121,13 @@ export class JoinRoomComponent implements OnInit {
                 console.log(err);
             })
         }
-    }
+    };
 
     goToCreateRoom() {
         this.router.navigate(['create-room']);
-    }
+    };
 
     toggleShowPassword() {
         this.showPassword = !this.showPassword;
-    }
+    };
 }
