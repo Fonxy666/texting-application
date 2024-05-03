@@ -1,32 +1,23 @@
-# Use an official Node runtime as the base image
-FROM node:latest as build
+# Use an official Node.js as the base image
+FROM node:alpine
 
-# Set the working directory in the container
-WORKDIR /app
+# Set the working directory
+WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json to the working directory
+# Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install Angular CLI globally
+# Install Angular CLI
 RUN npm install -g @angular/cli
 
 # Install dependencies
 RUN npm install
 
-# Copy the remaining application code to the working directory
+# Copy Angular app files
 COPY . .
 
-# Build the Angular app for production
-RUN ng build
+# Expose port 4200 for Angular (or any other port you prefer)
+EXPOSE 4200
 
-# Use a lightweight Node image as a runtime
-FROM nginx:alpine
-
-# Copy the built app from the previous stage to the NGINX HTML directory
-COPY --from=build /app/dist/client-app/browser /usr/share/nginx/html/
-
-# Expose port 80 to the outside world
-EXPOSE 80
-
-# Command to run NGINX when the container starts
-CMD ["nginx", "-g", "daemon off;"]
+# Command to run Angular app
+CMD ng serve --host 0.0.0.0 --port 4200 --disable-host-check --proxy-config proxy.conf.json
