@@ -30,13 +30,13 @@ public class CookiesControllerTests : IClassFixture<WebApplicationFactory<Startu
         var firstJsonRequest = JsonConvert.SerializeObject(firstRequestData);
         var firstContent = new StringContent(firstJsonRequest, Encoding.UTF8, "application/json");
 
-        var firstResponse = await _client.PostAsync("/Cookie/ChangeCookies?request=Animation", firstContent);
+        var firstResponse = await _client.PostAsync("api/v1/Cookie/ChangeCookies?request=Animation", firstContent);
     
         var secondRequestData = new { request = "Anonymous" };
         var secondJsonRequest = JsonConvert.SerializeObject(secondRequestData);
         var secondContent = new StringContent(secondJsonRequest, Encoding.UTF8, "application/json");
 
-        var secondResponse = await _client.PostAsync("/Cookie/ChangeCookies?request=Anonymous", secondContent);
+        var secondResponse = await _client.PostAsync("api/v1/Cookie/ChangeCookies?request=Anonymous", secondContent);
 
         Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
         Assert.Equal(HttpStatusCode.OK, secondResponse.StatusCode);
@@ -48,7 +48,7 @@ public class CookiesControllerTests : IClassFixture<WebApplicationFactory<Startu
         var jsonRequestRegister = JsonConvert.SerializeObject("asd");
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
-        var roomRegistrationResponse = await _client.PostAsync("/Cookie/ChangeCookies", contentRegister);
+        var roomRegistrationResponse = await _client.PostAsync("api/v1/Cookie/ChangeCookies", contentRegister);
         Assert.Equal(HttpStatusCode.BadRequest, roomRegistrationResponse.StatusCode);
     }
 }
