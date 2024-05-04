@@ -32,20 +32,20 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonRequestRegister = JsonConvert.SerializeObject(_testRoom);
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
-        var roomRegistrationResponse = await _client.PostAsync("/Chat/RegisterRoom", contentRegister);
+        var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/RegisterRoom", contentRegister);
         roomRegistrationResponse.EnsureSuccessStatusCode();
 
         var jsonRequest = JsonConvert.SerializeObject(new RoomRequest(_testRoom.RoomName, _testRoom.Password));
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
-        var roomLoginResponse = await _client.PostAsync("/Chat/JoinRoom", content);
+        var roomLoginResponse = await _client.PostAsync("api/v1/Chat/JoinRoom", content);
         
         roomLoginResponse.EnsureSuccessStatusCode();
         
         var jsonRequestDelete = JsonConvert.SerializeObject(_testRoom);
         var contentDelete = new StringContent(jsonRequestDelete, Encoding.UTF8, "application/json");
 
-        var deleteRoomResponse = await _client.PostAsync("/Chat/DeleteRoom", contentDelete);
+        var deleteRoomResponse = await _client.PostAsync("api/v1/Chat/DeleteRoom", contentDelete);
         deleteRoomResponse.EnsureSuccessStatusCode();
     }
     
@@ -55,7 +55,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
          var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "test"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
-        var roomRegistrationResponse = await _client.PostAsync("/Chat/RegisterRoom", contentRegister);
+        var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/RegisterRoom", contentRegister);
         Assert.Equal(HttpStatusCode.BadRequest, roomRegistrationResponse.StatusCode);
     }
     
@@ -65,7 +65,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("", ""));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
-        var roomRegistrationResponse = await _client.PostAsync("/Chat/RegisterRoom", contentRegister);
+        var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/RegisterRoom", contentRegister);
         Assert.Equal(HttpStatusCode.BadRequest, roomRegistrationResponse.StatusCode);
     }
 
@@ -75,7 +75,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("", ""));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
-        var roomRegistrationResponse = await _client.PostAsync("/Chat/JoinRoom", contentRegister);
+        var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/JoinRoom", contentRegister);
         Assert.Equal(HttpStatusCode.BadRequest, roomRegistrationResponse.StatusCode);
     }
     
@@ -85,7 +85,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("wrongRoomName", "asd"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
-        var roomRegistrationResponse = await _client.PostAsync("/Chat/JoinRoom", contentRegister);
+        var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/JoinRoom", contentRegister);
         Assert.Equal(HttpStatusCode.NotFound, roomRegistrationResponse.StatusCode);
     }
     
@@ -95,7 +95,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "asd"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
-        var roomRegistrationResponse = await _client.PostAsync("/Chat/JoinRoom", contentRegister);
+        var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/JoinRoom", contentRegister);
         Assert.Equal(HttpStatusCode.BadRequest, roomRegistrationResponse.StatusCode);
     }
     
@@ -105,7 +105,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("wrongRoomName", "asd"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
-        var roomRegistrationResponse = await _client.PostAsync("/Chat/DeleteRoom", contentRegister);
+        var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/DeleteRoom", contentRegister);
         Assert.Equal(HttpStatusCode.NotFound, roomRegistrationResponse.StatusCode);
     }
     
@@ -115,7 +115,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("", ""));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
-        var roomRegistrationResponse = await _client.PostAsync("/Chat/DeleteRoom", contentRegister);
+        var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/DeleteRoom", contentRegister);
         Assert.Equal(HttpStatusCode.BadRequest, roomRegistrationResponse.StatusCode);
     }
     
@@ -125,7 +125,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "wrongPassword"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
-        var roomRegistrationResponse = await _client.PostAsync("/Chat/DeleteRoom", contentRegister);
+        var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/DeleteRoom", contentRegister);
         Assert.Equal(HttpStatusCode.BadRequest, roomRegistrationResponse.StatusCode);
     }
 }
