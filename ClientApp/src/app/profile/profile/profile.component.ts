@@ -10,6 +10,7 @@ import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { ChangeAvatarRequest } from '../../model/ChangeAvatarRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
 import { MessageService } from 'primeng/api';
+import { environment } from '../../../environments/environment';
 
 @Component({
     selector: 'app-profile',
@@ -44,7 +45,7 @@ export class ProfileComponent implements OnInit {
 
     getUser(userId: string) {
         if (userId) {
-            this.http.get(`https://localhost:7045/User/GetUserCredentials?userId=${userId}`, { withCredentials: true })
+            this.http.get(`/api/v1/User/GetUserCredentials?userId=${userId}`, { withCredentials: true })
             .pipe(
                 this.errorHandler.handleError401()
             )
@@ -67,7 +68,7 @@ export class ProfileComponent implements OnInit {
 
     loadProfileData(userId: string) {
         if (userId) {
-            this.http.get(`https://localhost:7045/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
+            this.http.get(`/api/v1/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
             .pipe(
                 this.errorHandler.handleError401()
             )
@@ -117,7 +118,7 @@ export class ProfileComponent implements OnInit {
 
     changeAvatar() {
         const request = new ChangeAvatarRequest(this.user.id, this.profilePic);
-        this.http.patch('https://localhost:7045/User/ChangeAvatar', request, { withCredentials: true})
+        this.http.patch(`/api/v1/User/ChangeAvatar`, request, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401()
         )
@@ -137,7 +138,7 @@ export class ProfileComponent implements OnInit {
     changePassword(data: ChangePasswordRequest) {
         this.isLoading = true;
         data.id = this.user.id;
-        this.http.patch('https://localhost:7045/User/ChangePassword', data, { withCredentials: true})
+        this.http.patch(`/api/v1/User/ChangePassword`, data, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401()
         )
@@ -162,7 +163,7 @@ export class ProfileComponent implements OnInit {
             this.messageService.add({ severity: 'error', summary: 'Error', detail: 'This is your actual e-mail. Try with another.' });
             return;
         }
-        this.http.patch('https://localhost:7045/User/ChangeEmail', data, { withCredentials: true})
+        this.http.patch(`/api/v1/User/ChangeEmail`, data, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401()
         )

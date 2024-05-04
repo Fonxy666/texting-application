@@ -6,7 +6,7 @@ using Server.Model.Responses.User;
 
 namespace Server.Services.User;
 
-public class UserServices(UserManager<ApplicationUser> userManager) : IUserServices
+public class UserServices(UserManager<ApplicationUser> userManager, IConfiguration configuration) : IUserServices
 {
     public Task<bool> ExistingUser(string id)
     {
@@ -15,7 +15,8 @@ public class UserServices(UserManager<ApplicationUser> userManager) : IUserServi
 
     public string SaveImageLocally(string userNameFileName, string base64Image)
     {
-        var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
+        var folderPath = configuration["ImageFolderPath"]??Path.Combine(Directory.GetCurrentDirectory(), "Images");
+        
         if (!Directory.Exists(folderPath))
         {
             Directory.CreateDirectory(folderPath);

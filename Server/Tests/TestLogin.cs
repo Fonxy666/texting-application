@@ -14,7 +14,7 @@ public static class TestLogin
         var authJsonRequest = JsonConvert.SerializeObject(login);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
 
-        var authResponse = await _client.PostAsync("/Auth/Login", authContent);
+        var authResponse = await _client.PostAsync("api/v1/Auth/Login", authContent);
         authResponse.EnsureSuccessStatusCode();
 
         var cookies = authResponse.Headers.GetValues("Set-Cookie");

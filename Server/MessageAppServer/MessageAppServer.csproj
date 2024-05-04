@@ -7,6 +7,7 @@
         <InvariantGlobalization>false</InvariantGlobalization>
         <UserSecretsId>d7867322-cb5c-4dc2-9c09-b598b2955136</UserSecretsId>
         <RootNamespace>Server</RootNamespace>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -36,6 +37,13 @@
 
     <ItemGroup>
       <Folder Include="Images\" />
+      <Folder Include="ssl\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
 
 </Project>

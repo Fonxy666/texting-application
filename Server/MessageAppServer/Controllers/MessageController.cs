@@ -9,7 +9,7 @@ using Server.Services.User;
 
 namespace Server.Controllers;
 
-[Route("[controller]")]
+[Route("api/v1/[controller]")]
 public class MessageController(
     IMessageService messageService,
     IRoomService roomService,

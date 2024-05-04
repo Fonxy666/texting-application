@@ -29,7 +29,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var request = new AuthRequest("", "");
         var authJsonRequest = JsonConvert.SerializeObject(request);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
-        var authResponse = await _client.PostAsync("/Auth/Login", authContent);
+        var authResponse = await _client.PostAsync("api/v1/Auth/Login", authContent);
         Assert.Equal(HttpStatusCode.BadRequest, authResponse.StatusCode);
     }
 
@@ -40,7 +40,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var login = new LoginAuth("TestUs", false, token);
         var authJsonRequest = JsonConvert.SerializeObject(login);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
-        var authResponse = await _client.PostAsync("/Auth/Login", authContent);
+        var authResponse = await _client.PostAsync("api/v1/Auth/Login", authContent);
         Assert.Equal(HttpStatusCode.BadRequest, authResponse.StatusCode);
     }
 
@@ -51,7 +51,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var login = new LoginAuth(_testUser.UserName, false, "asd");
         var authJsonRequest = JsonConvert.SerializeObject(login);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
-        var authResponse = await _client.PostAsync("/Auth/Login", authContent);
+        var authResponse = await _client.PostAsync("api/v1/Auth/Login", authContent);
         Assert.Equal(HttpStatusCode.BadRequest, authResponse.StatusCode);
     }
 
@@ -62,7 +62,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
         var userLogin = new StringContent(jsonLoginRequest, Encoding.UTF8, "application/json");
 
-        var getUserResponse = await _client.PostAsync("/Auth/Register", userLogin);
+        var getUserResponse = await _client.PostAsync("api/v1/Auth/Register", userLogin);
         getUserResponse.EnsureSuccessStatusCode();
     }
 
@@ -73,7 +73,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
         var userLogin = new StringContent(jsonLoginRequest, Encoding.UTF8, "application/json");
 
-        var getUserResponse = await _client.PostAsync("/Auth/Register", userLogin);
+        var getUserResponse = await _client.PostAsync("api/v1/Auth/Register", userLogin);
         Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
 
@@ -84,7 +84,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
         var userLogin = new StringContent(jsonLoginRequest, Encoding.UTF8, "application/json");
 
-        var getUserResponse = await _client.PostAsync("/Auth/Register", userLogin);
+        var getUserResponse = await _client.PostAsync("api/v1/Auth/Register", userLogin);
         
         Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
@@ -96,7 +96,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
         var userLogin = new StringContent(jsonLoginRequest, Encoding.UTF8, "application/json");
 
-        var getUserResponse = await _client.PostAsync("/Auth/Register", userLogin);
+        var getUserResponse = await _client.PostAsync("api/v1/Auth/Register", userLogin);
         
         Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
@@ -110,7 +110,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         const string username = "uniqueTestUsername";
         const string password = "TestUserPassword123666$$$";
 
-        var deleteUrl = $"/User/DeleteUser?email={Uri.EscapeDataString(email)}&username={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}";
+        var deleteUrl = $"api/v1/User/DeleteUser?email={Uri.EscapeDataString(email)}&username={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}";
 
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
@@ -125,7 +125,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonRequest = JsonConvert.SerializeObject(emailRequest);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/Auth/SendEmailVerificationToken", content);
+        var response = await _client.PostAsync("api/v1/Auth/SendEmailVerificationToken", content);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -137,7 +137,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonRequest = JsonConvert.SerializeObject(emailRequest);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/Auth/SendEmailVerificationToken", content);
+        var response = await _client.PostAsync("api/v1/Auth/SendEmailVerificationToken", content);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -150,7 +150,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonRequest = JsonConvert.SerializeObject(request);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/Auth/ExamineVerifyToken", content);
+        var response = await _client.PostAsync("api/v1/Auth/ExamineVerifyToken", content);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -163,7 +163,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonRequest = JsonConvert.SerializeObject(request);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/Auth/ExamineVerifyToken", content);
+        var response = await _client.PostAsync("api/v1/Auth/ExamineVerifyToken", content);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -175,7 +175,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonRequest = JsonConvert.SerializeObject(request);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/Auth/SendLoginToken", content);
+        var response = await _client.PostAsync("api/v1/Auth/SendLoginToken", content);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -187,7 +187,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonRequest = JsonConvert.SerializeObject(request);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/Auth/SendLoginToken", content);
+        var response = await _client.PostAsync("api/v1/Auth/SendLoginToken", content);
 
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -202,7 +202,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         const string userId = "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916";
 
-        var response = await _client.GetAsync($"/Auth/Logout?userId={userId}");
+        var response = await _client.GetAsync($"api/v1/Auth/Logout?userId={userId}");
         response.EnsureSuccessStatusCode();
     }
 
@@ -215,7 +215,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         const string userId = "123";
 
-        var response = await _client.GetAsync($"/Auth/Logout?userId={userId}");
+        var response = await _client.GetAsync($"api/v1/Auth/Logout?userId={userId}");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

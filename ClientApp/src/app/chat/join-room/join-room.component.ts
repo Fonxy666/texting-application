@@ -6,6 +6,7 @@ import { ChatService } from '../../services/chat-service/chat.service';
 import { HttpClient } from '@angular/common/http';
 import { JoinRoomRequest } from '../../model/JoinRoomRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-join-room',
@@ -42,18 +43,18 @@ export class JoinRoomComponent implements OnInit {
 
     toggleImageClasses() {
         this.isSunActive = !this.isSunActive;
-    }
+    };
 
     createForm() {
         return new JoinRoomRequest(
             this.joinRoomForm.get('room')?.value,
             this.joinRoomForm.get('password')?.value
         )
-    }
+    };
 
     joinRoom() {
         const data = this.createForm();
-        this.http.post('https://localhost:7045/Chat/JoinRoom', data, { withCredentials: true })
+        this.http.post(`/api/v1/Chat/JoinRoom`, data, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )
@@ -75,10 +76,10 @@ export class JoinRoomComponent implements OnInit {
                 }
             }
         );
-    }
+    };
 
     getUsername(user: any) {
-        this.http.get(`https://localhost:7045/User/GetUsername?userId=${user}`, { withCredentials: true})
+        this.http.get(`/api/v1/User/GetUsername?userId=${user}`, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401()
         )
@@ -86,7 +87,7 @@ export class JoinRoomComponent implements OnInit {
             this.userName = response.username;
             if (response.status === 403) {
                 alert("Token expired, you need to log in again.");
-                this.router.navigate(['/']);;
+                this.router.navigate(['/']);
             }
         }, 
         (error) => {
@@ -98,13 +99,13 @@ export class JoinRoomComponent implements OnInit {
                 console.error("An error occurred:", error);
             }
         });
-    }
+    };
 
     setRoomCredentialsAndNavigate(roomName: any, roomId: string) {
         if (this.cookieService.get("Anonymous") === "True") {
             this.chatService.joinRoom("Anonymous", roomName)
             .then(() => {
-                this.router.navigate([`/chat/${roomId}`]);
+                this.router.navigate([`/message-room/${roomId}`]);
                 sessionStorage.setItem("room", roomName);
                 sessionStorage.setItem("user", "Anonymous");
             }).catch((err) => {
@@ -113,20 +114,20 @@ export class JoinRoomComponent implements OnInit {
         } else {
             this.chatService.joinRoom(this.userName, roomName)
             .then(() => {
-                this.router.navigate([`/chat/${roomId}`]);
+                this.router.navigate([`/message-room/${roomId}`]);
                 sessionStorage.setItem("room", roomName);
                 sessionStorage.setItem("user", this.userName);
             }).catch((err) => {
                 console.log(err);
             })
         }
-    }
+    };
 
     goToCreateRoom() {
         this.router.navigate(['create-room']);
-    }
+    };
 
     toggleShowPassword() {
         this.showPassword = !this.showPassword;
-    }
+    };
 }

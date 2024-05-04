@@ -16,6 +16,13 @@
           </node>
         </introspection-scope>
       </schema-mapping>
+      <ssl-config use-ide-store="true" use-java-store="true" use-system-store="true">
+        <ca-cert>D:\after codecool\texting-application\Server\MessageAppServer\ssl\server.crt</ca-cert>
+        <client-cert>D:\after codecool\texting-application\Server\MessageAppServer\ssl\server.csr</client-cert>
+        <client-key>D:\after codecool\texting-application\Server\MessageAppServer\ssl\server.key</client-key>
+        <enabled>false</enabled>
+        <mode>VERIFY_FULL</mode>
+      </ssl-config>
     </data-source>
   </component>
 </project>

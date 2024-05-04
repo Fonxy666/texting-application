@@ -5,6 +5,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { HttpClient } from '@angular/common/http';
 import { CreateRoomRequest } from '../../model/CreateRoomRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-create-room',
@@ -43,7 +44,7 @@ export class CreateRoomComponent implements OnInit {
     }
 
     sendCreateRoomRequest() {
-        this.http.post('https://localhost:7045/Chat/RegisterRoom', this.createForm(), { withCredentials: true })
+        this.http.post(`/api/v1/Chat/RegisterRoom`, this.createForm(), { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )

@@ -5,7 +5,7 @@ using Server.Services.Cookie;
 namespace Server.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/v1/[controller]")]
 public class CookieController(ICookieService cookieService, ILogger<CookieController> logger) : ControllerBase
 {
     [HttpPost("ChangeCookies"), Authorize(Roles = "User, Admin")]

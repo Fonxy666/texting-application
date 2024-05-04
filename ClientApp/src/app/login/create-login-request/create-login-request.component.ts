@@ -41,10 +41,10 @@ export class CreateLoginRequestComponent implements OnInit {
     }
 
     handleGoogleLogin() {
-        window.location.href = "https://localhost:7045/Auth/LoginWithGoogle";
+        window.location.href = `/api/v1/Auth/LoginWithGoogle`;
     }
 
     handleFacebookLogin() {
-        window.location.href = "https://localhost:7045/Auth/LoginWithFacebook";
+        window.location.href = `/api/v1/Auth/LoginWithFacebook`;
     }
 }

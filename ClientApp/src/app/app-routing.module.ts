@@ -15,7 +15,7 @@ const routes: Routes = [
     { path: 'login', component: LoginComponent, title: 'Login' },
     { path: 'registration', component: RegistrationComponent, title: 'Registration' },
     { path: 'join-room', component: JoinRoomComponent, title: 'Join room' },
-    { path: 'chat/:id', component: ChatComponent, title: 'Chat' },
+    { path: 'message-room/:id', component: ChatComponent, title: 'Chat' },
     { path: 'profile/profile', component: ProfileComponent, title: 'Profile'},
     { path: 'profile/settings', component: SettingsComponent, title: 'Settings'},
     { path: 'create-room', component: CreateRoomComponent, title: 'Create room'},

@@ -51,7 +51,7 @@ export class LoginComponent implements OnInit {
     
     createTask(data: LoginRequest) {
         this.isLoading = true;
-        this.http.post('https://localhost:7045/Auth/SendLoginToken', data, { withCredentials: true })
+        this.http.post(`/api/v1/Auth/SendLoginToken`, data, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {
                 this.loginRequest.username = data.username;
@@ -64,11 +64,14 @@ export class LoginComponent implements OnInit {
             if (error.status === 404) {
                 if (!isNaN(error.error)) {
                     alert(`Invalid username or password, you have ${5-error.error} tries.`);
+                    this.isLoading = false;
                 } else {
                     alert(error.error);
+                    this.isLoading = false;
                 }
             } else {
-                console.error("An error occurred:", error);
+                alert(error.error);
+                this.isLoading = false;
             }
         });
     }
@@ -79,7 +82,7 @@ export class LoginComponent implements OnInit {
         expirationDate.setFullYear(expirationDate.getFullYear() + 10);
         const request = new LoginAuthTokenRequest(this.loginRequest.username, this.loginRequest.password, this.loginRequest.rememberme, token);
 
-        this.http.post('https://localhost:7045/Auth/Login', request, { withCredentials: true })
+        this.http.post(`/api/v1/Auth/Login`, request, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {
                 this.loginStarted = false;
