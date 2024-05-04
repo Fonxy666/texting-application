@@ -1,11 +1,16 @@
 ﻿using System.Net;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Newtonsoft.Json;
 using Server;
+using Server.Model;
 using Server.Model.Requests.Auth;
 using Server.Services.EmailSender;
 using Xunit;
+using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
 namespace Tests.IntegrationTests;

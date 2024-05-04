@@ -235,6 +235,8 @@ namespace Server
             using var scope = app.ApplicationServices.CreateScope();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var roomService = scope.ServiceProvider.GetRequiredService<IRoomService>();
+            var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
 
             var roleList = new List<string> { "User", "Admin" };
 
@@ -249,7 +251,24 @@ namespace Server
             }
 
             await CreateAdminIfNotExistAsync(userManager);
-            await CreateTestUser(userManager);
+            await CreateTestUsers(userManager);
+            await CreateTestRoom(roomService);
+            /*await CreateTestMessage(messageService);*/
+        }
+
+        /*private async Task CreateTestMessage(IMessageService messageService)
+        {
+            messageService.SendMessage()
+        }*/
+
+        private async Task CreateTestRoom(IRoomService roomService)
+        {
+            if (roomService.GetRoom("test").Result != null)
+            {
+                Console.WriteLine("Test room is already in database.");
+                return;
+            }
+            await roomService.RegisterRoomAsync("test", "test");
         }
 
         private async Task CreateAdminIfNotExistAsync(UserManager<ApplicationUser> userManager)
@@ -278,7 +297,7 @@ namespace Server
             }
         }
 
-        private async Task CreateTestUser(UserManager<ApplicationUser> userManager)
+        private async Task CreateTestUsers(UserManager<ApplicationUser> userManager)
         {
             const string testEmail1 = "test1@hotmail.com";
             const string testEmail2 = "test2@hotmail.com";
@@ -292,6 +311,7 @@ namespace Server
             {
                 var testUser = new ApplicationUser("-")
                 {
+                    Id = "18c5eb4f-b614-45d0-9ee8-ad7f17e88dd9",
                     UserName = "TestUsername1",
                     Email = testEmail1,
                     TwoFactorEnabled = true
@@ -312,6 +332,7 @@ namespace Server
             {
                 var testUser = new ApplicationUser("-")
                 {
+                    Id = "10f96e12-e245-420a-8bad-b61fb21c4b2d",
                     UserName = "TestUsername2",
                     Email = testEmail2,
                     TwoFactorEnabled = true
@@ -332,6 +353,7 @@ namespace Server
             {
                 var testUser = new ApplicationUser("-")
                 {
+                    Id = "995f04da-d4d3-447c-9c69-fab370bca312",
                     UserName = "TestUsername3",
                     Email = testEmail3,
                     TwoFactorEnabled = false

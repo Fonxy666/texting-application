@@ -17,6 +17,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     private readonly HttpClient _client;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
 
+
     public MessageControllerTests(WebApplicationFactory<Startup> factory)
     {
         _factory = factory;
@@ -38,23 +39,17 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     }
     
     [Fact]
-    public async Task GetMessage_WithValidId_ReturnSuccessStatusCode()
+    public async Task SendMessage_GetMessage_WithValidRequest_ReturnSuccessStatusCode()
     {
-        const string roomId = "858f76ec-9dec-438a-9e63-72287a69f4d2";
-
-        var getUserResponse = await _client.GetAsync($"api/v1/Message/getMessages/{roomId}");
-        getUserResponse.EnsureSuccessStatusCode();
-    }
-    
-    [Fact]
-    public async Task SendMessage_WithValidRequest_ReturnSuccessStatusCode()
-    {
-        var messageRequest = new MessageRequest("5f843042-f674-4539-ae39-28d722c6c959", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "test", false, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
+        var messageRequest = new MessageRequest("ea5c5adb-9807-4ad1-b6da-7650d821827a", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "test", false, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
         var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
         var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
 
         var roomRegistrationResponse = await _client.PostAsync("api/v1/Message/SendMessage", contentSend);
         roomRegistrationResponse.EnsureSuccessStatusCode();
+
+        var getUserResponse = await _client.GetAsync($"api/v1/Message/getMessages/{messageRequest.RoomId}");
+        getUserResponse.EnsureSuccessStatusCode();
     }
     
     [Fact]
@@ -84,7 +79,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task SendMessage_WithNotValidUserId_ReturnBadRequest()
     {
-        var messageRequest = new MessageRequest("5f843042-f674-4539-ae39-28d722c6c959", _testUser.UserName, "test", false, "123");
+        var messageRequest = new MessageRequest("ea5c5adb-9807-4ad1-b6da-7650d821827a", _testUser.UserName, "test", false, "123");
         var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
         var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
 
@@ -130,7 +125,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task EditMessageSeen_WithValidRequest_ReturnSuccessStatusCode()
     {
-        var messageChangeRequest = new EditMessageSeenRequest("a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916");
+        var messageChangeRequest = new EditMessageSeenRequest("a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "18c5eb4f-b614-45d0-9ee8-ad7f17e88dd9");
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 
@@ -141,7 +136,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task EditMessageSeen_WithInvalidMessageId_ReturnNotFound()
     {
-        var messageChangeRequest = new EditMessageSeenRequest("1", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916");
+        var messageChangeRequest = new EditMessageSeenRequest("1", "18c5eb4f-b614-45d0-9ee8-ad7f17e88dd9");
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 
