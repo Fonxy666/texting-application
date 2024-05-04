@@ -30,7 +30,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     {
         const string roomId = "123";
 
-        var getUserResponse = await _client.GetAsync($"/Message/getMessages/{roomId}");
+        var getUserResponse = await _client.GetAsync($"api/v1/Message/getMessages/{roomId}");
         
         var responseContent = await getUserResponse.Content.ReadAsStringAsync();
         
@@ -42,7 +42,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     {
         const string roomId = "858f76ec-9dec-438a-9e63-72287a69f4d2";
 
-        var getUserResponse = await _client.GetAsync($"/Message/getMessages/{roomId}");
+        var getUserResponse = await _client.GetAsync($"api/v1/Message/getMessages/{roomId}");
         getUserResponse.EnsureSuccessStatusCode();
     }
     
@@ -53,7 +53,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
         var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
 
-        var roomRegistrationResponse = await _client.PostAsync("/Message/SendMessage", contentSend);
+        var roomRegistrationResponse = await _client.PostAsync("api/v1/Message/SendMessage", contentSend);
         roomRegistrationResponse.EnsureSuccessStatusCode();
     }
     
@@ -64,7 +64,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
         var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
 
-        var sendMessageResponse = await _client.PostAsync("/Message/SendMessage", contentSend);
+        var sendMessageResponse = await _client.PostAsync("api/v1/Message/SendMessage", contentSend);
         
         Assert.Equal(HttpStatusCode.BadRequest, sendMessageResponse.StatusCode);
     }
@@ -76,7 +76,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
         var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
 
-        var sendMessageResponse = await _client.PostAsync("/Message/SendMessage", contentSend);
+        var sendMessageResponse = await _client.PostAsync("api/v1/Message/SendMessage", contentSend);
         
         Assert.Equal(HttpStatusCode.NotFound, sendMessageResponse.StatusCode);
     }
@@ -88,7 +88,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
         var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
 
-        var sendMessageResponse = await _client.PostAsync("/Message/SendMessage", contentSend);
+        var sendMessageResponse = await _client.PostAsync("api/v1/Message/SendMessage", contentSend);
         
         Assert.Equal(HttpStatusCode.NotFound, sendMessageResponse.StatusCode);
     }
@@ -100,7 +100,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 
-        var getUserResponse = await _client.PatchAsync("/Message/EditMessage", messageChange);
+        var getUserResponse = await _client.PatchAsync("api/v1/Message/EditMessage", messageChange);
         getUserResponse.EnsureSuccessStatusCode();
     }
     
@@ -111,7 +111,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 
-        var getUserResponse = await _client.PatchAsync("/Message/EditMessage", messageChange);
+        var getUserResponse = await _client.PatchAsync("api/v1/Message/EditMessage", messageChange);
         Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
     }
     
@@ -122,7 +122,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 
-        var editMessageRequest = await _client.PatchAsync("/Message/EditMessage", messageChange);
+        var editMessageRequest = await _client.PatchAsync("api/v1/Message/EditMessage", messageChange);
         
         Assert.Equal(HttpStatusCode.BadRequest, editMessageRequest.StatusCode);
     }
@@ -134,7 +134,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 
-        var editMessageRequest = await _client.PatchAsync("/Message/EditMessageSeen", messageChange);
+        var editMessageRequest = await _client.PatchAsync("api/v1/Message/EditMessageSeen", messageChange);
         editMessageRequest.EnsureSuccessStatusCode();
     }
     
@@ -145,7 +145,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 
-        var editMessageRequest = await _client.PatchAsync("/Message/EditMessageSeen", messageChange);
+        var editMessageRequest = await _client.PatchAsync("api/v1/Message/EditMessageSeen", messageChange);
         Assert.Equal(HttpStatusCode.NotFound, editMessageRequest.StatusCode);
     }
     
@@ -156,7 +156,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 
-        var editMessageRequest = await _client.PatchAsync("/Message/EditMessageSeen", messageChange);
+        var editMessageRequest = await _client.PatchAsync("api/v1/Message/EditMessageSeen", messageChange);
         Assert.Equal(HttpStatusCode.BadRequest, editMessageRequest.StatusCode);
     }
     
@@ -165,7 +165,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     {
         const string messageDeleteRequestId = "a57f0d67-8670-4789-a580-3b4a3bd3bf9c";
 
-        var getUserResponse = await _client.DeleteAsync($"/Message/DeleteMessage?id={messageDeleteRequestId}");
+        var getUserResponse = await _client.DeleteAsync($"api/v1/Message/DeleteMessage?id={messageDeleteRequestId}");
         getUserResponse.EnsureSuccessStatusCode();
     }
     
@@ -174,7 +174,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     {
         var messageDeleteRequestId = new EditMessageSeenRequest("", "");
 
-        var getUserResponse = await _client.DeleteAsync($"/Message/DeleteMessage?id={messageDeleteRequestId}");
+        var getUserResponse = await _client.DeleteAsync($"api/v1/Message/DeleteMessage?id={messageDeleteRequestId}");
         Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
     }
 }
