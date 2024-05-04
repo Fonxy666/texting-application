@@ -34,7 +34,7 @@ ONGOING project!
 The application implements secure practices such as JWT token, refresh token and hashed password storage, password confirmation, currently running dockerized MSSQL databases, and sensitive data is stored in the `secrets.json` file.
 
 #Configuration
-On the frontend side, there is no sensitive data is stored, so you don't need to specify anything by yourself.
+On the frontend side, there is no sensitive data stored, so you don't need to specify anything by yourself.
 
 On the backend side, sensitive data is stored in the `secrets.json` file. To set up the application, create a `secrets.json` file in the user profile directory:
 - Windows: %APPDATA%\microsoft\UserSecrets<userSecretsId>\secrets.json
