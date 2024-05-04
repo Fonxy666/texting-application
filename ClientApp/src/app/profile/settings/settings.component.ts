@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { MessageService } from 'primeng/api';
-import { environment } from '../../../environments/environment';
 
 @Component({
     selector: 'app-settings',

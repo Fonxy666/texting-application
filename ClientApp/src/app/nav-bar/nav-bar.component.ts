@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { ErrorHandlerService } from '../services/error-handler.service';
-import { environment } from '../../environments/environment';
 
 @Component({
     selector: 'app-nav-bar',

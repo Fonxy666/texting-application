@@ -175,12 +175,12 @@ public class AuthController(
                 }
             }
 
-            return Redirect($"http://localhost:{configuration["FrontendPort"]}?loginSuccess=true");
+            return Redirect($"{configuration["FrontendUrlAndPort"]}?loginSuccess=true");
         }
         catch (Exception e)
         {
             logger.LogError(e, "Error during facebook login.");
-            return Redirect($"http://localhost:{configuration["FrontendPort"]}?loginSuccess=false");
+            return Redirect($"{configuration["FrontendUrlAndPort"]}?loginSuccess=false");
         }
     }
     
@@ -224,12 +224,12 @@ public class AuthController(
                 }
             }
 
-            return Redirect($"http://localhost:{configuration["FrontendPort"]}?loginSuccess=true");
+            return Redirect($"{configuration["FrontendUrlAndPort"]}?loginSuccess=true");
         }
         catch (Exception e)
         {
             logger.LogError(e, "Error during google login.");
-            return Redirect($"http://localhost:{configuration["FrontendPort"]}?loginSuccess=false");
+            return Redirect($"{configuration["FrontendUrlAndPort"]}?loginSuccess=false");
         }
     }
     

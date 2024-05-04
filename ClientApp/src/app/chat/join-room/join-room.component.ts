@@ -6,7 +6,6 @@ import { ChatService } from '../../services/chat-service/chat.service';
 import { HttpClient } from '@angular/common/http';
 import { JoinRoomRequest } from '../../model/JoinRoomRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-join-room',

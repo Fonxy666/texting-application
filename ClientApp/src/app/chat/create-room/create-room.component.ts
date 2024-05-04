@@ -5,7 +5,6 @@ import { CookieService } from 'ngx-cookie-service';
 import { HttpClient } from '@angular/common/http';
 import { CreateRoomRequest } from '../../model/CreateRoomRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-create-room',
