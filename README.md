@@ -5,19 +5,19 @@ Textinger is a full-stack ASP.NET core application designed to chat with your fr
 #Project Status
 ONGOING project!
 
-#Backend Installation Instructions
+# Backend Installation Instructions
 - Install the .NET SDK 8.0.204 (.NET 8.0.4)
 - Install dependencies.
 - Set up the database connections, and other needs through the `secrets.json` file.
 
-#About the Application
+# About the Application
 - Register to the application.
 - You can configure your profile if you click on your avatar in the top right corner, than under the profile menu.
 - You can disable animation/appear as an anonym person if you click on your avatar in the top right corner, than under the settings menu.
 - You can register a new room, or join to an existing one under the "Connect to a room" menu.
 - In the chat room, you can delete or modify your already sent messages if you click on the '3 dot' next to your message.
 
-#The backend is built on the ASP.NET 8 framework, with the main goals of being/having:
+# The backend is built on the ASP.NET 8 framework, with the main goals of being/having:
 - Secure: for example: 2FA, refresh tokens
 - Transparent
 - Easy to use
@@ -30,10 +30,10 @@ ONGOING project!
 - Bootstrap (for responsive view, so users can use the application in mobiles as well)
 - Easy to use: everything is easy and logical
 
-#Security
+# Security
 The application implements secure practices such as JWT token, refresh token and hashed password storage, password confirmation, currently running dockerized MSSQL databases, and sensitive data is stored in the `secrets.json` file.
 
-#Configuration
+# Configuration
 On the frontend side, there is no sensitive data stored, so you don't need to specify anything by yourself.
 
 On the backend side, sensitive data is stored in the `secrets.json` file. To set up the application, create a `secrets.json` file in the user profile directory:
@@ -58,5 +58,5 @@ On the backend side, sensitive data is stored in the `secrets.json` file. To set
   "FrontendPort": "{your frontend port, and ip}"   // like for a localhost angular one: 'http://localhost:4200'
 }`
 
-#Archknowledge
+# Archknowledge
   A special thanks to all contributors and libraries used in this ASP.NET/React project.
