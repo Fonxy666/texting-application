@@ -18,7 +18,7 @@ ONGOING project!
 - In the chat room, you can delete or modify your already sent messages if you click on the '3 dot' next to your message.
 
 #The backend is built on the ASP.NET 8 framework, with the main goals of being/having:
-- Secure: for example: 2FA
+- Secure: for example: 2FA, refresh tokens
 - Transparent
 - Easy to use
 - Object-Oriented
