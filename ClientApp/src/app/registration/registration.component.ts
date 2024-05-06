@@ -4,7 +4,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { TokenValidatorRequest } from '../model/TokenValidatorRequest';
 import { MessageService } from 'primeng/api';
-import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-registration',

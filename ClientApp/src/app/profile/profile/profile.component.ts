@@ -10,7 +10,6 @@ import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { ChangeAvatarRequest } from '../../model/ChangeAvatarRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
 import { MessageService } from 'primeng/api';
-import { environment } from '../../../environments/environment';
 
 @Component({
     selector: 'app-profile',
