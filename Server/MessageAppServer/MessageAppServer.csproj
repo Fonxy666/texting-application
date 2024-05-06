@@ -36,11 +36,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Images\" />
-      <Folder Include="ssl\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>

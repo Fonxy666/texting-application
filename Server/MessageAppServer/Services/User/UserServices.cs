@@ -15,7 +15,7 @@ public class UserServices(UserManager<ApplicationUser> userManager, IConfigurati
 
     public string SaveImageLocally(string userNameFileName, string base64Image)
     {
-        var folderPath = configuration["ImageFolderPath"]??Path.Combine(Directory.GetCurrentDirectory(), "Images");
+        var folderPath = configuration["ImageFolderPath"]??Path.Combine(Directory.GetCurrentDirectory(), "Avatars");
         
         if (!Directory.Exists(folderPath))
         {

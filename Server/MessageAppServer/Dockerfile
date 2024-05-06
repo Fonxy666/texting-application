@@ -16,8 +16,8 @@ WORKDIR /app
 # Copy the appsettings.json file
 COPY appsettings.json ./
 
-# Copy the Images folder
-COPY Images /app/Images
+# Copy the Avatars folder
+COPY Avatars /app/Avatars
 
 # Set environment variables
 ENV IssueAudience=${IssueAudience} \
@@ -34,7 +34,7 @@ ENV IssueAudience=${IssueAudience} \
     FacebookClientSecret=${FacebookClientSecret} \
     FrontendPort=${FrontendPort}
     
-ENV ImageFolderPath=/app/Images
+ENV ImageFolderPath=/app/Avatars
 
 # Copy the compiled application
 COPY --from=build-env /app/out .

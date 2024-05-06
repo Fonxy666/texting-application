@@ -76,7 +76,7 @@ public class UserController(
             }
             
             var folderPath = configuration["ImageFolderPath"] ??
-                             Path.Combine(Directory.GetCurrentDirectory(), "Images");
+                             Path.Combine(Directory.GetCurrentDirectory(), "Avatars");
             var imagePath = Path.Combine(folderPath, $"{existingUser!.UserName}.png");
             FileContentResult result = null;
 
