@@ -22,7 +22,7 @@ jobs:
         id: server_meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
-          images: thetips4you/testapp/server
+          images: thetips4you/textinger/server
 
       - name: Build and push Server Docker image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
@@ -36,13 +36,13 @@ jobs:
         id: client_meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
-          images: thetips4you/testapp/client
+          images: thetips4you/textinger/client
 
       - name: Build and push Client Docker image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: ClientApp
-          dockerfile: ClientApp/Dockerfile
+          dockerfile: ClientApp
           push: true
           tags: ${{ steps.client_meta.outputs.tags }}
           labels: ${{ steps.client_meta.outputs.labels }}
