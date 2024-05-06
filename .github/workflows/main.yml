@@ -37,7 +37,7 @@ jobs:
         id: server_meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
-          images: thetips4you/textinger-backend
+          images: fonxy6/textinger-backend
 
       - name: Build and push Server Docker image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
@@ -51,7 +51,7 @@ jobs:
         id: client_meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
-          images: thetips4you/textinger-frontend
+          images: fonxy6/textinger-frontend
 
       - name: Build and push Client Docker image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
