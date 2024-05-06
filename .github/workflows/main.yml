@@ -8,6 +8,21 @@ jobs:
   push_to_registry:
     name: Push Docker images to Docker Hub
     runs-on: ubuntu-latest
+    env:
+      IssueAudience: ${{ secrets.ISSUE_AUDIENCE }}
+      ConnectionString: ${{ secrets.CONNECTION_STRING }}
+      IssueSign: ${{ secrets.ISSUE_SIGN }}
+      AdminEmail: ${{ secrets.ADMIN_EMAIL }}
+      AdminUserName: ${{ secrets.ADMIN_USERNAME }}
+      AdminPassword: ${{ secrets.ADMIN_PASSWORD }}
+      DeveloperEmail: ${{ secrets.DEVELOPER_EMAIL }}
+      DeveloperPassword: ${{ secrets.DEVELOPER_PASSWORD }}
+      GoogleClientId: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GoogleClientSecret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      FacebookClientId: ${{ secrets.FACEBOOK_CLIENT_ID }}
+      FacebookClientSecret: ${{ secrets.FACEBOOK_CLIENT_SECRET }}
+      FrontendPort: ${{ secrets.FRONTEND_PORT }}
+      
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
