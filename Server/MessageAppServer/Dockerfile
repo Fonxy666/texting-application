@@ -17,7 +17,7 @@ WORKDIR /app
 COPY appsettings.json ./
 
 # Copy the Images folder
-COPY Server/MessageAppServer/Images /app/Images
+COPY Images /app/Images
 
 # Set environment variables
 ENV IssueAudience=${IssueAudience} \
