@@ -16,9 +16,6 @@ WORKDIR /app
 # Copy the appsettings.json file
 COPY appsettings.json ./
 
-# Copy the Images folder
-COPY Images /app/Images
-
 # Set environment variables
 ENV IssueAudience=${IssueAudience} \
     ConnectionString=${ConnectionString} \
