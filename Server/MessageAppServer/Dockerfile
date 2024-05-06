@@ -42,5 +42,5 @@ COPY --from=build-env /app/out .
 # Set the ASP.NET Core URL
 ENV ASPNETCORE_URLS=http://+:80
 
-# Start the application
+# Start the application 
 ENTRYPOINT ["dotnet", "MessageAppServer.dll"]
