@@ -88,7 +88,7 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessag
         var newDictionary = new Dictionary<string, string>();
         foreach (var user in users)
         {
-            newDictionary.TryAdd(user!, userManager.Users.FirstOrDefault(applicationUser => applicationUser.UserName == user)!.Id);
+            newDictionary.TryAdd(user!, userManager.Users.FirstOrDefault(applicationUser => applicationUser.UserName == user)!.Id.ToString());
         }
         return Clients.Group(room).SendAsync("ConnectedUser", newDictionary);
     }

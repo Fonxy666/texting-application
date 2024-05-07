@@ -10,7 +10,7 @@ public class UserServices(UserManager<ApplicationUser> userManager, IConfigurati
 {
     public Task<bool> ExistingUser(string id)
     {
-        return userManager.Users.AnyAsync(user => user.Id == id);
+        return userManager.Users.AnyAsync(user => user.Id.ToString() == id);
     }
 
     public string SaveImageLocally(string userNameFileName, string base64Image)

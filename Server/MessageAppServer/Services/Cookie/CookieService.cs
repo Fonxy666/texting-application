@@ -10,9 +10,9 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenServi
     
     private const int ExpirationHours = 3;
 
-    public void SetUserId(string userId, bool rememberMe)
+    public void SetUserId(Guid userId, bool rememberMe)
     {
-        Response.Cookies.Append("UserId", userId, new CookieOptions
+        Response.Cookies.Append("UserId", userId.ToString(), new CookieOptions
         {
             Domain = Request.Host.Host,
             HttpOnly = false,

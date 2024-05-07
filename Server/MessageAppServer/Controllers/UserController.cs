@@ -15,7 +15,7 @@ namespace Server.Controllers;
 [Route("api/v1/[controller]")]
 public class UserController(
     UserManager<ApplicationUser> userManager,
-    UsersContext repository,
+    DatabaseContext repository,
     IUserServices userServices,
     ILogger<UserController> logger,
     IConfiguration configuration) : ControllerBase

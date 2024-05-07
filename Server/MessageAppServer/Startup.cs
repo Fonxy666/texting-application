@@ -97,9 +97,7 @@ namespace Server
                 new Dictionary<string, UserRoomConnection>());
             services.AddTransient<IEmailSender, EmailSender>();
 
-            services.AddDbContext<UsersContext>(options => options.UseSqlServer(connection));
-            services.AddDbContext<MessagesContext>(options => options.UseSqlServer(connection));
-            services.AddDbContext<RoomsContext>(options => options.UseSqlServer(connection));
+            services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connection));
             
             services.AddAuthentication(o => {
                     o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -173,8 +171,8 @@ namespace Server
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.AllowedForNewUsers = true;
             })
-            .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<UsersContext>()
+            .AddRoles<IdentityRole<Guid>>()
+            .AddEntityFrameworkStores<DatabaseContext>()
             .AddDefaultTokenProviders();
             
             services.AddAuthorization(options =>
@@ -233,7 +231,7 @@ namespace Server
         private async Task AddRolesAndAdminAndTestUserAsync(IApplicationBuilder app)
         {
             using var scope = app.ApplicationServices.CreateScope();
-            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var roomService = scope.ServiceProvider.GetRequiredService<IRoomService>();
             var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
@@ -246,7 +244,7 @@ namespace Server
 
                 if (!roleExists)
                 {
-                    await roleManager.CreateAsync(new IdentityRole(roleName));
+                    await roleManager.CreateAsync(new IdentityRole<Guid>(roleName));
                 }
             }
 
@@ -311,7 +309,7 @@ namespace Server
             {
                 var testUser = new ApplicationUser("-")
                 {
-                    Id = "18c5eb4f-b614-45d0-9ee8-ad7f17e88dd9",
+                    Id = new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"),
                     UserName = "TestUsername1",
                     Email = testEmail1,
                     TwoFactorEnabled = true
@@ -332,7 +330,7 @@ namespace Server
             {
                 var testUser = new ApplicationUser("-")
                 {
-                    Id = "10f96e12-e245-420a-8bad-b61fb21c4b2d",
+                    Id = new Guid("10f96e12-e245-420a-8bad-b61fb21c4b2d"),
                     UserName = "TestUsername2",
                     Email = testEmail2,
                     TwoFactorEnabled = true
@@ -353,7 +351,7 @@ namespace Server
             {
                 var testUser = new ApplicationUser("-")
                 {
-                    Id = "995f04da-d4d3-447c-9c69-fab370bca312",
+                    Id = new Guid("995f04da-d4d3-447c-9c69-fab370bca312"),
                     UserName = "TestUsername3",
                     Email = testEmail3,
                     TwoFactorEnabled = false

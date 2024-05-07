@@ -3,7 +3,6 @@ using Moq;
 using Server.Model;
 using Server.Services.Authentication;
 using Server.Services.Cookie;
-using Server.Services.User;
 
 namespace Tests.Services.Auth
 {
@@ -53,7 +52,7 @@ namespace Tests.Services.Auth
             userManagerMock.Setup(x => x.FindByNameAsync(It.IsAny<string>()))
                            .ReturnsAsync(new ApplicationUser("example.url")
                            {
-                               Id = "1",
+                               Id = Guid.NewGuid(),
                                UserName = "TestUser",
                                Email = "test@example.com"
                            });

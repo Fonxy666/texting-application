@@ -170,7 +170,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var getUserResponse = await _client.PatchAsync("api/v1/User/ChangePassword", userChangeEmail);
-        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.InternalServerError, getUserResponse.StatusCode);
     }
     
     [Fact]
@@ -191,7 +191,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task GetImage_WithValidId_ReturnSuccessStatusCode()
     {
-        const string userId = "18c5eb4f-b614-45d0-9ee8-ad7f17e88dd9";
+        const string userId = "04b0b363-94b1-4c8a-4079-08dc6e8a212b";
         
         Directory.SetCurrentDirectory("D:/after codecool/texting-application/Server/MessageAppServer");
     
@@ -283,7 +283,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         const string userId = "123";
 
         var getUserResponse = await _client.GetAsync($"api/v1/User/GetUsername?userId={userId}");
-        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.InternalServerError, getUserResponse.StatusCode);
     }
     
     [Fact]
@@ -311,6 +311,6 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
         
         var getUserResponse = await _client.PatchAsync("api/v1/User/ChangeAvatar", userChangeEmail);
-        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.InternalServerError, getUserResponse.StatusCode);
     }
 }

@@ -15,7 +15,7 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
     private HttpRequest Request => httpContextAccessor.HttpContext?.Request ?? throw new InvalidOperationException("HttpContext or Request is null");
     private HttpResponse Response => httpContextAccessor.HttpContext?.Response ?? throw new InvalidOperationException("HttpContext or Response is null");
         
-    public string CreateJwtToken(IdentityUser user, string? role, bool rememberMe)
+    public string CreateJwtToken(IdentityUser<Guid> user, string? role, bool rememberMe)
     {
         var expiration = rememberMe? DateTime.UtcNow.AddHours(3) : (DateTime?)null;
         var token = CreateJwtToken(CreateClaims(user, role), CreateSigningCredentials(), expiration);
@@ -45,14 +45,14 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
         );
     }
 
-    public List<Claim> CreateClaims(IdentityUser user, string? role)
+    public List<Claim> CreateClaims(IdentityUser<Guid> user, string? role)
     {
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, configuration["IssueAudience"]!),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)),
-            new(ClaimTypes.NameIdentifier, user.Id)
+            new(ClaimTypes.NameIdentifier, user.Id.ToString())
         };
 
         if (!string.IsNullOrEmpty(user.UserName))

@@ -23,7 +23,7 @@ public class ApplicationUserTests
         
         var user = new ApplicationUser(imageUrl);
         
-        Assert.IsInstanceOf<IdentityUser>(user);
+        Assert.IsInstanceOf<IdentityUser<Guid>>(user);
     }
 
     [Test]

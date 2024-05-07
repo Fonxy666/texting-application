@@ -29,7 +29,7 @@ public class JwtRefreshMiddleware(RequestDelegate next)
         var rememberMe = context.Request.Cookies["RememberMe"] == "True";
         
         var userId = context.Request.Cookies["UserId"];
-        var user = userManager.Users.FirstOrDefault(user => user.Id == userId);
+        var user = userManager.Users.FirstOrDefault(user => user.Id.ToString() == userId);
         var newToken = tokenService.CreateJwtToken(user!, "User", rememberMe);
 
         await cookieService.SetJwtToken(newToken, rememberMe);
