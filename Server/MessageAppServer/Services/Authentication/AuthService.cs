@@ -48,7 +48,7 @@ public class AuthService(
         cookieService.SetAnimateAndAnonymous(rememberMe);
         await cookieService.SetJwtToken(accessToken, rememberMe);
         
-        return new AuthResult(true, managedUser.Id, "");
+        return new AuthResult(true, managedUser.Id.ToString(), "");
     }
 
     public async Task<AuthResult> LoginWithExternal(string emailAddress)
@@ -71,7 +71,7 @@ public class AuthService(
         cookieService.SetAnimateAndAnonymous(true);
         await cookieService.SetJwtToken(accessToken, true);
         
-        return new AuthResult(true, managedUser.Id, "");
+        return new AuthResult(true, managedUser.Id.ToString(), "");
     }
 
     public Task<string?> GetEmailFromUserName(string username)
@@ -105,7 +105,7 @@ public class AuthService(
         
         await userManager.ResetAccessFailedCountAsync(managedUser);
 
-        return new AuthResult(true, managedUser.Id, managedUser.Email!);
+        return new AuthResult(true, managedUser.Id.ToString(), managedUser.Email!);
     }
 
     private async Task<AuthResult> ExamineLockoutEnabled(ApplicationUser user)
@@ -133,7 +133,7 @@ public class AuthService(
 
     public async Task<AuthResult> LogOut(string userId)
     {
-        var user = userManager.Users.FirstOrDefault(user => user.Id == userId);
+        var user = userManager.Users.FirstOrDefault(user => user.Id.ToString() == userId);
         user!.RefreshToken = string.Empty;
         user.RefreshTokenExpires = null;
         user.RefreshTokenCreated = null;

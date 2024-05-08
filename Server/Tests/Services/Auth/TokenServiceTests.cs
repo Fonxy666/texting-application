@@ -31,9 +31,9 @@ public class TokenServiceTests
     [Test]
     public void CreateToken_ValidUser_ReturnsValidToken()
     {
-        var user = new IdentityUser
+        var user = new IdentityUser<Guid>
         {
-            Id = "userId",
+            Id = Guid.NewGuid(),
             UserName = "testuser",
             Email = "testuser@example.com"
         };
@@ -50,9 +50,9 @@ public class TokenServiceTests
     [Test]
     public void CreateClaims_ValidUserAndRole_ReturnsListOfClaims()
     {
-        var user = new IdentityUser
+        var user = new IdentityUser<Guid>
         {
-            Id = "userId",
+            Id = Guid.NewGuid(),
             UserName = "testuser",
             Email = "testuser@example.com"
         };

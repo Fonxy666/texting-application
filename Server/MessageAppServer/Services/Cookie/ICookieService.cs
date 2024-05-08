@@ -4,7 +4,7 @@ namespace Server.Services.Cookie;
 
 public interface ICookieService
 {
-    public void SetUserId(string userId, bool rememberMe);
+    public void SetUserId(Guid userId, bool rememberMe);
     public void SetRefreshToken(ApplicationUser user);
     public void SetAnimateAndAnonymous(bool rememberMe);
     public void ChangeAnimation();
