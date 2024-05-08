@@ -82,7 +82,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task CreateRoom_WithTakenRoomName_ReturnBadRequest()
     {
-         var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "test"));
+        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "test"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/RegisterRoom", contentRegister);

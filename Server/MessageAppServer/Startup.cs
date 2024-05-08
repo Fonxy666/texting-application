@@ -22,7 +22,6 @@ namespace Server
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            Console.WriteLine(env.IsDevelopment());
             var connection = configuration["ConnectionString"];
             var issueSign = configuration["IssueSign"];
             var issueAudience = configuration["IssueAudience"];
@@ -98,7 +97,6 @@ namespace Server
                 new Dictionary<string, UserRoomConnection>());
             services.AddTransient<IEmailSender, EmailSender>();
 
-            Console.WriteLine(connection);
             services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connection));
             
             services.AddAuthentication(o => {
