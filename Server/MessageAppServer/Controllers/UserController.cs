@@ -64,7 +64,7 @@ public class UserController(
         }
     }
 
-    [HttpGet("GetImage")]
+    [HttpGet("GetImage"), Authorize(Roles = "User, Admin")]
     public async Task<IActionResult> GetImageWithId([FromQuery]string userId)
     {
         try
@@ -77,6 +77,7 @@ public class UserController(
             
             var folderPath = configuration["ImageFolderPath"] ??
                              Path.Combine(Directory.GetCurrentDirectory(), "Avatars");
+            
             var imagePath = Path.Combine(folderPath, $"{existingUser!.UserName}.png");
             FileContentResult result = null;
 

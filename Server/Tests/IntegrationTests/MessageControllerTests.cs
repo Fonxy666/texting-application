@@ -1,6 +1,9 @@
 ﻿using System.Net;
 using System.Text;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Server;
 using Server.Model.Requests.Auth;
@@ -13,15 +16,42 @@ namespace Tests.IntegrationTests;
 [Collection("Sequential")]
 public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
-    private readonly WebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
+    private readonly HttpClient _client;
+    private readonly TestServer _testServer;
 
 
-    public MessageControllerTests(WebApplicationFactory<Startup> factory)
+    public MessageControllerTests()
     {
-        _factory = factory;
-        _client = _factory.CreateClient();
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.Development.json")
+            .Build();
+
+        configuration["ConnectionString"] = "Server=localhost,1434;Database=textinger_test_database;User Id=sa;Password=yourStrong(!)Password;MultipleActiveResultSets=true;TrustServerCertificate=True";
+        configuration["IssueAudience"] = "api With Authentication for Tests correctly implemented";
+        configuration["IssueSign"] = "V3ryStr0ngP@ssw0rdW1thM0reTh@n256B1ts4Th3T3sts";
+        configuration["AdminEmail"] = "AdminEmail";
+        configuration["AdminUserName"] = "AdminUserName";
+        configuration["AdminPassword"] = "AdminPassword";
+        configuration["DeveloperEmail"] = "DeveloperEmail";
+        configuration["DeveloperPassword"] = "DeveloperPassword";
+        configuration["GoogleClientId"] = "GoogleClientId";
+        configuration["GoogleClientSecret"] = "GoogleClientSecret";
+        configuration["FacebookClientId"] = "FacebookClientId";
+        configuration["FacebookClientSecret"] = "FacebookClientSecret";
+        configuration["FrontendUrlAndPort"] = "http://localhost:4200";
+        
+        var builder = new WebHostBuilder()
+            .UseEnvironment("Test")
+            .UseStartup<Startup>()
+            .ConfigureAppConfiguration(config =>
+            {
+                config.AddConfiguration(configuration);
+            });
+
+        _testServer = new TestServer(builder);
+        _client = _testServer.CreateClient();
         var cookies = TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com").Result;
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
     }
