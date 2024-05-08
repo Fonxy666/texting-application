@@ -18,10 +18,11 @@ using Server.Services.User;
 
 namespace Server
 {
-    public class Startup(IConfiguration configuration)
+    public class Startup(IConfiguration configuration, IWebHostEnvironment env)
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            Console.WriteLine(env.IsDevelopment());
             var connection = configuration["ConnectionString"];
             var issueSign = configuration["IssueSign"];
             var issueAudience = configuration["IssueAudience"];
@@ -97,6 +98,7 @@ namespace Server
                 new Dictionary<string, UserRoomConnection>());
             services.AddTransient<IEmailSender, EmailSender>();
 
+            Console.WriteLine(connection);
             services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connection));
             
             services.AddAuthentication(o => {
@@ -194,13 +196,13 @@ namespace Server
             app.UseHttpsRedirection();
             app.UseRouting();
             
-            /*app.UseCors(builder =>
+            app.UseCors(builder =>
             {
                 builder.WithOrigins("http://localhost:4200")
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials();
-            });*/
+            });
             
             app.Use(async (context, next) =>
             {
@@ -251,19 +253,12 @@ namespace Server
             await CreateAdminIfNotExistAsync(userManager);
             await CreateTestUsers(userManager);
             await CreateTestRoom(roomService);
-            /*await CreateTestMessage(messageService);*/
         }
-
-        /*private async Task CreateTestMessage(IMessageService messageService)
-        {
-            messageService.SendMessage()
-        }*/
 
         private async Task CreateTestRoom(IRoomService roomService)
         {
             if (roomService.GetRoom("test").Result != null)
             {
-                Console.WriteLine("Test room is already in database.");
                 return;
             }
             await roomService.RegisterRoomAsync("test", "test");

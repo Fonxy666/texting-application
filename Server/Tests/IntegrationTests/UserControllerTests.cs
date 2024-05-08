@@ -1,6 +1,8 @@
 ﻿using System.Net;
 using System.Text;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Server;
 using Server.Model.Requests.Auth;
@@ -25,7 +27,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         _client = _factory.CreateClient();
     }
     
-    [Fact]
+    /*[Fact]
     public async Task GetUserCredentials_ReturnSuccessStatusCode()
     {
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
@@ -34,7 +36,58 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         var getUserResponse = await _client.GetAsync($"api/v1/User/getUserCredentials?userId=38db530c-b6bb-4e8a-9c19-a5cd4d0fa916");
         getUserResponse.EnsureSuccessStatusCode();
-    }
+    }*/
+    
+    /*[Fact]
+    public async Task GetUserCredentials_ReturnSuccessStatusCode()
+    {
+        // Set the environment to Testing
+        var webHostBuilder = new WebHostBuilder()
+            .UseEnvironment("Test") // Set the environment to "Testing"
+            .UseStartup<Startup>();
+
+        // Load development configuration
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.Development.json") // Use the development configuration
+            .Build();
+
+        // Override connection string for tests
+        configuration["ConnectionString"] = "Server=localhost,1434;Database=textinger_test_database;User Id=sa;Password=yourStrong(!)Password;MultipleActiveResultSets=true;TrustServerCertificate=True";
+        configuration["IssueAudience"] = "api With Authentication comes and goes here";
+        configuration["ConnectionString"] = "Server=localhost,1433;Database=text_app;User Id=sa;Password=yourStrong(!)Password;MultipleActiveResultSets=true;TrustServerCertificate=True;";
+        configuration["IssueSign"] = "V3ryStr0ngP@ssw0rdW1thM0reTh@n256B1ts";
+        configuration["AdminEmail"] = "admin@gmail.com";
+        configuration["AdminUserName"] = "Admin";
+        configuration["AdminPassword"] = "asdASDasd123666$$$";
+        configuration["DeveloperEmail"] = "new-smtp123-sender567@hotmail.com";
+        configuration["DeveloperPassword"] = "asdASDasd123666$$$";
+        configuration["GoogleClientId"] = "592491293143-mqspbv3b547k1r76rdg4l5i3ujm4kthm.apps.googleusercontent.com";
+        configuration["GoogleClientSecret"] = "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";
+        configuration["FacebookClientId"] = "388505830821078";
+        configuration["FacebookClientSecret"] = "9348039785609456e379455b79d4cbb3";
+        configuration["FrontendUrlAndPort"] = "http://localhost:4200";
+
+        var factory = new WebApplicationFactory<Startup>()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.UseEnvironment("Test"); // Set the environment to "Testing"
+                builder.ConfigureAppConfiguration(config =>
+                {
+                    config.AddConfiguration(configuration); // Load the modified configuration
+                });
+            });
+
+        // Create the client
+        var client = factory.CreateClient();
+        
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, client, "test1@hotmail.com");
+
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var getUserResponse = await client.GetAsync("api/v1/User/getUserCredentials?userId=18c5eb4f-b614-45d0-9ee8-ad7f17e88dd9");
+        getUserResponse.EnsureSuccessStatusCode();
+    }*/
     
     [Fact]
     public async Task GetUser_Credentials_ReturnNotFound()

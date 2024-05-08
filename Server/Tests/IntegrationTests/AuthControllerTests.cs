@@ -1,7 +1,11 @@
 ﻿using System.Net;
 using System.Text;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Newtonsoft.Json;
@@ -18,14 +22,41 @@ namespace Tests.IntegrationTests;
 [Collection("Sequential")]
 public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
-    private readonly WebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
+    private readonly HttpClient _client;
+    private readonly TestServer _testServer;
 
-    public AuthControllerTests(WebApplicationFactory<Startup> factory)
+    public AuthControllerTests()
     {
-        _factory = factory;
-        _client = _factory.CreateClient();
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.Development.json")
+            .Build();
+
+        configuration["ConnectionString"] = "Server=localhost,1434;Database=textinger_test_database;User Id=sa;Password=yourStrong(!)Password;MultipleActiveResultSets=true;TrustServerCertificate=True";
+        configuration["IssueAudience"] = "api With Authentication for Tests correctly implemented";
+        configuration["IssueSign"] = "V3ryStr0ngP@ssw0rdW1thM0reTh@n256B1ts4Th3T3sts";
+        configuration["AdminEmail"] = "AdminEmail";
+        configuration["AdminUserName"] = "AdminUserName";
+        configuration["AdminPassword"] = "AdminPassword";
+        configuration["DeveloperEmail"] = "DeveloperEmail";
+        configuration["DeveloperPassword"] = "DeveloperPassword";
+        configuration["GoogleClientId"] = "GoogleClientId";
+        configuration["GoogleClientSecret"] = "GoogleClientSecret";
+        configuration["FacebookClientId"] = "FacebookClientId";
+        configuration["FacebookClientSecret"] = "FacebookClientSecret";
+        configuration["FrontendUrlAndPort"] = "http://localhost:4200";
+        
+        var builder = new WebHostBuilder()
+            .UseEnvironment("Test")
+            .UseStartup<Startup>()
+            .ConfigureAppConfiguration(config =>
+            {
+                config.AddConfiguration(configuration);
+            });
+
+        _testServer = new TestServer(builder);
+        _client = _testServer.CreateClient();
     }
 
     [Fact]
@@ -52,15 +83,14 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Login_WithBadAuthToken_ReturnBadRequest()
     {
-        var token = EmailSenderCodeGenerator.GenerateTokenForLogin("test1@hotmail.com");
         var login = new LoginAuth(_testUser.UserName, false, "asd");
         var authJsonRequest = JsonConvert.SerializeObject(login);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
         var authResponse = await _client.PostAsync("api/v1/Auth/Login", authContent);
         Assert.Equal(HttpStatusCode.BadRequest, authResponse.StatusCode);
     }
-
-    [Fact]
+    
+   [Fact]
     public async Task Register_TestUser_ReturnSuccessStatusCode()
     {
         var testUser = new RegistrationRequest("unique@hotmail.com", "uniqueTestUsername", "TestUserPassword123666$$$", "01234567890", "");

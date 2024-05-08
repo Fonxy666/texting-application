@@ -1,12 +1,12 @@
 {
     "/api": {
-        "target": "https://localhost:8001/",
+        "target": "https://localhost:7045/",
         "secure": false,
         "changeOrigin": true,
         "logLevel": "debug"
     },
     "/chat": {
-        "target": "https://localhost:8001/",
+        "target": "https://localhost:7045/",
         "secure": false,
         "changeOrigin": true,
         "logLevel": "debug",
