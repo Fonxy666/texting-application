@@ -24,17 +24,17 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
     public UserControllerTests()
     {
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("testConfiguration.json")
-            .Build();
-        
         var builder = new WebHostBuilder()
             .UseEnvironment("Test")
             .UseStartup<Startup>()
             .ConfigureAppConfiguration(config =>
             {
-                config.AddConfiguration(configuration);
+                config.AddConfiguration(
+                    new ConfigurationBuilder()
+                        .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile("testConfiguration.json")
+                        .Build()
+                    );
             });
 
         _testServer = new TestServer(builder);

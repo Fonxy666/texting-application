@@ -225,15 +225,19 @@ namespace Server
                 endpoints.MapControllers();
             });
 
-            AddRolesAndAdminAndTestUserAsync(app).Wait();
+            
+            AddRolesAndAdmin(app).Wait();
+
+            if (!env.IsEnvironment("Test")) return;
+            CreateTestRoom(app).Wait();
+            CreateTestUsers(app).Wait();
         }
 
-        private async Task AddRolesAndAdminAndTestUserAsync(IApplicationBuilder app)
+        private async Task AddRolesAndAdmin(IApplicationBuilder app)
         {
             using var scope = app.ApplicationServices.CreateScope();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            var roomService = scope.ServiceProvider.GetRequiredService<IRoomService>();
 
             var roleList = new List<string> { "User", "Admin" };
 
@@ -248,12 +252,13 @@ namespace Server
             }
 
             await CreateAdminIfNotExistAsync(userManager);
-            await CreateTestUsers(userManager);
-            await CreateTestRoom(roomService);
         }
 
-        private async Task CreateTestRoom(IRoomService roomService)
+        private async Task CreateTestRoom(IApplicationBuilder app)
         {
+            using var scope = app.ApplicationServices.CreateScope();
+            var roomService = scope.ServiceProvider.GetRequiredService<IRoomService>();
+            
             if (roomService.GetRoom("test").Result != null)
             {
                 return;
@@ -287,8 +292,11 @@ namespace Server
             }
         }
 
-        private async Task CreateTestUsers(UserManager<ApplicationUser> userManager)
+        private async Task CreateTestUsers(IApplicationBuilder app)
         {
+            using var scope = app.ApplicationServices.CreateScope();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            
             const string testEmail1 = "test1@hotmail.com";
             const string testEmail2 = "test2@hotmail.com";
             const string testEmail3 = "test3@hotmail.com";
