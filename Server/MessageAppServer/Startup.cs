@@ -236,7 +236,6 @@ namespace Server
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var roomService = scope.ServiceProvider.GetRequiredService<IRoomService>();
-            var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
 
             var roleList = new List<string> { "User", "Admin" };
 
