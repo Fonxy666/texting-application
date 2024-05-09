@@ -12,6 +12,7 @@ using Assert = Xunit.Assert;
 
 namespace Tests.IntegrationTests;
 
+[Collection("Sequential")]
 public class CookiesControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
@@ -64,7 +65,7 @@ public class CookiesControllerTests : IClassFixture<WebApplicationFactory<Startu
         var jsonRequestRegister = JsonConvert.SerializeObject("asd");
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
-        var roomRegistrationResponse = await _client.PostAsync("api/v1/Cookie/ChangeCookies", contentRegister);
+        var roomRegistrationResponse = await _client.PostAsync("api/v1/Cookie/ChangeCookies?request=asd", contentRegister);
         Assert.Equal(HttpStatusCode.BadRequest, roomRegistrationResponse.StatusCode);
     }
 }

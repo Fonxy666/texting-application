@@ -104,7 +104,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task ChangeEmail_WithInUserEmail_ReturnNotNotFound()
+    public async Task ChangeEmail_WithInUseUserEmail_ReturnNotNotFound()
     {
         var emailRequest = new ChangeEmailRequest("test1@hotmail.com", "test3@hotmail.com");
         var jsonRequestRegister = JsonConvert.SerializeObject(emailRequest);
