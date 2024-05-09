@@ -24,31 +24,17 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
     public UserControllerTests()
     {
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.Development.json")
-            .Build();
-
-        configuration["ConnectionString"] = "Server=localhost,1434;Database=textinger_test_database;User Id=sa;Password=yourStrong(!)Password;MultipleActiveResultSets=true;TrustServerCertificate=True";
-        configuration["IssueAudience"] = "api With Authentication for Tests correctly implemented";
-        configuration["IssueSign"] = "V3ryStr0ngP@ssw0rdW1thM0reTh@n256B1ts4Th3T3sts";
-        configuration["AdminEmail"] = "AdminEmail";
-        configuration["AdminUserName"] = "AdminUserName";
-        configuration["AdminPassword"] = "AdminPassword";
-        configuration["DeveloperEmail"] = "DeveloperEmail";
-        configuration["DeveloperPassword"] = "DeveloperPassword";
-        configuration["GoogleClientId"] = "GoogleClientId";
-        configuration["GoogleClientSecret"] = "GoogleClientSecret";
-        configuration["FacebookClientId"] = "FacebookClientId";
-        configuration["FacebookClientSecret"] = "FacebookClientSecret";
-        configuration["FrontendUrlAndPort"] = "http://localhost:4200";
-        
         var builder = new WebHostBuilder()
             .UseEnvironment("Test")
             .UseStartup<Startup>()
             .ConfigureAppConfiguration(config =>
             {
-                config.AddConfiguration(configuration);
+                config.AddConfiguration(
+                    new ConfigurationBuilder()
+                        .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile("testConfiguration.json")
+                        .Build()
+                    );
             });
 
         _testServer = new TestServer(builder);
@@ -118,7 +104,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task ChangeEmail_WithInUserEmail_ReturnNotNotFound()
+    public async Task ChangeEmail_WithInUseUserEmail_ReturnNotNotFound()
     {
         var emailRequest = new ChangeEmailRequest("test1@hotmail.com", "test3@hotmail.com");
         var jsonRequestRegister = JsonConvert.SerializeObject(emailRequest);

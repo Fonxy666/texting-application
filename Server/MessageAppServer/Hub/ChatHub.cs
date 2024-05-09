@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Server.Model;
 using Server.Model.Requests.Message;
-using Server.Services.Chat.MessageService;
 
 namespace Server.Hub;
 
-public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessageService messageRepository, UserManager<ApplicationUser> userManager)
+public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserManager<ApplicationUser> userManager)
     : Microsoft.AspNetCore.SignalR.Hub
 {
     public async Task<string> JoinRoom(UserRoomConnection userConnection)
@@ -51,12 +49,6 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IMessag
         {
             await Clients.Group(userRoomConnection.Room!).SendAsync("ModifyMessageSeen", request.UserId);
         }
-    }
-
-    public async Task SaveMessage(MessageRequest request)
-    {
-        var messageRequest = new MessageRequest(request.RoomId, request.UserId, request.Message, request.AsAnonymous);
-        await messageRepository.SendMessage(messageRequest);
     }
 
     public async Task DeleteMessage(string messageId)

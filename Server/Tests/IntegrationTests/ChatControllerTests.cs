@@ -25,22 +25,8 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     {
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.Development.json")
+            .AddJsonFile("testConfiguration.json")
             .Build();
-
-        configuration["ConnectionString"] = "Server=localhost,1434;Database=textinger_test_database;User Id=sa;Password=yourStrong(!)Password;MultipleActiveResultSets=true;TrustServerCertificate=True";
-        configuration["IssueAudience"] = "api With Authentication for Tests correctly implemented";
-        configuration["IssueSign"] = "V3ryStr0ngP@ssw0rdW1thM0reTh@n256B1ts4Th3T3sts";
-        configuration["AdminEmail"] = "AdminEmail";
-        configuration["AdminUserName"] = "AdminUserName";
-        configuration["AdminPassword"] = "AdminPassword";
-        configuration["DeveloperEmail"] = "DeveloperEmail";
-        configuration["DeveloperPassword"] = "DeveloperPassword";
-        configuration["GoogleClientId"] = "GoogleClientId";
-        configuration["GoogleClientSecret"] = "GoogleClientSecret";
-        configuration["FacebookClientId"] = "FacebookClientId";
-        configuration["FacebookClientSecret"] = "FacebookClientSecret";
-        configuration["FrontendUrlAndPort"] = "http://localhost:4200";
         
         var builder = new WebHostBuilder()
             .UseEnvironment("Test")
