@@ -1,0 +1,15 @@
+﻿{
+  "IssueAudience": "api With Authentication comes and goes here",
+  "ConnectionString": "Server=localhost,1434;Database=textinger_test_database;User Id=sa;Password=yourStrong(!)Password;MultipleActiveResultSets=true;TrustServerCertificate=True;",
+  "IssueSign": "V3ryStr0ngP@ssw0rdW1thM0reTh@n256B1ts",
+  "AdminEmail": "admin@gmail.com",
+  "AdminUserName": "Admin",
+  "AdminPassword": "asdASDasd123666$$$",
+  "DeveloperEmail": "new-smtp123-sender567@hotmail.com",
+  "DeveloperPassword": "asdASDasd123666$$$",
+  "GoogleClientId": "592491293143-mqspbv3b547k1r76rdg4l5i3ujm4kthm.apps.googleusercontent.com",
+  "GoogleClientSecret": "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",
+  "FacebookClientId": "388505830821078",
+  "FacebookClientSecret": "9348039785609456e379455b79d4cbb3",
+  "FrontendUrlAndPort": "http://localhost:4200"
+}
