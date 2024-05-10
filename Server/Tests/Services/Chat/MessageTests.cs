@@ -34,7 +34,7 @@ namespace Tests.Services.Chat
         [Test]
         public async Task SendMessage_ValidMessage_ReturnsSuccessResponse()
         {
-            var request = new MessageRequest("TestRoom", "TestUser", "Hello, World!", false);
+            var request = new MessageRequest("a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "Hello, World!", false, null);
 
             var response = await _messageService.SendMessage(request);
 
@@ -44,7 +44,7 @@ namespace Tests.Services.Chat
         [Test]
         public async Task GetLast10Messages_ValidRoomId_ReturnsLast10Messages()
         {
-            const string roomId = "TestRoom";
+            var roomId = new Guid("a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
             await SeedDatabase(roomId);
 
             var messages = await _messageService.GetLast10Messages(roomId);
@@ -53,11 +53,11 @@ namespace Tests.Services.Chat
             Assert.AreEqual(10, messages.Count());
         }
 
-        private async Task SeedDatabase(string roomId)
+        private async Task SeedDatabase(Guid roomId)
         {
             for (var i = 1; i <= 15; i++)
             {
-                await _dbContext.Messages.AddAsync(new Message(roomId, $"User{i}", $"Message{i}", false));
+                await _dbContext.Messages.AddAsync(new Message(roomId, new Guid("a57f0d67-8670-4789-a580-3b4a3bd3bf9c"), $"Message{i}", false));
             }
 
             await _dbContext.SaveChangesAsync();

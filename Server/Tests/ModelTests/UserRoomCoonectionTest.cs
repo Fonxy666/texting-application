@@ -11,22 +11,22 @@ public class UserRoomConnectionTests
         var user = "John";
         var room = "Lobby";
 
-        var connection = new UserRoomConnection
+        var connection = new UserRoomConnection(user, room);
+        Assert.Multiple(() =>
         {
-            User = user,
-            Room = room
-        };
-
-        Assert.AreEqual(user, connection.User);
-        Assert.AreEqual(room, connection.Room);
+            Assert.That(connection.User, Is.EqualTo(user));
+            Assert.That(connection.Room, Is.EqualTo(room));
+        });
     }
 
     [Test]
     public void UserRoomConnection_Properties_CanBeNull()
     {
-        var connection = new UserRoomConnection();
-
-        Assert.IsNull(connection.User);
-        Assert.IsNull(connection.Room);
+        var connection = new UserRoomConnection("", "");
+        Assert.Multiple(() =>
+        {
+            Assert.That(connection.User, Is.EqualTo(string.Empty));
+            Assert.That(connection.Room, Is.EqualTo(string.Empty));
+        });
     }
 }

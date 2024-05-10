@@ -7,15 +7,15 @@ namespace Server.Model.Chat;
 public class Room
 {
     [Key]
-    public string RoomId { get; set; } = Guid.NewGuid().ToString();
-    
-    public string RoomName { get; set; }
-    public string Password { get; set; }
+    public Guid RoomId { get; private set; }
+    public string RoomName { get; init; }
+    public string Password { get; private set; }
     
     public Room() {}
     
     public Room(string roomName, string password)
     {
+        RoomId = Guid.NewGuid();
         RoomName = roomName;
         Password = HashPassword(password);
     }
@@ -32,5 +32,10 @@ public class Room
     {
         var enteredPasswordHash = HashPassword(enteredPassword);
         return Password == enteredPasswordHash;
+    }
+
+    public void ChangePassword(string password)
+    {
+        Password = HashPassword(password);
     }
 }

@@ -9,16 +9,18 @@ namespace Server.Services.Chat.MessageService;
 public class MessageService(DatabaseContext context) : IMessageService
 {
     private DatabaseContext Context { get; } = context;
-    public Task<bool> MessageExisting(string id)
+    public Task<bool> MessageExisting(Guid id)
     {
         return context.Messages!.AnyAsync(message => message.MessageId == id);
     }
 
     public async Task<SaveMessageResponse> SendMessage(MessageRequest request)
     {
+        var roomIdToGuid = new Guid(request.RoomId);
+        var userIdToGuid = new Guid(request.UserId);
         var message = request.MessageId != null ? 
-            new Message(request.RoomId, request.UserId, request.Message, request.MessageId, request.AsAnonymous) : 
-            new Message(request.RoomId, request.UserId, request.Message, request.AsAnonymous);
+            new Message(roomIdToGuid, userIdToGuid, request.Message, new Guid(request.MessageId), request.AsAnonymous) : 
+            new Message(roomIdToGuid, userIdToGuid, request.Message, request.AsAnonymous);
         
         await Context.Messages!.AddAsync(message);
         await Context.SaveChangesAsync();
@@ -26,7 +28,7 @@ public class MessageService(DatabaseContext context) : IMessageService
         return new SaveMessageResponse(true, message, null);
     }
 
-    public async Task<IQueryable<Message>> GetLast10Messages(string roomId)
+    public async Task<IQueryable<Message>> GetLast10Messages(Guid roomId)
     {
         var messages = await Context.Messages!
             .Where(message => message.RoomId == roomId)
@@ -41,7 +43,7 @@ public class MessageService(DatabaseContext context) : IMessageService
     {
         var existingMessage = Context.Messages!.FirstOrDefault(message => message.MessageId == request.Id);
         
-        existingMessage!.Text = request.Message;
+        existingMessage!.ChangeMessageText(request.Message);
 
         Context.Messages!.Update(existingMessage);
         await Context.SaveChangesAsync();
@@ -51,10 +53,9 @@ public class MessageService(DatabaseContext context) : IMessageService
 
     public async Task<MessageResponse> EditMessageSeen(EditMessageSeenRequest request)
     {
-        var existingMessage = Context.Messages!.FirstOrDefault(message => message.MessageId == request.MessageId);
+        var existingMessage = Context.Messages!.FirstOrDefault(message => message.MessageId == new Guid(request.MessageId));
         
-        var sawId = new Guid(request.UserId);
-        existingMessage!.AddUserToSeen(sawId);
+        existingMessage!.AddUserToSeen(new Guid(request.UserId));
 
         Context.Messages!.Update(existingMessage);
         await Context.SaveChangesAsync();
@@ -62,13 +63,13 @@ public class MessageService(DatabaseContext context) : IMessageService
         return new MessageResponse(true, "", null);
     }
 
-    public async Task<MessageResponse> DeleteMessage(string id)
+    public async Task<MessageResponse> DeleteMessage(Guid id)
     {
         var existingMessage = Context.Messages!.FirstOrDefault(message => message.MessageId == id);
         
         Context.Messages!.Remove(existingMessage!);
         await Context.SaveChangesAsync();
 
-        return new MessageResponse(true, id, null);
+        return new MessageResponse(true, id.ToString(), null);
     }
 }

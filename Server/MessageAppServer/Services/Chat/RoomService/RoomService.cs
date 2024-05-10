@@ -8,7 +8,7 @@ namespace Server.Services.Chat.RoomService;
 public class RoomService(DatabaseContext context) : IRoomService
 {
     private DatabaseContext Context { get; set; } = context;
-    public Task<bool> ExistingRoom(string id)
+    public Task<bool> ExistingRoom(Guid id)
     {
         return Context.Rooms!.AnyAsync(room => room.RoomId == id);
     }
@@ -23,16 +23,11 @@ public class RoomService(DatabaseContext context) : IRoomService
     public async Task<RoomResponse> RegisterRoomAsync(string roomName, string password)
     {
         var room = new Room(roomName, password);
-
-        if (roomName == "test")
-        {
-            room.RoomId = "ea5c5adb-9807-4ad1-b6da-7650d821827a";
-        }
         
         await Context.Rooms!.AddAsync(room);
         await Context.SaveChangesAsync();
         
-        return new RoomResponse(true, room.RoomId, room.RoomName);
+        return new RoomResponse(true, room.RoomId.ToString(), room.RoomName);
     }
 
     public async Task DeleteRoomAsync(Room room)

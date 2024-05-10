@@ -45,7 +45,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task GetMessage_WithInvalidRoomId_ReturnsBadRequest()
     {
-        const string roomId = "123";
+        const string roomId = "a57f0d67-8670-4789-a580-3b4a3bd3bf9c";
 
         var getUserResponse = await _client.GetAsync($"api/v1/Message/getMessages/{roomId}");
         
@@ -57,7 +57,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task SendMessage_GetMessage_WithValidRequest_ReturnSuccessStatusCode()
     {
-        var messageRequest = new MessageRequest("ea5c5adb-9807-4ad1-b6da-7650d821827a", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "test", false, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
+        var messageRequest = new MessageRequest("901d40c6-c95d-47ed-a21a-88cda341d0a9", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "test", false, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
         var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
         var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
 
@@ -83,7 +83,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task SendMessage_WithNotValidRoomId_ReturnBadRequest()
     {
-        var messageRequest = new MessageRequest("123", _testUser.UserName, "test", false, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
+        var messageRequest = new MessageRequest("901d40c6-c95d-47ed-a21a-88cda341d0a5", _testUser.UserName, "test", false, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
         var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
         var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
 
@@ -107,18 +107,19 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task EditMessage_WithValidCredentials_ReturnSuccessStatusCode()
     {
-        var messageChangeRequest = new EditMessageRequest("a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "TestChange");
+        var messageChangeRequest = new EditMessageRequest(new Guid("a57f0d67-8670-4789-a580-3b4a3bd3bf9c"), "TestChange");
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 
         var getUserResponse = await _client.PatchAsync("api/v1/Message/EditMessage", messageChange);
         getUserResponse.EnsureSuccessStatusCode();
     }
-    
+
     [Fact]
     public async Task EditMessage_WithNotExistingId_ReturnNotFound()
     {
-        var messageChangeRequest = new EditMessageRequest("1", "TestChange");
+        var messageChangeRequest = new EditMessageRequest(new Guid("a57f0d67-8670-4789-a580-3b4a3bd3bf9a"), "TestChange");
+
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 
@@ -152,7 +153,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task EditMessageSeen_WithInvalidMessageId_ReturnNotFound()
     {
-        var messageChangeRequest = new EditMessageSeenRequest("1", "18c5eb4f-b614-45d0-9ee8-ad7f17e88dd9");
+        var messageChangeRequest = new EditMessageSeenRequest("a57f0d67-8670-4789-a580-3b4a3bd3bf8c", "18c5eb4f-b614-45d0-9ee8-ad7f17e88dd9");
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 
@@ -183,7 +184,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
     [Fact]
     public async Task DeleteMessage_WithInvalidModel_ReturnBadRequest()
     {
-        var messageDeleteRequestId = new EditMessageSeenRequest("", "");
+        const string messageDeleteRequestId = "a57f0d67-8670-4789-a580-3b4a3bd3bf8c";
 
         var getUserResponse = await _client.DeleteAsync($"api/v1/Message/DeleteMessage?id={messageDeleteRequestId}");
         Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
