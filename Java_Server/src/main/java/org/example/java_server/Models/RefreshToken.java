@@ -1,4 +1,4 @@
-package org.example.Models;
+package org.example.java_server.Models;
 
 public class RefreshToken {
     private String Token;

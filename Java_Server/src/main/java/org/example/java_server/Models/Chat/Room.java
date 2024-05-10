@@ -1,4 +1,4 @@
-package org.example.Models.Chat;
+package org.example.java_server.Models.Chat;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

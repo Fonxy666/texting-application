@@ -1,4 +1,4 @@
-package org.example.Models.Chat;
+package org.example.java_server.Models.Chat;
 
 import java.time.LocalTime;
 import java.util.ArrayList;

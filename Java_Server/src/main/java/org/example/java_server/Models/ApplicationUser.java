@@ -1,10 +1,19 @@
-package org.example.Models;
+package org.example.java_server.Models;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
+@Entity
+@Table(name = "Users")
 public class ApplicationUser {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private UUID Id;
     private String ImageUrl;
     private String RefreshToken;
@@ -24,6 +33,8 @@ public class ApplicationUser {
     private java.time.LocalTime LockoutEnd;
     private Boolean LockoutEnabled;
     private Integer AccessFailedCount;
+
+    public ApplicationUser() { }
 
     public ApplicationUser(String imageUrl, String password, String refreshToken, String userName, String email, Boolean emailConfirmed, String phoneNumber) {
         this.Id = UUID.randomUUID();
