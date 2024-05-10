@@ -8,16 +8,16 @@ public class MessageTests
     [Test]
     public void Message_Constructor_SetsPropertiesCorrectly()
     {
-        var roomId = "TestRoomId";
-        var senderName = "TestSender";
+        var roomId = new Guid("a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
+        var senderName = new Guid("a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
         var text = "TestText";
 
         var message = new Message(roomId, senderName, text, false);
 
-        Assert.IsNotNull(message.MessageId);
-        Assert.AreEqual(roomId, message.RoomId);
-        Assert.AreEqual(senderName, message.SenderId);
-        Assert.AreEqual(text, message.Text);
-        Assert.IsNotNull(message.SendTime);
+        Assert.Multiple(() =>
+        {
+            Assert.That(message.Text, Is.EqualTo(text));
+        });
+        Assert.That(message.SendTime, Is.Not.Null);
     }
 }

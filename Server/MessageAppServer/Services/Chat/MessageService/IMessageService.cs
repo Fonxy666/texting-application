@@ -6,10 +6,10 @@ namespace Server.Services.Chat.MessageService;
 
 public interface IMessageService
 {
-    Task<bool> MessageExisting(string id);
+    Task<bool> MessageExisting(Guid id);
     Task<SaveMessageResponse> SendMessage(MessageRequest request);
-    Task<IQueryable<Message>> GetLast10Messages(string roomId);
+    Task<IQueryable<Message>> GetLast10Messages(Guid roomId);
     Task<MessageResponse> EditMessage(EditMessageRequest request);
     Task<MessageResponse> EditMessageSeen(EditMessageSeenRequest request);
-    Task<MessageResponse> DeleteMessage(string roomId);
+    Task<MessageResponse> DeleteMessage(Guid roomId);
 }

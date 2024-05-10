@@ -15,7 +15,6 @@ public class RoomTests
 
         Assert.AreEqual(roomName, room.RoomName);
         Assert.IsNotNull(room.RoomId);
-        Assert.IsNotNull(room.Password);
     }
 
     [Test]

@@ -134,9 +134,9 @@ public class AuthService(
     public async Task<AuthResult> LogOut(string userId)
     {
         var user = userManager.Users.FirstOrDefault(user => user.Id.ToString() == userId);
-        user!.RefreshToken = string.Empty;
-        user.RefreshTokenExpires = null;
-        user.RefreshTokenCreated = null;
+        user!.SetRefreshToken(string.Empty);
+        user.SetRefreshTokenCreated(null);
+        user.SetRefreshTokenExpires(null);
         await userManager.UpdateAsync(user);
         cookieService.DeleteCookies();
         return new AuthResult(true, "-", "-");

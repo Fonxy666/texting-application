@@ -6,49 +6,43 @@ namespace Server.Model.Chat;
 public class Message
 {
     [Key]
-    public string MessageId { get; set; } = Guid.NewGuid().ToString();
-    public string RoomId { get; set; } 
-    public string SenderId { get; set; } 
-    public string Text { get; set; } 
-    public string SendTime { get; set; } = DateTime.Now.ToString(CultureInfo.InvariantCulture);
-    public bool SentAsAnonymous { get; set; }
+    public Guid MessageId { get; private set; }
+    public Guid RoomId { get; init; } 
+    public Guid SenderId { get; init; } 
+    public string Text { get; private set; } 
+    public string SendTime { get; init; } = DateTime.Now.ToString(CultureInfo.InvariantCulture);
+    public bool SentAsAnonymous { get; init; }
     public List<Guid> Seen { get; set; }
     
     public Message() { }
 
-    public Message(string roomId, string senderId, string text, bool sentAsAnonymous)
+    public Message(Guid roomId, Guid senderId, string text, bool sentAsAnonymous)
     {
+        MessageId = Guid.NewGuid(); 
         RoomId = roomId;
         SenderId = senderId;
         Text = text;
         SentAsAnonymous = sentAsAnonymous;
-        Seen = new List<Guid>();
-        
-        Guid senderGuid;
-        if (Guid.TryParse(senderId, out senderGuid))
-        {
-            Seen.Add(senderGuid);
-        }
+        Seen = new List<Guid> { SenderId };
     }
     
-    public Message(string roomId, string senderId, string text, string messageId, bool sentAsAnonymous)
+    public Message(Guid roomId, Guid senderId, string text, Guid messageId, bool sentAsAnonymous)
     {
         MessageId = messageId;
         RoomId = roomId;
         SenderId = senderId;
         Text = text;
         SentAsAnonymous = sentAsAnonymous;
-        Seen = new List<Guid>();
-        
-        Guid senderGuid;
-        if (Guid.TryParse(senderId, out senderGuid))
-        {
-            Seen.Add(senderGuid);
-        }
+        Seen = new List<Guid> { SenderId };
     }
 
     public void AddUserToSeen(Guid userId)
     {
         Seen.Add(userId);
+    }
+
+    public void ChangeMessageText(string newText)
+    {
+        Text = newText;
     }
 }

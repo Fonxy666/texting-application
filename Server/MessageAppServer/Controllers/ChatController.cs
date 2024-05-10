@@ -57,7 +57,7 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
                 return BadRequest("Incorrect login credentials");
             }
             
-            return Ok(new RoomResponse(true, existingRoom.RoomId, existingRoom.RoomName));
+            return Ok(new RoomResponse(true, existingRoom.RoomId.ToString(), existingRoom.RoomName));
         }
         catch (Exception e)
         {
@@ -90,7 +90,7 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
             
             await roomService.DeleteRoomAsync(existingRoom);
 
-            return Ok(new RoomResponse(true, existingRoom.RoomId, existingRoom.RoomName));
+            return Ok(new RoomResponse(true, existingRoom.RoomId.ToString(), existingRoom.RoomName));
         }
         catch (Exception e)
         {

@@ -22,12 +22,13 @@ public class MessageController(
     {
         try
         {
-            if (!roomService.ExistingRoom(roomId).Result)
+            var parsedRoomId = new Guid(roomId);
+            if (!roomService.ExistingRoom(parsedRoomId).Result)
             {
                 return NotFound($"There is no room with this id: {roomId}");
             }
 
-            var result = await messageService.GetLast10Messages(roomId);
+            var result = await messageService.GetLast10Messages(parsedRoomId);
 
             return Ok(result);
         }
@@ -41,15 +42,15 @@ public class MessageController(
     [HttpPost("SendMessage"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<MessageResponse>> SendMessage([FromBody]MessageRequest request)
     {
-        Console.WriteLine(request);
         try
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            
-            if (!roomService.ExistingRoom(request.RoomId).Result)
+
+            var roomIdToGuid = new Guid(request.RoomId);
+            if (!roomService.ExistingRoom(roomIdToGuid).Result)
             {
                 return NotFound($"There is no room with this id: {request.RoomId}");
             }
@@ -105,8 +106,9 @@ public class MessageController(
             {
                 return BadRequest(ModelState);
             }
-            
-            if (!messageService.MessageExisting(request.MessageId).Result)
+
+            var messageIdToGuid = new Guid(request.MessageId);
+            if (!messageService.MessageExisting(messageIdToGuid).Result)
             {
                 return NotFound($"There is no message with this given id: {request.MessageId}");
             }
@@ -127,12 +129,13 @@ public class MessageController(
     {
         try
         {
-            if (!messageService.MessageExisting(id).Result)
+            var idToGuid = new Guid(id);
+            if (!messageService.MessageExisting(idToGuid).Result)
             {
                 return NotFound($"There is no message with this given id: {id}");
             }
             
-            await messageService.DeleteMessage(id);
+            await messageService.DeleteMessage(idToGuid);
 
             return Ok(new MessageResponse(true, "", null));
         }

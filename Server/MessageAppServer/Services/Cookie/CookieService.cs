@@ -37,9 +37,9 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenServi
             Expires = newRefreshToken.Expires
         });
         
-        user.RefreshToken = newRefreshToken.Token;
-        user.RefreshTokenCreated = newRefreshToken.Created;
-        user.RefreshTokenExpires = newRefreshToken.Expires;
+        user.SetRefreshToken(newRefreshToken.Token);
+        user.SetRefreshTokenCreated(newRefreshToken.Created);
+        user.SetRefreshTokenExpires(newRefreshToken.Expires);
     }
 
     public void SetAnimateAndAnonymous(bool rememberMe)
