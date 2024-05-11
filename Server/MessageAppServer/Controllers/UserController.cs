@@ -7,6 +7,7 @@ using Server.Model;
 using Server.Model.Requests.User;
 using Server.Model.Responses.Auth;
 using Server.Model.Responses.User;
+using Server.Services.EmailSender;
 using Server.Services.User;
 
 namespace Server.Controllers;
@@ -18,6 +19,7 @@ public class UserController(
     DatabaseContext repository,
     IUserServices userServices,
     ILogger<UserController> logger,
+    IEmailSender emailSender,
     IConfiguration configuration) : ControllerBase
 {
     [HttpGet("GetUsername"), Authorize(Roles = "User, Admin")]
@@ -60,6 +62,32 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error getting e-mail for user {userId}");
+            return StatusCode(500);
+        }
+    }
+    
+    [HttpGet("SendForgotPasswordToken")]
+    public async Task<ActionResult<ForgotPasswordResponse>> SendForgotPasswordEmail([FromQuery]string email)
+    {
+        Console.WriteLine(email);
+        try
+        {
+            var existingUser = await userManager.FindByEmailAsync(email);
+            if (existingUser == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            const string subject = "Password reset";
+            var message = $"Token for password reset: {EmailSenderCodeGenerator.GenerateShortToken(email, "forgotPassword")}";
+
+            await emailSender.SendEmailAsync(email, subject, message);
+
+            return new ForgotPasswordResponse(true, "Successfully sent.");
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error reset password for user {email}");
             return StatusCode(500);
         }
     }
