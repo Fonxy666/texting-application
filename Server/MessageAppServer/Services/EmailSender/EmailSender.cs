@@ -30,7 +30,7 @@ public class EmailSender(IConfiguration configuration) : IEmailSender
             Credentials = new NetworkCredential(mail, pw)
         };
         
-        var resetLink = $"https://localhost:4200/password-reset?userId={userId}";
+        var resetLink = $"http://localhost:4200/password-reset/{userId}";
         var htmlMessage = $"<br/><a href=\"{resetLink}\">Reset Password</a>";
 
         await client.SendMailAsync(new MailMessage(from: mail!, to: email, subject, htmlMessage)
