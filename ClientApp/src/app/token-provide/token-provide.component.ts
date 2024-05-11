@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
@@ -10,6 +10,9 @@ export class TokenProvideComponent implements OnInit {
     constructor(private fb: FormBuilder) { }
     
     token!: FormGroup;
+    @Input() pageName: string = "";
+    @Input() labelName: string = "";
+    @Input() buttonContext: string = "";
     
     ngOnInit(): void {
         this.token = this.fb.group({
@@ -22,12 +25,12 @@ export class TokenProvideComponent implements OnInit {
     @Output()
     cancelLogin: EventEmitter<void> = new EventEmitter<void>();
 
-    OnFormSubmit() {
+    onFormSubmit() {
         const token = this.token.get('token')?.value
         this.SendToken.emit(token);
     }
 
-    HandleBackClick() {
+    handleBackClick() {
         this.cancelLogin.emit();
     }
 }

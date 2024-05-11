@@ -7,6 +7,9 @@
     </ng-container>
     <ng-container *ngIf="loginStarted">
         <app-token-provide [ngClass]="{'blur-content': isLoading}"
+            [pageName]="'Auth'"
+            [labelName]="'Authtoken'"
+            [buttonContext]="'Sign in'"
             (SendToken)="sendLoginToken($event)"
             (cancelLogin)="cancelLogin()"/>
     </ng-container>
