@@ -18,4 +18,24 @@ public class EmailSender(IConfiguration configuration) : IEmailSender
         
         await client.SendMailAsync(new MailMessage(from: mail!, to: email, subject, message));
     }
+    
+    public async Task SendEmailWithLinkAsync(string email, string subject, string userId)
+    {
+        var mail = configuration["DeveloperEmail"];
+        var pw = configuration["DeveloperPassword"];
+
+        var client = new SmtpClient("smtp-mail.outlook.com", 587)
+        {
+            EnableSsl = true,
+            Credentials = new NetworkCredential(mail, pw)
+        };
+        
+        var resetLink = $"https://localhost:4200/password-reset?userId={userId}";
+        var htmlMessage = $"<br/><a href=\"{resetLink}\">Reset Password</a>";
+
+        await client.SendMailAsync(new MailMessage(from: mail!, to: email, subject, htmlMessage)
+        {
+            IsBodyHtml = true
+        });
+    }
 }

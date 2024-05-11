@@ -78,10 +78,7 @@ public class UserController(
                 return NotFound("User not found.");
             }
 
-            const string subject = "Password reset";
-            var message = $"Token for password reset: {EmailSenderCodeGenerator.GenerateShortToken(email, "forgotPassword")}";
-
-            await emailSender.SendEmailAsync(email, subject, message);
+            await emailSender.SendEmailWithLinkAsync(email, "Password reset", existingUser.Id.ToString());
 
             return new ForgotPasswordResponse(true, "Successfully sent.");
         }
