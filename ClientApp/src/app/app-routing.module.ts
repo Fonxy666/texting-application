@@ -9,6 +9,7 @@ import { SettingsComponent } from './profile/settings/settings.component';
 import { ProfileComponent } from './profile/profile/profile.component';
 import { CreateRoomComponent } from './chat/create-room/create-room.component';
 import { LoadingScreenComponent } from './loading-screen/loading-screen.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 
 const routes: Routes = [
     { path: '', component: HomeComponent, title: 'Home' },
@@ -19,7 +20,8 @@ const routes: Routes = [
     { path: 'profile/profile', component: ProfileComponent, title: 'Profile'},
     { path: 'profile/settings', component: SettingsComponent, title: 'Settings'},
     { path: 'create-room', component: CreateRoomComponent, title: 'Create room'},
-    { path: 'loading', component: LoadingScreenComponent, title: 'Loading'}
+    { path: 'loading', component: LoadingScreenComponent, title: 'Loading'},
+    { path: 'forgot-password', component: ForgotPasswordComponent, title: 'Reset your password'}
 ];
 
 @NgModule({

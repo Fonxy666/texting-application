@@ -27,6 +27,7 @@ import { ToastModule } from 'primeng/toast';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ButtonModule } from 'primeng/button';
 import { TokenProvideComponent } from './token-provide/token-provide.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 
 @NgModule({
   declarations: [
@@ -46,7 +47,8 @@ import { TokenProvideComponent } from './token-provide/token-provide.component';
     GenerateEmailChangeRequestComponent,
     CreateRoomComponent,
     LoadingScreenComponent,
-    TokenProvideComponent
+    TokenProvideComponent,
+    ForgotPasswordComponent
   ],
   imports: [
     BrowserModule,
