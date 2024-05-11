@@ -3,18 +3,17 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 
-
 @Component({
-  selector: 'app-forgot-password',
-  templateUrl: './forgot-password.component.html',
-  styleUrl: './forgot-password.component.css',
-  providers: [ MessageService ]
+    selector: 'app-forgot-password',
+    templateUrl: './forgot-password.component.html',
+    styleUrl: '../../styles.css',
+    providers: [ MessageService ]
 })
+
 export class ForgotPasswordComponent {
     constructor(private router: Router, private http: HttpClient, private messageService: MessageService) {}
 
     isLoading: boolean = false;
-    tokenSend: boolean = false;
 
     sendPasswordResetEmail(email: string) {
         this.isLoading = true;
@@ -22,7 +21,7 @@ export class ForgotPasswordComponent {
         .subscribe((response: any) => {
             if (response.success) {
                 this.isLoading = false;
-                this.tokenSend = true;
+                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'E-mail successfully sent to the e-mail address.', styleClass: 'ui-toast-message-success' });
             }
         },
         (error) => {
