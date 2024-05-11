@@ -1,4 +1,4 @@
-# Texting application - Full Stack Messaging Application
+8# Texting application - Full Stack Messaging Application
 
 Textinger is a full-stack ASP.NET core application designed to chat with your friends in the web application in an MSSQL database with an Angular(typescript) Frontend Server.
 
@@ -58,5 +58,8 @@ On the backend side, sensitive data is stored in the `secrets.json` file. To set
   "FrontendPort": "{your frontend port, and ip}"   // like for a localhost angular one: 'http://localhost:4200'
 }`
 
+# Tests
+  For testing in the backend, you need to define a `testConfiguration.json` -> root/Server/MessageAppServer/testConfiguration.json. These tests will run in a different database, not in the 'real-world' database. This file should look the same as the `secrets.json`.
+
 # Archknowledge
-  A special thanks to all contributors and libraries used in this ASP.NET/React project.
+  A special thanks to all contributors and libraries used in this ASP.NET/Angular project.
