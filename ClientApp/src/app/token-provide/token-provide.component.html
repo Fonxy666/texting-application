@@ -6,7 +6,7 @@
         <form [formGroup]="token" (ngSubmit)="onFormSubmit()">
             <div class="form-group mt-3">
                 <label for="token">{{ this.labelName }}</label>
-                <input formControlName="token" type="email" class="form-control" id="token" aria-describedby="emailHelp" placeholder="012345" required>
+                <input formControlName="token" type="email" class="form-control" id="token" aria-describedby="emailHelp" [placeholder]=this.inputPlaceholder required>
             </div>
             <button type="submit" class="btn btn-primary mt-3">{{ this.buttonContext }}</button>
             <button type="button" class="btn btn-primary mt-3 mx-2" (click)="handleBackClick()">Back</button>

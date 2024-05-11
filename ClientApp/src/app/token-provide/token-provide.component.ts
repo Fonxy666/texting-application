@@ -12,6 +12,7 @@ export class TokenProvideComponent implements OnInit {
     token!: FormGroup;
     @Input() pageName: string = "";
     @Input() labelName: string = "";
+    @Input() inputPlaceholder: string = "";
     @Input() buttonContext: string = "";
     
     ngOnInit(): void {
