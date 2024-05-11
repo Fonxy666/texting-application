@@ -2,11 +2,11 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
-  selector: 'app-provide-login-auth-token',
-  templateUrl: './provide-login-auth-token.component.html',
-  styleUrl: '../../../styles.css'
+  selector: 'app-token-provide',
+  templateUrl: './token-provide.component.html',
+  styleUrl: '../../styles.css'
 })
-export class ProvideLoginAuthTokenComponent implements OnInit {
+export class TokenProvideComponent implements OnInit {
     constructor(private fb: FormBuilder) { }
     
     token!: FormGroup;

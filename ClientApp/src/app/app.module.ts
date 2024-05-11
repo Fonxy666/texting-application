@@ -28,6 +28,7 @@ import { LoadingScreenComponent } from './loading-screen/loading-screen.componen
 import { ToastModule } from 'primeng/toast';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ButtonModule } from 'primeng/button';
+import { TokenProvideComponent } from './token-provide/token-provide.component';
 
 @NgModule({
   declarations: [
@@ -48,7 +49,8 @@ import { ButtonModule } from 'primeng/button';
     CreateEmailVerificationRequestComponent,
     CreateRoomComponent,
     ProvideLoginAuthTokenComponent,
-    LoadingScreenComponent
+    LoadingScreenComponent,
+    TokenProvideComponent
   ],
   imports: [
     BrowserModule,
