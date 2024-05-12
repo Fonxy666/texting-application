@@ -109,6 +109,26 @@ public class UserController(
             return StatusCode(500);
         }
     }
+    
+    [HttpGet("SetNewPassword")]
+    public async Task<ActionResult<bool>> SetNewPassword([FromQuery]string email, [FromQuery]string password)
+    {
+        try
+        {
+            var existingUser = await userManager.FindByEmailAsync(email);
+            var token = await userManager.GeneratePasswordResetTokenAsync(existingUser!);
+            await userManager.ResetPasswordAsync(existingUser!, token, password);
+            
+            await repository.SaveChangesAsync();
+
+            return Ok(true);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error reset password for user {email}");
+            return StatusCode(500);
+        }
+    }
 
     [HttpGet("GetImage"), Authorize(Roles = "User, Admin")]
     public async Task<IActionResult> GetImageWithId([FromQuery]string userId)

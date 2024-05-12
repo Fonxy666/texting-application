@@ -2,6 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MessageService } from 'primeng/api';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { passwordMatchValidator, passwordValidator } from '../../validators/ValidPasswordValidator';
 
 @Component({
   selector: 'app-new-password-request',
@@ -10,12 +12,14 @@ import { MessageService } from 'primeng/api';
   providers: [ MessageService ]
 })
 export class NewPasswordRequestComponent implements OnInit {
-    constructor(private route: ActivatedRoute, private http: HttpClient, private messageService: MessageService) {}
+    constructor(private route: ActivatedRoute, private http: HttpClient, private messageService: MessageService, private fb: FormBuilder) {}
 
     idParam: string = "";
     emailParam: string = "";
     validCode: boolean = false;
     isLoading: boolean = false;
+    showPassword: boolean = false;
+    passwordReset!: FormGroup;
 
     ngOnInit(): void {
         this.isLoading = true;
@@ -31,6 +35,13 @@ export class NewPasswordRequestComponent implements OnInit {
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'The code expired, try get another one.' });
             }
         }, 500);
+
+        this.passwordReset = this.fb.group({
+            password: ['', [Validators.required, passwordValidator]],
+            passwordrepeat: ['', [Validators.required, passwordValidator]]
+        }, {
+            validators: passwordMatchValidator.bind(this)
+        });
     }
 
     examineCode() {
@@ -44,5 +55,22 @@ export class NewPasswordRequestComponent implements OnInit {
         (error) => {
             console.error("An error occurred:", error);
         });
+    }
+
+    onFormSubmit() {
+        const password = this.passwordReset.get('password')?.value
+        this.http.get(`/api/v1/User/SetNewPassword?email=${this.emailParam}&password=${password}`)
+        .subscribe((response: any) => {
+            if (response == true) {
+                console.log("okay");
+            }
+        },
+        (error) => {
+            console.error("An error occurred:", error);
+        });
+    }
+
+    toggleShowPassword() {
+        this.showPassword = !this.showPassword;
     }
 }

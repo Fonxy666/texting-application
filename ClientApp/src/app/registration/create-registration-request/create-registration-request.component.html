@@ -10,7 +10,7 @@
             <h1 class="mt-1">
                 Registration
             </h1>
-            <form [formGroup]="registrationRequest" (ngSubmit)="OnFormSubmit()">
+            <form [formGroup]="registrationRequest" (ngSubmit)="onFormSubmit()">
                 <div class="form-group mt-3" *ngIf="registrationRequest.get('email')">
                     <label class="mb-2" for="email">Email</label>
                     <input formControlName="email" type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="email" required name="email">

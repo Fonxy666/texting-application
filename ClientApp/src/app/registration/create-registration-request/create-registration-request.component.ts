@@ -36,7 +36,7 @@ export class CreateRegistrationRequestComponent {
     @Output()
     SendRegistrationRequest: EventEmitter<RegistrationRequest> = new EventEmitter<RegistrationRequest>();
 
-    OnFormSubmit() {
+    onFormSubmit() {
         const registrationRequest = new RegistrationRequest(
             this.registrationRequest.get('email')?.value,
             this.registrationRequest.get('username')?.value,
