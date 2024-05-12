@@ -9,7 +9,7 @@ public static class TestLogin
 {
     public static async Task<string> Login_With_Test_User(AuthRequest request, HttpClient client, string email)
     {
-        var token = EmailSenderCodeGenerator.GenerateTokenForLogin(email);
+        var token = EmailSenderCodeGenerator.GenerateShortToken(email, "login");
         var login = new LoginAuth(request.UserName, true, token);
         var authJsonRequest = JsonConvert.SerializeObject(login);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
