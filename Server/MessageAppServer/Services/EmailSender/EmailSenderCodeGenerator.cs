@@ -1,10 +1,14 @@
-﻿namespace Server.Services.EmailSender;
+﻿using System.Net;
+
+namespace Server.Services.EmailSender;
 
 public static class EmailSenderCodeGenerator
 {
-    public static Dictionary<string, string> _regVerificationCodes = new();
-    public static Dictionary<string, string> _loginVerificationCodes = new();
-    public static string GenerateTokenForRegistration(string email)
+    private static readonly Dictionary<string, (string Code, DateTime Timestamp)> RegVerificationCodes = new();
+    private static readonly Dictionary<string, (string Code, DateTime Timestamp)> LoginVerificationCodes = new();
+    private static readonly Dictionary<string, (string Code, DateTime Timestamp)> PasswordResetCodes = new();
+    private const int CodeExpirationMinutes = 2;
+    public static string GenerateLongToken(string email, string type)
     {
         const string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -23,11 +27,11 @@ public static class EmailSenderCodeGenerator
             }
         }
 
-        StoreVerificationCode(email, new string(token), "registration");
+        StoreVerificationCode(email, new string(token), type);
         return new string(token);
     }
     
-    public static string GenerateTokenForLogin(string email)
+    public static string GenerateShortToken(string email, string type)
     {
         const string characters = "0123456789";
 
@@ -39,52 +43,81 @@ public static class EmailSenderCodeGenerator
             token[i] = characters[rnd.Next(characters.Length)];
         }
 
-        StoreVerificationCode(email, new string(token), "login");
+        StoreVerificationCode(email, new string(token), type);
         return new string(token);
+    }
+
+    public static void StorePasswordResetCode(string email, string token)
+    {
+        StoreVerificationCode(email, token, "passwordReset");
     }
     
     private static void StoreVerificationCode(string email, string code, string type)
     {
-        if (type == "registration")
+        var timestamp = DateTime.UtcNow;
+        switch (type)
         {
-            _regVerificationCodes[email] = code;
-        }
-        else
-        {
-            _loginVerificationCodes[email] = code;
+            case "registration":
+                RegVerificationCodes[email] = (code, timestamp);
+                break;
+            case "login":
+                LoginVerificationCodes[email] = (code, timestamp);
+                break;
+            case "passwordReset":
+                PasswordResetCodes[email] = (code, timestamp);
+                break;
         }
     }
 
     public static bool ExamineIfTheCodeWasOk(string email, string verifyCode, string type)
     {
-        if (type == "registration")
+        var timestamp = DateTime.UtcNow;
+        var verificationCodes = type switch
         {
-            _regVerificationCodes.TryGetValue(email, out var value);
-
-            return _regVerificationCodes.TryGetValue(email, out var code) && code == verifyCode;
-        }
-        else
+            "registration" => RegVerificationCodes,
+            "login" => LoginVerificationCodes,
+            "passwordReset" => PasswordResetCodes
+        };
+        
+        if (verificationCodes.TryGetValue(email, out var value))
         {
-            _loginVerificationCodes.TryGetValue(email, out var value);
+            var decodedCode = type == "passwordReset" ? WebUtility.UrlDecode(value.Code) : value.Code;
 
-            return _loginVerificationCodes.TryGetValue(email, out var code) && code == verifyCode;
+            if (decodedCode == verifyCode && (timestamp - value.Timestamp).TotalMinutes <= CodeExpirationMinutes)
+            {
+                RemoveVerificationCode(email, type);
+                return true;
+            }
+            else
+            {
+                RemoveVerificationCode(email, type);
+            }
         }
+
+        return false;
     }
 
     public static void RemoveVerificationCode(string email, string type)
     {
         if (type == "registration")
         {
-            if (_regVerificationCodes.ContainsKey(email))
+            if (RegVerificationCodes.ContainsKey(email))
             {
-                _regVerificationCodes.Remove(email);
+                RegVerificationCodes.Remove(email);
             }
         }
-        else
+        else if (type == "login")
         {
-            if (_loginVerificationCodes.ContainsKey(email))
+            if (LoginVerificationCodes.ContainsKey(email))
             {
-                _loginVerificationCodes.Remove(email);
+                LoginVerificationCodes.Remove(email);
+            }
+        }
+        else if (type == "passwordReset")
+        {
+            if (PasswordResetCodes.ContainsKey(email))
+            {
+                PasswordResetCodes.Remove(email);
             }
         }
     }

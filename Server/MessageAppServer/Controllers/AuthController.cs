@@ -27,11 +27,11 @@ public class AuthController(
         try
         {
             const string subject = "Verification code";
-            var message = $"Verification code: {EmailSenderCodeGenerator.GenerateTokenForRegistration(receiver.Email)}";
+            var message = $"Verification code: {EmailSenderCodeGenerator.GenerateLongToken(receiver.Email, "registration")}";
 
             await emailSender.SendEmailAsync(receiver.Email, subject, message);
 
-            return Ok("Successfully send.");
+            return Ok("Successfully sent.");
         }
         catch (Exception e)
         {
@@ -91,7 +91,7 @@ public class AuthController(
             }
         
             const string subject = "Verification code";
-            var message = $"{subject}: {EmailSenderCodeGenerator.GenerateTokenForLogin(result.Email)}";
+            var message = $"{subject}: {EmailSenderCodeGenerator.GenerateShortToken(result.Email, "login")}";
 
             await emailSender.SendEmailAsync(result.Email, subject, message);
 

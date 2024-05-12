@@ -69,4 +69,8 @@ export class RegistrationComponent {
             console.error("An error occurred:", error);
         });
     }
+
+    cancelLogin() {
+        this.router.navigate(['/']);
+    }
 }

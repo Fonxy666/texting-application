@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +8,7 @@ using Server.Model;
 using Server.Model.Requests.User;
 using Server.Model.Responses.Auth;
 using Server.Model.Responses.User;
+using Server.Services.EmailSender;
 using Server.Services.User;
 
 namespace Server.Controllers;
@@ -18,6 +20,7 @@ public class UserController(
     DatabaseContext repository,
     IUserServices userServices,
     ILogger<UserController> logger,
+    IEmailSender emailSender,
     IConfiguration configuration) : ControllerBase
 {
     [HttpGet("GetUsername"), Authorize(Roles = "User, Admin")]
@@ -60,6 +63,71 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error getting e-mail for user {userId}");
+            return StatusCode(500);
+        }
+    }
+    
+    [HttpGet("SendForgotPasswordToken")]
+    public async Task<ActionResult<ForgotPasswordResponse>> SendForgotPasswordEmail([FromQuery]string email)
+    {
+        try
+        {
+            var existingUser = await userManager.FindByEmailAsync(email);
+            if (existingUser == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var token = await userManager.GeneratePasswordResetTokenAsync(existingUser);
+            EmailSenderCodeGenerator.StorePasswordResetCode(email, token);
+            await emailSender.SendEmailWithLinkAsync(email, "Password reset", token);
+
+            return new ForgotPasswordResponse(true, "Successfully sent.");
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error reset password for user {email}");
+            return StatusCode(500);
+        }
+    }
+    
+    [HttpGet("ExaminePasswordResetLink")]
+    public async Task<ActionResult<bool>> ExamineResetId([FromQuery]string email, [FromQuery]string resetId)
+    {
+        try
+        {
+            var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(email, resetId, "passwordReset");
+
+            if (!examine)
+            {
+                return BadRequest(false);
+            }
+
+            return Ok(true);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error reset password for user {email}");
+            return StatusCode(500);
+        }
+    }
+    
+    [HttpGet("SetNewPassword")]
+    public async Task<ActionResult<bool>> SetNewPassword([FromQuery]string email, [FromQuery]string password)
+    {
+        try
+        {
+            var existingUser = await userManager.FindByEmailAsync(email);
+            var token = await userManager.GeneratePasswordResetTokenAsync(existingUser!);
+            await userManager.ResetPasswordAsync(existingUser!, token, password);
+            
+            await repository.SaveChangesAsync();
+
+            return Ok(true);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error reset password for user {email}");
             return StatusCode(500);
         }
     }

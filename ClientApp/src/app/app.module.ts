@@ -20,14 +20,15 @@ import { ImageCropperModule } from 'ngx-image-cropper';
 import { GeneratePasswordChangeRequestComponent } from './profile/profile/generate-password-change-request/generate-password-change-request.component';
 import { GenerateAvatarChangeRequestComponent } from './profile/profile/generate-avatar-change-request/generate-avatar-change-request.component';
 import { GenerateEmailChangeRequestComponent } from './profile/profile/generate-email-change-request/generate-email-change-request.component';
-import { CreateEmailVerificationRequestComponent } from './registration/create-email-verification-request/create-email-verification-request.component';
 import { CreateRoomComponent } from './chat/create-room/create-room.component';
-import { ProvideLoginAuthTokenComponent } from './login/provide-login-auth-token/provide-login-auth-token.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { LoadingScreenComponent } from './loading-screen/loading-screen.component';
 import { ToastModule } from 'primeng/toast';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ButtonModule } from 'primeng/button';
+import { TokenProvideComponent } from './token-provide/token-provide.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { NewPasswordRequestComponent } from './forgot-password/new-password-request/new-password-request.component';
 
 @NgModule({
   declarations: [
@@ -45,10 +46,11 @@ import { ButtonModule } from 'primeng/button';
     GeneratePasswordChangeRequestComponent,
     GenerateAvatarChangeRequestComponent,
     GenerateEmailChangeRequestComponent,
-    CreateEmailVerificationRequestComponent,
     CreateRoomComponent,
-    ProvideLoginAuthTokenComponent,
-    LoadingScreenComponent
+    LoadingScreenComponent,
+    TokenProvideComponent,
+    ForgotPasswordComponent,
+    NewPasswordRequestComponent
   ],
   imports: [
     BrowserModule,

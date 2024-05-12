@@ -6,7 +6,11 @@
             (SendLoginRequest)="createTask($event)"/>
     </ng-container>
     <ng-container *ngIf="loginStarted">
-        <app-provide-login-auth-token [ngClass]="{'blur-content': isLoading}"
+        <app-token-provide [ngClass]="{'blur-content': isLoading}"
+            pageName="Login"
+            labelName="Login token"
+            buttonContext="Sign in"
+            inputPlaceholder="012345"
             (SendToken)="sendLoginToken($event)"
             (cancelLogin)="cancelLogin()"/>
     </ng-container>

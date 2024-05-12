@@ -61,17 +61,24 @@ export class LoginComponent implements OnInit {
             }
         }, 
         (error) => {
-            if (error.status === 404) {
+            if (error.status === 400) {
                 if (!isNaN(error.error)) {
-                    alert(`Invalid username or password, you have ${5-error.error} tries.`);
+                    if (error.error == 1) {
+                        this.messageService.add({ severity: 'error', summary: 'Error', detail: `Only 1 more try.` });
+                    } else if (error.error < 1) {
+                        console.log(error.error);
+                    } else {
+                        this.messageService.add({ severity: 'error', summary: 'Error', detail: `Invalid username or password, you have ${5-error.error} tries.` });
+                    }
+
                     this.isLoading = false;
                 } else {
-                    alert(error.error);
                     this.isLoading = false;
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: `${error.error.split(".")[0]}. ${error.error.split(".")[1]}` });
                 }
             } else {
-                alert(error.error);
                 this.isLoading = false;
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened. Try again later.' });
             }
         });
     }
@@ -91,7 +98,7 @@ export class LoginComponent implements OnInit {
             }
         }, 
         (error) => {
-            alert(["Wrong token!"]);
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened. Try again later.' });
             console.error("An error occurred:", error);
         });
     }

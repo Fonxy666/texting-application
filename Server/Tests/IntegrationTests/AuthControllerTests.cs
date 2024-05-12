@@ -52,7 +52,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Login_WithBadCredentials_ReturnBadRequest()
     {
-        var token = EmailSenderCodeGenerator.GenerateTokenForLogin("test1@hotmail.com");
+        var token = EmailSenderCodeGenerator.GenerateShortToken("test1@hotmail.com", "login");
         var login = new LoginAuth("TestUs", false, token);
         var authJsonRequest = JsonConvert.SerializeObject(login);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
@@ -160,7 +160,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task ExamineVerifyToken_WithValidCode_ReturnOk()
     {
-        var token = EmailSenderCodeGenerator.GenerateTokenForRegistration("test1@hotmail.com");
+        var token = EmailSenderCodeGenerator.GenerateLongToken("test1@hotmail.com", "registration");
         var request = new VerifyTokenRequest("test1@hotmail.com", token);
         var jsonRequest = JsonConvert.SerializeObject(request);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
@@ -173,7 +173,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task ExamineVerifyToken_WithWrongToken_ReturnBadRequest()
     {
-        var token = EmailSenderCodeGenerator.GenerateTokenForRegistration("test1@hotmail.com");
+        var token = EmailSenderCodeGenerator.GenerateLongToken("test1@hotmail.com", "registration");
         var request = new VerifyTokenRequest("test1@hotmail.com", "asd");
         var jsonRequest = JsonConvert.SerializeObject(request);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");

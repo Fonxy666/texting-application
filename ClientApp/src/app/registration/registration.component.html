@@ -6,7 +6,12 @@
             (SendRegistrationRequest)="getVerifyTokenAndGoToVerifyPage($event)"/>
     </ng-container>
     <ng-container *ngIf="this.showVerifyPage === true">
-        <app-create-email-verification-request [ngClass]="{'blur-content': isLoading}"
-            (SendVerificationCode)="getVerifyTokenAndSendRegistration($event)"/>
+        <app-token-provide [ngClass]="{'blur-content': isLoading}"
+            pageName="Registration"
+            labelName="Registration token"
+            buttonContext="Registration"
+            inputPlaceholder="abcd-1234-efgh-5678"
+            (SendToken)="getVerifyTokenAndSendRegistration($event)"
+            (cancelLogin)="cancelLogin()"/>
     </ng-container>
 </div>
