@@ -69,7 +69,6 @@ public class UserController(
     [HttpGet("SendForgotPasswordToken")]
     public async Task<ActionResult<ForgotPasswordResponse>> SendForgotPasswordEmail([FromQuery]string email)
     {
-        Console.WriteLine(email);
         try
         {
             var existingUser = await userManager.FindByEmailAsync(email);
@@ -78,9 +77,31 @@ public class UserController(
                 return NotFound("User not found.");
             }
 
-            await emailSender.SendEmailWithLinkAsync(email, "Password reset", existingUser.Id.ToString());
+            var passwordResetId = EmailSenderCodeGenerator.GenerateLongToken(email, "passwordReset");
+            await emailSender.SendEmailWithLinkAsync(email, "Password reset", passwordResetId);
 
             return new ForgotPasswordResponse(true, "Successfully sent.");
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error reset password for user {email}");
+            return StatusCode(500);
+        }
+    }
+    
+    [HttpGet("ExaminePasswordResetLink")]
+    public async Task<ActionResult<bool>> ExamineResetId([FromQuery]string email, [FromQuery]string resetId)
+    {
+        try
+        {
+            var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(email, resetId, "passwordReset");
+
+            if (!examine)
+            {
+                return BadRequest(false);
+            }
+
+            return Ok(true);
         }
         catch (Exception e)
         {

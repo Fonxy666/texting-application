@@ -19,7 +19,7 @@ public class EmailSender(IConfiguration configuration) : IEmailSender
         await client.SendMailAsync(new MailMessage(from: mail!, to: email, subject, message));
     }
     
-    public async Task SendEmailWithLinkAsync(string email, string subject, string userId)
+    public async Task SendEmailWithLinkAsync(string email, string subject, string resetId)
     {
         var mail = configuration["DeveloperEmail"];
         var pw = configuration["DeveloperPassword"];
@@ -30,7 +30,7 @@ public class EmailSender(IConfiguration configuration) : IEmailSender
             Credentials = new NetworkCredential(mail, pw)
         };
         
-        var resetLink = $"http://localhost:4200/password-reset/{userId}";
+        var resetLink = $"http://localhost:4200/password-reset/{resetId}/{email}";
         var htmlMessage = $"<br/><a href=\"{resetLink}\">Reset Password</a>";
 
         await client.SendMailAsync(new MailMessage(from: mail!, to: email, subject, htmlMessage)

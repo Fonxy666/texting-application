@@ -28,7 +28,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ButtonModule } from 'primeng/button';
 import { TokenProvideComponent } from './token-provide/token-provide.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
-import { CreateNewPasswordComponent } from './forgot-password/create-new-password/create-new-password.component';
+import { NewPasswordRequestComponent } from './forgot-password/new-password-request/new-password-request.component';
 
 @NgModule({
   declarations: [
@@ -50,7 +50,7 @@ import { CreateNewPasswordComponent } from './forgot-password/create-new-passwor
     LoadingScreenComponent,
     TokenProvideComponent,
     ForgotPasswordComponent,
-    CreateNewPasswordComponent
+    NewPasswordRequestComponent
   ],
   imports: [
     BrowserModule,
