@@ -26,11 +26,10 @@ export class NewPasswordRequestComponent implements OnInit {
         this.idParam = this.route.snapshot.params['id'];
         this.emailParam = this.route.snapshot.params['email'];
 
-        this.examineCode();
+        // this.examineCode();
 
         setTimeout(() => {
             this.isLoading = false;
-            console.log(this.validCode);
             if (!this.validCode) {
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'The code expired, try get another one.' });
             }
@@ -50,6 +49,8 @@ export class NewPasswordRequestComponent implements OnInit {
             console.log(response === true);
             if (response == true) {
                 this.validCode = true;
+            } else {
+                this.validCode = false;
             }
         },
         (error) => {
@@ -62,7 +63,7 @@ export class NewPasswordRequestComponent implements OnInit {
         this.http.get(`/api/v1/User/SetNewPassword?email=${this.emailParam}&password=${password}`)
         .subscribe((response: any) => {
             if (response == true) {
-                console.log("okay");
+                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Password successfully updated.', styleClass: 'ui-toast-message-success' });
             }
         },
         (error) => {

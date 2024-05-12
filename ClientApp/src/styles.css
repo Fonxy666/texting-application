@@ -197,7 +197,11 @@ a {
     padding: 30px;
     text-align: center;
     width: 500px;
-    height: 300px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .signup-card {

@@ -7,8 +7,8 @@
     </ng-container>
     <ng-container *ngIf="this.showVerifyPage === true">
         <app-token-provide [ngClass]="{'blur-content': isLoading}"
-            pageName="Auth"
-            labelName="Authtoken"
+            pageName="Registration"
+            labelName="Registration token"
             buttonContext="Registration"
             inputPlaceholder="abcd-1234-efgh-5678"
             (SendToken)="getVerifyTokenAndSendRegistration($event)"

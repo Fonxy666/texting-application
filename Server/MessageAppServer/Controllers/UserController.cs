@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -77,8 +78,9 @@ public class UserController(
                 return NotFound("User not found.");
             }
 
-            var passwordResetId = EmailSenderCodeGenerator.GenerateLongToken(email, "passwordReset");
-            await emailSender.SendEmailWithLinkAsync(email, "Password reset", passwordResetId);
+            var token = await userManager.GeneratePasswordResetTokenAsync(existingUser);
+            EmailSenderCodeGenerator.StorePasswordResetCode(email, token);
+            await emailSender.SendEmailWithLinkAsync(email, "Password reset", token);
 
             return new ForgotPasswordResponse(true, "Successfully sent.");
         }

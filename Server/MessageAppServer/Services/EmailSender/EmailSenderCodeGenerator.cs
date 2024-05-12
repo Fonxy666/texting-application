@@ -1,4 +1,6 @@
-﻿namespace Server.Services.EmailSender;
+﻿using System.Net;
+
+namespace Server.Services.EmailSender;
 
 public static class EmailSenderCodeGenerator
 {
@@ -44,6 +46,11 @@ public static class EmailSenderCodeGenerator
         StoreVerificationCode(email, new string(token), type);
         return new string(token);
     }
+
+    public static void StorePasswordResetCode(string email, string token)
+    {
+        StoreVerificationCode(email, token, "passwordReset");
+    }
     
     private static void StoreVerificationCode(string email, string code, string type)
     {
@@ -74,14 +81,16 @@ public static class EmailSenderCodeGenerator
         
         if (verificationCodes.TryGetValue(email, out var value))
         {
-            if (value.Code == verifyCode && (timestamp - value.Timestamp).TotalMinutes <= CodeExpirationMinutes)
+            var decodedCode = type == "passwordReset" ? WebUtility.UrlDecode(value.Code) : value.Code;
+
+            if (decodedCode == verifyCode && (timestamp - value.Timestamp).TotalMinutes <= CodeExpirationMinutes)
             {
-                verificationCodes.Remove(email);
+                RemoveVerificationCode(email, type);
                 return true;
             }
             else
             {
-                verificationCodes.Remove(email);
+                RemoveVerificationCode(email, type);
             }
         }
 
