@@ -15,6 +15,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Start MSSQL Server Docker container
+      run: |
+        docker run --name my-mssql-db -e ACCEPT_EULA=Y -e SA_PASSWORD=MyStrongPassword123 -p 1433:1433 -d mcr.microsoft.com/mssql/server:latest
+        docker exec my-mssql-db /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P MyStrongPassword123 -Q "SELECT 1"
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
@@ -32,6 +37,12 @@ jobs:
     - name: Build
       working-directory: Server/Tests
       run: dotnet build --configuration Release --no-restore
+
+    - name: Create migrations
+      run: dotnet ef migrations add InitialMigration --project Server/MessageAppServer --startup-project Server/MessageAppServer --output-dir Data/Migrations
+
+    - name: Update database
+      run: dotnet ef database update --project Server/MessageAppServer --startup-project Server/MessageAppServer
 
     - name: Test
       working-directory: Server/Tests
