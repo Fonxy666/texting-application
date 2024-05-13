@@ -23,6 +23,9 @@ jobs:
     - name: Install EF Core tools
       run: dotnet tool install --global dotnet-ef
 
+    - name: Install jq
+      run: sudo apt-get update && sudo apt-get install -y jq
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
@@ -32,7 +35,7 @@ jobs:
       run: dotnet restore Server/Tests/Tests.csproj
 
     - name: Set up test configuration
-      run: echo '${{ secrets.TEST_CONFIG_JSON }}' > testConfiguration.json
+      run: echo '${{ secrets.TEST_CONFIG_JSON }}' | jq . > testConfiguration.json
 
     - name: Copy test configuration to project directory
       run: cp testConfiguration.json Server/MessageAppServer
