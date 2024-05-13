@@ -24,6 +24,7 @@ jobs:
       run: dotnet restore Server/Tests/Tests.csproj
 
     - name: Build
+      working-directory: Server/Tests
       run: dotnet build --configuration Release --no-restore
 
     - name: Test
