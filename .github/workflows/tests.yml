@@ -27,6 +27,9 @@ jobs:
       working-directory: Server/Tests
       run: dotnet build --configuration Release --no-restore
 
+    - name: Set up test configuration
+      run: echo "${{ secrets.TEST_CONFIG_JSON }}" > testConfiguration.json
+
     - name: Test
       working-directory: Server/Tests
       run: dotnet test --no-restore --verbosity normal
