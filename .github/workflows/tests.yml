@@ -23,12 +23,15 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore Server/Tests/Tests.csproj
 
+    - name: Set up test configuration
+      run: echo '${{ secrets.TEST_CONFIG_JSON }}' > testConfiguration.json
+
+    - name: Copy test configuration to project directory
+      run: cp testConfiguration.json Server/MessageAppServer
+
     - name: Build
       working-directory: Server/Tests
       run: dotnet build --configuration Release --no-restore
-
-    - name: Set up test configuration
-      run: echo '${{ secrets.TEST_CONFIG_JSON }}' > testConfiguration.json
 
     - name: Test
       working-directory: Server/Tests
