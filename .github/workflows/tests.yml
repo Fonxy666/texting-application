@@ -11,7 +11,21 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    env:
+      IssueAudience: ${{ secrets.ISSUE_AUDIENCE }}
+      ConnectionString: ${{ secrets.TEST_CONNECTION_STRING }}
+      IssueSign: ${{ secrets.ISSUE_SIGN }}
+      AdminEmail: ${{ secrets.ADMIN_EMAIL }}
+      AdminUserName: ${{ secrets.ADMIN_USERNAME }}
+      AdminPassword: ${{ secrets.ADMIN_PASSWORD }}
+      DeveloperEmail: ${{ secrets.DEVELOPER_EMAIL }}
+      DeveloperPassword: ${{ secrets.DEVELOPER_PASSWORD }}
+      GoogleClientId: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GoogleClientSecret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      FacebookClientId: ${{ secrets.FACEBOOK_CLIENT_ID }}
+      FacebookClientSecret: ${{ secrets.FACEBOOK_CLIENT_SECRET }}
+      FrontendPort: ${{ secrets.FRONTEND_PORT }}
+      
     steps:
     - uses: actions/checkout@v2
 
