@@ -36,6 +36,7 @@ public static class PopulateDbAndAddRoles
         {
             return;
         }
+        
         await roomService.RegisterRoomAsync("test", "test");
     }
     
@@ -84,6 +85,7 @@ public static class PopulateDbAndAddRoles
                     2 => new Guid("10f96e12-e245-420a-8bad-b61fb21c4b2d"),
                     _ => new Guid("995f04da-d4d3-447c-9c69-fab370bca312")
                 },
+                
                 UserName = $"TestUsername{i}",
                 Email = testEmail,
                 TwoFactorEnabled = i != 3

@@ -20,6 +20,11 @@ public class Room
         Password = HashPassword(password);
     }
 
+    public void SetRoomIdForTests(string id)
+    {
+        RoomId = new Guid(id);
+    }
+
     private static string HashPassword(string password)
     {
         using var sha256 = SHA256.Create();
