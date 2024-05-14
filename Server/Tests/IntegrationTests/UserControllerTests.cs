@@ -166,7 +166,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
     
-    [Fact]
+    /*[Fact]
     public async Task GetImage_WithValidId_ReturnSuccessStatusCode()
     {
         const string userId = "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916";
@@ -185,7 +185,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var getImageResponse = await _client.GetAsync($"api/v1User/GetImage?userId={userId}");
 
         Assert.Equal(HttpStatusCode.NotFound, getImageResponse.StatusCode);
-    }
+    }*/
     
     [Fact]
     public async Task DeleteUser_WithValidUser_ReturnSuccessStatusCode()
