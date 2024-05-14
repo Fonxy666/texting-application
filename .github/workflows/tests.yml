@@ -59,9 +59,6 @@ jobs:
     - name: Copy test configuration to project directory
       run: cp testConfiguration.json Server/MessageAppServer
 
-    - name: Copy Avatars
-      run: docker cp Avatars container_id:/app/Avatars
-
     - name: Build
       working-directory: Server/Tests
       run: dotnet build --configuration Release --no-restore
