@@ -31,13 +31,13 @@ jobs:
 
     - name: Start MSSQL Server Docker container
       run: |
-        docker run --name textinger_test_database -e ACCEPT_EULA=Y -e SA_PASSWORD=MyStrong(!)Password123 -p 1433:1433 -d mcr.microsoft.com/mssql/server:latest
+        docker run --name textinger_test_database -e ACCEPT_EULA=Y -e SA_PASSWORD='MyStrong(!)Password123' -p 1433:1433 -d mcr.microsoft.com/mssql/server:latest
         # Wait for SQL Server to come up
         sleep 60
         # Check logs to ensure the container is running correctly
         docker logs textinger_test_database
         # Create the database if it doesn't exist
-        docker exec textinger_test_database /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P MyStrong(!)Password123 -Q "IF DB_ID('textinger_test_database') IS NULL CREATE DATABASE [textinger_test_database];"
+        docker exec textinger_test_database /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'MyStrong(!)Password123' -Q "IF DB_ID('textinger_test_database') IS NULL CREATE DATABASE [textinger_test_database];"
 
     - name: Install EF Core tools
       run: dotnet tool install --global dotnet-ef
