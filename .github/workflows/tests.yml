@@ -32,8 +32,11 @@ jobs:
     - name: Start MSSQL Server Docker container
       run: |
         docker run --name my-mssql-db -e ACCEPT_EULA=Y -e SA_PASSWORD=MyStrongPassword123 -p 1433:1433 -d mcr.microsoft.com/mssql/server:latest
-        docker exec my-mssql-db /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P MyStrongPassword123 -Q "SELECT 1"
-
+        # Wait for SQL Server to come up
+        sleep 30
+        # Create the database if it doesn't exist
+        docker exec my-mssql-db /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P MyStrongPassword123 -Q "IF DB_ID('YourDatabaseName') IS NULL CREATE DATABASE [YourDatabaseName];"
+      
     - name: Install EF Core tools
       run: dotnet tool install --global dotnet-ef
 
