@@ -25,6 +25,7 @@ jobs:
       FacebookClientId: ${{ secrets.FACEBOOK_CLIENT_ID }}
       FacebookClientSecret: ${{ secrets.FACEBOOK_CLIENT_SECRET }}
       FrontendPort: ${{ secrets.FRONTEND_PORT }}
+      ImageFolderPath: /app/Avatars
 
     steps:
     - uses: actions/checkout@v2
