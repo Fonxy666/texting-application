@@ -25,7 +25,7 @@ jobs:
       FacebookClientId: ${{ secrets.FACEBOOK_CLIENT_ID }}
       FacebookClientSecret: ${{ secrets.FACEBOOK_CLIENT_SECRET }}
       FrontendPort: ${{ secrets.FRONTEND_PORT }}
-      
+
     steps:
     - uses: actions/checkout@v2
 
@@ -33,10 +33,12 @@ jobs:
       run: |
         docker run --name my-mssql-db -e ACCEPT_EULA=Y -e SA_PASSWORD=MyStrongPassword123 -p 1433:1433 -d mcr.microsoft.com/mssql/server:latest
         # Wait for SQL Server to come up
-        sleep 30
+        sleep 60
+        # Check logs to ensure the container is running correctly
+        docker logs my-mssql-db
         # Create the database if it doesn't exist
         docker exec my-mssql-db /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P MyStrongPassword123 -Q "IF DB_ID('YourDatabaseName') IS NULL CREATE DATABASE [YourDatabaseName];"
-      
+
     - name: Install EF Core tools
       run: dotnet tool install --global dotnet-ef
 
