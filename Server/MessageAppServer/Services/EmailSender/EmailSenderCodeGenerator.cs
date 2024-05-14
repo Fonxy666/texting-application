@@ -85,13 +85,11 @@ public static class EmailSenderCodeGenerator
 
             if (decodedCode == verifyCode && (timestamp - value.Timestamp).TotalMinutes <= CodeExpirationMinutes)
             {
-                RemoveVerificationCode(email, type);
                 return true;
             }
-            else
-            {
-                RemoveVerificationCode(email, type);
-            }
+            
+            RemoveVerificationCode(email, type);
+            
         }
 
         return false;

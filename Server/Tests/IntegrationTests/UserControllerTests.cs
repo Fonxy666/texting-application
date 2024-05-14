@@ -1,14 +1,21 @@
 ﻿using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
 using Newtonsoft.Json;
 using Server;
+using Server.Model;
 using Server.Model.Requests.Auth;
 using Server.Model.Requests.User;
 using Server.Model.Responses.User;
+using Server.Services.EmailSender;
+using Tests.Services.Auth;
 using Xunit;
 using Xunit.Abstractions;
 using Assert = Xunit.Assert;
@@ -22,7 +29,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     private readonly HttpClient _client;
     private readonly TestServer _testServer;
 
-    public UserControllerTests()
+    public UserControllerTests(UserManager<ApplicationUser> userManager)
     {
         var builder = new WebHostBuilder()
             .UseEnvironment("Test")
@@ -261,5 +268,36 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         
         var getUserResponse = await _client.PatchAsync("api/v1/User/ChangeAvatar", userChangeEmail);
         Assert.Equal(HttpStatusCode.InternalServerError, getUserResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task ForgotPassword_WithValidEmail_ReturnSuccessStatusCode()
+    {
+        const string email = $"test1@hotmail.com";
+        
+        var getUserResponse = await _client.GetAsync($"api/v1/User/SendForgotPasswordToken?email={email}");
+        getUserResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task ForgotPassword_WitInvalidValidEmail_ReturnNotFound()
+    {
+        const string email = $"test@hotmail.com";
+        
+        var getUserResponse = await _client.GetAsync($"api/v1/User/SendForgotPasswordToken?email={email}");
+        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task PasswordResetLink_WithValidCredentials_ReturnSuccessStatusCode()
+    {
+        const string email = $"test1@hotmail.com";
+        var userManager = MockUserManager.Create();
+        var existingUser = userManager.Object.FindByNameAsync("TestUsername1").Result;
+        /*var resetId = await userManager.Object.GeneratePasswordResetTokenAsync(existingUser!);
+        EmailSenderCodeGenerator.StorePasswordResetCode(email, resetId);
+        
+        var getUserResponse = await _client.GetAsync($"api/v1/User/ExaminePasswordResetLink?email={email}&resetId={resetId}");
+        getUserResponse.EnsureSuccessStatusCode();*/
     }
 }
