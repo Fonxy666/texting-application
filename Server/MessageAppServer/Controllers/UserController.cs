@@ -96,13 +96,14 @@ public class UserController(
         try
         {
             var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(email, resetId, "passwordReset");
+            Console.WriteLine(examine);
 
             if (!examine)
             {
-                return BadRequest(false);
+                return BadRequest(examine);
             }
 
-            return Ok(true);
+            return Ok(examine);
         }
         catch (Exception e)
         {
@@ -112,12 +113,12 @@ public class UserController(
     }
     
     [HttpPost("SetNewPassword")]
-    public async Task<ActionResult<bool>> SetNewPassword([FromBody]ResetPasswordRequest request)
+    public async Task<ActionResult<bool>> SetNewPassword([FromQuery]string resetId, [FromBody]PasswordResetRequest request)
     {
         try
         {
-            var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(request.Email, request.ResetCode, "passwordReset");
-
+            var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(request.Email, resetId, "passwordReset");
+            Console.WriteLine(examine);
             if (!examine)
             {
                 return BadRequest(false);

@@ -62,7 +62,7 @@ export class NewPasswordRequestComponent implements OnInit {
     onFormSubmit() {
         const resetRequest = new ResetPasswordRequest(this.emailParam, this.idParam, this.passwordReset.get('password')?.value)
 
-        this.http.post(`/api/v1/User/SetNewPassword`, resetRequest)
+        this.http.post(`/api/v1/User/SetNewPassword?resetId=${this.idParam}`, resetRequest)
         .subscribe((response: any) => {
             if (response == true) {
                 this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Password successfully updated.', styleClass: 'ui-toast-message-success' });

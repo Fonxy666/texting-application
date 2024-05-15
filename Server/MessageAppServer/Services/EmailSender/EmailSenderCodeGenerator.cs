@@ -79,17 +79,22 @@ public static class EmailSenderCodeGenerator
             "passwordReset" => PasswordResetCodes
         };
         
+        if (verificationCodes == null)
+        {
+            return false;
+        }
+
         if (verificationCodes.TryGetValue(email, out var value))
         {
             var decodedCode = type == "passwordReset" ? WebUtility.UrlDecode(value.Code) : value.Code;
 
-            if (decodedCode == verifyCode && (timestamp - value.Timestamp).TotalMinutes <= CodeExpirationMinutes)
+            if (decodedCode == verifyCode)
             {
-                return true;
+                if ((timestamp - value.Timestamp).TotalMinutes <= CodeExpirationMinutes)
+                {
+                    return true;
+                }
             }
-            
-            RemoveVerificationCode(email, type);
-            
         }
 
         return false;
