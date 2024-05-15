@@ -381,7 +381,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             this.errorHandler.handleError401()
         )
         .subscribe((response: any) => {
-            console.log(response);
+            if (response) {
+                this.router.navigate(['/join-room'], { queryParams: { deleteSuccess: 'true' } });
+            }
         }, 
         (error) => {
             if (error.status === 403) {

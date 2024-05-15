@@ -6,15 +6,17 @@ import { ChatService } from '../../services/chat-service/chat.service';
 import { HttpClient } from '@angular/common/http';
 import { JoinRoomRequest } from '../../model/JoinRoomRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-join-room',
   templateUrl: './join-room.component.html',
-  styleUrl: '../../../styles.css'
+  styleUrl: '../../../styles.css',
+  providers: [ MessageService ]
 })
 
 export class JoinRoomComponent implements OnInit {
-    constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private chatService: ChatService, private http: HttpClient, private errorHandler: ErrorHandlerService) { }
+    constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private chatService: ChatService, private http: HttpClient, private errorHandler: ErrorHandlerService, private messageService: MessageService) { }
 
     myImage: string = "./assets/images/backgroundpng.png";
     joinRoomForm!: FormGroup;
@@ -27,6 +29,18 @@ export class JoinRoomComponent implements OnInit {
 
     ngOnInit() : void {
         this.animation = this.cookieService.get("Animation") == "True";
+
+        setTimeout(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const deleteSuccessParam = urlParams.get('deleteSuccess');
+
+            if (deleteSuccessParam === 'true') {
+                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successful deletion.', styleClass: 'ui-toast-message-success' });
+            }
+
+            const newUrl = window.location.pathname + window.location.search.replace('?deleteSuccess=true', '');
+            history.replaceState({}, document.title, newUrl);
+        }, 0);
         
         this.joinRoomForm = this.fb.group({
             room: ['', Validators.required],

@@ -5,14 +5,16 @@ import { CookieService } from 'ngx-cookie-service';
 import { HttpClient } from '@angular/common/http';
 import { CreateRoomRequest } from '../../model/CreateRoomRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-create-room',
   templateUrl: './create-room.component.html',
-  styleUrl: '../../../styles.css'
+  styleUrl: '../../../styles.css',
+  providers: [ MessageService ]
 })
 export class CreateRoomComponent implements OnInit {
-    constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private http: HttpClient, private errorHandler: ErrorHandlerService) { }
+    constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private http: HttpClient, private errorHandler: ErrorHandlerService, private messageService: MessageService) { }
 
     myImage: string = "./assets/images/backgroundpng.png";
     boyImage: string = "./assets/images/create_room_image.png"
@@ -51,7 +53,7 @@ export class CreateRoomComponent implements OnInit {
         .subscribe(
             (response: any) => {
                 if (response.success) {
-                    this.router.navigate(['join-room']);
+                    this.router.navigate(['join-room'], { queryParams: { createRoom: 'true' } });
                 } else {
                     console.log(response.error);
                 }
@@ -60,7 +62,7 @@ export class CreateRoomComponent implements OnInit {
                 if (error.status === 403) {
                     this.errorHandler.handleError403(error);
                 } else if (error.error && error.error.error === "This room's name already taken.") {
-                    this.errorHandler.errorAlert("This room is already taken. Choose another one!");
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'This room name is already taken. Choose another one!' });
                 } else {
                     console.log(error);
                 }

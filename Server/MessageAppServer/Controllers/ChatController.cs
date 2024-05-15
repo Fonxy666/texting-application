@@ -5,16 +5,19 @@ using Microsoft.EntityFrameworkCore;
 using Server.Model;
 using Server.Model.Requests.Chat;
 using Server.Model.Responses.Chat;
+using Server.Services.Chat.MessageService;
 using Server.Services.Chat.RoomService;
 
 namespace Server.Controllers;
 
 [Route("api/v1/[controller]")]
-public class ChatController(IRoomService roomService, ILogger<ChatController> logger, UserManager<ApplicationUser> userManager) : ControllerBase
+public class ChatController(IRoomService roomService, ILogger<ChatController> logger, UserManager<ApplicationUser> userManager, IMessageService messageService) : ControllerBase
 {
     [HttpPost("RegisterRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> RegisterRoom([FromBody]RoomRequest request)
     {
+        Console.WriteLine(request.RoomName);
+        Console.WriteLine(request.Password);
         try
         {
             if (!ModelState.IsValid)
@@ -79,12 +82,13 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
     {
         try
         {
+            var guidRoomId = new Guid(roomId);
             if (!ModelState.IsValid)
             {
                 return BadRequest(false);
             }
 
-            var existingRoom = await roomService.GetRoomById(new Guid(roomId));
+            var existingRoom = await roomService.GetRoomById(guidRoomId);
             if (existingRoom == null)
             {
                 return NotFound(false);
@@ -101,6 +105,7 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
                 return BadRequest(false);
             }
 
+            await messageService.DeleteMessages(guidRoomId);
             await roomService.DeleteRoomAsync(existingRoom);
             
             return Ok(true);
