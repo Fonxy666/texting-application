@@ -17,7 +17,7 @@ namespace Tests.IntegrationTests;
 public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
-    private readonly RoomRequest _testRoom = new ("TestRoom1", "TestRoomPassword");
+    private readonly RoomRequest _testRoom = new ("TestRoom1", "TestRoomPassword", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916");
     private readonly HttpClient _client;
     private readonly TestServer _testServer;
 
@@ -51,7 +51,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/RegisterRoom", contentRegister);
         roomRegistrationResponse.EnsureSuccessStatusCode();
 
-        var jsonRequest = JsonConvert.SerializeObject(new RoomRequest(_testRoom.RoomName, _testRoom.Password));
+        var jsonRequest = JsonConvert.SerializeObject(new RoomRequest(_testRoom.RoomName, _testRoom.Password, _testRoom.CreatorId));
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
         var roomLoginResponse = await _client.PostAsync("api/v1/Chat/JoinRoom", content);
@@ -68,7 +68,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task CreateRoom_WithTakenRoomName_ReturnBadRequest()
     {
-        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "test"));
+        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "test", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/RegisterRoom", contentRegister);
@@ -78,7 +78,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task CreateRoom_WithInvalidCredentials_ReturnBadRequest()
     {
-        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("", ""));
+        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("", "", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/RegisterRoom", contentRegister);
@@ -88,7 +88,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task JoinRoom_WithInvalidCredentials_ReturnBadRequest()
     {
-        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("", ""));
+        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("", "", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/JoinRoom", contentRegister);
@@ -98,7 +98,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task JoinRoom_WithInvalidCredentials_ReturnNotFound()
     {
-        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("wrongRoomName", "asd"));
+        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("wrongRoomName", "asd", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/JoinRoom", contentRegister);
@@ -108,7 +108,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task JoinRoom_WithInvalidPassword_ReturnBadRequest()
     {
-        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "asd"));
+        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "asd", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/JoinRoom", contentRegister);
@@ -118,7 +118,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task DeleteRoom_WithInvalidCredentials_ReturnNotFound()
     {
-        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("wrongRoomName", "asd"));
+        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("wrongRoomName", "asd", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/DeleteRoom", contentRegister);
@@ -128,7 +128,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task DeleteRoom_WithInvalidCredentials_ReturnBadRequest()
     {
-        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("", ""));
+        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("", "", ""));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/DeleteRoom", contentRegister);
@@ -138,7 +138,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task DeleteRoom_WithInvalidPassword_ReturnBadRequest()
     {
-        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "wrongPassword"));
+        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "wrongPassword", "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/DeleteRoom", contentRegister);

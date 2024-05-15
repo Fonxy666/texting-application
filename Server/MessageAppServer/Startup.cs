@@ -208,7 +208,7 @@ public class Startup(IConfiguration configuration)
 
         if (!env.IsEnvironment("Test")) return;
             
-        PopulateDbAndAddRoles.CreateTestRoom(app).Wait();
         PopulateDbAndAddRoles.CreateTestUsers(app).Wait();
+        PopulateDbAndAddRoles.CreateTestRoom(app).Wait();
     }
 }

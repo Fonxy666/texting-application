@@ -11,7 +11,7 @@ public class RoomTests
         const string roomName = "TestRoom";
         const string password = "TestPassword";
 
-        var room = new Room(roomName, password);
+        var room = new Room(roomName, password, new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"));
 
         Assert.AreEqual(roomName, room.RoomName);
         Assert.IsNotNull(room.RoomId);
@@ -22,7 +22,7 @@ public class RoomTests
     {
         const string roomName = "TestRoom";
         const string password = "TestPassword";
-        var room = new Room(roomName, password);
+        var room = new Room(roomName, password, new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"));
 
         var passwordMatch = room.PasswordMatch(password);
 
@@ -35,7 +35,7 @@ public class RoomTests
         const string roomName = "TestRoom";
         const string password = "TestPassword";
         const string incorrectPassword = "IncorrectPassword";
-        var room = new Room(roomName, password);
+        var room = new Room(roomName, password, new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"));
 
         var passwordMatch = room.PasswordMatch(incorrectPassword);
 

@@ -19,10 +19,10 @@ import { ConnectedUser } from '../../model/ConnectedUser';
 })
 
 export class ChatComponent implements OnInit, AfterViewChecked {
-    roomId = "";
-    inputMessage = "";
-    loggedInUserId:string = "";
-    roomName = sessionStorage.getItem("room");
+    userId: string = "";
+    roomId: string = "";
+    inputMessage: string = "";
+    roomName: string = sessionStorage.getItem("room")?? "";
     myImage: string = "./assets/images/chat-mountain.jpg";
     connectedUsers: ConnectedUser[] = [];
     searchTerm: string = '';
@@ -30,6 +30,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     messageModifyRequest: ChangeMessageRequest = {id: "", message: ""};
     isPageVisible = true;
     imageCount: number = 0;
+    userIsTheCreator: boolean = false;
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
@@ -40,7 +41,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     avatars: { [userId: string]: string } = {};
 
     ngOnInit(): void {
-        this.loggedInUserId = this.cookieService.get("UserId");
+        this.userId = this.cookieService.get("UserId");
+
         this.chatService.message$.subscribe(res => {
             this.messages = res;
             this.messages.forEach(message => {
@@ -93,6 +95,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         });
 
         this.getMessages();
+        this.userIsTheCreatorMethod();
     };
 
     ngAfterViewChecked(): void {
@@ -101,7 +104,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     examineMessages() {
         this.chatService.messages.forEach((message) => {
-            if (message.userId != this.cookieService.get("UserId")) {
+            if (message.userId != this.userId) {
                 console.log(message.message);
             }
         })
@@ -121,11 +124,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     sendMessage() {
-        var request = new MessageRequest(this.roomId, this.cookieService.get("UserId"), this.inputMessage, this.cookieService.get("Anonymous") === "True");
-        console.log(this.cookieService.get("UserId"));
+        var request = new MessageRequest(this.roomId, this.userId, this.inputMessage, this.cookieService.get("Anonymous") === "True");
         this.saveMessage(request)
             .then((messageId) => {
-                this.chatService.sendMessage(new MessageRequest(this.roomId, this.cookieService.get("UserId"), this.inputMessage, this.cookieService.get("Anonymous") === "True", messageId));
+                this.chatService.sendMessage(new MessageRequest(this.roomId, this.userId, this.inputMessage, this.cookieService.get("Anonymous") === "True", messageId));
                 this.inputMessage = "";
             }).catch((err: any) => {
                 console.log(err);
@@ -322,7 +324,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     @HostListener('window:focus', ['$event'])
     onFocus(): void {
         this.chatService.messages.forEach((message) => {
-            const userId = this.cookieService.get("UserId");
+            const userId = this.userId;
             const anonym = this.cookieService.get("Anonymous") == "True";
             if (!message.seenList) {
                 return;
@@ -354,4 +356,41 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     resetImageCount() {
         this.imageCount = 0;
     };
+
+    userIsTheCreatorMethod(){
+        const userId = this.userId;
+        this.http.get(`/api/v1/Chat/ExamineIfTheUserIsTheCreator?userId=${userId}&roomId=${this.roomId}`, { withCredentials: true})
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe((result: boolean) => {
+            if (result) {
+                this.userIsTheCreator = true;
+            }
+        }, 
+        (error) => {
+            if (error.status === 403) {
+                this.errorHandler.handleError403(error);
+            }
+        });
+    }
+
+    deleteRoom() {
+        this.http.delete(`/api/v1/Chat/DeleteRoom?userId=${this.userId}&roomId=${this.roomId}`, { withCredentials: true})
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe((response: any) => {
+            console.log(response);
+        }, 
+        (error) => {
+            if (error.status === 403) {
+                this.errorHandler.handleError403(error);
+            } else if (error.status === 400) {
+                this.errorHandler.errorAlert("Something unusual happened.");
+            } else {
+                console.error("An error occurred:", error);
+            }
+        });
+    }
 }

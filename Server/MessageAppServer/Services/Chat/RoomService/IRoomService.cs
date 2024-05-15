@@ -6,8 +6,9 @@ namespace Server.Services.Chat.RoomService;
 public interface IRoomService
 {
     Task<bool> ExistingRoom(Guid id);
-    Task<Room?> GetRoom(string roomName);
-    Task<RoomResponse> RegisterRoomAsync(string roomName, string password);
+    Task<Room?> GetRoomById(Guid roomId);
+    Task<Room?> GetRoomByRoomName(string roomName);
+    Task<RoomResponse> RegisterRoomAsync(string roomName, string password, Guid creatorId);
     Task DeleteRoomAsync(Room room);
     Task<RoomNameTakenResponse> RoomNameTaken(string roomName);
 }

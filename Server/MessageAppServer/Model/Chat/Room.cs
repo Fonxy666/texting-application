@@ -8,14 +8,17 @@ public class Room
 {
     [Key]
     public Guid RoomId { get; private set; }
+
+    public Guid CreatorId { get; init; }
     public string RoomName { get; init; }
     public string Password { get; private set; }
     
     public Room() {}
     
-    public Room(string roomName, string password)
+    public Room(string roomName, string password, Guid creatorId)
     {
         RoomId = Guid.NewGuid();
+        CreatorId = creatorId;
         RoomName = roomName;
         Password = HashPassword(password);
     }
@@ -42,5 +45,10 @@ public class Room
     public void ChangePassword(string password)
     {
         Password = HashPassword(password);
+    }
+
+    public bool IsCreator(Guid userId)
+    {
+        return CreatorId == userId;
     }
 }
