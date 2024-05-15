@@ -6,7 +6,7 @@ public static class EmailSenderCodeGenerator
 {
     private static readonly Dictionary<string, (string Code, DateTime Timestamp)> RegVerificationCodes = new();
     private static readonly Dictionary<string, (string Code, DateTime Timestamp)> LoginVerificationCodes = new();
-    private static readonly Dictionary<string, (string Code, DateTime Timestamp)> PasswordResetCodes = new();
+    public static readonly Dictionary<string, (string Code, DateTime Timestamp)> PasswordResetCodes = new();
     private const int CodeExpirationMinutes = 2;
     public static string GenerateLongToken(string email, string type)
     {
@@ -79,18 +79,21 @@ public static class EmailSenderCodeGenerator
             "passwordReset" => PasswordResetCodes
         };
         
+        if (verificationCodes == null)
+        {
+            return false;
+        }
+
         if (verificationCodes.TryGetValue(email, out var value))
         {
             var decodedCode = type == "passwordReset" ? WebUtility.UrlDecode(value.Code) : value.Code;
 
-            if (decodedCode == verifyCode && (timestamp - value.Timestamp).TotalMinutes <= CodeExpirationMinutes)
+            if (decodedCode == verifyCode)
             {
-                RemoveVerificationCode(email, type);
-                return true;
-            }
-            else
-            {
-                RemoveVerificationCode(email, type);
+                if ((timestamp - value.Timestamp).TotalMinutes <= CodeExpirationMinutes)
+                {
+                    return true;
+                }
             }
         }
 

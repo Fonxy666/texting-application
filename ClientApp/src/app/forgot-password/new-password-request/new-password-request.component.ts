@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { passwordMatchValidator, passwordValidator } from '../../validators/ValidPasswordValidator';
+import { ResetPasswordRequest } from '../../model/ResetPasswordRequest';
 
 @Component({
   selector: 'app-new-password-request',
@@ -26,7 +27,7 @@ export class NewPasswordRequestComponent implements OnInit {
         this.idParam = this.route.snapshot.params['id'];
         this.emailParam = this.route.snapshot.params['email'];
 
-        // this.examineCode();
+        this.examineCode();
 
         setTimeout(() => {
             this.isLoading = false;
@@ -59,8 +60,9 @@ export class NewPasswordRequestComponent implements OnInit {
     }
 
     onFormSubmit() {
-        const password = this.passwordReset.get('password')?.value
-        this.http.get(`/api/v1/User/SetNewPassword?email=${this.emailParam}&password=${password}`)
+        const resetRequest = new ResetPasswordRequest(this.emailParam, this.idParam, this.passwordReset.get('password')?.value)
+
+        this.http.post(`/api/v1/User/SetNewPassword?resetId=${this.idParam}`, resetRequest)
         .subscribe((response: any) => {
             if (response == true) {
                 this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Password successfully updated.', styleClass: 'ui-toast-message-success' });

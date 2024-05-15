@@ -1,7 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Net;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Server.Database;
 using Server.Model;
@@ -100,10 +99,10 @@ public class UserController(
 
             if (!examine)
             {
-                return BadRequest(false);
+                return BadRequest(examine);
             }
 
-            return Ok(true);
+            return Ok(examine);
         }
         catch (Exception e)
         {
@@ -112,14 +111,20 @@ public class UserController(
         }
     }
     
-    [HttpGet("SetNewPassword")]
-    public async Task<ActionResult<bool>> SetNewPassword([FromQuery]string email, [FromQuery]string password)
+    [HttpPost("SetNewPassword")]
+    public async Task<ActionResult<bool>> SetNewPassword([FromQuery]string resetId, [FromBody]PasswordResetRequest request)
     {
         try
         {
-            var existingUser = await userManager.FindByEmailAsync(email);
+            var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(request.Email, resetId, "passwordReset");
+            if (!examine)
+            {
+                return BadRequest(false);
+            }
+            
+            var existingUser = await userManager.FindByEmailAsync(request.Email);
             var token = await userManager.GeneratePasswordResetTokenAsync(existingUser!);
-            await userManager.ResetPasswordAsync(existingUser!, token, password);
+            await userManager.ResetPasswordAsync(existingUser!, token, request.NewPassword);
             
             await repository.SaveChangesAsync();
 
@@ -127,7 +132,7 @@ public class UserController(
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error reset password for user {email}");
+            logger.LogError(e, $"Error reset password for user {request.Email}");
             return StatusCode(500);
         }
     }

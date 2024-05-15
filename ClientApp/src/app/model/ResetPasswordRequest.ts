@@ -1,3 +1,3 @@
 export class ResetPasswordRequest {
-    constructor(public Password: string) { }
+    constructor(public Email: string, public ResetCode: string, public NewPassword: string) { }
 }
