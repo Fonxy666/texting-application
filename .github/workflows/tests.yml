@@ -34,7 +34,7 @@ jobs:
       run: |
         docker run --name textinger_test_database -e ACCEPT_EULA=Y -e SA_PASSWORD='MyStrong(!)Password123' -p 1433:1433 -d mcr.microsoft.com/mssql/server:latest
         # Wait for SQL Server to come up
-        sleep 60
+        sleep 15
         # Check logs to ensure the container is running correctly
         docker logs textinger_test_database
         # Create the database if it doesn't exist
