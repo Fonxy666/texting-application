@@ -33,12 +33,15 @@ export class JoinRoomComponent implements OnInit {
         setTimeout(() => {
             const urlParams = new URLSearchParams(window.location.search);
             const deleteSuccessParam = urlParams.get('deleteSuccess');
+            const createRoomParam = urlParams.get('createRoom');
 
             if (deleteSuccessParam === 'true') {
                 this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successful deletion.', styleClass: 'ui-toast-message-success' });
+            } else if (createRoomParam === 'true') {
+                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successful room creation.', styleClass: 'ui-toast-message-success' });
             }
 
-            const newUrl = window.location.pathname + window.location.search.replace('?deleteSuccess=true', '');
+            const newUrl = window.location.pathname + window.location.search.replace('?deleteSuccess=true', '').replace('?createRoom=true', '');
             history.replaceState({}, document.title, newUrl);
         }, 0);
         

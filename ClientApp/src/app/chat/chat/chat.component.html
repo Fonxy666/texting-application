@@ -1,11 +1,30 @@
 <div class="cont">
     <app-nav-bar />
     <img [src]="myImage" class="background-image">
+    <div class="modal fade" id="deleteRoomModal" tabindex="-1" aria-labelledby="deleteRoomModal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="deleteRoomModal">Modal title</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this room?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button type="button" (click)="deleteRoom()" data-bs-dismiss="modal" class="btn btn-primary">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="container mt-5">
         <div class="chat_header">
             <h3 class="text-center my-2">Welcome to <span class="group-name">"{{roomName}}"</span> Group</h3>
             <ng-container *ngIf="this.userIsTheCreator">
-                <button (click)="deleteRoom()" class="btn text-white">Delete room</button>
+                <button type="button" class="btn text-white" data-bs-toggle="modal" data-bs-target="#deleteRoomModal">
+                    Delete room
+                </button>
             </ng-container>
             <button (click)="leaveChat()" class="btn text-white">Leave Chat</button>
         </div>
