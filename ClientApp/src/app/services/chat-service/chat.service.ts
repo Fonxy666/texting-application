@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { MessageRequest } from '../../model/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
@@ -17,6 +17,7 @@ export class ChatService {
     public connectedUsers = new BehaviorSubject<ConnectedUser[]>([]);
     public messages: any[] = [];
     public users: ConnectedUser[] = [];
+    public roomDeleted$: Subject<string> = new Subject<string>();
 
     constructor(private cookieService: CookieService) {
         this.connection = new signalR.HubConnectionBuilder()
@@ -44,6 +45,10 @@ export class ChatService {
         this.connection.on("UserDisconnected", (username: string) => {
             const updatedUsers = this.connectedUsers.value.filter(user => user.userName !== username);
             this.connectedUsers.next(updatedUsers);
+        });
+
+        this.connection.on("RoomDeleted", (roomId: string) => {
+            this.roomDeleted$.next(roomId);
         });
     }
 
@@ -125,6 +130,14 @@ export class ChatService {
     public async deleteMessage(messageId: string) {
         try {
             await this.connection.invoke("DeleteMessage", messageId);
+        } catch (error) {
+            console.error('Error deleting message:', error);
+        }
+    }
+
+    public async deleteRoom(roomId: string) {
+        try {
+            await this.connection.invoke("OnRoomDelete", roomId);
         } catch (error) {
             console.error('Error deleting message:', error);
         }

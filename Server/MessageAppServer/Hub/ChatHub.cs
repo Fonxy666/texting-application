@@ -84,4 +84,12 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
         }
         return Clients.Group(room).SendAsync("ConnectedUser", newDictionary);
     }
+
+    public async Task OnRoomDelete(string roomId)
+    {
+        await Clients.Group(roomId).SendAsync("RoomDeleted", roomId);
+
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
+        await Clients.All.SendAsync("RoomDeleted", roomId);
+    }
 }
