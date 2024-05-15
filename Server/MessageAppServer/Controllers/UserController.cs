@@ -96,7 +96,6 @@ public class UserController(
         try
         {
             var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(email, resetId, "passwordReset");
-            Console.WriteLine(examine);
 
             if (!examine)
             {
@@ -118,7 +117,6 @@ public class UserController(
         try
         {
             var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(request.Email, resetId, "passwordReset");
-            Console.WriteLine(examine);
             if (!examine)
             {
                 return BadRequest(false);

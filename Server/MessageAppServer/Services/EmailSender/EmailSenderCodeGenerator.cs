@@ -6,7 +6,7 @@ public static class EmailSenderCodeGenerator
 {
     private static readonly Dictionary<string, (string Code, DateTime Timestamp)> RegVerificationCodes = new();
     private static readonly Dictionary<string, (string Code, DateTime Timestamp)> LoginVerificationCodes = new();
-    private static readonly Dictionary<string, (string Code, DateTime Timestamp)> PasswordResetCodes = new();
+    public static readonly Dictionary<string, (string Code, DateTime Timestamp)> PasswordResetCodes = new();
     private const int CodeExpirationMinutes = 2;
     public static string GenerateLongToken(string email, string type)
     {

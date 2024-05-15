@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -25,12 +27,15 @@ namespace Tests.IntegrationTests;
 [Collection("Sequential")]
 public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
+    private readonly ITestOutputHelper _testOutputHelper;
     private readonly AuthRequest _testUser1 = new ("TestUsername1", "testUserPassword123###");
     private readonly HttpClient _client;
     private readonly TestServer _testServer;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public UserControllerTests(UserManager<ApplicationUser> userManager)
+    public UserControllerTests(ITestOutputHelper testOutputHelper)
     {
+        _testOutputHelper = testOutputHelper;
         var builder = new WebHostBuilder()
             .UseEnvironment("Test")
             .UseStartup<Startup>()
@@ -45,7 +50,9 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
             });
 
         _testServer = new TestServer(builder);
+        _userManager = _testServer.Services.GetRequiredService<UserManager<ApplicationUser>>();
         _client = _testServer.CreateClient();
+        
         var cookies = TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com").Result;
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
     }
@@ -280,24 +287,75 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task ForgotPassword_WitInvalidValidEmail_ReturnNotFound()
+    public async Task ForgotPassword_WitInvalidEmail_ReturnNotFound()
     {
-        const string email = $"test@hotmail.com";
+        var existingUser = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername1");
+        _testOutputHelper.WriteLine(existingUser.UserName);
+        
+        const string email = "test@hotmail.com";
         
         var getUserResponse = await _client.GetAsync($"api/v1/User/SendForgotPasswordToken?email={email}");
         Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
     }
     
     [Fact]
-    public async Task PasswordResetLink_WithValidCredentials_ReturnSuccessStatusCode()
+    public async Task ExaminePasswordResetLink_WithValidEmail_ReturnSuccess()
     {
-        const string email = $"test1@hotmail.com";
-        var userManager = MockUserManager.Create();
-        var existingUser = userManager.Object.FindByNameAsync("TestUsername1").Result;
-        /*var resetId = await userManager.Object.GeneratePasswordResetTokenAsync(existingUser!);
-        EmailSenderCodeGenerator.StorePasswordResetCode(email, resetId);
+        var existingUser = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername1");
+    
+        var token = await _userManager.GeneratePasswordResetTokenAsync(existingUser);
+    
+        EmailSenderCodeGenerator.StorePasswordResetCode(existingUser.Email, token);
+    
+        var encodedToken = token;
+        var getUserResponse = await _client.GetAsync($"api/v1/User/ExaminePasswordResetLink?email={existingUser.Email}&resetId={encodedToken}");
+    
+        getUserResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task ExaminePasswordResetLink_WithWrongEmail_ReturnBadRequest()
+    {
+        var existingUser = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername1");
+    
+        var token = await _userManager.GeneratePasswordResetTokenAsync(existingUser);
+    
+        EmailSenderCodeGenerator.StorePasswordResetCode(existingUser.Email, token);
+    
+        var encodedToken = token;
+        var examineTokenResponse = await _client.GetAsync($"api/v1/User/ExaminePasswordResetLink?email=invalidemail@hotmail.com&resetId={encodedToken}");
+    
+        Assert.Equal(HttpStatusCode.BadRequest, examineTokenResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task SetNewPasswordAfterReset_WithValidEmail_ReturnSuccess()
+    {
+        var existingUser = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername3");
+        var passwordResetRequest1 = new PasswordResetRequest(existingUser.Email, "testUserPassword123###asd");
+        var jsonRequest1 = JsonConvert.SerializeObject(passwordResetRequest1);
+        var resetPasswordJson1 = new StringContent(jsonRequest1, Encoding.UTF8, "application/json");
+    
+        var token1 = await _userManager.GeneratePasswordResetTokenAsync(existingUser);
+    
+        EmailSenderCodeGenerator.StorePasswordResetCode(existingUser.Email, token1);
+
+        _testOutputHelper.WriteLine(existingUser.PasswordHash!);
+    
+        var getUserResponse1 = await _client.PostAsync($"api/v1/User/SetNewPassword?resetId={token1}", resetPasswordJson1);
+    
+        getUserResponse1.EnsureSuccessStatusCode();
         
-        var getUserResponse = await _client.GetAsync($"api/v1/User/ExaminePasswordResetLink?email={email}&resetId={resetId}");
-        getUserResponse.EnsureSuccessStatusCode();*/
+        var passwordResetRequest2 = new PasswordResetRequest(existingUser.Email, "testUserPassword123###");
+        var jsonRequest2 = JsonConvert.SerializeObject(passwordResetRequest2);
+        var resetPasswordJson2 = new StringContent(jsonRequest2, Encoding.UTF8, "application/json");
+    
+        var token2 = await _userManager.GeneratePasswordResetTokenAsync(existingUser);
+    
+        EmailSenderCodeGenerator.StorePasswordResetCode(existingUser.Email, token2);
+    
+        var getUserResponse2 = await _client.PostAsync($"api/v1/User/SetNewPassword?resetId={token2}", resetPasswordJson2);
+    
+        getUserResponse2.EnsureSuccessStatusCode();
     }
 }
