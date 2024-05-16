@@ -36,6 +36,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     isPageVisible = true;
     imageCount: number = 0;
     userIsTheCreator: boolean = false;
+    showPassword: boolean = false;
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
@@ -112,8 +113,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         
         this.changePasswordRequest = this.fb.group({
             oldPassword: ['', [Validators.required, Validators.email]],
-            newPassword: ['', Validators.required, passwordValidator],
-            passwordRepeat: ['', Validators.required, passwordValidator]
+            newPassword: ['', [Validators.required, passwordValidator]],
+            passwordRepeat: ['', [Validators.required, passwordValidator]]
         }, {
             validators: passwordMatchValidator.bind(this)
         });
@@ -419,6 +420,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         })
     }
 
+    toggleShowPassword() {
+        this.showPassword = !this.showPassword;
+    }
+
     changePasswordForRoom() {
         const changePasswordRequest = new ChangePasswordRequest(
             this.roomId,
@@ -430,16 +435,15 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 this.errorHandler.handleError401()
             )
             .subscribe((response: any) => {
-                console.log(response);
-                // if (response) {
-                //     this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Password successfully updated.' });
-                // }
+                if (response.success) {
+                    this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Password successfully updated.', styleClass: 'ui-toast-message-success' });
+                }
             }, 
             (error) => {
                 if (error.status === 403) {
                     this.errorHandler.handleError403(error);
                 } else if (error.status === 400) {
-                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened.' });
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Wrong password.' });
                 } else {
                     console.error("An error occurred:", error);
                 }

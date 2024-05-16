@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.Model;
+using Server.Model.Requests;
 using Server.Model.Requests.Chat;
 using Server.Model.Requests.User;
 using Server.Model.Responses.Chat;
@@ -119,7 +120,7 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
     }
     
     [HttpPatch("ChangePasswordForRoom"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<RoomResponse>> ChangePassword([FromBody]ChangePasswordRequest request)
+    public async Task<ActionResult<RoomResponse>> ChangePassword([FromBody]ChangeRoomPassword request)
     {
         try
         {
@@ -140,7 +141,7 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
                 return BadRequest("Incorrect old password credentials.");
             }
 
-            existingRoom.ChangePassword(request.Password);
+            await roomService.ChangePassword(existingRoom, request.Password);
             
             return Ok(new RoomResponse(true, existingRoom.RoomId.ToString(), existingRoom.RoomName));
         }

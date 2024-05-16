@@ -96,9 +96,6 @@ public class AuthService(
         }
 
         var isPasswordValid = await userManager.CheckPasswordAsync(managedUser, password);
-        Console.WriteLine("--------------------------------------------");
-        Console.WriteLine(isPasswordValid);
-        Console.WriteLine("--------------------------------------------");
 
         if (!isPasswordValid)
         {

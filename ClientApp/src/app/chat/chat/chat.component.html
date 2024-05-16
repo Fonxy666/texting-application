@@ -22,20 +22,21 @@
     <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModal" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="changePasswordModal">Change password</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
                 <form [formGroup]="changePasswordRequest" (ngSubmit)="changePasswordForRoom()">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="changePasswordModal">Change password</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
                     <div class="modal-body">
                         <label id="roomlabel" for="oldPassword"> Old password</label>
-                        <input id="oldPassword" type="text" formControlName="oldPassword" class="form-control"/>
+                        <input id="oldPassword" [type]="showPassword ? 'text' : 'password'" formControlName="oldPassword" class="form-control" required/>
                         <label id="roomlabel" for="newPassword"> New password</label>
-                        <input id="newPassword" type="text" formControlName="newPassword" class="form-control"/>
+                        <input id="newPassword" [type]="showPassword ? 'text' : 'password'" formControlName="newPassword" class="form-control" required/>
                         <label id="roomlabel" for="passwordRepeat">Password repeat</label>
-                        <input id="passwordRepeat" type="text" formControlName="passwordRepeat" class="form-control"/>
+                        <input id="passwordRepeat" [type]="showPassword ? 'text' : 'password'" formControlName="passwordRepeat" class="form-control" required/>
                     </div>
                     <div class="modal-footer">
+                        <button type="button" (click)="toggleShowPassword()" class="show-button btn btn-primary">{{ showPassword ? 'Hide password' : 'Show password' }}</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
                         <button type="submit" data-bs-dismiss="modal" class="btn btn-primary">Change password</button>
                     </div>

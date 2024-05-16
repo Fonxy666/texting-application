@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Server;
 using Server.Model;
+using Server.Model.Requests;
 using Server.Model.Requests.Auth;
 using Server.Model.Requests.User;
 using Server.Model.Responses.User;

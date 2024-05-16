@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Server.Database;
 using Server.Model;
+using Server.Model.Requests;
 using Server.Model.Requests.User;
 using Server.Model.Responses.Auth;
 using Server.Model.Responses.User;

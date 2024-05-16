@@ -54,4 +54,10 @@ public class RoomService(DatabaseContext context) : IRoomService
         var result = new RoomNameTakenResponse(isTaken);
         return Task.FromResult(result);
     }
+
+    public async Task ChangePassword(Room room, string newPassword)
+    {
+        room.ChangePassword(newPassword);
+        await Context.SaveChangesAsync();
+    }
 }
