@@ -32,7 +32,7 @@ public static class PopulateDbAndAddRoles
         using var scope = app.ApplicationServices.CreateScope();
         var roomService = scope.ServiceProvider.GetRequiredService<IRoomService>();
             
-        if (roomService.GetRoomById(new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916")).Result != null)
+        if (roomService.GetRoomById(new Guid("901d40c6-c95d-47ed-a21a-88cda341d0a9")).Result != null)
         {
             return;
         }
