@@ -36,8 +36,4 @@ export class ErrorHandlerService {
                 )
             );
     }
-
-    errorAlert (text: string) {
-        alert(text);
-    }
 }

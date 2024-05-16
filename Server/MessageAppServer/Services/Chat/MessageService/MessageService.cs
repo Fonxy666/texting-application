@@ -72,4 +72,9 @@ public class MessageService(DatabaseContext context) : IMessageService
 
         return new MessageResponse(true, id.ToString(), null);
     }
+
+    public async Task DeleteMessages(Guid roomId)
+    {
+        await context.Messages!.Where(message => message.RoomId == roomId).ExecuteDeleteAsync();
+    }
 }

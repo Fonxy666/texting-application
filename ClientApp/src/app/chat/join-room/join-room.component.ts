@@ -6,15 +6,17 @@ import { ChatService } from '../../services/chat-service/chat.service';
 import { HttpClient } from '@angular/common/http';
 import { JoinRoomRequest } from '../../model/JoinRoomRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-join-room',
   templateUrl: './join-room.component.html',
-  styleUrl: '../../../styles.css'
+  styleUrl: '../../../styles.css',
+  providers: [ MessageService ]
 })
 
 export class JoinRoomComponent implements OnInit {
-    constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private chatService: ChatService, private http: HttpClient, private errorHandler: ErrorHandlerService) { }
+    constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private chatService: ChatService, private http: HttpClient, private errorHandler: ErrorHandlerService, private messageService: MessageService) { }
 
     myImage: string = "./assets/images/backgroundpng.png";
     joinRoomForm!: FormGroup;
@@ -27,6 +29,24 @@ export class JoinRoomComponent implements OnInit {
 
     ngOnInit() : void {
         this.animation = this.cookieService.get("Animation") == "True";
+
+        setTimeout(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const deleteSuccessParam = urlParams.get('deleteSuccess');
+            const roomDeleted = urlParams.get('roomDeleted');
+            const createRoomParam = urlParams.get('createRoom');
+
+            if (deleteSuccessParam === 'true') {
+                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successful deletion.', styleClass: 'ui-toast-message-success' });
+            } else if (createRoomParam === 'true') {
+                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successful room creation.', styleClass: 'ui-toast-message-success' });
+            } else if (roomDeleted === 'true') {
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'This room got deleted.' });
+            }
+
+            const newUrl = window.location.pathname + window.location.search.replace('?deleteSuccess=true', '').replace('?createRoom=true', '').replace('?roomDeleted=true', '');
+            history.replaceState({}, document.title, newUrl);
+        }, 0);
         
         this.joinRoomForm = this.fb.group({
             room: ['', Validators.required],
@@ -66,13 +86,9 @@ export class JoinRoomComponent implements OnInit {
             (error: any) => {
                 if (error.status === 403) {
                     this.errorHandler.handleError403(error);
-                } else if (error.error && error.error.error === "Invalid login credentials.") {
-                    this.errorHandler.errorAlert("Invalid room name or password.");
-                } else if (error.status === 400) {
-                    alert("Invalid username or password.");
-                } else {
-                    console.log(error);
                 }
+
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Invalid roomname or password.' });
             }
         );
     };
@@ -85,7 +101,7 @@ export class JoinRoomComponent implements OnInit {
         .subscribe((response: any) => {
             this.userName = response.username;
             if (response.status === 403) {
-                alert("Token expired, you need to log in again.");
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Token expired, you need to log in again.' });
                 this.router.navigate(['/']);
             }
         }, 
@@ -93,7 +109,7 @@ export class JoinRoomComponent implements OnInit {
             if (error.status === 403) {
                 this.errorHandler.handleError403(error);
             } else if (error.status === 400) {
-                this.errorHandler.errorAlert("Invalid username or password.");
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Invalid username or password.' });
             } else {
                 console.error("An error occurred:", error);
             }

@@ -25,6 +25,11 @@
     justify-content: space-between;
     align-items: center;
     height: 70px;
+    gap: 10px;
+}
+
+.place_headers {
+    margin-right: auto;
 }
 
 .no_chat {
@@ -316,6 +321,17 @@ img {
     padding: 0;
     cursor: pointer;
     color:#2c1971;
+}
+
+.decorated_button_for_dropdown {
+    min-height: 38px;
+    min-width: 38px;
+    border-radius: 5px;
+    background: #0e1c36;;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color:#dfdfdf;
 }
 
 .seen-image {

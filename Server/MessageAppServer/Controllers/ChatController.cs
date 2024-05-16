@@ -1,17 +1,23 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Server.Model;
 using Server.Model.Requests.Chat;
 using Server.Model.Responses.Chat;
+using Server.Services.Chat.MessageService;
 using Server.Services.Chat.RoomService;
 
 namespace Server.Controllers;
 
 [Route("api/v1/[controller]")]
-public class ChatController(IRoomService roomService, ILogger<ChatController> logger) : ControllerBase
+public class ChatController(IRoomService roomService, ILogger<ChatController> logger, UserManager<ApplicationUser> userManager, IMessageService messageService) : ControllerBase
 {
     [HttpPost("RegisterRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> RegisterRoom([FromBody]RoomRequest request)
     {
+        Console.WriteLine(request.RoomName);
+        Console.WriteLine(request.Password);
         try
         {
             if (!ModelState.IsValid)
@@ -24,7 +30,7 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
                 return BadRequest(new { error = "This room's name already taken." });
             }
             
-            var result = await roomService.RegisterRoomAsync(request.RoomName, request.Password);
+            var result = await roomService.RegisterRoomAsync(request.RoomName, request.Password, new Guid(request.CreatorId));
 
             return Ok(result);
         }
@@ -35,17 +41,93 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
         }
     }
 
-    [HttpPost("JoinRoom"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<RoomResponse>> LoginRoom([FromBody]RoomRequest request)
+    [HttpGet("ExamineIfTheUserIsTheCreator"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<bool>> ExamineCreator([FromQuery]string userId, [FromQuery]string roomId)
     {
         try
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(new { error = "Room credentials not valid." });
+                return BadRequest(false);
             }
 
-            var existingRoom = await roomService.GetRoom(request.RoomName);
+            var existingRoom = await roomService.GetRoomById(new Guid(roomId));
+            if (existingRoom == null)
+            {
+                return NotFound(false);
+            }
+
+            var existingUser = await userManager.Users.FirstOrDefaultAsync(user => user.Id == new Guid(userId));
+            if (existingUser == null)
+            {
+                return NotFound(false);
+            }
+
+            if (!existingRoom.IsCreator(existingUser.Id))
+            {
+                return BadRequest(false);
+            }
+
+            return Ok(true);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+    
+    [HttpDelete("DeleteRoom"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<bool>> DeleteRoom([FromQuery]string userId, [FromQuery]string roomId)
+    {
+        try
+        {
+            var guidRoomId = new Guid(roomId);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(false);
+            }
+
+            var existingRoom = await roomService.GetRoomById(guidRoomId);
+            if (existingRoom == null)
+            {
+                return NotFound(false);
+            }
+
+            var existingUser = await userManager.Users.FirstOrDefaultAsync(user => user.Id == new Guid(userId));
+            if (existingUser == null)
+            {
+                return NotFound(false);
+            }
+
+            if (!existingRoom.IsCreator(existingUser.Id))
+            {
+                return BadRequest(false);
+            }
+
+            await messageService.DeleteMessages(guidRoomId);
+            await roomService.DeleteRoomAsync(existingRoom);
+            
+            return Ok(true);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    [HttpPost("JoinRoom"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<RoomResponse>> LoginRoom([FromBody]JoinRoomRequest request)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var existingRoom = await roomService.GetRoomByRoomName(request.RoomName);
 
             if (existingRoom == null)
             {
@@ -76,7 +158,7 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
                 return BadRequest(ModelState);
             }
             
-            var existingRoom = roomService.GetRoom(request.RoomName).Result;
+            var existingRoom = roomService.GetRoomByRoomName(request.RoomName).Result;
 
             if (existingRoom == null)
             {

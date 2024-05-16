@@ -10,19 +10,21 @@ import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
 import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
 import { ConnectedUser } from '../../model/ConnectedUser';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.css',
-  changeDetection: ChangeDetectionStrategy.Default
+  changeDetection: ChangeDetectionStrategy.Default,
+  providers: [ MessageService ]
 })
 
 export class ChatComponent implements OnInit, AfterViewChecked {
-    roomId = "";
-    inputMessage = "";
-    loggedInUserId:string = "";
-    roomName = sessionStorage.getItem("room");
+    userId: string = "";
+    roomId: string = "";
+    inputMessage: string = "";
+    roomName: string = sessionStorage.getItem("room")?? "";
     myImage: string = "./assets/images/chat-mountain.jpg";
     connectedUsers: ConnectedUser[] = [];
     searchTerm: string = '';
@@ -30,17 +32,19 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     messageModifyRequest: ChangeMessageRequest = {id: "", message: ""};
     isPageVisible = true;
     imageCount: number = 0;
+    userIsTheCreator: boolean = false;
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
 
-    constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute, private errorHandler: ErrorHandlerService, private cookieService: CookieService) { }
+    constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute, private errorHandler: ErrorHandlerService, private cookieService: CookieService, private messageService: MessageService) { }
     
     messages: any[] = [];
     avatars: { [userId: string]: string } = {};
 
     ngOnInit(): void {
-        this.loggedInUserId = this.cookieService.get("UserId");
+        this.userId = this.cookieService.get("UserId");
+
         this.chatService.message$.subscribe(res => {
             this.messages = res;
             this.messages.forEach(message => {
@@ -92,7 +96,14 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             });
         });
 
+        this.chatService.roomDeleted$.subscribe((deletedRoomId: string) => {
+            if (deletedRoomId === this.roomId && !this.userIsTheCreator) {
+              this.router.navigate(['/join-room'], { queryParams: { roomDeleted: 'true' } });
+            }
+        });
+
         this.getMessages();
+        this.userIsTheCreatorMethod();
     };
 
     ngAfterViewChecked(): void {
@@ -101,7 +112,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     examineMessages() {
         this.chatService.messages.forEach((message) => {
-            if (message.userId != this.cookieService.get("UserId")) {
+            if (message.userId != this.userId) {
                 console.log(message.message);
             }
         })
@@ -121,11 +132,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     sendMessage() {
-        var request = new MessageRequest(this.roomId, this.cookieService.get("UserId"), this.inputMessage, this.cookieService.get("Anonymous") === "True");
-        console.log(this.cookieService.get("UserId"));
+        var request = new MessageRequest(this.roomId, this.userId, this.inputMessage, this.cookieService.get("Anonymous") === "True");
         this.saveMessage(request)
             .then((messageId) => {
-                this.chatService.sendMessage(new MessageRequest(this.roomId, this.cookieService.get("UserId"), this.inputMessage, this.cookieService.get("Anonymous") === "True", messageId));
+                this.chatService.sendMessage(new MessageRequest(this.roomId, this.userId, this.inputMessage, this.cookieService.get("Anonymous") === "True", messageId));
                 this.inputMessage = "";
             }).catch((err: any) => {
                 console.log(err);
@@ -153,7 +163,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     if (error.status === 403) {
                         this.errorHandler.handleError403(error);
                     } else if (error.status === 400) {
-                        this.errorHandler.errorAlert("You cannot send empty messages.");
+                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened.' });
                     } else {
                         console.error("An error occurred:", error);
                     }
@@ -260,7 +270,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             if (error.status === 403) {
                 this.errorHandler.handleError403(error);
             } else if (error.status === 400) {
-                this.errorHandler.errorAlert("Something unusual happened.");
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened.' });
             } else {
                 console.error("An error occurred:", error);
             }
@@ -289,7 +299,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             if (error.status === 403) {
                 this.errorHandler.handleError403(error);
             } else if (error.status === 400) {
-                this.errorHandler.errorAlert("Something unusual happened.");
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened.' });
             } else {
                 console.error("An error occurred:", error);
             }
@@ -312,7 +322,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             if (error.status === 403) {
                 this.errorHandler.handleError403(error);
             } else if (error.status === 400) {
-                this.errorHandler.errorAlert("Something unusual happened.");
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened.' });
             } else {
                 console.error("An error occurred:", error);
             }
@@ -322,7 +332,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     @HostListener('window:focus', ['$event'])
     onFocus(): void {
         this.chatService.messages.forEach((message) => {
-            const userId = this.cookieService.get("UserId");
+            const userId = this.userId;
             const anonym = this.cookieService.get("Anonymous") == "True";
             if (!message.seenList) {
                 return;
@@ -354,4 +364,49 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     resetImageCount() {
         this.imageCount = 0;
     };
+
+    userIsTheCreatorMethod(){
+        const userId = this.userId;
+        this.http.get(`/api/v1/Chat/ExamineIfTheUserIsTheCreator?userId=${userId}&roomId=${this.roomId}`, { withCredentials: true})
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe((result: boolean) => {
+            if (result) {
+                this.userIsTheCreator = true;
+            }
+        }, 
+        (error) => {
+            if (error.status === 403) {
+                this.errorHandler.handleError403(error);
+            }
+        });
+    }
+
+    deleteRoom() {
+        this.chatService.deleteRoom(this.roomId).then(() => {
+            this.http.delete(`/api/v1/Chat/DeleteRoom?userId=${this.userId}&roomId=${this.roomId}`, { withCredentials: true})
+            .pipe(
+                this.errorHandler.handleError401()
+            )
+            .subscribe((response: any) => {
+                if (response) {
+                    this.router.navigate(['/join-room'], { queryParams: { deleteSuccess: 'true' } });
+                }
+            }, 
+            (error) => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                } else if (error.status === 400) {
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened.' });
+                } else {
+                    console.error("An error occurred:", error);
+                }
+            });
+        })
+    }
+
+    changePasswordForRoom() {
+        console.log("changed");
+    }
 }
