@@ -138,14 +138,14 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task ChangePassword_ForValidUser_ReturnSuccessStatusCode()
     {
-        var passwordRequest = new ChangeUserPasswordRequest("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "testUserPassword123###", "testUserPassword123###!@#", "testUserPassword123###!@#");
+        var passwordRequest = new ChangePasswordRequest("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "testUserPassword123###", "testUserPassword123###!@#");
         var jsonRequestRegister = JsonConvert.SerializeObject(passwordRequest);
         var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var getUserResponse = await _client.PatchAsync("api/v1/User/ChangePassword", userChangeEmail);
         getUserResponse.EnsureSuccessStatusCode();
         
-        var passwordRequest1 = new ChangeUserPasswordRequest("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "testUserPassword123###!@#", "testUserPassword123###", "testUserPassword123###");
+        var passwordRequest1 = new ChangePasswordRequest("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "testUserPassword123###!@#", "testUserPassword123###");
         var jsonRequestRegister1 = JsonConvert.SerializeObject(passwordRequest1);
         var userChangeEmail1 = new StringContent(jsonRequestRegister1, Encoding.UTF8, "application/json");
         
@@ -156,23 +156,12 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task ChangePassword_ForInvalidUser_ReturnBadRequest()
     {
-        var passwordRequest = new ChangeUserPasswordRequest("123", "testUserPassword123###", "testUserPassword123###!@#", "otherTestUserPassword123###!@#");
+        var passwordRequest = new ChangePasswordRequest("123", "testUserPassword123###", "testUserPassword123###!@#");
         var jsonRequestRegister = JsonConvert.SerializeObject(passwordRequest);
         var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var getUserResponse = await _client.PatchAsync("api/v1/User/ChangePassword", userChangeEmail);
         Assert.Equal(HttpStatusCode.InternalServerError, getUserResponse.StatusCode);
-    }
-    
-    [Fact]
-    public async Task ChangePassword_WithNotMatchingPasswords_ReturnBadRequest()
-    {
-        var passwordRequest = new ChangeUserPasswordRequest("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "testUserPassword123###", "testUserPassword123###!@#", "testUserPassword123###!@#123");
-        var jsonRequestRegister = JsonConvert.SerializeObject(passwordRequest);
-        var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
-
-        var getUserResponse = await _client.PatchAsync("api/v1/User/ChangePassword", userChangeEmail);
-        Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
     
     /*[Fact]

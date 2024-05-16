@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.Model;
 using Server.Model.Requests.Chat;
+using Server.Model.Requests.User;
 using Server.Model.Responses.Chat;
 using Server.Services.Chat.MessageService;
 using Server.Services.Chat.RoomService;
@@ -117,7 +118,7 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
         }
     }
     
-    [HttpPost("ChangePasswordForRoom"), Authorize(Roles = "User, Admin")]
+    [HttpPatch("ChangePasswordForRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> ChangePassword([FromBody]ChangePasswordRequest request)
     {
         try
@@ -127,7 +128,7 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
                 return BadRequest();
             }
 
-            var existingRoom = await roomService.GetRoomById(new Guid(request.RoomId));
+            var existingRoom = await roomService.GetRoomById(new Guid(request.Id));
 
             if (existingRoom == null)
             {
@@ -136,16 +137,16 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
 
             if (!existingRoom.PasswordMatch(request.OldPassword))
             {
-                return BadRequest("Incorrect login credentials");
+                return BadRequest("Incorrect old password credentials.");
             }
 
-            existingRoom.ChangePassword(request.NewPassword);
+            existingRoom.ChangePassword(request.Password);
             
             return Ok(new RoomResponse(true, existingRoom.RoomId.ToString(), existingRoom.RoomName));
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error changing room for {request.RoomId}.");
+            logger.LogError(e, $"Error changing room for {request.Id}.");
             return StatusCode(500);
         }
     }

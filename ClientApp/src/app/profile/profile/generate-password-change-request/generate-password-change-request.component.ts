@@ -34,8 +34,7 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
         const changePasswordRequest = new ChangePasswordRequest(
             this.cookieService.get("UserId"),
             this.changePasswordRequest.get('oldPassword')?.value,
-            this.changePasswordRequest.get('password')?.value,
-            this.changePasswordRequest.get('passwordrepeat')?.value
+            this.changePasswordRequest.get('password')?.value
             );
         this.SendPasswordChangeRequest.emit(changePasswordRequest);
     }

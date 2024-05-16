@@ -135,6 +135,7 @@ export class ProfileComponent implements OnInit {
     }
 
     changePassword(data: ChangePasswordRequest) {
+        console.log(data);
         this.isLoading = true;
         data.id = this.user.id;
         this.http.patch(`/api/v1/User/ChangePassword`, data, { withCredentials: true})
@@ -149,6 +150,7 @@ export class ProfileComponent implements OnInit {
             }
         }, 
         (error) => {
+            this.isLoading = false;
             if (error.status === 403) {
                 this.errorHandler.handleError403(error);
             } else if (error.status === 400) {
