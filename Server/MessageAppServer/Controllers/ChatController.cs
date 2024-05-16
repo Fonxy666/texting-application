@@ -116,6 +116,39 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
             throw;
         }
     }
+    
+    [HttpPost("ChangePasswordForRoom"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<RoomResponse>> ChangePassword([FromBody]ChangePasswordRequest request)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var existingRoom = await roomService.GetRoomById(new Guid(request.RoomId));
+
+            if (existingRoom == null)
+            {
+                return NotFound(new { error = "There is no room with the given Room id." });
+            }
+
+            if (!existingRoom.PasswordMatch(request.OldPassword))
+            {
+                return BadRequest("Incorrect login credentials");
+            }
+
+            existingRoom.ChangePassword(request.NewPassword);
+            
+            return Ok(new RoomResponse(true, existingRoom.RoomId.ToString(), existingRoom.RoomName));
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error changing room for {request.RoomId}.");
+            return StatusCode(500);
+        }
+    }
 
     [HttpPost("JoinRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> LoginRoom([FromBody]JoinRoomRequest request)
