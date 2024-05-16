@@ -46,11 +46,6 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
     {
         try
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(false);
-            }
-
             var existingRoom = await roomService.GetRoomById(new Guid(roomId));
             if (existingRoom == null)
             {
@@ -83,10 +78,6 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
         try
         {
             var guidRoomId = new Guid(roomId);
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(false);
-            }
 
             var existingRoom = await roomService.GetRoomById(guidRoomId);
             if (existingRoom == null)
@@ -114,6 +105,39 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
         {
             Console.WriteLine(e);
             throw;
+        }
+    }
+    
+    [HttpPatch("ChangePasswordForRoom"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<RoomResponse>> ChangePassword([FromBody]ChangeRoomPassword request)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var existingRoom = await roomService.GetRoomById(new Guid(request.Id));
+
+            if (existingRoom == null)
+            {
+                return NotFound(new { error = "There is no room with the given Room id." });
+            }
+
+            if (!existingRoom.PasswordMatch(request.OldPassword))
+            {
+                return BadRequest("Incorrect old password credentials.");
+            }
+
+            await roomService.ChangePassword(existingRoom, request.Password);
+            
+            return Ok(new RoomResponse(true, existingRoom.RoomId.ToString(), existingRoom.RoomName));
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error changing room for {request.Id}.");
+            return StatusCode(500);
         }
     }
 
@@ -144,39 +168,6 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
         catch (Exception e)
         {
             logger.LogError(e, $"Error login into {request.RoomName} room.");
-            return StatusCode(500);
-        }
-    }
-    
-    [HttpPost("DeleteRoom"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<RoomResponse>> DeleteRoom([FromBody]RoomRequest request)
-    {
-        try
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            
-            var existingRoom = roomService.GetRoomByRoomName(request.RoomName).Result;
-
-            if (existingRoom == null)
-            {
-                return NotFound(new { error = "There is no room with the given Room name." });
-            }
-            
-            if (!existingRoom.PasswordMatch(request.Password))
-            {
-                return BadRequest("Incorrect credentials");
-            }
-            
-            await roomService.DeleteRoomAsync(existingRoom);
-
-            return Ok(new RoomResponse(true, existingRoom.RoomId.ToString(), existingRoom.RoomName));
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, $"Error deleting room {request.RoomName}.");
             return StatusCode(500);
         }
     }

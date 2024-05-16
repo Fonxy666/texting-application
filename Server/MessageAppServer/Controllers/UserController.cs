@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Server.Database;
 using Server.Model;
+using Server.Model.Requests;
 using Server.Model.Requests.User;
 using Server.Model.Responses.Auth;
 using Server.Model.Responses.User;
+using Server.Services.Authentication;
 using Server.Services.EmailSender;
 using Server.Services.User;
 
@@ -15,6 +17,7 @@ namespace Server.Controllers;
 [Route("api/v1/[controller]")]
 public class UserController(
     UserManager<ApplicationUser> userManager,
+    IAuthService authenticationService,
     DatabaseContext repository,
     IUserServices userServices,
     ILogger<UserController> logger,
@@ -209,7 +212,7 @@ public class UserController(
     }
     
     [HttpPatch("ChangePassword"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<EmailUsernameResponse>> ChangeUserPassword([FromBody]ChangeUserPasswordRequest request)
+    public async Task<ActionResult<EmailUsernameResponse>> ChangeUserPassword([FromBody]ChangePasswordRequest request)
     {
         try
         {
@@ -218,14 +221,14 @@ public class UserController(
             {
                 return NotFound("User not found.");
             }
-
-            if (request.Password != request.PasswordRepeat)
+            
+            var correctPassword = await authenticationService.ExamineLoginCredentials(existingUser.UserName!, request.OldPassword);
+            if (!correctPassword.Success)
             {
-                return BadRequest("Passwords do not match.");
+                return BadRequest("Incorrect credentials.");
             }
 
             await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.Password);
-                
             await repository.SaveChangesAsync();
             var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
             return Ok(response);

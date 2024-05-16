@@ -1,5 +1,6 @@
 <div class="cont">
     <app-nav-bar />
+    <p-toast position="top-center"></p-toast>
     <img [src]="myImage" class="background-image">
     <div class="modal fade" id="deleteRoomModal" tabindex="-1" aria-labelledby="deleteRoomModal" aria-hidden="true">
         <div class="modal-dialog">
@@ -25,16 +26,21 @@
                     <h1 class="modal-title fs-5" id="changePasswordModal">Change password</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <label id="roomlabel" for="password">Password</label>
-                    <input id="password" type="text" formControlName="password" class="form-control"/>
-                    <label id="roomlabel" for="password-repeat">Password repeat</label>
-                    <input id="password-repeat" type="text" formControlName="password-repeat" class="form-control"/>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-                    <button type="button" (click)="changePasswordForRoom()" data-bs-dismiss="modal" class="btn btn-primary">Yes</button>
-                </div>
+                <form [formGroup]="changePasswordRequest" (ngSubmit)="changePasswordForRoom()">
+                    <div class="modal-body">
+                        <label id="roomlabel" for="oldPassword"> Old password</label>
+                        <input id="oldPassword" [type]="showPassword ? 'text' : 'password'" formControlName="oldPassword" class="form-control" required/>
+                        <label id="roomlabel" for="newPassword"> New password</label>
+                        <input id="newPassword" [type]="showPassword ? 'text' : 'password'" formControlName="newPassword" class="form-control" required/>
+                        <label id="roomlabel" for="passwordRepeat">Password repeat</label>
+                        <input id="passwordRepeat" [type]="showPassword ? 'text' : 'password'" formControlName="passwordRepeat" class="form-control" required/>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" (click)="toggleShowPassword()" class="show-button btn btn-primary">{{ showPassword ? 'Hide password' : 'Show password' }}</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
+                        <button type="submit" data-bs-dismiss="modal" class="btn btn-primary">Change password</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

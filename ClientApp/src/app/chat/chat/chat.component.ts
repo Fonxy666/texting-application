@@ -11,6 +11,9 @@ import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
 import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
 import { ConnectedUser } from '../../model/ConnectedUser';
 import { MessageService } from 'primeng/api';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ChangePasswordRequest } from '../../model/ChangePasswordRequest';
+import { passwordMatchValidator, passwordValidator } from '../../validators/ValidPasswordValidator';
 
 @Component({
   selector: 'app-chat',
@@ -33,14 +36,16 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     isPageVisible = true;
     imageCount: number = 0;
     userIsTheCreator: boolean = false;
+    showPassword: boolean = false;
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
 
-    constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute, private errorHandler: ErrorHandlerService, private cookieService: CookieService, private messageService: MessageService) { }
+    constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute, private errorHandler: ErrorHandlerService, private cookieService: CookieService, private messageService: MessageService, private fb: FormBuilder) { }
     
     messages: any[] = [];
     avatars: { [userId: string]: string } = {};
+    changePasswordRequest!: FormGroup;
 
     ngOnInit(): void {
         this.userId = this.cookieService.get("UserId");
@@ -104,6 +109,15 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
         this.getMessages();
         this.userIsTheCreatorMethod();
+
+        
+        this.changePasswordRequest = this.fb.group({
+            oldPassword: ['', [Validators.required, Validators.email]],
+            newPassword: ['', [Validators.required, passwordValidator]],
+            passwordRepeat: ['', [Validators.required, passwordValidator]]
+        }, {
+            validators: passwordMatchValidator.bind(this)
+        });
     };
 
     ngAfterViewChecked(): void {
@@ -406,7 +420,33 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         })
     }
 
+    toggleShowPassword() {
+        this.showPassword = !this.showPassword;
+    }
+
     changePasswordForRoom() {
-        console.log("changed");
+        const changePasswordRequest = new ChangePasswordRequest(
+            this.roomId,
+            this.changePasswordRequest.get('oldPassword')?.value,
+            this.changePasswordRequest.get('newPassword')?.value
+            );
+            this.http.patch(`/api/v1/Chat/ChangePasswordForRoom`, changePasswordRequest, { withCredentials: true})
+            .pipe(
+                this.errorHandler.handleError401()
+            )
+            .subscribe((response: any) => {
+                if (response.success) {
+                    this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Password successfully updated.', styleClass: 'ui-toast-message-success' });
+                }
+            }, 
+            (error) => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                } else if (error.status === 400) {
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Wrong password.' });
+                } else {
+                    console.error("An error occurred:", error);
+                }
+            });
     }
 }
