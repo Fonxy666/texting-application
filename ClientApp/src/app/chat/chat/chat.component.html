@@ -1,5 +1,6 @@
 <div class="cont">
     <app-nav-bar />
+    <app-loading-screen *ngIf="isLoading"/>
     <p-toast position="top-center"></p-toast>
     <img [src]="myImage" class="background-image">
     <div class="modal fade" id="deleteRoomModal" tabindex="-1" aria-labelledby="deleteRoomModal" aria-hidden="true">
@@ -44,7 +45,7 @@
             </div>
         </div>
     </div>
-    <div class="container mt-5">
+    <div class="container mt-5" [ngClass]="{'blur-content': isLoading}">
         <div class="chat_header">
             <h3 class="text-center my-2 place_headers">Welcome to <span class="group-name">"{{roomName}}"</span> Group</h3>
             <ng-container *ngIf="this.userIsTheCreator">
@@ -64,7 +65,7 @@
                     </ul>
                 </div>
             </ng-container>
-            <button (click)="leaveChat()" class="btn text-white">Leave Chat</button>
+            <button (click)="leaveChat(true)" class="btn text-white">Leave Chat</button>
         </div>
         <div class="messaging">
             <div class="inbox_msg">

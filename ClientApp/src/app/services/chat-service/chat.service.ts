@@ -22,7 +22,7 @@ export class ChatService {
     constructor(private cookieService: CookieService) {
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl('/chat')
-            .configureLogging(signalR.LogLevel.Information)
+            .configureLogging(signalR.LogLevel.Critical)
             .build();
 
         this.initializeConnection();
@@ -56,8 +56,8 @@ export class ChatService {
         try {
             await this.start();
     
-            const roomName = sessionStorage.getItem("room")?? "asd";
-            const userName = sessionStorage.getItem("user")?? "Fonxy666";
+            const roomName = sessionStorage.getItem("room");
+            const userName = sessionStorage.getItem("user");
             if (roomName && userName) {
                 await this.joinRoom(userName, roomName);
             }
@@ -138,6 +138,8 @@ export class ChatService {
     public async deleteRoom(roomId: string) {
         try {
             await this.connection.invoke("OnRoomDelete", roomId);
+            sessionStorage.removeItem("room");
+            sessionStorage.removeItem("user");
         } catch (error) {
             console.error('Error deleting message:', error);
         }

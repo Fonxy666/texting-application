@@ -18,7 +18,7 @@ import { passwordMatchValidator, passwordValidator } from '../../validators/Vali
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
-  styleUrl: './chat.component.css',
+  styleUrls: ['./chat.component.css', '../../../styles.css'],
   changeDetection: ChangeDetectionStrategy.Default,
   providers: [ MessageService ]
 })
@@ -37,6 +37,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     imageCount: number = 0;
     userIsTheCreator: boolean = false;
     showPassword: boolean = false;
+    isLoading: boolean = false;
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
@@ -102,15 +103,17 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         });
 
         this.chatService.roomDeleted$.subscribe((deletedRoomId: string) => {
+            this.isLoading = true;
             if (deletedRoomId === this.roomId && !this.userIsTheCreator) {
-              this.router.navigate(['/join-room'], { queryParams: { roomDeleted: 'true' } });
+                this.leaveChat(false);
+                this.isLoading = false;
+                this.router.navigate(['/join-room'], { queryParams: { roomDeleted: 'true' } });
             }
         });
 
         this.getMessages();
         this.userIsTheCreatorMethod();
 
-        
         this.changePasswordRequest = this.fb.group({
             oldPassword: ['', [Validators.required, Validators.email]],
             newPassword: ['', [Validators.required, passwordValidator]],
@@ -186,10 +189,13 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         });
     };
 
-    leaveChat() {
+    leaveChat(deleted: boolean) {
         this.chatService.leaveChat()
         .then(() => {
-            this.router.navigate(['/join-room']);
+            if (deleted) {
+                this.router.navigate(['/join-room'])
+            };
+
             setTimeout(() => {
                 location.reload();
             }, 0);
@@ -398,6 +404,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     deleteRoom() {
+        this.isLoading = true;
         this.chatService.deleteRoom(this.roomId).then(() => {
             this.http.delete(`/api/v1/Chat/DeleteRoom?userId=${this.userId}&roomId=${this.roomId}`, { withCredentials: true})
             .pipe(
@@ -405,7 +412,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             )
             .subscribe((response: any) => {
                 if (response) {
-                    this.router.navigate(['/join-room'], { queryParams: { deleteSuccess: 'true' } });
+                    setTimeout(() => {
+                        this.isLoading = false;
+                        this.leaveChat(false);
+                        this.router.navigate(['/join-room'], { queryParams: { deleteSuccess: 'true' } });
+                    }, 1000);
                 }
             }, 
             (error) => {

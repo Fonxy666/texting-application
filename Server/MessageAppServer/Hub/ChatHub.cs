@@ -14,15 +14,6 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
         connection[Context.ConnectionId] = userConnection;
         await Clients.Group(userConnection.Room!).SendAsync("ReceiveMessage", "Textinger bot", $"{userConnection.User} has joined the room!", DateTime.Now);
         await SendConnectedUser(userConnection.Room!);
-
-        foreach (var userRoomConnection in connection)
-        {
-            Console.WriteLine("------------------------------------------------");
-            Console.WriteLine(userRoomConnection.Key);
-            Console.WriteLine(userRoomConnection.Value.User);
-            Console.WriteLine(userRoomConnection.Value.Room);
-            Console.WriteLine("------------------------------------------------");
-        }
         return Context.ConnectionId;
     }
 
@@ -96,7 +87,7 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
     public async Task OnRoomDelete(string roomId)
     {
         await Clients.Group(roomId).SendAsync("RoomDeleted", roomId);
-
+        connection.Remove(Context.ConnectionId);
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
         await Clients.All.SendAsync("RoomDeleted", roomId);
     }
