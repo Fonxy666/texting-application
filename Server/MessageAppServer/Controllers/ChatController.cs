@@ -3,9 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.Model;
-using Server.Model.Requests;
 using Server.Model.Requests.Chat;
-using Server.Model.Requests.User;
 using Server.Model.Responses.Chat;
 using Server.Services.Chat.MessageService;
 using Server.Services.Chat.RoomService;
@@ -48,11 +46,6 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
     {
         try
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(false);
-            }
-
             var existingRoom = await roomService.GetRoomById(new Guid(roomId));
             if (existingRoom == null)
             {
@@ -85,10 +78,6 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
         try
         {
             var guidRoomId = new Guid(roomId);
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(false);
-            }
 
             var existingRoom = await roomService.GetRoomById(guidRoomId);
             if (existingRoom == null)
@@ -179,39 +168,6 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
         catch (Exception e)
         {
             logger.LogError(e, $"Error login into {request.RoomName} room.");
-            return StatusCode(500);
-        }
-    }
-    
-    [HttpPost("DeleteRoom"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<RoomResponse>> DeleteRoom([FromBody]RoomRequest request)
-    {
-        try
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            
-            var existingRoom = roomService.GetRoomByRoomName(request.RoomName).Result;
-
-            if (existingRoom == null)
-            {
-                return NotFound(new { error = "There is no room with the given Room name." });
-            }
-            
-            if (!existingRoom.PasswordMatch(request.Password))
-            {
-                return BadRequest("Incorrect credentials");
-            }
-            
-            await roomService.DeleteRoomAsync(existingRoom);
-
-            return Ok(new RoomResponse(true, existingRoom.RoomId.ToString(), existingRoom.RoomName));
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, $"Error deleting room {request.RoomName}.");
             return StatusCode(500);
         }
     }

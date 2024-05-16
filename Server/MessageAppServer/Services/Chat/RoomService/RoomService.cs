@@ -31,9 +31,14 @@ public class RoomService(DatabaseContext context) : IRoomService
     {
         var room = new Room(roomName, password, creatorId);
         
-        if (roomName == "test")
+        switch (roomName)
         {
-            room.SetRoomIdForTests("901d40c6-c95d-47ed-a21a-88cda341d0a9");
+            case "test":
+                room.SetRoomIdForTests("901d40c6-c95d-47ed-a21a-88cda341d0a9");
+                break;
+            case "TestRoom1":
+                room.SetRoomIdForTests("801d40c6-c95d-47ed-a21a-88cda341d0a9");
+                break;
         }
         
         await Context.Rooms!.AddAsync(room);
