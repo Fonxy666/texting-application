@@ -405,4 +405,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             });
         })
     }
+
+    changePasswordForRoom() {
+        console.log("changed");
+    }
 }

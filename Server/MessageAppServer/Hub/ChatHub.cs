@@ -15,6 +15,14 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
         await Clients.Group(userConnection.Room!).SendAsync("ReceiveMessage", "Textinger bot", $"{userConnection.User} has joined the room!", DateTime.Now);
         await SendConnectedUser(userConnection.Room!);
 
+        foreach (var userRoomConnection in connection)
+        {
+            Console.WriteLine("------------------------------------------------");
+            Console.WriteLine(userRoomConnection.Key);
+            Console.WriteLine(userRoomConnection.Value.User);
+            Console.WriteLine(userRoomConnection.Value.Room);
+            Console.WriteLine("------------------------------------------------");
+        }
         return Context.ConnectionId;
     }
 
