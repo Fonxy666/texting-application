@@ -118,18 +118,20 @@ export class JoinRoomComponent implements OnInit {
 
     setRoomCredentialsAndNavigate(roomName: any, roomId: string) {
         if (this.cookieService.get("Anonymous") === "True") {
-            this.chatService.joinRoom("Anonymous", roomName)
+            this.chatService.joinRoom("Anonymous", roomId)
             .then(() => {
                 this.router.navigate([`/message-room/${roomId}`]);
+                sessionStorage.setItem("roomId", roomId);
                 sessionStorage.setItem("room", roomName);
                 sessionStorage.setItem("user", "Anonymous");
             }).catch((err) => {
                 console.log(err);
             })
         } else {
-            this.chatService.joinRoom(this.userName, roomName)
+            this.chatService.joinRoom(this.userName, roomId)
             .then(() => {
                 this.router.navigate([`/message-room/${roomId}`]);
+                sessionStorage.setItem("roomId", roomId);
                 sessionStorage.setItem("room", roomName);
                 sessionStorage.setItem("user", this.userName);
             }).catch((err) => {
