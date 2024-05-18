@@ -19,6 +19,7 @@ export class ChatService {
     public users: ConnectedUser[] = [];
     public roomDeleted$: Subject<string> = new Subject<string>();
     private currentRoom: string | null = null;
+    public messagesInitialized$ = new Subject<string>();
 
     constructor(private cookieService: CookieService) {
         this.connection = new signalR.HubConnectionBuilder()
@@ -31,12 +32,13 @@ export class ChatService {
         this.connection.on("ReceiveMessage", (user: string, message: string, messageTime: string, userId: string, messageId: string, seenList: string[], roomId: string) => {
             if (!this.messages[roomId]) {
                 this.messages[roomId] = [];
+                this.messagesInitialized$.next(roomId);
             }
             if (userId !== this.cookieService.get("UserId")) {
                 this.messages[roomId].push({ user, message, messageTime, userId, messageId, seenList });
             }
             if (this.currentRoom === roomId) {
-                this.message$.next(this.messages[roomId]);
+                this.message$.next([...this.messages[roomId]]);
             }
         });
 
@@ -60,6 +62,7 @@ export class ChatService {
     }
 
     public setCurrentRoom(roomId: string) {
+        console.log(roomId);
         this.currentRoom = roomId;
         this.message$.next(this.messages[roomId] || []);
     }

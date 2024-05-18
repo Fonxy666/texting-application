@@ -3,7 +3,7 @@ import { ChatService } from '../../services/chat-service/chat.service';
 import { Router, ActivatedRoute  } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, forkJoin, Subscription  } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { catchError, filter, switchMap, take } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
 import { CookieService } from 'ngx-cookie-service';
@@ -38,6 +38,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     userIsTheCreator: boolean = false;
     showPassword: boolean = false;
     isLoading: boolean = false;
+    private subscriptions: Subscription = new Subscription();
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
@@ -52,11 +53,25 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     ngOnInit(): void {
         this.userId = this.cookieService.get("UserId");
-        this.route.params.subscribe((params) => {
-            this.roomId = params['id'];
-        });
+        this.roomId = sessionStorage.getItem("roomId")!;
 
         this.chatService.setCurrentRoom(this.roomId);
+
+        if (this.roomId) {
+            // Wait until the messages for the roomId are initialized
+            this.subscriptions.add(
+              this.chatService.messagesInitialized$
+                .pipe(
+                  filter((initializedRoomId) => initializedRoomId === this.roomId),
+                  take(1)
+                )
+                .subscribe(() => {
+                  this.getMessages();
+                })
+            );
+          } else {
+            console.error('No roomId found in session storage.');
+          }
 
         this.chatService.message$.subscribe(res => {
             this.messages = res;
@@ -140,6 +155,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     ngOnDestroy(): void {
+        this.subscriptions.unsubscribe();
+
         if (this.routeSub) {
             this.routeSub.unsubscribe();
         }
@@ -217,11 +234,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 this.errorHandler.handleError401()
             )
             .subscribe((response: any) => {
-                const observables = response.map((element: any) =>
+                const userNames = response.map((element: any) =>
                     this.http.get(`/api/v1/User/GetUsername?userId=${element.senderId}`, { withCredentials: true })
                 );
     
-                forkJoin(observables).subscribe((usernames: any) => {
+                forkJoin(userNames).subscribe((usernames: any) => {
                     const fetchedMessages = response.map((element: any, index: number) => ({
                         messageId: element.messageId,
                         user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
@@ -230,6 +247,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                         messageTime: element.sendTime,                    
                         seenList: element.seen
                     }));
+                    
                     this.chatService.messages[this.roomId] = [...fetchedMessages, ...this.chatService.messages[this.roomId]];
     
                     this.chatService.message$.next(this.chatService.messages[this.roomId]);
