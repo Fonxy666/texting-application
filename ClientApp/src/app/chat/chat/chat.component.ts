@@ -58,7 +58,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.chatService.setCurrentRoom(this.roomId);
 
         if (this.roomId) {
-            // Wait until the messages for the roomId are initialized
             this.subscriptions.add(
               this.chatService.messagesInitialized$
                 .pipe(
@@ -69,9 +68,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                   this.getMessages();
                 })
             );
-          } else {
+        } else {
             console.error('No roomId found in session storage.');
-          }
+        }
 
         this.chatService.message$.subscribe(res => {
             this.messages = res;
@@ -131,8 +130,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
         this.chatService.roomDeleted$.subscribe((deletedRoomId: string) => {
             if (deletedRoomId === this.roomId && !this.userIsTheCreator) {
-                console.log(deletedRoomId);
-                console.log(this.roomId);
                 this.leaveChat(false);
                 this.router.navigate(['/join-room'], { queryParams: { roomDeleted: 'true' } });
             }
@@ -229,6 +226,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     getMessages() {
+        if (this.chatService.messages[this.roomId] === undefined) {
+            return;
+        }
+
         this.http.get(`/api/v1/Message/GetMessages/${this.roomId}`, { withCredentials: true })
             .pipe(
                 this.errorHandler.handleError401()
@@ -437,11 +438,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             )
             .subscribe((response: any) => {
                 if (response) {
-                    setTimeout(() => {
-                        this.isLoading = false;
-                        this.leaveChat(false);
-                        this.router.navigate(['/join-room'], { queryParams: { deleteSuccess: 'true' } });
-                    }, 1000);
+                    this.isLoading = false;
+                    this.leaveChat(false);
+                    this.router.navigate(['/join-room'], { queryParams: { deleteSuccess: 'true' } });
                 } else {
                     this.isLoading = false;
                 }

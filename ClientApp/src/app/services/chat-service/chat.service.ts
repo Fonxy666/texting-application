@@ -13,7 +13,7 @@ import { ConnectedUser } from '../../model/ConnectedUser';
 
 export class ChatService {
     public connection: signalR.HubConnection;
-    public message$ = new BehaviorSubject<any>([]);
+    public message$ = new BehaviorSubject<any[]>([]);
     public connectedUsers = new BehaviorSubject<ConnectedUser[]>([]);
     public messages: { [roomId: string]: any[] } = {};
     public users: ConnectedUser[] = [];
@@ -57,12 +57,14 @@ export class ChatService {
 
         this.connection.on("RoomDeleted", (roomId: string) => {
             this.roomDeleted$.next(roomId);
-            this.message$.next(this.messages);
+            delete this.messages[roomId];
+            if (this.currentRoom === roomId) {
+                this.message$.next([]);
+            }
         });
     }
 
     public setCurrentRoom(roomId: string) {
-        console.log(roomId);
         this.currentRoom = roomId;
         this.message$.next(this.messages[roomId] || []);
     }
@@ -155,6 +157,8 @@ export class ChatService {
             await this.connection.invoke("OnRoomDelete", roomId);
             sessionStorage.removeItem("room");
             sessionStorage.removeItem("user");
+            sessionStorage.removeItem("roomId");
+            this.messages[this.currentRoom!] = [];
         } catch (error) {
             console.error('Error deleting message:', error);
         }
@@ -164,6 +168,7 @@ export class ChatService {
         try {
             sessionStorage.removeItem("room");
             sessionStorage.removeItem("user");
+            sessionStorage.removeItem("roomId");
             this.messages[this.currentRoom!] = [];
             await this.connection.stop();
             console.log('SignalR connection stopped.');
