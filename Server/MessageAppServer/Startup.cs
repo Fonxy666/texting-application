@@ -180,19 +180,8 @@ public class Startup(IConfiguration configuration)
                 .AllowCredentials();
         });
         
-        app.Use(async (context, next) =>
-        {
-            if (context.Request.Cookies.TryGetValue("Authorization", out string? userId))
-            {
-                app.UseRefreshTokenMiddleware();
-                app.UseJwtRefreshMiddleware();
-                await next();
-            }
-            else
-            {
-                await next();
-            }
-        });
+        app.UseRefreshTokenMiddleware();
+        app.UseJwtRefreshMiddleware();
         
         app.UseAuthentication();
         app.UseAuthorization();

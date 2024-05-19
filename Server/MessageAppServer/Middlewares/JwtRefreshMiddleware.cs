@@ -11,11 +11,6 @@ public class JwtRefreshMiddleware(RequestDelegate next)
 {
     public async Task Invoke(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService)
     {
-        if (ExamineCookies(context))
-        {
-            await SetNewJwtToken(context, tokenService, userManager, cookieService);
-        }
-
         if (TokenExpired(context))
         {
             await RefreshToken(context, tokenService, userManager, cookieService);
@@ -24,31 +19,12 @@ public class JwtRefreshMiddleware(RequestDelegate next)
         await next(context);
     }
 
-    private async Task SetNewJwtToken(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService)
-    {
-        var rememberMe = context.Request.Cookies["RememberMe"] == "True";
-        
-        var userId = context.Request.Cookies["UserId"];
-        var user = userManager.Users.FirstOrDefault(user => user.Id.ToString() == userId);
-        var newToken = tokenService.CreateJwtToken(user!, "User", rememberMe);
-
-        await cookieService.SetJwtToken(newToken, rememberMe);
-    }
-
-    private bool ExamineCookies(HttpContext context)
-    {
-        return context.Request.Cookies["RefreshToken"] != string.Empty &&
-               context.Request.Cookies["RefreshToken"] != null &&
-               context.Request.Cookies["UserId"] != string.Empty &&
-               context.Request.Cookies["UserId"] != null &&
-               context.Request.Cookies["Authorization"] == null;
-    }
-
     private bool TokenExpired(HttpContext context)
     {
         var token = context.Request.Cookies["Authorization"];
+        var refreshToken = context.Request.Cookies["RefreshToken"];
 
-        if (string.IsNullOrEmpty(token))
+        if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(refreshToken))
         {
             return false;
         }
@@ -72,6 +48,7 @@ public class JwtRefreshMiddleware(RequestDelegate next)
 
             var expirationDateTime = DateTimeOffset.FromUnixTimeSeconds(expirationTimestamp).UtcDateTime;  //Convert to daytime
             var isExpired = expirationDateTime < DateTime.UtcNow.AddHours(2);
+            
             return isExpired;
         }
         catch (Exception)

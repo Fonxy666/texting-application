@@ -35,7 +35,7 @@ public class RefreshTokenMiddleware(RequestDelegate next)
 
         var tokenExpiration = userManager.FindByIdAsync(userId).Result!.RefreshTokenExpires;
 
-        return tokenExpiration <= DateTime.UtcNow.AddHours(1);
+        return tokenExpiration <= DateTime.UtcNow.AddHours(2);
     }
 }
 
