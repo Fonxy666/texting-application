@@ -13,25 +13,33 @@ import { ConnectedUser } from '../../model/ConnectedUser';
 
 export class ChatService {
     public connection: signalR.HubConnection;
-    public message$ = new BehaviorSubject<any>([]);
+    public message$ = new BehaviorSubject<any[]>([]);
     public connectedUsers = new BehaviorSubject<ConnectedUser[]>([]);
-    public messages: any[] = [];
+    public messages: { [roomId: string]: any[] } = {};
     public users: ConnectedUser[] = [];
     public roomDeleted$: Subject<string> = new Subject<string>();
+    private currentRoom: string | null = null;
+    public messagesInitialized$ = new Subject<string>();
 
     constructor(private cookieService: CookieService) {
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl('/chat')
-            .configureLogging(signalR.LogLevel.Information)
+            .configureLogging(signalR.LogLevel.Critical)
             .build();
 
         this.initializeConnection();
 
-        this.connection.on("ReceiveMessage", (user: string, message: string, messageTime: string, userId: string, messageId: string, seenList: string[]) => {
-            if (userId !== this.cookieService.get("UserId")) {
-                this.messages.push({ user, message, messageTime, userId, messageId, seenList });
+        this.connection.on("ReceiveMessage", (user: string, message: string, messageTime: string, userId: string, messageId: string, seenList: string[], roomId: string) => {
+            if (!this.messages[roomId]) {
+                this.messages[roomId] = [];
+                this.messagesInitialized$.next(roomId);
             }
-            this.message$.next(this.messages);
+            if (userId !== this.cookieService.get("UserId")) {
+                this.messages[roomId].push({ user, message, messageTime, userId, messageId, seenList });
+            }
+            if (this.currentRoom === roomId) {
+                this.message$.next([...this.messages[roomId]]);
+            }
         });
 
         this.connection.on("ConnectedUser", (userDictionary: { [key: string]: string }) => {
@@ -49,17 +57,26 @@ export class ChatService {
 
         this.connection.on("RoomDeleted", (roomId: string) => {
             this.roomDeleted$.next(roomId);
+            delete this.messages[roomId];
+            if (this.currentRoom === roomId) {
+                this.message$.next([]);
+            }
         });
+    }
+
+    public setCurrentRoom(roomId: string) {
+        this.currentRoom = roomId;
+        this.message$.next(this.messages[roomId] || []);
     }
 
     private async initializeConnection() {
         try {
             await this.start();
     
-            const roomName = sessionStorage.getItem("room")?? "asd";
-            const userName = sessionStorage.getItem("user")?? "Fonxy666";
-            if (roomName && userName) {
-                await this.joinRoom(userName, roomName);
+            const roomId = sessionStorage.getItem("roomId");
+            const userName = sessionStorage.getItem("user");
+            if (roomId && userName) {
+                await this.joinRoom(userName, roomId);
             }
         } catch (error) {
             console.error('SignalR connection failed to start:', error);
@@ -138,6 +155,10 @@ export class ChatService {
     public async deleteRoom(roomId: string) {
         try {
             await this.connection.invoke("OnRoomDelete", roomId);
+            sessionStorage.removeItem("room");
+            sessionStorage.removeItem("user");
+            sessionStorage.removeItem("roomId");
+            this.messages[this.currentRoom!] = [];
         } catch (error) {
             console.error('Error deleting message:', error);
         }
@@ -147,6 +168,8 @@ export class ChatService {
         try {
             sessionStorage.removeItem("room");
             sessionStorage.removeItem("user");
+            sessionStorage.removeItem("roomId");
+            this.messages[this.currentRoom!] = [];
             await this.connection.stop();
             console.log('SignalR connection stopped.');
         } catch (error) {

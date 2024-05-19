@@ -2,8 +2,8 @@ import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, HostL
 import { ChatService } from '../../services/chat-service/chat.service';
 import { Router, ActivatedRoute  } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, forkJoin  } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { Observable, of, forkJoin, Subscription  } from 'rxjs';
+import { catchError, filter, switchMap, take } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
 import { CookieService } from 'ngx-cookie-service';
@@ -18,7 +18,7 @@ import { passwordMatchValidator, passwordValidator } from '../../validators/Vali
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
-  styleUrl: './chat.component.css',
+  styleUrls: ['./chat.component.css', '../../../styles.css'],
   changeDetection: ChangeDetectionStrategy.Default,
   providers: [ MessageService ]
 })
@@ -37,9 +37,13 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     imageCount: number = 0;
     userIsTheCreator: boolean = false;
     showPassword: boolean = false;
+    isLoading: boolean = false;
+    private subscriptions: Subscription = new Subscription();
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
+
+    private routeSub!: Subscription;
 
     constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute, private errorHandler: ErrorHandlerService, private cookieService: CookieService, private messageService: MessageService, private fb: FormBuilder) { }
     
@@ -49,11 +53,38 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     ngOnInit(): void {
         this.userId = this.cookieService.get("UserId");
+        this.roomId = sessionStorage.getItem("roomId")!;
+
+        this.chatService.setCurrentRoom(this.roomId);
+
+        if (this.roomId) {
+            this.subscriptions.add(
+              this.chatService.messagesInitialized$
+                .pipe(
+                  filter((initializedRoomId) => initializedRoomId === this.roomId),
+                  take(1)
+                )
+                .subscribe(() => {
+                  this.getMessages();
+                })
+            );
+        } else {
+            console.error('No roomId found in session storage.');
+        }
 
         this.chatService.message$.subscribe(res => {
             this.messages = res;
             this.messages.forEach(message => {
                 this.loadAvatarsFromMessages(message.userId);
+                setTimeout(() => {
+                    if (message.userId == undefined) {
+                        const currentIndex = this.messages.indexOf(message);
+
+                        if (currentIndex > -1) {
+                            this.messages.splice(currentIndex, 1);
+                        }
+                    }
+                }, 5000);
             })
         });
 
@@ -66,7 +97,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         });
 
         this.chatService.connection.on("ModifyMessageSeen", (userIdFromSignalR: string) => {
-            this.chatService.messages.forEach((message) => {
+            this.chatService.messages[this.roomId].forEach((message) => {
                 if (!message.seenList) {
                     return;
                 } else if (!message.seenList.includes(userIdFromSignalR)) {
@@ -81,10 +112,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     message.message = "Deleted message.";
                 }
             });
-        });
-
-        this.route.params.subscribe(params => {
-            this.roomId = params['id'];
         });
       
         this.chatService.connectedUsers.subscribe((users) => {
@@ -103,14 +130,14 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
         this.chatService.roomDeleted$.subscribe((deletedRoomId: string) => {
             if (deletedRoomId === this.roomId && !this.userIsTheCreator) {
-              this.router.navigate(['/join-room'], { queryParams: { roomDeleted: 'true' } });
+                this.leaveChat(false);
+                this.router.navigate(['/join-room'], { queryParams: { roomDeleted: 'true' } });
             }
         });
 
         this.getMessages();
         this.userIsTheCreatorMethod();
 
-        
         this.changePasswordRequest = this.fb.group({
             oldPassword: ['', [Validators.required, Validators.email]],
             newPassword: ['', [Validators.required, passwordValidator]],
@@ -124,13 +151,13 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
     };
 
-    examineMessages() {
-        this.chatService.messages.forEach((message) => {
-            if (message.userId != this.userId) {
-                console.log(message.message);
-            }
-        })
-    };
+    ngOnDestroy(): void {
+        this.subscriptions.unsubscribe();
+
+        if (this.routeSub) {
+            this.routeSub.unsubscribe();
+        }
+      };
 
     loadAvatarsFromMessages(userId : string) {
         if (userId === null || userId === undefined) {
@@ -163,7 +190,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     this.errorHandler.handleError401()
                 )
                 .subscribe((res: any) => {
-                    this.chatService.messages.push({ 
+                    this.chatService.messages[this.roomId].push({
+                        roomId: res.roomId,
                         messageId: res.message.messageId,
                         userId: res.message.senderId,
                         message: res.message.text,
@@ -186,29 +214,32 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         });
     };
 
-    leaveChat() {
+    leaveChat(deleted: boolean) {
         this.chatService.leaveChat()
         .then(() => {
-            this.router.navigate(['/join-room']);
-            setTimeout(() => {
-                location.reload();
-            }, 0);
+            if (deleted) {
+                this.router.navigate(['/join-room'])
+            };
         }).catch((err) => {
             console.log(err);
         })
     };
 
     getMessages() {
+        if (this.chatService.messages[this.roomId] === undefined) {
+            return;
+        }
+
         this.http.get(`/api/v1/Message/GetMessages/${this.roomId}`, { withCredentials: true })
             .pipe(
                 this.errorHandler.handleError401()
             )
             .subscribe((response: any) => {
-                const observables = response.map((element: any) =>
+                const userNames = response.map((element: any) =>
                     this.http.get(`/api/v1/User/GetUsername?userId=${element.senderId}`, { withCredentials: true })
                 );
     
-                forkJoin(observables).subscribe((usernames: any) => {
+                forkJoin(userNames).subscribe((usernames: any) => {
                     const fetchedMessages = response.map((element: any, index: number) => ({
                         messageId: element.messageId,
                         user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
@@ -217,9 +248,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                         messageTime: element.sendTime,                    
                         seenList: element.seen
                     }));
-                    this.chatService.messages = [...fetchedMessages, ...this.chatService.messages];
+                    
+                    this.chatService.messages[this.roomId] = [...fetchedMessages, ...this.chatService.messages[this.roomId]];
     
-                    this.chatService.message$.next(this.chatService.messages);
+                    this.chatService.message$.next(this.chatService.messages[this.roomId]);
                 });
             });
     };
@@ -272,7 +304,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             this.errorHandler.handleError401()
         )
         .subscribe(() => {
-            this.chatService.messages.forEach((message: any) => {
+            this.chatService.messages[this.roomId].forEach((message: any) => {
                 if (message.messageId == request.id) {
                     this.chatService.modifyMessage(request);
                     this.inputMessage = "";
@@ -302,7 +334,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             this.errorHandler.handleError401()
         )
         .subscribe(() => {
-            this.chatService.messages.forEach((message: any) => {
+            this.chatService.messages[this.roomId].forEach((message: any) => {
                 if (message.messageId == request.userId) {
                     this.inputMessage = "";
                     this.messageModifyBool = false;
@@ -326,7 +358,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             this.errorHandler.handleError401()
         )
         .subscribe(() => {
-            this.chatService.messages.forEach((message: any) => {
+            this.chatService.messages[this.roomId].forEach((message: any) => {
                 if (message.messageId == messageId) {
                     this.chatService.deleteMessage(messageId);
                 }
@@ -345,7 +377,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     
     @HostListener('window:focus', ['$event'])
     onFocus(): void {
-        this.chatService.messages.forEach((message) => {
+        this.chatService.messages[this.roomId].forEach((message) => {
             const userId = this.userId;
             const anonym = this.cookieService.get("Anonymous") == "True";
             if (!message.seenList) {
@@ -359,7 +391,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     examineIfNextMessageNotContainsUserId(userId: string, index: number) {
-        const slicedMessages = this.chatService.messages.slice(index + 1);
+        const slicedMessages = this.chatService.messages[this.roomId].slice(index + 1);
     
         for (const message of slicedMessages) {
             if (message.seenList == null) {
@@ -398,6 +430,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     deleteRoom() {
+        this.isLoading = true;
         this.chatService.deleteRoom(this.roomId).then(() => {
             this.http.delete(`/api/v1/Chat/DeleteRoom?userId=${this.userId}&roomId=${this.roomId}`, { withCredentials: true})
             .pipe(
@@ -405,7 +438,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             )
             .subscribe((response: any) => {
                 if (response) {
+                    this.isLoading = false;
+                    this.leaveChat(false);
                     this.router.navigate(['/join-room'], { queryParams: { deleteSuccess: 'true' } });
+                } else {
+                    this.isLoading = false;
                 }
             }, 
             (error) => {

@@ -10,19 +10,12 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
 {
     public async Task<string> JoinRoom(UserRoomConnection userConnection)
     {
+        Console.WriteLine(userConnection.User);
+        Console.WriteLine(userConnection.Room);
         await Groups.AddToGroupAsync(Context.ConnectionId, userConnection.Room!);
         connection[Context.ConnectionId] = userConnection;
-        await Clients.Group(userConnection.Room!).SendAsync("ReceiveMessage", "Textinger bot", $"{userConnection.User} has joined the room!", DateTime.Now);
+        await Clients.Group(userConnection.Room!).SendAsync("ReceiveMessage", "Textinger bot", $"{userConnection.User} has joined the room!", DateTime.Now, null, null, null, userConnection.Room);
         await SendConnectedUser(userConnection.Room!);
-
-        foreach (var userRoomConnection in connection)
-        {
-            Console.WriteLine("------------------------------------------------");
-            Console.WriteLine(userRoomConnection.Key);
-            Console.WriteLine(userRoomConnection.Value.User);
-            Console.WriteLine(userRoomConnection.Value.Room);
-            Console.WriteLine("------------------------------------------------");
-        }
         return Context.ConnectionId;
     }
 
@@ -30,7 +23,7 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
     {
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
         {
-            await Clients.Group(userRoomConnection.Room!).SendAsync("ReceiveMessage", 
+            await Clients.Group(userRoomConnection.Room!).SendAsync("ReceiveMessage",
                 userRoomConnection.User,
                 request.Message,
                 DateTime.Now,
@@ -39,7 +32,8 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
                 new List<string>
                 {
                     request.UserId
-                });
+                },
+                request.RoomId);
         }
     }
     
@@ -96,8 +90,8 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
     public async Task OnRoomDelete(string roomId)
     {
         await Clients.Group(roomId).SendAsync("RoomDeleted", roomId);
-
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
+        connection.Remove(Context.ConnectionId);
         await Clients.All.SendAsync("RoomDeleted", roomId);
     }
 }
