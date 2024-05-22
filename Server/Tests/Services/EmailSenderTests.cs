@@ -4,79 +4,91 @@ using Microsoft.Extensions.Configuration;
 using Moq;
 using Server.Services.EmailSender;
 using Xunit;
+using Xunit.Abstractions;
+using Assert = Xunit.Assert;
 
 namespace Tests.Services;
 
 public class EmailSenderTests
 {
+    private readonly ITestOutputHelper _testOutputHelper;
     private readonly Mock<IConfiguration> _mockConfiguration;
-    private readonly Mock<SmtpClient> _mockSmtpClient;
+    private readonly Mock<ISmtpClientWrapper> _mockSmtpClientWrapper;
     private readonly EmailSender _emailSender;
 
-    public EmailSenderTests()
+    public EmailSenderTests(ITestOutputHelper testOutputHelper)
     {
+        _testOutputHelper = testOutputHelper;
         _mockConfiguration = new Mock<IConfiguration>();
-        _mockConfiguration.SetupGet(c => c["DeveloperEmail"]).Returns("developer@example.com");
-        _mockConfiguration.SetupGet(c => c["DeveloperPassword"]).Returns("password");
+        _mockSmtpClientWrapper = new Mock<ISmtpClientWrapper>();
 
-        _mockSmtpClient = new Mock<SmtpClient>("smtp-mail.outlook.com", 587)
-        {
-            CallBase = true
-        };
+        _mockConfiguration.Setup(c => c["DeveloperEmail"]).Returns("developer@example.com");
+        _mockConfiguration.Setup(c => c["DeveloperPassword"]).Returns("password");
 
         _emailSender = new EmailSender(_mockConfiguration.Object)
         {
-            SmtpClientFactory = () => _mockSmtpClient.Object
+            SmtpClientFactory = () => _mockSmtpClientWrapper.Object
         };
     }
 
     [Fact]
     public async Task SendEmailAsync_ShouldSendEmail()
     {
-        // Arrange
-        var email = "user@example.com";
-        var subject = "Test Subject";
-        var message = "Test Message";
+        const string email = "recipient@example.com";
+        const string subject = "Test Subject";
+        const string message = "Test Message";
 
-        _mockSmtpClient.Setup(client => client.SendMailAsync(It.IsAny<MailMessage>()))
-            .Returns(Task.CompletedTask)
-            .Verifiable();
+        _mockSmtpClientWrapper
+            .Setup(c => c.SendMailAsync(It.IsAny<MailMessage>()))
+            .Returns(Task.CompletedTask);
 
-        // Act
         await _emailSender.SendEmailAsync(email, subject, message);
 
-        // Assert
-        _mockSmtpClient.Verify(client => client.SendMailAsync(It.Is<MailMessage>(m =>
-            m.From.Address == "developer@example.com" &&
-            m.To[0].Address == email &&
-            m.Subject == subject &&
-            m.Body == message)), Times.Once);
+        _mockSmtpClientWrapper.Verify(client => client.SendMailAsync(It.Is<MailMessage>(msg =>
+            msg.From != null &&
+            msg.From.Address == "developer@example.com" &&
+            msg.To[0].Address == email &&
+            msg.Subject == subject &&
+            msg.Body == message
+        )), Times.Once);
+
+        _mockSmtpClientWrapper.VerifySet(client => client.Credentials = It.Is<NetworkCredential>(cred =>
+            cred.UserName == "developer@example.com" &&
+            cred.Password == "password"
+        ));
     }
 
     [Fact]
     public async Task SendEmailWithLinkAsync_ShouldSendEmailWithLink()
     {
-        // Arrange
-        var email = "user@example.com";
-        var subject = "Test Subject";
-        var resetId = "reset-id";
-
-        _mockSmtpClient.Setup(client => client.SendMailAsync(It.IsAny<MailMessage>()))
-            .Returns(Task.CompletedTask)
-            .Verifiable();
-
-        var expectedLink = $"http://localhost:4200/password-reset/{WebUtility.UrlEncode(resetId)}/{email}";
+        const string email = "recipient@example.com";
+        const string subject = "Password Reset";
+        const string resetId = "reset-id";
+        var expectedEncodedEmail = WebUtility.UrlEncode(email);
+        var expectedLink = $"http://localhost:4200/password-reset/{resetId}/{expectedEncodedEmail}";
         var expectedHtmlMessage = $"<br/><a href=\"{expectedLink}\">Reset Password</a>";
 
-        // Act
+        _mockSmtpClientWrapper
+            .Setup(c => c.SendMailAsync(It.IsAny<MailMessage>()))
+            .Returns(Task.CompletedTask);
+
+        MailMessage sentMessage = null;
+        _mockSmtpClientWrapper
+            .Setup(c => c.SendMailAsync(It.IsAny<MailMessage>()))
+            .Callback<MailMessage>(msg => sentMessage = msg)
+            .Returns(Task.CompletedTask);
+
         await _emailSender.SendEmailWithLinkAsync(email, subject, resetId);
 
-        // Assert
-        _mockSmtpClient.Verify(client => client.SendMailAsync(It.Is<MailMessage>(m =>
-            m.From.Address == "developer@example.com" &&
-            m.To[0].Address == email &&
-            m.Subject == subject &&
-            m.Body == expectedHtmlMessage &&
-            m.IsBodyHtml)), Times.Once);
+        Assert.NotNull(sentMessage);
+        Assert.Equal("developer@example.com", sentMessage.From?.Address);
+        Assert.Equal(email, sentMessage.To[0].Address);
+        Assert.Equal(subject, sentMessage.Subject);
+        Assert.True(sentMessage.IsBodyHtml);
+
+        _mockSmtpClientWrapper.VerifySet(client => client.Credentials = It.Is<NetworkCredential>(cred =>
+            cred.UserName == "developer@example.com" &&
+            cred.Password == "password"
+        ));
     }
 }

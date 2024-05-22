@@ -1,4 +1,4 @@
-﻿/*using System.Net;
+﻿using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -239,4 +239,4 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var changePasswordResponse = await _client.PatchAsync("api/v1/Chat/ChangePasswordForRoom", contentChangePassword);
         Assert.Equal(HttpStatusCode.BadRequest, changePasswordResponse.StatusCode);
     }
-}*/
+}

@@ -27,7 +27,11 @@ public class JwtRefreshMiddlewareTests
         {
             Request =
             {
-                Cookies = new MockCookieCollection("Authorization", GenerateJwtToken(DateTime.UtcNow.AddHours(3)), "RefreshToken", "valid-refresh-token")
+                Cookies = new MockCookieCollection(
+                    "Authorization", GenerateJwtToken(DateTime.UtcNow.AddHours(3)),
+                    "RefreshToken", "valid-refresh-token",
+                    "UserId", "user-id"
+                )
             }
         };
 
@@ -35,6 +39,34 @@ public class JwtRefreshMiddlewareTests
 
         await middleware.Invoke(context, _mockTokenService.Object, _mockUserManager.Object, _mockCookieService.Object);
 
+        Mock.Get(_next).Verify(next => next(context), Times.Once);
+    }
+    
+    [Fact]
+    public async Task Invoke_AuthorizationCookieMissing_ShouldSetNewJwtToken()
+    {
+        var context = new DefaultHttpContext
+        {
+            Request =
+            {
+                Cookies = new MockCookieCollection(
+                    "RefreshToken", "valid-refresh-token",
+                    "UserId", "user-id",
+                    "RememberMe", "True"
+                )
+            }
+        };
+
+        var user = new ApplicationUser("-");
+        _mockUserManager.Setup(um => um.Users).Returns(new List<ApplicationUser> { user }.AsQueryable());
+        _mockTokenService.Setup(ts => ts.CreateJwtToken(It.IsAny<ApplicationUser>(), "User", true))
+            .Returns("new-jwt-token");
+
+        var middleware = new JwtRefreshMiddleware(_next);
+
+        await middleware.Invoke(context, _mockTokenService.Object, _mockUserManager.Object, _mockCookieService.Object);
+
+        _mockCookieService.Verify(cs => cs.SetJwtToken("new-jwt-token", true), Times.Once);
         Mock.Get(_next).Verify(next => next(context), Times.Once);
     }
 
@@ -118,7 +150,7 @@ public class JwtRefreshMiddlewareTests
             }
         }
 
-        public string this[string key] => _cookies[key];
+        public string this[string key] => _cookies.ContainsKey(key) ? _cookies[key] : null;
 
         public int Count => _cookies.Count;
 

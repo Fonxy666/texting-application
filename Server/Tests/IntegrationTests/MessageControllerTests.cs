@@ -1,4 +1,4 @@
-﻿/*using System.Net;
+﻿using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -189,4 +189,4 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var getUserResponse = await _client.DeleteAsync($"api/v1/Message/DeleteMessage?id={messageDeleteRequestId}");
         Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
     }
-}*/
+}

@@ -33,7 +33,7 @@ public class JwtRefreshMiddleware(RequestDelegate next)
                context.Request.Cookies["Authorization"] == null;
     }
 
-    private async Task SetNewJwtToken(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService)
+    private static async Task SetNewJwtToken(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService)
     {
         var rememberMe = context.Request.Cookies["RememberMe"] == "True";
         

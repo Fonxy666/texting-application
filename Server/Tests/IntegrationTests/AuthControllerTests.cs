@@ -1,4 +1,4 @@
-﻿/*using System.Net;
+﻿using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -233,4 +233,4 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var response = await _client.GetAsync($"api/v1/Auth/Logout?userId={userId}");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
-}*/
+}
