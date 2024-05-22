@@ -7,7 +7,7 @@ using Server.Services.User;
 using Xunit;
 using Assert = NUnit.Framework.Assert;
 
-namespace Tests.Services;
+namespace Tests.ServicesTests;
 
 public class UserServiceTests
 {

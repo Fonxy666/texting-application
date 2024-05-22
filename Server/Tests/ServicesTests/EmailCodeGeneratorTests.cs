@@ -3,20 +3,13 @@ using Moq;
 using Server.Model;
 using Server.Services.EmailSender;
 using Xunit;
-using Xunit.Abstractions;
 using Assert = NUnit.Framework.Assert;
 
-namespace Tests.Services;
+namespace Tests.ServicesTests;
 
 public class EmailCodeGeneratorTests
 {
-    private readonly ITestOutputHelper _testOutputHelper;
     private readonly Mock<UserManager<ApplicationUser>> _mockUserManager = MockUserManager.Create();
-
-    public EmailCodeGeneratorTests(ITestOutputHelper testOutputHelper)
-    {
-        _testOutputHelper = testOutputHelper;
-    }
 
     [Fact]
     public void GenerateLongToken_ShouldGenerateTokenOfCorrectFormat()

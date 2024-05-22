@@ -7,7 +7,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
-namespace Tests.Services;
+namespace Tests.ServicesTests;
 
 public class EmailSenderTests
 {

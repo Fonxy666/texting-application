@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Moq;
 using Server.Services.Authentication;
 
-namespace Tests.Services.Auth;
+namespace Tests.ServicesTests.Auth;
 
 
 [TestFixture]

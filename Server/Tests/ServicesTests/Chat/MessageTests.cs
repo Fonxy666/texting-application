@@ -4,7 +4,7 @@ using Server.Model.Chat;
 using Server.Model.Requests.Message;
 using Server.Services.Chat.MessageService;
 
-namespace Tests.Services.Chat
+namespace Tests.ServicesTests.Chat
 {
     [TestFixture]
     public class MessageServiceTests
