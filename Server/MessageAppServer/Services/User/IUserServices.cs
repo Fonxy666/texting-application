@@ -8,6 +8,5 @@ public interface IUserServices
     Task<bool> ExistingUser(string id);
     string SaveImageLocally(string userNameFileName, string base64Image);
     string GetContentType(string filePath);
-    void ResetPassword(ApplicationUser user);
     Task<DeleteUserResponse> DeleteAsync(ApplicationUser user);
 }

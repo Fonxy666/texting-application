@@ -11,12 +11,37 @@ public class JwtRefreshMiddleware(RequestDelegate next)
 {
     public async Task Invoke(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService)
     {
+        if (ExamineCookies(context))
+        {
+            await SetNewJwtToken(context, tokenService, userManager, cookieService);
+        }
+
         if (TokenExpired(context))
         {
             await RefreshToken(context, tokenService, userManager, cookieService);
         }
 
         await next(context);
+    }
+    
+    private bool ExamineCookies(HttpContext context)
+    {
+        return context.Request.Cookies["RefreshToken"] != string.Empty &&
+               context.Request.Cookies["RefreshToken"] != null &&
+               context.Request.Cookies["UserId"] != string.Empty &&
+               context.Request.Cookies["UserId"] != null &&
+               context.Request.Cookies["Authorization"] == null;
+    }
+
+    private static async Task SetNewJwtToken(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService)
+    {
+        var rememberMe = context.Request.Cookies["RememberMe"] == "True";
+        
+        var userId = context.Request.Cookies["UserId"];
+        var user = userManager.Users.FirstOrDefault(user => user.Id.ToString() == userId);
+        var newToken = tokenService.CreateJwtToken(user!, "User", rememberMe);
+
+        await cookieService.SetJwtToken(newToken, rememberMe);
     }
 
     private bool TokenExpired(HttpContext context)

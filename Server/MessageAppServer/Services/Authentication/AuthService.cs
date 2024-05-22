@@ -125,7 +125,7 @@ public class AuthService(
         {
             await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.Now.AddDays(1));
             await userManager.ResetAccessFailedCountAsync(user);
-            return InvalidCredentials($"Account is locked. Try again after 1 day");
+            return InvalidCredentials("Account is locked. Try again after 1 day");
         }
 
         return new AuthResult(true, "", "");

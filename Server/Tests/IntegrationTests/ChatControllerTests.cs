@@ -162,7 +162,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task DeleteRoom_WithNotExistingUser_ReturnNotFound()
     {
-        const string userId = "38db530c-b6bb-4e8a-9c19-a5cd4d0fa911";
+        var userId = Guid.NewGuid().ToString();
         const string roomId = "801d40c6-c95d-47ed-a21a-88cda341d0a9";
 
         var deleteRoomResponse = await _client.DeleteAsync($"api/v1/Chat/DeleteRoom?userId={userId}&roomId={roomId}");

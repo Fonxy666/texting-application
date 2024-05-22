@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Server;
 using Server.Model;
-using Server.Model.Requests;
 using Server.Model.Requests.Auth;
 using Server.Model.Requests.User;
 using Server.Model.Responses.User;
@@ -155,7 +154,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task ChangePassword_ForInvalidUser_ReturnBadRequest()
+    public async Task ChangePassword_ForInvalidUser_ReturnInternalServerError()
     {
         var passwordRequest = new ChangePasswordRequest("123", "testUserPassword123###", "testUserPassword123###!@#");
         var jsonRequestRegister = JsonConvert.SerializeObject(passwordRequest);
@@ -165,26 +164,27 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         Assert.Equal(HttpStatusCode.InternalServerError, getUserResponse.StatusCode);
     }
     
-    /*[Fact]
-    public async Task GetImage_WithValidId_ReturnSuccessStatusCode()
+    [Fact]
+    public async Task ChangePassword_WithNotExistingId_ReturnNotFound()
     {
-        const string userId = "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916";
-        Directory.SetCurrentDirectory("D:/after codecool/texting-application/Server/MessageAppServer");
-        
-        var getImageResponse = await _client.GetAsync($"api/v1/User/GetImage?userId={userId}");
-        getImageResponse.EnsureSuccessStatusCode();
+        var passwordRequest = new ChangePasswordRequest(Guid.NewGuid().ToString(), "testUserPassword123###", "testUserPassword123###!@#");
+        var jsonRequestRegister = JsonConvert.SerializeObject(passwordRequest);
+        var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
+
+        var getUserResponse = await _client.PatchAsync("api/v1/User/ChangePassword", userChangeEmail);
+        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
     }
     
     [Fact]
-    public async Task GetImage_WithInvalidId_ReturnNotFound()
+    public async Task ChangePassword_WithWrongPassword_ReturnNotFound()
     {
-        const string userId = "123";
-        Directory.SetCurrentDirectory("D:/after codecool/texting-application/Server/MessageAppServer");
-        
-        var getImageResponse = await _client.GetAsync($"api/v1User/GetImage?userId={userId}");
+        var passwordRequest = new ChangePasswordRequest("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "testUserPassword123", "testUserPassword123###!@#");
+        var jsonRequestRegister = JsonConvert.SerializeObject(passwordRequest);
+        var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
-        Assert.Equal(HttpStatusCode.NotFound, getImageResponse.StatusCode);
-    }*/
+        var getUserResponse = await _client.PatchAsync("api/v1/User/ChangePassword", userChangeEmail);
+        Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
+    }
     
     [Fact]
     public async Task DeleteUser_WithValidUser_ReturnSuccessStatusCode()
@@ -241,6 +241,15 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
+    public async Task GetUserName_WithNotExistingId_ReturnNotFound()
+    {
+        const string userId = "38db530c-b6bb-4e8a-9c19-a5cd4d0fa915";
+
+        var getUserResponse = await _client.GetAsync($"api/v1/User/GetUsername?userId={userId}");
+        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
+    }
+    
+    [Fact]
     public async Task ChangeAvatar_WithValidId_ReturnReturnSuccessStatusCode()
     {
         var request = new AvatarChange("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "-");
@@ -260,6 +269,17 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         
         var getUserResponse = await _client.PatchAsync("api/v1/User/ChangeAvatar", userChangeEmail);
         Assert.Equal(HttpStatusCode.InternalServerError, getUserResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task ChangeAvatar_WithNotExistingUser_ReturnNotFound()
+    {
+        var request = new AvatarChange(Guid.NewGuid().ToString(), "image");
+        var jsonRequestRegister = JsonConvert.SerializeObject(request);
+        var userChangeEmail = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
+        
+        var getUserResponse = await _client.PatchAsync("api/v1/User/ChangeAvatar", userChangeEmail);
+        Assert.Equal(HttpStatusCode.NotFound, getUserResponse.StatusCode);
     }
     
     [Fact]
@@ -342,5 +362,26 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var getUserResponse2 = await _client.PostAsync($"api/v1/User/SetNewPassword?resetId={token2}", resetPasswordJson2);
     
         getUserResponse2.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task SetNewPasswordAfterReset_WithWrongTokenl_ReturnBadRequest()
+    {
+        var existingUser = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername3");
+        var passwordResetRequest = new PasswordResetRequest(existingUser.Email, "testUserPassword123###asd");
+        var jsonRequest = JsonConvert.SerializeObject(passwordResetRequest);
+        var resetPasswordJson = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+    
+        var token = await _userManager.GeneratePasswordResetTokenAsync(existingUser);
+        var wrongToken = "wrongtokenfortest";
+        if (wrongToken == null) throw new ArgumentNullException(nameof(wrongToken));
+
+        EmailSenderCodeGenerator.StorePasswordResetCode(existingUser.Email, token);
+
+        _testOutputHelper.WriteLine(existingUser.PasswordHash!);
+    
+        var getUserResponse = await _client.PostAsync($"api/v1/User/SetNewPassword?resetId={wrongToken}", resetPasswordJson);
+    
+        Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
     }
 }

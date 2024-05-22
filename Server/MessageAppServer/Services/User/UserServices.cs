@@ -59,11 +59,6 @@ public class UserServices(UserManager<ApplicationUser> userManager, IConfigurati
         return contentType;
     }
 
-    public void ResetPassword(ApplicationUser user)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<DeleteUserResponse> DeleteAsync(ApplicationUser user)
     {
         await userManager.DeleteAsync(user);
