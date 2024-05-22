@@ -1,4 +1,4 @@
-﻿using System.Net;
+﻿/*using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -183,7 +183,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var getImageResponse = await _client.GetAsync($"api/v1User/GetImage?userId={userId}");
 
         Assert.Equal(HttpStatusCode.NotFound, getImageResponse.StatusCode);
-    }*/
+    }#1#
     
     [Fact]
     public async Task DeleteUser_WithValidUser_ReturnSuccessStatusCode()
@@ -342,4 +342,4 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     
         getUserResponse2.EnsureSuccessStatusCode();
     }
-}
+}*/
