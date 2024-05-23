@@ -11,6 +11,8 @@ import { CreateRoomComponent } from './chat/create-room/create-room.component';
 import { LoadingScreenComponent } from './loading-screen/loading-screen.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { NewPasswordRequestComponent } from './forgot-password/new-password-request/new-password-request.component';
+import { AboutUsPageComponent } from './about-us-page/about-us-page.component';
+import { SupportPageComponent } from './support-page/support-page.component';
 
 const routes: Routes = [
     { path: '', component: HomeComponent, title: 'Home' },
@@ -23,7 +25,9 @@ const routes: Routes = [
     { path: 'create-room', component: CreateRoomComponent, title: 'Create room'},
     { path: 'loading', component: LoadingScreenComponent, title: 'Loading'},
     { path: 'forgot-password', component: ForgotPasswordComponent, title: 'Reset your password'},
-    { path: 'password-reset/:id/:email', component: NewPasswordRequestComponent, title: 'Password reset'}
+    { path: 'password-reset/:id/:email', component: NewPasswordRequestComponent, title: 'Password reset'},
+    { path: 'about-us', component: AboutUsPageComponent, title: 'About us'},
+    { path: 'support', component: SupportPageComponent, title: 'Support'}
 ];
 
 @NgModule({
