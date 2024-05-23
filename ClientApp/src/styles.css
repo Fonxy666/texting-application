@@ -123,7 +123,7 @@
 }
 
 .btn-color {
-    background-color: #0e1c36;
+    background-color: #2e2e2e;
     color: #fff;
 }
 
@@ -171,6 +171,10 @@ a {
     align-items: center;
     justify-content: center;
     font-family: Cursive;
+}
+
+.card {
+    background-color: rgba(73, 73, 73, 0.7);
 }
 
 .token-card {

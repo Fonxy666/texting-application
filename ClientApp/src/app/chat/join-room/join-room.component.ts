@@ -11,14 +11,14 @@ import { MessageService } from 'primeng/api';
 @Component({
   selector: 'app-join-room',
   templateUrl: './join-room.component.html',
-  styleUrl: '../../../styles.css',
+  styleUrls: ['../../../styles.css', './join-room.component.css'],
   providers: [ MessageService ]
 })
 
 export class JoinRoomComponent implements OnInit {
     constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private chatService: ChatService, private http: HttpClient, private errorHandler: ErrorHandlerService, private messageService: MessageService) { }
 
-    myImage: string = "./assets/images/backgroundpng.png";
+    backgroundVideo: string = "./assets/videos/white_black_video.mp4";
     joinRoomForm!: FormGroup;
     isSunActive: boolean = true;
     isMoonActive: boolean = false;
