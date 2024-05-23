@@ -4,8 +4,9 @@
 
 .navbar {
     border-radius: 15px;
-    opacity: 0.8;
-    background: rgb(0, 9, 36);
+    background-color: rgba(213, 211, 211, 0.1);
+    backdrop-filter: blur(3px);
+    font-variant: small-caps;
 }
 
 .profile-pic {
