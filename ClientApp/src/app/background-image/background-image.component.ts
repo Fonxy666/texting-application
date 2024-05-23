@@ -19,7 +19,7 @@ export class BackgroundImageComponent implements AfterViewInit {
         setTimeout(() => {
             const video = this.backgroundVideo?.nativeElement;
             if (video) {
-                this.renderer.setProperty(video, 'playbackRate', 1.5);
+                this.renderer.setProperty(video, 'playbackRate', 1.2);
             } else {
                 console.error('Background video element not found');
             }

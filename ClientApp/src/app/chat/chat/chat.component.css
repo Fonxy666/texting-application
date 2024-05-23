@@ -3,21 +3,16 @@
     font-family: Cursive;
 }
 
-.btn {
-    background-color: rgb(26, 26, 51);
-}
-
 .group-name {
-    color: rgb(67, 53, 148);
+    color: #9392c5;
 }
 
 .container {
     border-radius: 15px;
     max-width: 1170px;
     margin: auto;
-    background-color: #52ffab;
-    background-image: linear-gradient(180deg, #52ACFF 25%, #2c1971 100%);
-    opacity: 0.8;
+    background-image: linear-gradient(180deg, rgba(9, 8, 34, 0.7) 25%, rgba(96, 98, 118, 0.3) 100%);
+    backdrop-filter: blur(30px);
 }
 
 .chat_header {
@@ -58,16 +53,14 @@ img {
 }
 
 .inbox_people {
-    background-color: #52ACFF;
     border-radius: 15px;
-    background-image: linear-gradient(180deg, #5258ff 25%, #2c1971 100%);
+    background-image: linear-gradient(180deg, #807f8e 25%, #22223e 100%);
     float: left;
     overflow: hidden;
     width: 40%;
 }
 
 .inbox_msg {
-    border-right: 1px solid #c4c4c4;
     clear: both;
     overflow: hidden;
 }
@@ -94,8 +87,9 @@ img {
 }
 
 .search-bar {
-    background-color: #52ACFF;
-    border: none;
+    border: 1px solid #ffffff;
+    background-color: #9392c5;
+    border-radius: 15px;
 }
 
 .recent_heading h4 {
@@ -163,7 +157,6 @@ img {
 }
 
 .chat_list {
-    border-bottom: 1px solid #c4c4c4;
     margin: 0;
     padding: 18px 16px 18px;
 }
@@ -214,7 +207,7 @@ img {
 }
 
 .send_msg p {
-    background: #05728f none repeat scroll 0 0;
+    color: #412796;
     border-radius: 3px;
     font-size: 14px;
     margin: 0;
@@ -268,7 +261,7 @@ img {
 }
 
 .msg_send_btn {
-    background: #05728f none repeat scroll 0 0;
+    background: #000000 none repeat scroll 0 0;
     border: medium none;
     border-radius: 50%;
     color: #fff;
@@ -276,8 +269,8 @@ img {
     font-size: 17px;
     height: 33px;
     position: absolute;
-    right: 0;
-    top: 11px;
+    right: 7px;
+    top: 7px;
     width: 33px;
 }
 
@@ -320,7 +313,7 @@ img {
     background: none;
     padding: 0;
     cursor: pointer;
-    color:#2c1971;
+    color:#412796;
 }
 
 .decorated_button_for_dropdown {
@@ -351,7 +344,7 @@ img {
 }
 
 .time_date {
-    color: rgb(0, 0, 0);
+    color: white;
     font-size: 12.5px;
     margin: 0;
     margin-right: 10px;
@@ -369,7 +362,7 @@ img {
 }
 
 .dropstart {
-    background: #585bb4 none repeat scroll 0 0;
+    background:#9392c5 none repeat scroll 0 0;
     padding: 5px 10px 5px 10px;
 }
 
