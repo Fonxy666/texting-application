@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, Renderer2 } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef, Renderer2, Input } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
 
 @Component({
@@ -8,7 +8,7 @@ import { CookieService } from 'ngx-cookie-service';
 })
 export class BackgroundImageComponent implements AfterViewInit {
     @ViewChild('backgroundVideo') backgroundVideo!: ElementRef<HTMLVideoElement>;
-    backgroundVideoSrc: string = "./assets/videos/white_black_video.mp4";
+    @Input() backgroundVideoSrc: string = "./assets/videos/white_black_video.mp4";
     animation: boolean;
 
     constructor(private cookiesService: CookieService, private renderer: Renderer2) {
