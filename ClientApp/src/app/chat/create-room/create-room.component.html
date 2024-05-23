@@ -1,29 +1,24 @@
 <div class="cont">
     <app-nav-bar />
     <p-toast  position="top-center"></p-toast>
-    <img [src]="isSunActive ? 'assets/images/sun.png' : 'assets/images/moon.png'" 
-       alt="{{ isSunActive ? 'sun' : 'moon' }}" 
-       class="sun_img"
-       *ngIf="animation">
     <div>
         <div class="row">
             <div class="col-md-4 offset-md-4">
-                <h2 [ngClass]="{ 'animate-welcome-text': animation, 'nonanimate-welcome-text': !animation }" class="text-center mt-5 text-style">Create a chatroom for yourself!</h2>
-                <div [ngClass]="{ 'animate-welcome-text': animation, 'nonanimate-welcome-text': !animation }" class="text-center mb-5 text-style">Don't hesitate, it's all free.</div>
+                <h2 class="text-center mt-5 text-style-welcome-text text-white">Create a chat room for yourself/friends, <br> it's all free!</h2>
                 <div class="card my-5">
                     <form [formGroup]="createRoomForm" class="card-body cardbody-color p-lg 5">
                         <div class="text-center">
                             <img [src]="boyImage" class="img-fluid profile-image-pic img-thumbnail rounded0circle my-3" width="150px" alt="image"/>
                         </div>
                         <div class="mb-3">
-                            <label id="roomlabel" for="roomname">Room name</label>
+                            <label id="roomlabel" class="text-white" for="roomname">Room name</label>
                             <input id="roomname" type="text" formControlName="roomName" class="form-control" placeholder="Room name"/>
                         </div>
                         <div class="mb-3">
-                            <label id="passwordlabel" for="password">Password</label>
+                            <label id="passwordlabel" class="text-white" for="password">Password</label>
                             <div class="password-show-container">
-                                <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password" class="form-control password-box" />
-                                <button class="button-box btn btn-color w-100" (click)="toggleShowPassword()">{{ showPassword ? 'Hide' : 'Show' }} password</button>
+                                <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Password" class="form-control password-box" />
+                                <button class="button-box btn btn-color w-100" (click)="toggleShowPassword()">{{ showPassword ? 'Hide' : 'Show' }}</button>
                             </div>
                         </div>
                         <div class="text-center">
@@ -37,5 +32,5 @@
             </div>
         </div>
     </div>
-    <img [src]="myImage" [class]="animation ? 'animate-image' : 'nonanimate-image'">
+    <app-background-image/>
 </div>

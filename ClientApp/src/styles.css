@@ -66,31 +66,6 @@
     min-height: 100vh;
     overflow: hidden;
 }
-  
-.animate-image {
-    min-width: 100%;
-    min-height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    height: auto;
-    object-fit: cover;
-    object-position: top center;
-    z-index: -2;
-}
-
-.nonanimate-image {
-    min-width: 100vh;
-    min-height: 100vh;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: -3;
-    background-color: rgb(26, 26, 51);
-}
 
 .sun_img {
     width: 10%;

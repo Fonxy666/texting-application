@@ -31,6 +31,7 @@ import { ForgotPasswordComponent } from './forgot-password/forgot-password.compo
 import { NewPasswordRequestComponent } from './forgot-password/new-password-request/new-password-request.component';
 import { SupportPageComponent } from './support-page/support-page.component';
 import { AboutUsPageComponent } from './about-us-page/about-us-page.component';
+import { BackgroundImageComponent } from './background-image/background-image.component';
 
 @NgModule({
   declarations: [
@@ -54,7 +55,8 @@ import { AboutUsPageComponent } from './about-us-page/about-us-page.component';
     ForgotPasswordComponent,
     NewPasswordRequestComponent,
     SupportPageComponent,
-    AboutUsPageComponent
+    AboutUsPageComponent,
+    BackgroundImageComponent
   ],
   imports: [
     BrowserModule,

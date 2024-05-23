@@ -12,17 +12,12 @@ import { MessageService } from 'primeng/api';
 export class HomeComponent implements OnInit {
     constructor(private cookieService: CookieService, private messageService: MessageService) { }
 
-    backgroundVideo: string = "./assets/videos/white_black_video.mp4";
     starsImage: string = "./assets/images/4-out-of-5-stars.webp"
     animation: boolean = true;
     isLoading: boolean = false;
-    playbackSpeed: number = 1.5;
 
     ngOnInit() {
         this.animation = this.cookieService.get("Animation") != "False";
-
-        const video = document.getElementById('backgroundVideo') as HTMLVideoElement;
-        video.playbackRate = this.playbackSpeed;
 
         setTimeout(() => {
             const urlParams = new URLSearchParams(window.location.search);

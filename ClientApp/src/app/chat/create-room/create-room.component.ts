@@ -10,7 +10,7 @@ import { MessageService } from 'primeng/api';
 @Component({
   selector: 'app-create-room',
   templateUrl: './create-room.component.html',
-  styleUrl: '../../../styles.css',
+  styleUrls: ['../../../styles.css', '../../home/home.component.css'],
   providers: [ MessageService ]
 })
 export class CreateRoomComponent implements OnInit {

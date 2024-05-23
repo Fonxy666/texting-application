@@ -11,7 +11,7 @@ import { MessageService } from 'primeng/api';
 @Component({
   selector: 'app-join-room',
   templateUrl: './join-room.component.html',
-  styleUrls: ['../../../styles.css', './join-room.component.css'],
+  styleUrls: ['../../../styles.css', '../../home/home.component.css'],
   providers: [ MessageService ]
 })
 
