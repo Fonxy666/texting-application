@@ -3,45 +3,44 @@
     <div class="signup-card">
         <div class="left-side">
             <div>
-                <img src="/assets/images/login.jpg" alt="chat_bubble" class="image">
+                <img src="/assets/images/login.png" alt="chat_bubble" class="image">
             </div>
         </div>
         <div class="right-side">
-            <h1 class="mt-3">
-                Login
-            </h1>
+            <h1 class="mt-3 text-white text-size-30">Login</h1>
             <form [formGroup]="loginRequest" (ngSubmit)="OnFormSubmit()">
                 <div class="form-group mt-3">
-                    <label for="username">Username</label>
+                    <label for="username" class="text-white text-size-16">Username</label>
                     <input formControlName="username" type="email" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Username" required>
                 </div>
                 <div class="form-group mt-3">
-                    <label for="password">Password</label>
+                    <label for="password" class="text-white text-size-16">Password</label>
                     <div class="password-input">
                         <input formControlName="password" [type]="showPassword ? 'text' : 'password'" class="form-control password-box" id="password" placeholder="Password" required>
-                        <button type="button" (click)="toggleShowPassword()" class="show-button btn btn-primary">{{ showPassword ? 'Hide' : 'Show' }}</button>
+                        <button type="button" (click)="toggleShowPassword()" class="show-button btn btn-color">{{ showPassword ? 'Hide' : 'Show' }}</button>
                         <span class="position-relative" data-toggle="tooltip" data-placement="right" title="Your password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one symbol.">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="blue" class="bi bi-info-circle mx-2" viewBox="0 0 16 16">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-info-circle mx-2" viewBox="0 0 16 16">
                                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
                                 <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
                             </svg>
                         </span>
                     </div>
                 </div>
-                <div class="mt-3">Forgot password? <a href="/forgot-password">Reset password</a> </div>
+                <div class="mt-3 text-white text-size-16">Forgot password? <a href="/forgot-password" class="text-size-16">Reset password</a> </div>
                 <div class="form-group mt-3">
                     <input formControlName="checkbox" class="form-check-input" type="checkbox" value="" id="flexCheckChecked" formControlName="rememberme">
-                    <label class="form-check-label px-2" for="flexCheckChecked">
+                    <label class="form-check-label px-2 text-white text-size-16" for="flexCheckChecked">
                         Remember this browser for 7 days
                     </label>
                 </div>
-                <button type="submit" class="btn btn-primary mt-3">Sign in</button>
+                <button type="submit" class="btn btn-color mt-3 text-size-16">Sign in</button>
             </form>
             <div>
-                <a class="btn btn-primary" (click)="handleGoogleLogin()"><img class="login-icons" [src]="googleIcon"/>Login with Google</a>
+                <a class="btn btn-color" (click)="handleGoogleLogin()"><img class="login-icons" [src]="googleIcon"/>Login with Google</a>
             </div>
-            <a class="btn btn-primary" (click)="handleFacebookLogin()"><img class="login-icons" [src]="facebookIcon"/>Login with Facebook</a>
-            <div class="mt-3">Don't have an account? <a href="/registration">Create an account</a> </div>
+            <a class="btn btn-color" (click)="handleFacebookLogin()"><img class="login-icons" [src]="facebookIcon"/>Login with Facebook</a>
+            <div class="mt-3 text-white text-size-16">Don't have an account? <a href="/registration" class="text-size-16">Create an account</a> </div>
         </div>
     </div>
 </section>
+<app-background-image>
