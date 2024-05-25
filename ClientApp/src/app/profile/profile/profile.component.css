@@ -65,6 +65,8 @@ html, body {
 .change-menu {
     margin-top: 50px;
     margin-bottom: 50px;
+    border-bottom: 3px solid black;
+    padding-bottom: 10px;
 }
 
 .content-wrapper {
