@@ -12,8 +12,8 @@
                                 class="img-fluid profile-image-pic img-thumbnail rounded0circle my-3" width="200px" alt="image"/>
                         </div>
                         <div class="mb-3">
-                            <label id="roomNameLabel" class="text-white" for="Room name">Roomname</label>
-                            <input type="text" (keydown.enter)="joinRoom()" formControlName="room" class="form-control" id="roomNameLabel" placeholder="Roomname"/>
+                            <label id="roomNameLabel" class="text-white" for="Room name">Room name</label>
+                            <input type="text" (keydown.enter)="joinRoom()" formControlName="room" class="form-control" id="roomNameLabel" placeholder="Room name"/>
                         </div>
                         <div class="mb-3">
                             <label id="passwordlabel" class="text-white" for="password">Password</label>
@@ -22,11 +22,15 @@
                                 <button class="btn btn-color w-100 button-box" (click)="toggleShowPassword()">{{ showPassword ? 'Hide' : 'Show' }}</button>
                             </div>
                         </div>
-                        <div class="text-center pt-4">
-                            <button [disabled]="joinRoomForm.invalid" (click)="joinRoom()" class="btn btn-color px-5 mb-5 w-100" type="button">Join</button>
-                        </div>
-                        <div class="text-center">
-                            <button (click)="goToCreateRoom()" class="btn btn-color px-5 mb-5 w-100" type="button">Create room</button>
+                        <div class="container text-center mt-5">
+                            <div class="row">
+                                <div class="col">
+                                    <button [disabled]="joinRoomForm.invalid" (click)="joinRoom()" class="btn btn-color px-5 mb-5 w-100" type="button">Join</button>
+                                </div>
+                                <div class="col">
+                                    <button (click)="goToCreateRoom()" class="btn btn-color px-5 mb-5 w-100" type="button">Create room</button>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
