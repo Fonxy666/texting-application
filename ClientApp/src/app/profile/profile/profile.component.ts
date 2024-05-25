@@ -51,12 +51,7 @@ export class ProfileComponent implements OnInit {
         this.isLoading = false;
 
         this.userService.email$.subscribe(email => {
-            if (email.length < 1) {
-                
-            } else {
-                this.user.email = email;
-            }
-            console.log(email);
+            this.user.email = email;
         });
     }
 
