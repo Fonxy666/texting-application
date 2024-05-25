@@ -6,31 +6,35 @@
                 <img src="/assets/images/registration.png" alt="reg_img" class="image">
             </div>
         </div>
-        <div class="right-side">
-            <h1 class="mt-1 text-white text-size-30">Registration</h1>
+        <div class="right-side-reg">
+            <h1 class="mt-1 text-white text-size-30 text-center">Registration</h1>
             <form [formGroup]="registrationRequest" (ngSubmit)="onFormSubmit()">
-                <div class="form-group mt-3" *ngIf="registrationRequest.get('email')">
-                    <label class="mb-2 text-white text-size-16" for="email">Email</label>
-                    <input formControlName="email" type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="email" required name="email">
+                <div class="form-group mt-2" *ngIf="registrationRequest.get('email')">
+                    <label class="text-white text-size-16 mb-1" for="email">Email</label>
+                    <input class="input-class" formControlName="email" type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="email" required name="email">
                     <small id="emailHelp" class="form-text text-white">We'll never share your email with anyone else.</small>
-                    <div *ngIf="registrationRequest.get('email')?.invalid 
-                                && (registrationRequest.get('email')?.dirty || registrationRequest.get('email')?.touched)" class="text-danger">
-                        <div *ngIf="registrationRequest.get('email')?.errors?.['required']">Email is required</div>
-                        <div *ngIf="registrationRequest.get('email')?.errors?.['email']">Invalid email format</div>
+                    <div class="error-message">
+                        <div *ngIf="registrationRequest.get('email')?.invalid 
+                                    && (registrationRequest.get('email')?.dirty || registrationRequest.get('email')?.touched)" class="text-danger">
+                            <div *ngIf="registrationRequest.get('email')?.errors?.['required']">Email is required</div>
+                            <div *ngIf="registrationRequest.get('email')?.errors?.['email']">Invalid email format</div>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group mt-3">
-                    <label class="mb-2 text-white text-size-16" for="username">Username</label>
-                    <input formControlName="username" type="text" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Username" required name="username">
-                    <div *ngIf="registrationRequest.get('username')?.invalid 
-                        && (registrationRequest.get('username')?.dirty || registrationRequest.get('username')?.touched)" class="text-danger">
-                        <div *ngIf="registrationRequest.get('username')?.errors?.['required']">Username is required</div>
+                <div class="form-group mt-2">
+                    <label class="text-white text-size-16 mb-1" for="username">Username</label>
+                    <input class="input-class" formControlName="username" type="text" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Username" required name="username">
+                    <div class="error-message">
+                        <div *ngIf="registrationRequest.get('username')?.invalid 
+                            && (registrationRequest.get('username')?.dirty || registrationRequest.get('username')?.touched)" class="text-danger error-message">
+                            <div *ngIf="registrationRequest.get('username')?.errors?.['required']">Username is required</div>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group mt-3">
-                    <label class="mb-2 text-white text-size-16" for="password">Password</label>
+                <div class="form-group mt-2">
+                    <label class="text-white text-size-16 mb-1" for="password">Password</label>
                     <div class="password-input">
-                        <input formControlName="password" [type]="showPassword ? 'text' : 'password'" class="form-control" id="password" placeholder="Password" required name="password">
+                        <input class="input-class" formControlName="password" [type]="showPassword ? 'text' : 'password'" class="form-control" id="password" placeholder="Password" required name="password">
                         <button type="button" (click)="toggleShowPassword()" class="show-button btn btn-color">{{ showPassword ? 'Hide' : 'Show' }}</button>
                         <span class="position-relative" data-toggle="tooltip" data-placement="right" title="Your password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one symbol.">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-info-circle mx-2" viewBox="0 0 16 16">
@@ -39,30 +43,36 @@
                             </svg>
                         </span>
                     </div>
-                    <div *ngIf="registrationRequest.get('password')?.invalid 
-                        && (registrationRequest.get('password')?.dirty || registrationRequest.get('password')?.touched)" class="text-danger">
-                        <div *ngIf="registrationRequest.get('password')?.errors">Invalid password format</div>
+                    <div class="error-message">
+                        <div *ngIf="registrationRequest.get('password')?.invalid 
+                            && (registrationRequest.get('password')?.dirty || registrationRequest.get('password')?.touched)" class="text-danger error-message">
+                            <div *ngIf="registrationRequest.get('password')?.errors">Invalid password format</div>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group mt-3">
-                    <label class="mb-2 text-white text-size-16" for="password-repeat">Password repeat</label>
-                    <input formControlName="passwordrepeat" [type]="showPassword ? 'text' : 'password'" class="form-control" id="password-repeat" placeholder="Password" required name="password-repeat">
-                    <div *ngIf="registrationRequest.get('passwordrepeat')?.invalid 
-                        && (registrationRequest.get('passwordrepeat')?.dirty || registrationRequest.get('passwordrepeat')?.touched)" class="text-danger">
-                        <div *ngIf="registrationRequest.get('passwordrepeat')?.errors">Invalid password format</div>
+                <div class="form-group mt-2">
+                    <label class="text-white text-size-16 mb-1" for="password-repeat">Password repeat</label>
+                    <input class="input-class" formControlName="passwordrepeat" [type]="showPassword ? 'text' : 'password'" class="form-control" id="password-repeat" placeholder="Password" required name="password-repeat">
+                    <div class="error-message">
+                        <div *ngIf="registrationRequest.get('passwordrepeat')?.invalid 
+                            && (registrationRequest.get('passwordrepeat')?.dirty || registrationRequest.get('passwordrepeat')?.touched)" class="text-danger error-message">
+                            <div *ngIf="registrationRequest.get('passwordrepeat')?.errors">Invalid password format</div>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group mt-3">
-                    <label class="mb-2 text-white text-size-16" for="phoneNumber">Telephone number</label>
-                    <input formControlName="phoneNumber" type="email" class="form-control" id="phoneNumber" aria-describedby="emailHelp" placeholder="06-20-221-2222" required name="phoneNumber">
-                    <div *ngIf="registrationRequest.get('phoneNumber')?.invalid 
-                        && (registrationRequest.get('phoneNumber')?.dirty || registrationRequest.get('phoneNumber')?.touched)" class="text-danger">
-                        <div *ngIf="registrationRequest.get('phoneNumber')?.errors?.['required']">Phone number required</div>
+                <div class="form-group mt-2">
+                    <label class="text-white text-size-16 mb-1" for="phoneNumber">Telephone number</label>
+                    <input class="input-class" formControlName="phoneNumber" type="email" class="form-control" id="phoneNumber" aria-describedby="emailHelp" placeholder="06-20-221-2222" required name="phoneNumber">
+                    <div class="error-message">
+                        <div *ngIf="registrationRequest.get('phoneNumber')?.invalid 
+                            && (registrationRequest.get('phoneNumber')?.dirty || registrationRequest.get('phoneNumber')?.touched)" class="text-danger error-message">
+                            <div *ngIf="registrationRequest.get('phoneNumber')?.errors?.['required']">Phone number required</div>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="mb-2 text-white text-size-16" for="profile-pic">Profile picture</label>
-                    <input type="file" class="form-control" id="profile-pic" accept="image/*" data-bs-toggle="modal" data-bs-target="#exampleModal" (change)="fileChangeEvent($event)" required name="profile-pic">
+                <div class="form-group mt-2">
+                    <label class="text-white text-size-16 mb-1" for="profile-pic">Profile picture</label>
+                    <input class="input-class" type="file" class="form-control" id="profile-pic" accept="image/*" data-bs-toggle="modal" data-bs-target="#exampleModal" (change)="fileChangeEvent($event)" required name="profile-pic">
                     <div class="modal fade" id="exampleModal" #exampleModal tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">

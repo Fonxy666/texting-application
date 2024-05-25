@@ -1,0 +1,17 @@
+.right-side-reg {
+    padding: 30px;
+    grid-area: 1 / 2 / 2 / 3;
+    @media (max-width: 1400px) {
+        grid-area: 2 / 1 / 3 / 2;
+        margin-top: -40px;
+    }
+
+    @media (max-width: 600px) {
+        margin: 50 50px 0px 50px;
+        margin-top: -20px;
+    }
+}
+
+.input-class {
+    size: 1px;
+}
