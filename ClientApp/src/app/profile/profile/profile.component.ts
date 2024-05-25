@@ -164,30 +164,5 @@ export class ProfileComponent implements OnInit {
             }
         });
     }
-
-    changePassword(data: ChangePasswordRequest) {
-        console.log(data);
-        this.isLoading = true;
-        data.id = this.user.id;
-        this.http.patch(`/api/v1/User/ChangePassword`, data, { withCredentials: true})
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe((response: any) => {
-            if (response) {
-                this.isLoading = false;
-                this.getUser(this.user.id);
-                this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Your password changed.', styleClass: 'ui-toast-message-info' });
-            }
-        }, 
-        (error) => {
-            this.isLoading = false;
-            if (error.status === 403) {
-                this.errorHandler.handleError403(error);
-            } else if (error.status === 400) {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Unsuccessful change, wrong password(s).' });
-            }
-        });
-    }
 }
 

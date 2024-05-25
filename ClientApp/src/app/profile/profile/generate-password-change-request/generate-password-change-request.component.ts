@@ -1,8 +1,11 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ChangePasswordRequest } from '../../../model/ChangePasswordRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { passwordValidator, passwordMatchValidator } from '../../../validators/ValidPasswordValidator';
+import { HttpClient } from '@angular/common/http';
+import { ErrorHandlerService } from '../../../services/error-handler.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-generate-password-change-request',
@@ -10,7 +13,7 @@ import { passwordValidator, passwordMatchValidator } from '../../../validators/V
   styleUrl: './generate-password-change-request.component.css'
 })
 export class GeneratePasswordChangeRequestComponent implements OnInit {
-    constructor(private fb: FormBuilder, private cookieService: CookieService) { }
+    constructor(private fb: FormBuilder, private cookieService: CookieService, private http: HttpClient, private errorHandler: ErrorHandlerService, private messageService: MessageService) { }
 
     showPassword: boolean = false;
     
@@ -27,16 +30,29 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
         });
     }
 
-    @Output()
-    SendPasswordChangeRequest: EventEmitter<ChangePasswordRequest> = new EventEmitter<ChangePasswordRequest>();
-
     OnFormSubmit() {
         const changePasswordRequest = new ChangePasswordRequest(
             this.cookieService.get("UserId"),
             this.changePasswordRequest.get('oldPassword')?.value,
             this.changePasswordRequest.get('password')?.value
             );
-        this.SendPasswordChangeRequest.emit(changePasswordRequest);
+
+        this.http.patch(`/api/v1/User/ChangePassword`, changePasswordRequest, { withCredentials: true})
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe((response: any) => {
+            if (response) {
+                this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Your password changed.', styleClass: 'ui-toast-message-info' });
+            }
+        }, 
+        (error) => {
+            if (error.status === 403) {
+                this.errorHandler.handleError403(error);
+            } else if (error.status === 400) {
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Unsuccessful change, wrong password(s).' });
+            }
+        });
     }
 
     toggleShowPassword() {
