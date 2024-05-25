@@ -1,9 +1,9 @@
 <div class="cont">
     <app-nav-bar />
     <p-toast  position="top-center"></p-toast>
-    <div>
+    <div class="container">
         <div class="row">
-            <div class="col-md-4 offset-md-4">
+            <div class="col-md-6 offset-md-3">
                 <h2 class="text-center mt-5 text-style-welcome-text text-white">Create a chat room for yourself/friends, <br> it's all free!</h2>
                 <div class="card my-5">
                     <form [formGroup]="createRoomForm" class="card-body cardbody-color p-lg 5">
@@ -21,7 +21,7 @@
                                 <button class="button-box btn btn-color w-100" (click)="toggleShowPassword()">{{ showPassword ? 'Hide' : 'Show' }}</button>
                             </div>
                         </div>
-                        <div class="text-center">
+                        <div class="text-center pt-4">
                             <button (click)="sendCreateRoomRequest()" [disabled]="createRoomForm.invalid" class="btn btn-color px-5 mb-5 w-100" type="button">Create room</button>
                         </div>
                         <div class="text-center">
@@ -32,5 +32,5 @@
             </div>
         </div>
     </div>
-    <app-background-image/>
 </div>
+<app-background-image/>

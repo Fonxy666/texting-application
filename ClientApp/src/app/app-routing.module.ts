@@ -13,6 +13,9 @@ import { ForgotPasswordComponent } from './forgot-password/forgot-password.compo
 import { NewPasswordRequestComponent } from './forgot-password/new-password-request/new-password-request.component';
 import { AboutUsPageComponent } from './about-us-page/about-us-page.component';
 import { SupportPageComponent } from './support-page/support-page.component';
+import { GenerateEmailChangeRequestComponent } from './profile/profile/generate-email-change-request/generate-email-change-request.component';
+import { GenerateAvatarChangeRequestComponent } from './profile/profile/generate-avatar-change-request/generate-avatar-change-request.component';
+import { GeneratePasswordChangeRequestComponent } from './profile/profile/generate-password-change-request/generate-password-change-request.component';
 
 const routes: Routes = [
     { path: '', component: HomeComponent, title: 'Home' },
@@ -20,14 +23,18 @@ const routes: Routes = [
     { path: 'registration', component: RegistrationComponent, title: 'Registration' },
     { path: 'join-room', component: JoinRoomComponent, title: 'Join room' },
     { path: 'message-room/:id', component: ChatComponent, title: 'Chat' },
-    { path: 'profile/profile', component: ProfileComponent, title: 'Profile'},
+    { path: 'profile/profile', component: ProfileComponent, title: 'Profile', children: [
+        { path: 'emailchange', component: GenerateEmailChangeRequestComponent, outlet: 'profile' },
+        { path: 'avatarchange', component: GenerateAvatarChangeRequestComponent, outlet: 'profile' },
+        { path: 'passwordchange', component: GeneratePasswordChangeRequestComponent, outlet: 'profile' }
+    ]},
     { path: 'profile/settings', component: SettingsComponent, title: 'Settings'},
     { path: 'create-room', component: CreateRoomComponent, title: 'Create room'},
     { path: 'loading', component: LoadingScreenComponent, title: 'Loading'},
     { path: 'forgot-password', component: ForgotPasswordComponent, title: 'Reset your password'},
     { path: 'password-reset/:id/:email', component: NewPasswordRequestComponent, title: 'Password reset'},
     { path: 'about-us', component: AboutUsPageComponent, title: 'About us'},
-    { path: 'support', component: SupportPageComponent, title: 'Support'}
+    { path: 'support', component: SupportPageComponent, title: 'Support'},
 ];
 
 @NgModule({

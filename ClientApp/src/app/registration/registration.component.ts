@@ -16,7 +16,7 @@ export class RegistrationComponent {
 
     isLoading: boolean = false;
     user: any;
-    showVerifyPage: boolean = true;
+    showVerifyPage: boolean = false;
 
     getVerifyTokenAndGoToVerifyPage(data: RegistrationRequest) {
         this.sendVerifyEmail(data);

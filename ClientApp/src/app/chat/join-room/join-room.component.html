@@ -1,33 +1,35 @@
 <div class="cont">
     <app-nav-bar />
     <p-toast  position="top-center"></p-toast>
-    <div class="row">
-        <div class="col-md-4 offset-md-4">
-            <h2 class="text-center mt-5 text-style-welcome-text text-white">Give the robot the credentials, <br> and enjoy the application!</h2>
-            <div class="card my-5">
-                <form [formGroup]="joinRoomForm" class="card-body cardbody-color p-lg 5">
-                    <div class="text-center">
-                        <img src="https://cdn.pixabay.com/photo/2023/07/24/23/30/chat-8147986_1280.jpg"
-                            class="img-fluid profile-image-pic img-thumbnail rounded0circle my-3" width="200px" alt="image"/>
-                    </div>
-                    <div class="mb-3">
-                        <label id="roomNameLabel" class="text-white" for="Room name">Roomname</label>
-                        <input type="text" (keydown.enter)="joinRoom()" formControlName="room" class="form-control" id="roomNameLabel" placeholder="Roomname"/>
-                    </div>
-                    <div class="mb-3">
-                        <label id="passwordlabel" class="text-white" for="password">Password</label>
-                        <div class="password-show-container">
-                            <input (keydown.enter)="joinRoom()" [type]="showPassword ? 'text' : 'password'" formControlName="password" class="form-control password-box" id="passwordlabel" placeholder="Password"/>
-                            <button class="btn btn-color w-100 button-box" (click)="toggleShowPassword()">{{ showPassword ? 'Hide' : 'Show' }}</button>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <h2 class="text-center mt-5 text-style-welcome-text text-white">Give the robot the credentials, <br> and enjoy the application!</h2>
+                <div class="card my-5">
+                    <form [formGroup]="joinRoomForm" class="card-body cardbody-color p-lg 5">
+                        <div class="text-center">
+                            <img src="https://cdn.pixabay.com/photo/2023/07/24/23/30/chat-8147986_1280.jpg"
+                                class="img-fluid profile-image-pic img-thumbnail rounded0circle my-3" width="200px" alt="image"/>
                         </div>
-                    </div>
-                    <div class="text-center">
-                        <button [disabled]="joinRoomForm.invalid" (click)="joinRoom()" class="btn btn-color px-5 mb-5 w-100" type="button">Join</button>
-                    </div>
-                    <div class="text-center">
-                        <button (click)="goToCreateRoom()" class="btn btn-color px-5 mb-5 w-100" type="button">Create room</button>
-                    </div>
-                </form>
+                        <div class="mb-3">
+                            <label id="roomNameLabel" class="text-white" for="Room name">Roomname</label>
+                            <input type="text" (keydown.enter)="joinRoom()" formControlName="room" class="form-control" id="roomNameLabel" placeholder="Roomname"/>
+                        </div>
+                        <div class="mb-3">
+                            <label id="passwordlabel" class="text-white" for="password">Password</label>
+                            <div class="password-show-container">
+                                <input (keydown.enter)="joinRoom()" [type]="showPassword ? 'text' : 'password'" formControlName="password" class="form-control password-box" id="passwordlabel" placeholder="Password"/>
+                                <button class="btn btn-color w-100 button-box" (click)="toggleShowPassword()">{{ showPassword ? 'Hide' : 'Show' }}</button>
+                            </div>
+                        </div>
+                        <div class="text-center pt-4">
+                            <button [disabled]="joinRoomForm.invalid" (click)="joinRoom()" class="btn btn-color px-5 mb-5 w-100" type="button">Join</button>
+                        </div>
+                        <div class="text-center">
+                            <button (click)="goToCreateRoom()" class="btn btn-color px-5 mb-5 w-100" type="button">Create room</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

@@ -4,7 +4,7 @@
 
 .navbar {
     border-radius: 15px;
-    background-color: rgba(213, 211, 211, 0.1);
+    background-color: rgba(138, 138, 138, 0.5);
     backdrop-filter: blur(3px);
     font-variant: small-caps;
 }

@@ -7,22 +7,22 @@
             <div class="collapse navbar-collapse" id="navbarContent">
                 <ul class="navbar-nav mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active text-white mx-4 text-style" aria-current="page" routerLink="/">Home</a>
+                        <a class="nav-link active text-white mx-4 navbar-text-style-15-px" aria-current="page" routerLink="/">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active text-white mx-4 text-style" aria-current="page" routerLink="/about-us">About us</a>
+                        <a class="nav-link active text-white mx-4 text-style-15-px" aria-current="page" routerLink="/about-us">About us</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active text-white mx-4 text-style" aria-current="page" routerLink="/support">Support</a>
+                        <a class="nav-link active text-white mx-4 text-style-15-px" aria-current="page" routerLink="/support">Support</a>
                     </li>
                     <ng-container *ngIf="isLoggedIn()">
                         <li class="nav-item">
-                            <a class="nav-link active text-white mx-4 text-style" aria-current="page" routerLink="/join-room">Connect to a room</a>
+                            <a class="nav-link active text-white mx-4 text-style-15-px" aria-current="page" routerLink="/join-room">Connect to a room</a>
                         </li>
                     </ng-container>
                 </ul>
                 <ng-container *ngIf="!isLoggedIn(); else loggedIn">
-                    <a class="nav-link active text-white mx-4 text-style" aria-current="page" routerLink="/login">Sign in</a>
+                    <a class="nav-link active text-white mx-4 text-style-15-px" aria-current="page" routerLink="/login">Sign in</a>
                 </ng-container>
                 <ng-template #loggedIn>
                     <div [ngClass]="{'dropdown': true, 'ms-auto': true, 'btn-group': true, 'dropstart': isDropstart, 'dropend': !isDropstart}">
@@ -30,9 +30,9 @@
                             <img [src]="profilePic" alt="Profile Image" class="profile-pic">
                         </button>
                         <ul class="dropdown-menu dropdown-menu-dark">
-                          <li><a class="dropdown-item text-style" href="/profile/profile">Profile</a></li>
-                          <li><a class="dropdown-item text-style" href="/profile/settings">Settings</a></li>
-                          <li><button class="dropdown-item text-style" (click)="logout()">Logout</button></li>
+                          <li><a class="dropdown-item text-style-15-px" href="/profile/profile">Profile</a></li>
+                          <li><a class="dropdown-item text-style-15-px" href="/profile/settings">Settings</a></li>
+                          <li><button class="dropdown-item text-style-15-px" (click)="logout()">Logout</button></li>
                         </ul>
                       </div>
                 </ng-template>
