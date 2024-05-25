@@ -3,13 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ChangePasswordRequest } from '../../model/ChangePasswordRequest';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { ChangeEmailRequest } from '../../model/ChangeEmailRequest';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { ChangeAvatarRequest } from '../../model/ChangeAvatarRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
 import { MessageService } from 'primeng/api';
+import { filter } from 'rxjs';
 
 @Component({
     selector: 'app-profile',
@@ -19,6 +20,7 @@ import { MessageService } from 'primeng/api';
 })
 
 export class ProfileComponent implements OnInit {
+    activeRoute: string | undefined;
     isLoading: boolean = false;
     profilePic: string = "";
     imageChangedEvent: any = '';
@@ -29,6 +31,12 @@ export class ProfileComponent implements OnInit {
 
     constructor(private http: HttpClient, private cookieService: CookieService, private fb: FormBuilder, private router: Router, private sanitizer: DomSanitizer, private errorHandler: ErrorHandlerService, private messageService: MessageService) {
         this.user.id = this.cookieService.get('UserId');
+
+        this.router.events.pipe(
+            filter(event => event instanceof NavigationEnd)
+        ).subscribe(() => {
+            this.activeRoute = this.router.url;
+        });
     }
 
     ngOnInit(): void {
@@ -40,6 +48,10 @@ export class ProfileComponent implements OnInit {
             newPassword: ['', Validators.required]
         })
         this.isLoading = false;
+    }
+
+    isActive(route: string): boolean {
+        return this.router.isActive(this.router.createUrlTree([route]), true);
     }
 
     getUser(userId: string) {

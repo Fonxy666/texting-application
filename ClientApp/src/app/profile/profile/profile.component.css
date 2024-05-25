@@ -1,4 +1,11 @@
-.cont {
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+.settings-container {
     max-height: 50vh;
     font-family: Cursive;
 }
@@ -30,6 +37,7 @@
     text-align: center;
     display: flex;
     align-items: center;
+    
 }
 
 .profile-card {
@@ -38,6 +46,7 @@
     width: 100%;
     background-color: rgba(240, 248, 255, 0.8);
     height: 100vh;
+    max-height: 10%;
 }
 
 .profile-details {
@@ -51,4 +60,14 @@
 
 .details {
     margin: 15px;
+}
+
+.change-menu {
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+
+.content-wrapper {
+    max-height: 100vh;
+    overflow: hidden;
 }

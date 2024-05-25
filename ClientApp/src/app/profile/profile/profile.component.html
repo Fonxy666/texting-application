@@ -78,9 +78,9 @@
 </div>
 <app-background-image [backgroundVideoSrc]="'./assets/videos/white_video.mp4'"></app-background-image> -->
 
-<div class="cont">
+<div class="settings-container">
     <app-loading-screen *ngIf="this.isLoading"></app-loading-screen>
-    <div [ngClass]="{'blur-content': isLoading}">
+    <div [ngClass]="{'blur-content': isLoading}" class="content-wrapper">
         <app-nav-bar></app-nav-bar>
         <p-toast></p-toast>
         <div class="profile-card">
@@ -94,17 +94,38 @@
             <div class="container text-center change-menu">
                 <div class="row">
                     <div class="col">
-                        <button [routerLink]="[{ outlets: { profile: ['avatarchange'] } }]">Change Avatar</button>
+                        <button 
+                            type="button" 
+                            class="btn" 
+                            [ngClass]="{'active': isActive('/profile/profile/avatarchange')}" 
+                            [routerLink]="['avatarchange']" 
+                            [attr.aria-pressed]="isActive('/profile/profile/avatarchange') ? 'true' : 'false'">
+                            Change Avatar
+                        </button>
                     </div>
                     <div class="col">
-                        <button [routerLink]="[{ outlets: { profile: ['emailchange'] } }]">Change Email</button>
+                        <button 
+                            type="button" 
+                            class="btn" 
+                            [ngClass]="{'active': isActive('/profile/profile/emailchange')}" 
+                            [routerLink]="['emailchange']" 
+                            [attr.aria-pressed]="isActive('/profile/profile/emailchange') ? 'true' : 'false'">
+                            Change Email
+                        </button>
                     </div>
                     <div class="col">
-                        <button [routerLink]="[{ outlets: { profile: ['passwordchange'] } }]">Change Password</button>
+                        <button 
+                            type="button" 
+                            class="btn" 
+                            [ngClass]="{'active': isActive('/profile/profile/passwordchange')}" 
+                            [routerLink]="['passwordchange']" 
+                            [attr.aria-pressed]="isActive('/profile/profile/passwordchange') ? 'true' : 'false'">
+                            Change Password
+                        </button>
                     </div>
                 </div>
-                <router-outlet name="profile"></router-outlet>
             </div>
+            <router-outlet/>
         </div>
     </div>
 </div>

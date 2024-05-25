@@ -24,9 +24,9 @@ const routes: Routes = [
     { path: 'join-room', component: JoinRoomComponent, title: 'Join room' },
     { path: 'message-room/:id', component: ChatComponent, title: 'Chat' },
     { path: 'profile/profile', component: ProfileComponent, title: 'Profile', children: [
-        { path: 'emailchange', component: GenerateEmailChangeRequestComponent, outlet: 'profile' },
-        { path: 'avatarchange', component: GenerateAvatarChangeRequestComponent, outlet: 'profile' },
-        { path: 'passwordchange', component: GeneratePasswordChangeRequestComponent, outlet: 'profile' }
+        { path: 'emailchange', component: GenerateEmailChangeRequestComponent },
+        { path: 'avatarchange', component: GenerateAvatarChangeRequestComponent },
+        { path: 'passwordchange', component: GeneratePasswordChangeRequestComponent }
     ]},
     { path: 'profile/settings', component: SettingsComponent, title: 'Settings'},
     { path: 'create-room', component: CreateRoomComponent, title: 'Create room'},
