@@ -11,15 +11,19 @@
                             <img src="https://cdn.pixabay.com/photo/2023/07/24/23/30/chat-8147986_1280.jpg"
                                 class="img-fluid profile-image-pic img-thumbnail rounded0circle my-3" width="200px" alt="image"/>
                         </div>
-                        <div class="mb-3">
-                            <label id="roomNameLabel" class="text-white" for="Room name">Room name</label>
-                            <input type="text" (keydown.enter)="joinRoom()" formControlName="room" class="form-control" id="roomNameLabel" placeholder="Room name"/>
+                        <div class="input-container">
+                            <label id="roomNameLabel" class="text-white text-style" for="Room name">Room name</label>
+                            <input type="text" (keydown.enter)="joinRoom()" formControlName="room" class="form-control text-style" id="roomNameLabel" placeholder="Room name"/>
                         </div>
-                        <div class="mb-3">
-                            <label id="passwordlabel" class="text-white" for="password">Password</label>
-                            <div class="password-show-container">
-                                <input (keydown.enter)="joinRoom()" [type]="showPassword ? 'text' : 'password'" formControlName="password" class="form-control password-box" id="passwordlabel" placeholder="Password"/>
-                                <button class="btn btn-color w-100 button-box" (click)="toggleShowPassword()">{{ showPassword ? 'Hide' : 'Show' }}</button>
+                        <div class="input-container">
+                            <label id="passwordlabel" class="text-white text-style" for="password">Password</label>
+                            <div class="input-icon">
+                                <input #passwordInput (keydown.enter)="joinRoom()" type="password" formControlName="password" class="form-control password-box text-style" id="passwordlabel" placeholder="••••••••"/>
+                                <div class="input-group-addon">
+                                    <a href="#" (click)="togglePasswordVisibility($event)">
+                                        <i #passwordInputToggle class="fa fa-eye-slash large-icon text-secondary" aria-hidden="true"></i>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                         <div class="container text-center mt-5">
