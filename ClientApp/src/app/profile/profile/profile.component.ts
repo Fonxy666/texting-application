@@ -2,9 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { ChangePasswordRequest } from '../../model/ChangePasswordRequest';
 import { NavigationEnd, Router } from '@angular/router';
-import { ChangeEmailRequest } from '../../model/ChangeEmailRequest';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { ChangeAvatarRequest } from '../../model/ChangeAvatarRequest';
@@ -30,7 +28,16 @@ export class ProfileComponent implements OnInit {
     user: { id: string, name: string, image: string, token: string, email: string, twoFactorEnabled: boolean } = { id: "", name: '', image: '', token: '', email: '', twoFactorEnabled: false };
     passwordChangeRequest!: FormGroup;
 
-    constructor(private http: HttpClient, private cookieService: CookieService, private fb: FormBuilder, private router: Router, private sanitizer: DomSanitizer, private errorHandler: ErrorHandlerService, private messageService: MessageService, private userService: UserService) {
+    constructor(
+        private http: HttpClient,
+        private cookieService: CookieService,
+        private fb: FormBuilder,
+        private router: Router,
+        private sanitizer: DomSanitizer,
+        private errorHandler: ErrorHandlerService,
+        private messageService: MessageService,
+        private userService: UserService
+    ) {
         this.user.id = this.cookieService.get('UserId');
 
         this.router.events.pipe(

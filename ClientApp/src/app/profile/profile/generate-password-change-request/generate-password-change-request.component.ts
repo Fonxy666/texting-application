@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ChangePasswordRequest } from '../../../model/ChangePasswordRequest';
 import { CookieService } from 'ngx-cookie-service';
@@ -10,15 +10,31 @@ import { MessageService } from 'primeng/api';
 @Component({
   selector: 'app-generate-password-change-request',
   templateUrl: './generate-password-change-request.component.html',
-  styleUrl: './generate-password-change-request.component.css'
+  styleUrls: ['./generate-password-change-request.component.css', '../../../../styles.css']
 })
 export class GeneratePasswordChangeRequestComponent implements OnInit {
-    constructor(private fb: FormBuilder, private cookieService: CookieService, private http: HttpClient, private errorHandler: ErrorHandlerService, private messageService: MessageService) { }
+    @ViewChild('oldPasswordInput') oldPasswordInput!: ElementRef;
+    @ViewChild('newPasswordInput') newPasswordInput!: ElementRef;
+    @ViewChild('repeatNewPasswordInput') repeatNewPasswordInput!: ElementRef;
+    @ViewChild('passwordToggleIconForOldPassword') passwordToggleIconForOldPassword!: ElementRef;
+    @ViewChild('passwordToggleIconForNewPassword') passwordToggleIconForNewPassword!: ElementRef;
+    @ViewChild('passwordToggleIconForNewPasswordRepeat') passwordToggleIconForNewPasswordRepeat!: ElementRef;
 
-    showPassword: boolean = false;
-    
+    showOldPassword: boolean = false;
+    showNewPassword: boolean = false;
+    showRepeatNewPassword: boolean = false;
+
+    constructor(
+        private fb: FormBuilder,
+        private cookieService: CookieService,
+        private http: HttpClient,
+        private errorHandler: ErrorHandlerService,
+        private messageService: MessageService,
+        private renderer: Renderer2
+    ) { }
+
     changePasswordRequest!: FormGroup;
-    
+
     ngOnInit(): void {
         this.changePasswordRequest = this.fb.group({
             id: [''],
@@ -30,14 +46,47 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
         });
     }
 
+    togglePasswordVisibility(event: Event, type: string): void {
+        event.preventDefault();
+        switch (type) {
+            case "old":
+                this.showOldPassword = !this.showOldPassword;
+                this.updatePasswordField(this.oldPasswordInput, this.passwordToggleIconForOldPassword, this.showOldPassword);
+                break;
+
+            case "new":
+                this.showNewPassword = !this.showNewPassword;
+                this.updatePasswordField(this.newPasswordInput, this.passwordToggleIconForNewPassword, this.showNewPassword);
+                break;
+
+            case "repeat":
+                this.showRepeatNewPassword = !this.showRepeatNewPassword;
+                this.updatePasswordField(this.repeatNewPasswordInput, this.passwordToggleIconForNewPasswordRepeat, this.showRepeatNewPassword);
+                break;
+        
+            default:
+                break;
+        }
+    }
+
+    updatePasswordField(passwordInput: ElementRef, toggleIcon: ElementRef, showPassword: boolean): void {
+        const inputType = showPassword ? 'text' : 'password';
+        const iconClassToAdd = showPassword ? 'fa-eye' : 'fa-eye-slash';
+        const iconClassToRemove = showPassword ? 'fa-eye-slash' : 'fa-eye';
+
+        this.renderer.setAttribute(passwordInput.nativeElement, 'type', inputType);
+        this.renderer.removeClass(toggleIcon.nativeElement, iconClassToRemove);
+        this.renderer.addClass(toggleIcon.nativeElement, iconClassToAdd);
+    }
+
     OnFormSubmit() {
         const changePasswordRequest = new ChangePasswordRequest(
             this.cookieService.get("UserId"),
             this.changePasswordRequest.get('oldPassword')?.value,
             this.changePasswordRequest.get('password')?.value
-            );
+        );
 
-        this.http.patch(`/api/v1/User/ChangePassword`, changePasswordRequest, { withCredentials: true})
+        this.http.patch(`/api/v1/User/ChangePassword`, changePasswordRequest, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )
@@ -55,7 +104,9 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
         });
     }
 
-    toggleShowPassword() {
-        this.showPassword = !this.showPassword;
+    passwordMatchValidator(group: FormGroup) {
+        const password = group.get('password')?.value;
+        const passwordrepeat = group.get('passwordrepeat')?.value;
+        return password === passwordrepeat ? null : { passwordMismatch: true };
     }
 }
