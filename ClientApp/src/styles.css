@@ -67,15 +67,6 @@ a {
     grid-row-gap: 0px;
 }
 
-.password-box {
-    grid-area: 1 / 1 / 2 / 4;
-}
-
-.button-box {
-    margin: 0px 5px 0px 5px;
-    grid-area: 1 / 4 / 2 / 5;
-}
-
 .token-container {
     min-height: 100vh;
     display: flex;
@@ -201,9 +192,6 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     width: 30vw;
     min-height: 100px;
     @media (max-width: 1400px) {
-        width: 80%;
-    }
-    @media (max-width: 600px) {
         width: 80%;
     }
 }
