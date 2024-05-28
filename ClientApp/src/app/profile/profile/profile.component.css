@@ -84,12 +84,3 @@ html, body {
 .content-wrapper {
     overflow: hidden;
 }
-
-.input-container {
-    margin: auto;
-    width: 500px;
-    min-height: 100px;
-    @media (max-width: 600px) {
-        width: 80%;
-    }
-}

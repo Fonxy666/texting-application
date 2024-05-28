@@ -7,7 +7,7 @@
             </div>
         </div>
         <div class="right-side-reg">
-            <h1 class="mt-1 text-white text-size-30 text-center">Registration</h1>
+            <h1 class="mt-1 text-white text-size-30">Registration</h1>
             <form [formGroup]="registrationRequest" (ngSubmit)="onFormSubmit()">
                 <div class="form-group mt-2" *ngIf="registrationRequest.get('email')">
                     <label class="text-white text-size-16 mb-1" for="email">Email</label>
@@ -73,7 +73,7 @@
                 <div class="form-group mt-2">
                     <label class="text-white text-size-16 mb-1" for="profile-pic">Profile picture</label>
                     <input class="input-class" type="file" class="form-control" id="profile-pic" accept="image/*" data-bs-toggle="modal" data-bs-target="#exampleModal" (change)="fileChangeEvent($event)" required name="profile-pic">
-                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" id="exampleModal" #exampleModal tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal fade" id="exampleModal" #exampleModal tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -84,7 +84,7 @@
                                     <image-cropper
                                         [imageChangedEvent]="imageChangedEvent"
                                         [maintainAspectRatio]="true"
-                                        [aspectRatio]="1 / 1"
+                                        [aspectRatio]="10 / 10"
                                         format="png"
                                         (imageCropped)="imageCropped($event)"/>
                                 </div>
@@ -96,8 +96,10 @@
                         </div>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-color m-3" [disabled]="!registrationRequest.valid">Submit</button>
-                <button type="submit" class="btn btn-color m-3" (click)="handleCancel()">Cancel</button>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-color m-3" [disabled]="!registrationRequest.valid">Submit</button>
+                    <button type="submit" class="btn btn-color m-3" (click)="handleCancel()">Cancel</button>
+                </div>
             </form>
         </div>
     </div>

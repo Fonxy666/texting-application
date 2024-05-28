@@ -31,10 +31,12 @@
 
 .text-size-16 {
     font-size: 16px;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 .text-size-30 {
     font-size: 30px;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 .profile-image-pic {
@@ -178,15 +180,45 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 .ui-toast-message-success {
+    font-family: 'Courier New', Courier, monospace;
     background-color: #71a073;
     color: white;
 }
 
 .ui-toast-message-info {
+    font-family: 'Courier New', Courier, monospace;
     background-color: #5ba4e9;
     color: white;
 }
 
 .error-message {
+    font-family: 'Courier New', Courier, monospace;
     min-height: 20px;
+}
+
+.input-container {
+    margin: auto;
+    width: 30vw;
+    min-height: 100px;
+    @media (max-width: 1400px) {
+        width: 80%;
+    }
+    @media (max-width: 600px) {
+        width: 80%;
+    }
+}
+
+.fa {
+    cursor: pointer;
+    font-size: 30px;
+}
+
+.input-icon {
+    min-height: 30px;
+    display: flex;
+    padding-top: 10px;
+}
+
+.input-group-addon {
+    margin: auto auto auto -40px;
 }
