@@ -10,7 +10,7 @@ import { MessageService } from 'primeng/api';
 @Component({
   selector: 'app-generate-password-change-request',
   templateUrl: './generate-password-change-request.component.html',
-  styleUrls: ['./generate-password-change-request.component.css', '../../../../styles.css']
+  styleUrls: ['./generate-password-change-request.component.css', '../../../../styles.css', '../profile.component.css']
 })
 export class GeneratePasswordChangeRequestComponent implements OnInit {
     @ViewChild('oldPasswordInput') oldPasswordInput!: ElementRef;

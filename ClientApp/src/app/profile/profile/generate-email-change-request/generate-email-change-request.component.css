@@ -1,0 +1,8 @@
+.input-container {
+    min-height: 30px;
+    padding: 10px 10px 0px 10px;
+}
+
+.error-messages-container {
+    min-height: 40px;
+}

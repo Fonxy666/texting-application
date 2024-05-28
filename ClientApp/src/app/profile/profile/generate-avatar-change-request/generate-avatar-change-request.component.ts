@@ -12,7 +12,7 @@ import { ErrorHandlerService } from '../../../services/error-handler.service';
 @Component({
   selector: 'app-generate-avatar-change-request',
   templateUrl: './generate-avatar-change-request.component.html',
-  styleUrl: './generate-avatar-change-request.component.css'
+  styleUrls: ['./generate-avatar-change-request.component.css', '../../../../styles.css']
 })
 export class GenerateAvatarChangeRequestComponent {
     profilePic: string = "";

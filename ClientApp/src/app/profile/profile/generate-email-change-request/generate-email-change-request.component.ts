@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ChangeEmailRequest } from '../../../model/ChangeEmailRequest';
-import { ActivatedRoute } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ErrorHandlerService } from '../../../services/error-handler.service';
 import { HttpClient } from '@angular/common/http';
@@ -9,10 +8,11 @@ import { UserService } from '../../../services/user.service';
 
 @Component({
   selector: 'app-generate-email-change-request',
-  templateUrl: './generate-email-change-request.component.html'
+  templateUrl: './generate-email-change-request.component.html',
+  styleUrls: ['../../../../styles.css', '../profile.component.css', './generate-email-change-request.component.css']
 })
 export class GenerateEmailChangeRequestComponent implements OnInit {
-    constructor(private fb: FormBuilder, private route: ActivatedRoute, private http: HttpClient, private errorHandler: ErrorHandlerService, private messageService: MessageService, private userService: UserService) { }
+    constructor(private fb: FormBuilder, private http: HttpClient, private errorHandler: ErrorHandlerService, private messageService: MessageService, private userService: UserService) { }
     
     changeEmailRequest!: FormGroup;
     email: string = "";

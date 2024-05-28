@@ -73,7 +73,7 @@
                 <div class="form-group mt-2">
                     <label class="text-white text-size-16 mb-1" for="profile-pic">Profile picture</label>
                     <input class="input-class" type="file" class="form-control" id="profile-pic" accept="image/*" data-bs-toggle="modal" data-bs-target="#exampleModal" (change)="fileChangeEvent($event)" required name="profile-pic">
-                    <div class="modal fade" id="exampleModal" #exampleModal tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" id="exampleModal" #exampleModal tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -84,7 +84,7 @@
                                     <image-cropper
                                         [imageChangedEvent]="imageChangedEvent"
                                         [maintainAspectRatio]="true"
-                                        [aspectRatio]="10 / 10"
+                                        [aspectRatio]="1 / 1"
                                         format="png"
                                         (imageCropped)="imageCropped($event)"/>
                                 </div>

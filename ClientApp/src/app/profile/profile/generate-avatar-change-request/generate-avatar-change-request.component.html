@@ -1,25 +1,26 @@
-<input class="input-class" type="file" class="form-control" id="profile-pic" accept="image/*" data-bs-toggle="modal" data-bs-target="#exampleModal" (change)="fileChangeEvent($event)" required name="profile-pic">
-<div class="modal fade" id="exampleModal" data-bs-backdrop="false" #exampleModal aria-labelledby="exampleModalLabel" aria-hidden="true" data-mdb-backdrop="false">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">You need to crop the image</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <image-cropper
-                    [imageChangedEvent]="imageChangedEvent"
-                    [maintainAspectRatio]="true"
-                    [aspectRatio]="10 / 10"
-                    format="png"
-                    (imageCropped)="imageCropped($event)"/>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" (click)="OnFormSubmit()" class="btn btn-color" data-bs-dismiss="modal">Save changes</button>
+<div class="choose-file-input">
+    <label for="profile-pic" class="form-label text-style">New e-mail address</label>
+    <input class="input-class text-style" type="file" class="form-control" id="profile-pic" accept="image/*" data-bs-toggle="modal" data-bs-target="#exampleModal" (change)="fileChangeEvent($event)" required name="profile-pic">
+    <div class="modal fade text-style" id="exampleModal" data-bs-backdrop="false" #exampleModal aria-labelledby="exampleModalLabel" aria-hidden="true" data-mdb-backdrop="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-style" id="exampleModalLabel">You need to crop the image</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <image-cropper
+                        [imageChangedEvent]="imageChangedEvent"
+                        [maintainAspectRatio]="true"
+                        [aspectRatio]="1 / 1"
+                        format="png"
+                        (imageCropped)="imageCropped($event)"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" (click)="OnFormSubmit()" class="btn btn-color" data-bs-dismiss="modal">Save changes</button>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-
