@@ -8,5 +8,7 @@ import { MessageService } from 'primeng/api';
   providers: [ MessageService ]
 })
 export class AboutUsPageComponent {
-    myImage: string = '../../assets/images/T-extinger.png';
+    textingerImage: string = '../../assets/images/cropped_textinger.png';
+    computerImage: string = '../../assets/images/computer_image.png';
+    securityImage: string = '../../assets/images/developer_infront_of_computers.png';
 }
