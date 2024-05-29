@@ -1,0 +1,7 @@
+.about-us-container {
+    background-color: black;
+    margin: 50px;
+    padding: 50px;
+    border-radius: 15px;
+    min-height: 80vh;
+}
