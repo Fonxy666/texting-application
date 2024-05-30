@@ -41,7 +41,8 @@ On the backend side, sensitive data is stored in the `secrets.json` file. To set
 - Mac: ~/. microsoft/usersecrets//secrets.json
 
 `secrets.json` lookalike:
-```{
+```
+{
   "IssueAudience": "{yourIssueAudience}",
   "ConnectionString": "Server={yourserverip},{port};Database={database-name};User Id={your-user-id};Password={your-string-password};MultipleActiveResultSets=true;TrustServerCertificate=True;",
   "IssueSign": "{yourIssueSign}",
