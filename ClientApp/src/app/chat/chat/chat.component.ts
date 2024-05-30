@@ -96,6 +96,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             })
         });
 
+        
+
         this.chatService.connection.on("ModifyMessageSeen", (userIdFromSignalR: string) => {
             this.chatService.messages[this.roomId].forEach((message) => {
                 if (!message.seenList) {
@@ -147,6 +149,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         });
     };
 
+    logMessage(message: any) {
+        console.log('Logging: ', message);
+      }
+      
     ngAfterViewChecked(): void {
         this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
     };
