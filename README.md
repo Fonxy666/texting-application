@@ -13,7 +13,7 @@ ONGOING project!
   ![Login page](https://github.com/Fonxy666/texting-application/blob/main/GithubImages/login_page.jpg)
 
   # Chat page:
-  ![chat page](https://github.com/Fonxy666/texting-application/blob/main/GithubImages/chat_room.jpg)
+  ![chat page](https://github.com/Fonxy666/texting-application/blob/main/GithubImages/chat_page.jpg)
 
   # Profile page:
   ![profile page](https://github.com/Fonxy666/texting-application/blob/main/GithubImages/profile_page.jpg)
