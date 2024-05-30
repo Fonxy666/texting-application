@@ -41,7 +41,7 @@ On the backend side, sensitive data is stored in the `secrets.json` file. To set
 - Mac: ~/. microsoft/usersecrets//secrets.json
 
 `secrets.json` lookalike:
-``{
+```{
   "IssueAudience": "{yourIssueAudience}",
   "ConnectionString": "Server={yourserverip},{port};Database={database-name};User Id={your-user-id};Password={your-string-password};MultipleActiveResultSets=true;TrustServerCertificate=True;",
   "IssueSign": "{yourIssueSign}",
@@ -55,7 +55,8 @@ On the backend side, sensitive data is stored in the `secrets.json` file. To set
   "FacebookClientId": "{same as the google,you need to register the app for facebook login, but the url is: ''",
   "FacebookClientSecret": "{same as google, you will get this,too after registering the application in facebookdevs}",
   "FrontendPort": "{your frontend port, and ip}"   // like for a localhost angular one: 'http://localhost:4200'
-}``
+}
+```
 
 # Tests
   For testing in the backend, you need to define a `testConfiguration.json` -> root/Server/MessageAppServer/testConfiguration.json. These tests will run in a different database, not in the 'real-world' database. This file should look the same as the `secrets.json`.
