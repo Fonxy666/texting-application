@@ -5,6 +5,10 @@ Textinger is a full-stack ASP.NET core application designed to chat with your fr
 # Project Status
 ONGOING project!
 
+# Little overview 
+  # home page:
+  ![Home page](https://github.com/Fonxy666/texting-application/blob/main/GithubImages/home_page_logout.jpg)
+
 # Backend Installation Instructions
 - Install the .NET SDK 8.0.204 (.NET 8.0.4)
 - Install dependencies.
