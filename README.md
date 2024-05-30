@@ -4,6 +4,8 @@ Textinger is a full-stack ASP.NET core application designed to chat with your fr
 
 # Project Status
 ONGOING project!
+Feel free to fork the repository, and learn from it.
+All The "background images" below are videos, so it's animated.
 
 # Little overview 
   # Home page:
