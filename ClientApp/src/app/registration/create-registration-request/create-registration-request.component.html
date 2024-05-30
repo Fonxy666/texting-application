@@ -13,21 +13,25 @@
                     <label class="text-white text-size-16 mb-1" for="email">Email</label>
                     <input class="input-class" formControlName="email" type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="example@gmail.com" required name="email">
                     <small id="emailHelp" class="form-text text-white">We'll never share your email with anyone else.</small>
-                    <div class="error-message">
-                        <div *ngIf="registrationRequest.get('email')?.invalid 
-                                    && (registrationRequest.get('email')?.dirty || registrationRequest.get('email')?.touched)" class="text-danger">
-                            <div *ngIf="registrationRequest.get('email')?.errors?.['required']">Email is required</div>
-                            <div *ngIf="registrationRequest.get('email')?.errors?.['email']">Invalid email format</div>
+                    <div class="error-messages-container">
+                        <div class="error-message">
+                            <div *ngIf="registrationRequest.get('email')?.invalid 
+                                        && (registrationRequest.get('email')?.dirty || registrationRequest.get('email')?.touched)" class="text-danger">
+                                <div *ngIf="registrationRequest.get('email')?.errors?.['required']">Email is required</div>
+                                <div *ngIf="registrationRequest.get('email')?.errors?.['email']">Invalid email format</div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="form-group mt-2">
                     <label class="text-white text-size-16 mb-1" for="username">Username</label>
                     <input class="input-class" formControlName="username" type="text" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Username" required name="username">
-                    <div class="error-message">
-                        <div *ngIf="registrationRequest.get('username')?.invalid 
-                            && (registrationRequest.get('username')?.dirty || registrationRequest.get('username')?.touched)" class="text-danger error-message">
-                            <div *ngIf="registrationRequest.get('username')?.errors?.['required']">Username is required</div>
+                    <div class="error-messages-container">
+                        <div class="error-message">
+                            <div *ngIf="registrationRequest.get('username')?.invalid 
+                                && (registrationRequest.get('username')?.dirty || registrationRequest.get('username')?.touched)" class="text-danger error-message">
+                                <div *ngIf="registrationRequest.get('username')?.errors?.['required']">Username is required</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -49,10 +53,12 @@
                             </span>
                         </div>
                     </div>
-                    <div class="error-message">
-                        <div *ngIf="registrationRequest.get('password')?.invalid 
-                            && (registrationRequest.get('password')?.dirty || registrationRequest.get('password')?.touched)" class="text-danger error-message">
-                            <div *ngIf="registrationRequest.get('password')?.errors">Invalid password format</div>
+                    <div class="error-messages-container">
+                        <div class="error-message">
+                            <div *ngIf="registrationRequest.get('password')?.invalid 
+                                && (registrationRequest.get('password')?.dirty || registrationRequest.get('password')?.touched)" class="text-danger error-message">
+                                <div *ngIf="registrationRequest.get('password')?.errors">Invalid password format</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -66,20 +72,24 @@
                             </a>
                         </div>
                     </div>
-                    <div class="error-message">
-                        <div *ngIf="registrationRequest.get('passwordrepeat')?.invalid 
-                            && (registrationRequest.get('passwordrepeat')?.dirty || registrationRequest.get('passwordrepeat')?.touched)" class="text-danger error-message">
-                            <div *ngIf="registrationRequest.get('passwordrepeat')?.errors">Invalid password format</div>
+                    <div class="error-messages-container">
+                        <div class="error-message">
+                            <div *ngIf="registrationRequest.get('passwordrepeat')?.invalid 
+                                && (registrationRequest.get('passwordrepeat')?.dirty || registrationRequest.get('passwordrepeat')?.touched)" class="text-danger error-message">
+                                <div *ngIf="registrationRequest.get('passwordrepeat')?.errors">Invalid password format</div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="form-group mt-2">
                     <label class="text-white text-size-16 mb-1" for="phoneNumber">Telephone number</label>
                     <input class="input-class" formControlName="phoneNumber" type="email" class="form-control" id="phoneNumber" aria-describedby="emailHelp" placeholder="06-20-221-2222" required name="phoneNumber">
-                    <div class="error-message">
-                        <div *ngIf="registrationRequest.get('phoneNumber')?.invalid 
-                            && (registrationRequest.get('phoneNumber')?.dirty || registrationRequest.get('phoneNumber')?.touched)" class="text-danger error-message">
-                            <div *ngIf="registrationRequest.get('phoneNumber')?.errors?.['required']">Phone number required</div>
+                    <div class="error-messages-container">
+                        <div class="error-message">
+                            <div *ngIf="registrationRequest.get('phoneNumber')?.invalid 
+                                && (registrationRequest.get('phoneNumber')?.dirty || registrationRequest.get('phoneNumber')?.touched)" class="text-danger error-message">
+                                <div *ngIf="registrationRequest.get('phoneNumber')?.errors?.['required']">Phone number required</div>
+                            </div>
                         </div>
                     </div>
                 </div>

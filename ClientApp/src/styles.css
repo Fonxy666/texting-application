@@ -213,3 +213,21 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .input-group-addon {
     margin: auto auto auto -40px;
 }
+
+.limited-input-width {
+    padding-right: 50px;
+}
+
+.text-danger {
+    padding-top: 2px;
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: 1px;
+    color: #dc3545;
+}
+
+.error-messages-container {
+    padding-top: 5px;
+    min-height: 30px;
+    text-align: center;
+}
