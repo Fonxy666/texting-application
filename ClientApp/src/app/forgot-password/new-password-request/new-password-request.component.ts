@@ -22,7 +22,7 @@ export class NewPasswordRequestComponent implements OnInit {
 
     idParam: string = "";
     emailParam: string = "";
-    validCode: boolean = true;
+    validCode: boolean = false;
     isLoading: boolean = false;
     passwordReset!: FormGroup;
     showNewPassword: boolean = false;
@@ -81,7 +81,6 @@ export class NewPasswordRequestComponent implements OnInit {
     examineCode() {
         this.http.get(`/api/v1/User/ExaminePasswordResetLink?email=${this.emailParam}&resetId=${this.idParam}`)
         .subscribe((response: any) => {
-            console.log(response === true);
             if (response == true) {
                 this.validCode = true;
             } else {
