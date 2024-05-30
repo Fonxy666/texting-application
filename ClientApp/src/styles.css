@@ -198,7 +198,10 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .fa {
     cursor: pointer;
-    font-size: 30px;
+}
+
+.eye-icon {
+    font-size: 20px;
 }
 
 .input-icon {
