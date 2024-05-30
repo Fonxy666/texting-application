@@ -8,16 +8,16 @@ Feel free to fork the repository, and learn from it.
 All The "background images" below are videos, so it's animated.
 
 # Little overview 
-  # Home page:
+  Home page:
   ![Home page](https://github.com/Fonxy666/texting-application/blob/main/GithubImages/home_page_logout.jpg)
 
-  # Login page:
+  Login page:
   ![Login page](https://github.com/Fonxy666/texting-application/blob/main/GithubImages/login_page.jpg)
 
-  # Chat page:
+  Chat page:
   ![chat page](https://github.com/Fonxy666/texting-application/blob/main/GithubImages/chat_page.jpg)
 
-  # Profile page:
+  Profile page:
   ![profile page](https://github.com/Fonxy666/texting-application/blob/main/GithubImages/profile_page.jpg)
 
 # Backend Installation Instructions
