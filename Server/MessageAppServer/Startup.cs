@@ -81,11 +81,19 @@ public class Startup(IConfiguration configuration)
                 o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             })
-            .AddCookie(options => {
+            .AddCookie(options =>
+            {
                 options.Cookie.Name = "Authorization";
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.Cookie.SameSite = SameSiteMode.None;
                 options.Cookie.HttpOnly = true;
+                options.LoginPath = string.Empty;
+                options.AccessDeniedPath = string.Empty;
+                options.Events.OnRedirectToLogin = context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    return Task.CompletedTask;
+                };
             })
             .AddGoogle("Google", options =>
             {

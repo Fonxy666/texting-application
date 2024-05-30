@@ -2,14 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { ChangePasswordRequest } from '../../model/ChangePasswordRequest';
-import { Router } from '@angular/router';
-import { ChangeEmailRequest } from '../../model/ChangeEmailRequest';
+import { NavigationEnd, Router } from '@angular/router';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { ChangeAvatarRequest } from '../../model/ChangeAvatarRequest';
 import { ErrorHandlerService } from '../../services/error-handler.service';
 import { MessageService } from 'primeng/api';
+import { filter } from 'rxjs';
+import { UserService } from '../../services/user.service';
 
 @Component({
     selector: 'app-profile',
@@ -19,6 +19,7 @@ import { MessageService } from 'primeng/api';
 })
 
 export class ProfileComponent implements OnInit {
+    activeRoute: string | undefined;
     isLoading: boolean = false;
     profilePic: string = "";
     imageChangedEvent: any = '';
@@ -27,8 +28,23 @@ export class ProfileComponent implements OnInit {
     user: { id: string, name: string, image: string, token: string, email: string, twoFactorEnabled: boolean } = { id: "", name: '', image: '', token: '', email: '', twoFactorEnabled: false };
     passwordChangeRequest!: FormGroup;
 
-    constructor(private http: HttpClient, private cookieService: CookieService, private fb: FormBuilder, private router: Router, private sanitizer: DomSanitizer, private errorHandler: ErrorHandlerService, private messageService: MessageService) {
+    constructor(
+        private http: HttpClient,
+        private cookieService: CookieService,
+        private fb: FormBuilder,
+        private router: Router,
+        private sanitizer: DomSanitizer,
+        private errorHandler: ErrorHandlerService,
+        private messageService: MessageService,
+        private userService: UserService
+    ) {
         this.user.id = this.cookieService.get('UserId');
+
+        this.router.events.pipe(
+            filter(event => event instanceof NavigationEnd)
+        ).subscribe(() => {
+            this.activeRoute = this.router.url;
+        });
     }
 
     ngOnInit(): void {
@@ -40,6 +56,22 @@ export class ProfileComponent implements OnInit {
             newPassword: ['', Validators.required]
         })
         this.isLoading = false;
+
+        this.userService.email$.subscribe(email => {
+            this.user.email = email;
+        });
+    }
+
+    isActive(route: string): boolean {
+        return this.router.isActive(this.router.createUrlTree([route]), true);
+    }
+
+    handleButtonClick(route: string): void {
+        if (this.isActive(route)) {
+            this.router.navigate(['/profile/profile']);
+        } else {
+            this.router.navigate([route]);
+        }
     }
 
     getUser(userId: string) {
@@ -53,6 +85,7 @@ export class ProfileComponent implements OnInit {
                     this.user.name = response.userName;
                     this.user.email = response.email;
                     this.user.twoFactorEnabled = response.twoFactorEnabled;
+                    this.userService.setEmail(response.email);
                 }
             },
             (error) => {
@@ -132,55 +165,6 @@ export class ProfileComponent implements OnInit {
                 this.errorHandler.handleError403(error);
             }
         });
-    }
-
-    changePassword(data: ChangePasswordRequest) {
-        console.log(data);
-        this.isLoading = true;
-        data.id = this.user.id;
-        this.http.patch(`/api/v1/User/ChangePassword`, data, { withCredentials: true})
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe((response: any) => {
-            if (response) {
-                this.isLoading = false;
-                this.getUser(this.user.id);
-                this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Your password changed.', styleClass: 'ui-toast-message-info' });
-            }
-        }, 
-        (error) => {
-            this.isLoading = false;
-            if (error.status === 403) {
-                this.errorHandler.handleError403(error);
-            } else if (error.status === 400) {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Unsuccessful change, wrong password(s).' });
-            }
-        });
-    }
-
-    changeEmail(data: ChangeEmailRequest) {
-        if (data.newEmail === data.oldEmail) {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'This is your actual e-mail. Try with another.' });
-            return;
-        }
-        this.http.patch(`/api/v1/User/ChangeEmail`, data, { withCredentials: true})
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe((response: any) => {
-            if (response) {
-                this.getUser(this.user.id);
-                this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Your e-mail changed.', styleClass: 'ui-toast-message-info' });
-            }
-        }, 
-        (error) => {
-            if (error.status === 403) {
-                this.errorHandler.handleError403(error);
-            } else if (error.status === 400) {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'This new e-mail is already in use. Try with another.' });
-            }
-        })
     }
 }
 

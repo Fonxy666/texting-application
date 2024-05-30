@@ -1,15 +1,17 @@
 <section class="token-container">
-    <div class="token-card">    
-        <h1 class="mt-3">
+    <p-toast position="top-center"></p-toast>
+    <div class="token-card text-style">    
+        <h1 class="mt-3 text-white text-style">
             {{ this.pageName }}
         </h1>
         <form [formGroup]="token" (ngSubmit)="onFormSubmit()">
-            <div class="form-group mt-3">
+            <div class="form-group text-white">
                 <label for="token">{{ this.labelName }}</label>
-                <input formControlName="token" type="email" class="form-control" id="token" aria-describedby="emailHelp" [placeholder]=this.inputPlaceholder required>
+                <input formControlName="token" type="email" class="form-control mt-2" id="token" aria-describedby="emailHelp" [placeholder]=this.inputPlaceholder required>
             </div>
-            <button type="submit" class="btn btn-primary mt-3">{{ this.buttonContext }}</button>
-            <button type="button" class="btn btn-primary mt-3 mx-2" (click)="handleBackClick()">Back</button>
+            <button type="submit" class="btn btn-color mt-3">{{ this.buttonContext }}</button>
+            <button type="button" class="btn btn-color mt-3 mx-2" (click)="handleBackClick()">Back</button>
         </form>
     </div>
 </section>
+<app-background-image [backgroundVideoSrc]="'./assets/videos/white_video.mp4'"></app-background-image>

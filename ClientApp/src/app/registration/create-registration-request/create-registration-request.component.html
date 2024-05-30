@@ -3,68 +3,99 @@
     <div class="signup-card">
         <div class="left-side">
             <div>
-                <img src="/assets/images/registration.jpg" alt="chat_bubble" class="image">
+                <img src="/assets/images/registration.png" alt="reg_img" class="image">
             </div>
         </div>
-        <div class="right-side">
-            <h1 class="mt-1">
-                Registration
-            </h1>
+        <div class="right-side-reg">
+            <h1 class="mt-3 text-white text-size-30 text-style">Registration</h1>
             <form [formGroup]="registrationRequest" (ngSubmit)="onFormSubmit()">
-                <div class="form-group mt-3" *ngIf="registrationRequest.get('email')">
-                    <label class="mb-2" for="email">Email</label>
-                    <input formControlName="email" type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="email" required name="email">
-                    <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
-                    <div *ngIf="registrationRequest.get('email')?.invalid 
-                                && (registrationRequest.get('email')?.dirty || registrationRequest.get('email')?.touched)" class="text-danger">
-                        <div *ngIf="registrationRequest.get('email')?.errors?.['required']">Email is required</div>
-                        <div *ngIf="registrationRequest.get('email')?.errors?.['email']">Invalid email format</div>
+                <div class="form-group mt-2" *ngIf="registrationRequest.get('email')">
+                    <label class="text-white text-size-16 mb-1" for="email">Email</label>
+                    <input class="input-class" formControlName="email" type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="example@gmail.com" required name="email">
+                    <small id="emailHelp" class="form-text text-white">We'll never share your email with anyone else.</small>
+                    <div class="error-messages-container">
+                        <div class="error-message">
+                            <div *ngIf="registrationRequest.get('email')?.invalid 
+                                        && (registrationRequest.get('email')?.dirty || registrationRequest.get('email')?.touched)" class="text-danger">
+                                <div *ngIf="registrationRequest.get('email')?.errors?.['required']">Email is required</div>
+                                <div *ngIf="registrationRequest.get('email')?.errors?.['email']">Invalid email format</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group mt-3">
-                    <label class="mb-2" for="username">Username</label>
-                    <input formControlName="username" type="text" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Username" required name="username">
-                    <div *ngIf="registrationRequest.get('username')?.invalid 
-                        && (registrationRequest.get('username')?.dirty || registrationRequest.get('username')?.touched)" class="text-danger">
-                        <div *ngIf="registrationRequest.get('username')?.errors?.['required']">Username is required</div>
+                <div class="form-group mt-2">
+                    <label class="text-white text-size-16 mb-1" for="username">Username</label>
+                    <input class="input-class" formControlName="username" type="text" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Username" required name="username">
+                    <div class="error-messages-container">
+                        <div class="error-message">
+                            <div *ngIf="registrationRequest.get('username')?.invalid 
+                                && (registrationRequest.get('username')?.dirty || registrationRequest.get('username')?.touched)" class="text-danger error-message">
+                                <div *ngIf="registrationRequest.get('username')?.errors?.['required']">Username is required</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group mt-3">
-                    <label class="mb-2" for="password">Password</label>
-                    <div class="password-input">
-                        <input formControlName="password" [type]="showPassword ? 'text' : 'password'" class="form-control" id="password" placeholder="Password" required name="password">
-                        <button type="button" (click)="toggleShowPassword()" class="show-button btn btn-primary">{{ showPassword ? 'Hide' : 'Show' }}</button>
-                        <span class="position-relative" data-toggle="tooltip" data-placement="right" title="Your password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one symbol.">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="blue" class="bi bi-info-circle mx-2" viewBox="0 0 16 16">
-                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
-                            </svg>
-                        </span>
+                <div class="form-group mt-2">
+                    <label class="text-white text-size-16 mb-1" for="password">Password</label>
+                    <div class="input-icon">
+                        <input #passwordInput class="input-class" formControlName="password" type="password" class="form-control" id="password" placeholder="••••••••" required name="password">
+                        <div class="input-group-addon">
+                            <a href="#" (click)="togglePasswordVisibility($event, 'password')">
+                                <i #passwordToggleIcon class="fa fa-eye-slash large-icon text-secondary eye-icon" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                        <div class="password-span">
+                            <span class="position-relative" data-toggle="tooltip" data-placement="right" title="Your password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one symbol.">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-info-circle mx-2" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                    <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                                </svg>
+                            </span>
+                        </div>
                     </div>
-                    <div *ngIf="registrationRequest.get('password')?.invalid 
-                        && (registrationRequest.get('password')?.dirty || registrationRequest.get('password')?.touched)" class="text-danger">
-                        <div *ngIf="registrationRequest.get('password')?.errors">Invalid password format</div>
-                    </div>
-                </div>
-                <div class="form-group mt-3">
-                    <label class="mb-2" for="password-repeat">Password repeat</label>
-                    <input formControlName="passwordrepeat" [type]="showPassword ? 'text' : 'password'" class="form-control" id="password-repeat" placeholder="Password" required name="password-repeat">
-                    <div *ngIf="registrationRequest.get('passwordrepeat')?.invalid 
-                        && (registrationRequest.get('passwordrepeat')?.dirty || registrationRequest.get('passwordrepeat')?.touched)" class="text-danger">
-                        <div *ngIf="registrationRequest.get('passwordrepeat')?.errors">Invalid password format</div>
-                    </div>
-                </div>
-                <div class="form-group mt-3">
-                    <label class="mb-2" for="phoneNumber">Telephone number</label>
-                    <input formControlName="phoneNumber" type="email" class="form-control" id="phoneNumber" aria-describedby="emailHelp" placeholder="06-20-221-2222" required name="phoneNumber">
-                    <div *ngIf="registrationRequest.get('phoneNumber')?.invalid 
-                        && (registrationRequest.get('phoneNumber')?.dirty || registrationRequest.get('phoneNumber')?.touched)" class="text-danger">
-                        <div *ngIf="registrationRequest.get('phoneNumber')?.errors?.['required']">Phone number required</div>
+                    <div class="error-messages-container">
+                        <div class="error-message">
+                            <div *ngIf="registrationRequest.get('password')?.invalid 
+                                && (registrationRequest.get('password')?.dirty || registrationRequest.get('password')?.touched)" class="text-danger error-message">
+                                <div *ngIf="registrationRequest.get('password')?.errors">Invalid password format</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="mb-2" for="profile-pic">Profile picture</label>
-                    <input type="file" class="form-control" id="profile-pic" accept="image/*" data-bs-toggle="modal" data-bs-target="#exampleModal" (change)="fileChangeEvent($event)" required name="profile-pic">
+                <div class="form-group mt-2">
+                    <label class="text-white text-size-16 mb-1" for="password-repeat">Password repeat</label>
+                    <div class="input-icon">
+                        <input #passwordRepeatInput class="input-class" formControlName="passwordrepeat" type="password" class="form-control" id="password-repeat" placeholder="••••••••" required name="password-repeat">
+                        <div class="input-group-addon">
+                            <a href="#" (click)="togglePasswordVisibility($event, 'passwordRepeat')">
+                                <i #passwordRepeatToggleIcon class="fa fa-eye-slash large-icon text-secondary eye-icon" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="error-messages-container">
+                        <div class="error-message">
+                            <div *ngIf="registrationRequest.get('passwordrepeat')?.invalid 
+                                && (registrationRequest.get('passwordrepeat')?.dirty || registrationRequest.get('passwordrepeat')?.touched)" class="text-danger error-message">
+                                <div *ngIf="registrationRequest.get('passwordrepeat')?.errors">Invalid password format</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group mt-2">
+                    <label class="text-white text-size-16 mb-1" for="phoneNumber">Telephone number</label>
+                    <input class="input-class" formControlName="phoneNumber" type="email" class="form-control" id="phoneNumber" aria-describedby="emailHelp" placeholder="06-20-221-2222" required name="phoneNumber">
+                    <div class="error-messages-container">
+                        <div class="error-message">
+                            <div *ngIf="registrationRequest.get('phoneNumber')?.invalid 
+                                && (registrationRequest.get('phoneNumber')?.dirty || registrationRequest.get('phoneNumber')?.touched)" class="text-danger error-message">
+                                <div *ngIf="registrationRequest.get('phoneNumber')?.errors?.['required']">Phone number required</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group mt-2">
+                    <label class="text-white text-size-16 mb-1" for="profile-pic">Profile picture</label>
+                    <input class="input-class" type="file" class="form-control" id="profile-pic" accept="image/*" data-bs-toggle="modal" data-bs-target="#exampleModal" (change)="fileChangeEvent($event)" required name="profile-pic">
                     <div class="modal fade" id="exampleModal" #exampleModal tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
@@ -82,15 +113,18 @@
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
+                                    <button type="button" class="btn btn-color" data-bs-dismiss="modal">Save changes</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary m-3" [disabled]="!registrationRequest.valid">Submit</button>
-                <button type="submit" class="btn btn-primary m-3" (click)="handleCancel()">Cancel</button>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-color m-3" [disabled]="!registrationRequest.valid">Submit</button>
+                    <button type="submit" class="btn btn-color m-3" (click)="handleCancel()">Cancel</button>
+                </div>
             </form>
         </div>
     </div>
 </section>
+<app-background-image>

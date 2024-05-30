@@ -1,0 +1,32 @@
+.modal-backdrop {
+    display: none;
+}
+
+.modal-dialog {
+    max-width: 20vw;
+    @media (max-width: 1000px) {
+        max-width: 40vw;
+    }
+    @media (max-width: 600px) {
+        max-width: 50vw;
+    }
+}
+
+.modal-content {
+    max-height: 70vh;
+    overflow: auto;
+}
+
+.image-cropper-container {
+    max-height: calc(70vh - 150px);
+    overflow: auto;
+}
+
+.choose-file-input {
+    width: 400px;
+    display: block;
+    margin: 0 auto;
+    @media (max-width: 500px) {
+        width: 300px;
+    }
+}

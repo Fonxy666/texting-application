@@ -1,11 +1,12 @@
 .nav-placement {
-    padding: 10px 10px 10px 10px;
+    padding: 10px;
 }
 
 .navbar {
     border-radius: 15px;
-    opacity: 0.8;
-    background: rgb(0, 9, 36);
+    background-color: rgba(138, 138, 138, 0.5);
+    backdrop-filter: blur(3px);
+    font-variant: small-caps;
 }
 
 .profile-pic {

@@ -1,19 +1,25 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, EventEmitter, Output } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { ChangeAvatarRequest } from '../../../model/ChangeAvatarRequest';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { DomSanitizer } from '@angular/platform-browser';
+import { CookieService } from 'ngx-cookie-service';
+import { HttpClient } from '@angular/common/http';
+import { MessageService } from 'primeng/api';
+import { UserService } from '../../../services/user.service';
+import { ErrorHandlerService } from '../../../services/error-handler.service';
 
 @Component({
   selector: 'app-generate-avatar-change-request',
-  templateUrl: './generate-avatar-change-request.component.html'
+  templateUrl: './generate-avatar-change-request.component.html',
+  styleUrls: ['./generate-avatar-change-request.component.css', '../../../../styles.css']
 })
 export class GenerateAvatarChangeRequestComponent {
     profilePic: string = "";
     imageChangedEvent: any = '';
     croppedImage: any = '';
 
-    constructor(private fb: FormBuilder, private sanitizer: DomSanitizer) { }
+    constructor(private fb: FormBuilder, private sanitizer: DomSanitizer, private cookieService: CookieService, private http: HttpClient, private messageService: MessageService, private userService: UserService, private errorHandler: ErrorHandlerService) { }
     
     changeAvatarRequest!: FormGroup;
     
@@ -50,10 +56,21 @@ export class GenerateAvatarChangeRequestComponent {
     SendAvatarChangeRequest: EventEmitter<ChangeAvatarRequest> = new EventEmitter<ChangeAvatarRequest>();
 
     OnFormSubmit() {
-        const changeAvatarRequest = new ChangeAvatarRequest(
-            "this.email",
-            "this.id"
-            );
-        this.SendAvatarChangeRequest.emit(changeAvatarRequest);
+        console.log("oki")
+        const request = new ChangeAvatarRequest(this.cookieService.get("UserId"), this.profilePic);
+        this.http.patch(`/api/v1/User/ChangeAvatar`, request, { withCredentials: true})
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe((response: any) => {
+            if (response && response.status === 'Ok') {
+                this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Avatar change succeeded :)', styleClass: 'ui-toast-message-info' });
+            }
+        }, 
+        (error) => {
+            if (error.status === 403) {
+                this.errorHandler.handleError403(error);
+            }
+        });
     }
 }

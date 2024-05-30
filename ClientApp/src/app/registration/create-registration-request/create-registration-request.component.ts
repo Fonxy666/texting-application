@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Output, Renderer2, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup,  Validators } from '@angular/forms';
 import { RegistrationRequest } from '../../model/RegistrationRequest';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
@@ -13,13 +13,19 @@ import { Router } from '@angular/router';
 })
 
 export class CreateRegistrationRequestComponent {
-    constructor(private fb: FormBuilder, private sanitizer: DomSanitizer, private router: Router) { }
+    @ViewChild('passwordInput') passwordInput!: ElementRef;
+    @ViewChild('passwordRepeatInput') passwordRepeatInput!: ElementRef;
+    @ViewChild('passwordToggleIcon') passwordToggleIcon!: ElementRef;
+    @ViewChild('passwordRepeatToggleIcon') passwordRepeatToggleIcon!: ElementRef;
     
-    showPassword: boolean = false;
+    constructor(private fb: FormBuilder, private sanitizer: DomSanitizer, private router: Router, private renderer: Renderer2) { }
+    
     registrationRequest!: FormGroup;
     profilePic: string = "";
     imageChangedEvent: any = '';
     croppedImage: any = '';
+    showPassword: boolean = false;
+    showPasswordRepeat: boolean = false;
     
     ngOnInit(): void {
         this.registrationRequest = this.fb.group({
@@ -31,6 +37,34 @@ export class CreateRegistrationRequestComponent {
         }, {
             validators: passwordMatchValidator.bind(this)
         });
+    }
+
+    togglePasswordVisibility(event: Event, type: string): void {
+        event.preventDefault();
+        switch (type) {
+            case "password":
+                this.showPassword = !this.showPassword;
+                this.updatePasswordField(this.passwordInput, this.passwordToggleIcon, this.showPassword);
+                break;
+
+            case "passwordRepeat":
+                this.showPasswordRepeat = !this.showPasswordRepeat;
+                this.updatePasswordField(this.passwordRepeatInput, this.passwordRepeatToggleIcon, this.showPasswordRepeat);
+                break;
+        
+            default:
+                break;
+        }
+    }
+
+    updatePasswordField(passwordInput: ElementRef, toggleIcon: ElementRef, showPassword: boolean): void {
+        const inputType = showPassword ? 'text' : 'password';
+        const iconClassToAdd = showPassword ? 'fa-eye' : 'fa-eye-slash';
+        const iconClassToRemove = showPassword ? 'fa-eye-slash' : 'fa-eye';
+
+        this.renderer.setAttribute(passwordInput.nativeElement, 'type', inputType);
+        this.renderer.removeClass(toggleIcon.nativeElement, iconClassToRemove);
+        this.renderer.addClass(toggleIcon.nativeElement, iconClassToAdd);
     }
     
     @Output()

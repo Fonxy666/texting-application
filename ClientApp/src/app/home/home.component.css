@@ -1,0 +1,31 @@
+.text-size-20 {
+    font-size: 20px;
+}
+
+.stars-image {
+    width: 150px;
+}
+
+.bottom-left-content {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 15px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 50px;
+    margin-bottom: 30px;
+}
+
+h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+h3 {
+    font-size: 15px;
+}

@@ -29,6 +29,9 @@ import { ButtonModule } from 'primeng/button';
 import { TokenProvideComponent } from './token-provide/token-provide.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { NewPasswordRequestComponent } from './forgot-password/new-password-request/new-password-request.component';
+import { SupportPageComponent } from './support-page/support-page.component';
+import { AboutUsPageComponent } from './about-us-page/about-us-page.component';
+import { BackgroundImageComponent } from './background-image/background-image.component';
 
 @NgModule({
   declarations: [
@@ -50,7 +53,10 @@ import { NewPasswordRequestComponent } from './forgot-password/new-password-requ
     LoadingScreenComponent,
     TokenProvideComponent,
     ForgotPasswordComponent,
-    NewPasswordRequestComponent
+    NewPasswordRequestComponent,
+    SupportPageComponent,
+    AboutUsPageComponent,
+    BackgroundImageComponent
   ],
   imports: [
     BrowserModule,

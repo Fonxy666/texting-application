@@ -1,16 +1,17 @@
 <div class="cont">
-    <app-loading-screen *ngIf="this.isLoading"/>
+    <app-loading-screen *ngIf="this.isLoading"></app-loading-screen>
     <div [ngClass]="{'blur-content': isLoading}">
-        <app-nav-bar/>
+        <app-nav-bar></app-nav-bar>
         <p-toast position="top-center"></p-toast>
-        <img [src]="isSunActive ? 'assets/images/sun.png' : 'assets/images/moon.png'" 
-            alt="{{ isSunActive ? 'sun' : 'moon' }}"
-            class="sun_img" 
-            *ngIf="animation">
-        <div [ngClass]="{ 'animate-welcome-text': animation, 'nonanimate-welcome-text': !animation }" class="text-center">
+        <div class="welcome-text">
             <h1 class="text-style">Hello & Welcome</h1>
-            <h2 class="text-style">Chat with your friends day & night.</h2>
+            <h2 class="text-style">Let's connect with your friends.</h2>
+            <h3 class="text-style">Over 5000 registered users!</h3>
         </div>
-        <img [src]="myImage" [class]="animation ? 'animate-image' : 'nonanimate-image'">
+        <div class="bottom-left-content">
+            <div class="text-style-15-px text-white text-size-20">1483 | Happy customers</div>
+            <div class="text-style-15-px text-white text-size-20">4.11/5 | <img [src]="starsImage" class="stars-image"> </div>
+        </div>
     </div>
 </div>
+<app-background-image [backgroundVideoSrc]="'./assets/videos/white_black_video_2.mp4'"></app-background-image>

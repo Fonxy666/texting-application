@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
@@ -11,14 +11,26 @@ import { MessageService } from 'primeng/api';
 @Component({
   selector: 'app-join-room',
   templateUrl: './join-room.component.html',
-  styleUrl: '../../../styles.css',
+  styleUrls: ['../../../styles.css', '../../home/home.component.css', './join-room.component.css'],
   providers: [ MessageService ]
 })
 
 export class JoinRoomComponent implements OnInit {
-    constructor(private fb: FormBuilder, private cookieService: CookieService, private router: Router, private chatService: ChatService, private http: HttpClient, private errorHandler: ErrorHandlerService, private messageService: MessageService) { }
+    @ViewChild('passwordInput') passwordInput!: ElementRef;
+    @ViewChild('passwordInputToggle') passwordInputToggle!: ElementRef;
+    
+    constructor(
+        private fb: FormBuilder,
+        private cookieService: CookieService,
+        private router: Router,
+        private chatService: ChatService,
+        private http: HttpClient,
+        private errorHandler: ErrorHandlerService,
+        private messageService: MessageService,
+        private renderer: Renderer2
+    ) { }
 
-    myImage: string = "./assets/images/backgroundpng.png";
+    backgroundVideo: string = "./assets/videos/white_black_video.mp4";
     joinRoomForm!: FormGroup;
     isSunActive: boolean = true;
     isMoonActive: boolean = false;
@@ -59,6 +71,19 @@ export class JoinRoomComponent implements OnInit {
 
         this.getUsername(this.userId);
     };
+
+    togglePasswordVisibility(event: Event): void {
+        event.preventDefault();
+        this.showPassword = !this.showPassword;
+    
+        const inputType = this.showPassword ? 'text' : 'password';
+        const iconClassToAdd = this.showPassword ? 'fa-eye' : 'fa-eye-slash';
+        const iconClassToRemove = this.showPassword ? 'fa-eye-slash' : 'fa-eye';
+    
+        this.renderer.setAttribute(this.passwordInput.nativeElement, 'type', inputType);
+        this.renderer.removeClass(this.passwordInputToggle.nativeElement, iconClassToRemove);
+        this.renderer.addClass(this.passwordInputToggle.nativeElement, iconClassToAdd);
+    }
 
     toggleImageClasses() {
         this.isSunActive = !this.isSunActive;

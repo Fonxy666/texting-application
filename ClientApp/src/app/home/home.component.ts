@@ -5,28 +5,19 @@ import { MessageService } from 'primeng/api';
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrl: '../../styles.css',
+  styleUrls: ['../../styles.css', './home.component.css'],
   providers: [ MessageService ]
 })
 
 export class HomeComponent implements OnInit {
     constructor(private cookieService: CookieService, private messageService: MessageService) { }
 
-    myImage: string = "./assets/images/backgroundpng.png";
-    isSunActive: boolean = true;
-    isMoonActive: boolean = false;
-    displayHomeText: string = "";
+    starsImage: string = "./assets/images/4-out-of-5-stars.webp"
     animation: boolean = true;
     isLoading: boolean = false;
 
     ngOnInit() {
         this.animation = this.cookieService.get("Animation") != "False";
-        
-        this.toggleImageClasses();
-
-        setInterval(() => {
-            this.toggleImageClasses();
-        }, 10000);
 
         setTimeout(() => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -46,10 +37,5 @@ export class HomeComponent implements OnInit {
             const newUrl = window.location.pathname + window.location.search.replace('?loginSuccess=true', '').replace('?loginSuccess=false', '').replace('?logout=true', '');
             history.replaceState({}, document.title, newUrl);
         }, 0);
-    }
-
-
-    toggleImageClasses() {
-        this.isSunActive = !this.isSunActive;
     }
 }

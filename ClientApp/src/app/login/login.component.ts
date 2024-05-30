@@ -63,7 +63,8 @@ export class LoginComponent implements OnInit {
         (error) => {
             if (error.status === 400) {
                 if (!isNaN(error.error)) {
-                    if (error.error == 1) {
+                    console.log(error);
+                    if (error.error == 4) {
                         this.messageService.add({ severity: 'error', summary: 'Error', detail: `Only 1 more try.` });
                     } else if (error.error < 1) {
                         console.log(error.error);
@@ -98,8 +99,12 @@ export class LoginComponent implements OnInit {
             }
         }, 
         (error) => {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened. Try again later.' });
-            console.error("An error occurred:", error);
+            this.isLoading = false;
+            if (error.status === 400) {
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Wrong token.' });
+            } else {
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened. Try again later.' });
+            }
         });
     }
 

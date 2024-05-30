@@ -1,26 +1,18 @@
-<div class="modal-dialog">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h1 class="modal-title fs-5" id="staticBackdropLabel">Change e-mail</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-            <form [formGroup]="changeEmailRequest" (ngSubmit)="OnFormSubmit()">
-                <div class="mb-3">
-                  <label for="inputEmail" class="form-label">New e-mail address</label>
-                  <input formControlName="newEmail" type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp">
-                  <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
-                  <div *ngIf="changeEmailRequest.get('newEmail')?.invalid 
-                        && (changeEmailRequest.get('newEmail')?.dirty || changeEmailRequest.get('newEmail')?.touched)" class="text-danger">
-                        <div *ngIf="changeEmailRequest.get('newEmail')?.errors?.['required']">Email is required</div>
-                        <div *ngIf="changeEmailRequest.get('newEmail')?.errors">Invalid email format</div>
-                    </div>
+<div>
+    <form [formGroup]="changeEmailRequest" (ngSubmit)="OnFormSubmit()">
+        <div class="mb-3 text-style-15-px input-container">
+            <label for="inputEmail" class="form-label">New e-mail address</label>
+            <input formControlName="newEmail" type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp">
+            <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+            <div class="error-messages-container">
+                <div class="text-style-15-px" *ngIf="changeEmailRequest.get('newEmail')?.invalid && (changeEmailRequest.get('newEmail')?.dirty || changeEmailRequest.get('newEmail')?.touched)" class="text-danger">
+                    <div *ngIf="changeEmailRequest.get('newEmail')?.errors?.['required']">Email is required</div>
+                    <div *ngIf="changeEmailRequest.get('newEmail')?.errors">Invalid email format</div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary" [disabled]="!changeEmailRequest.valid">Submit</button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+        <div class="text-center">
+            <button type="submit" class="btn btn-color" [disabled]="!changeEmailRequest.valid">Submit</button>
+        </div>
+    </form>
 </div>
