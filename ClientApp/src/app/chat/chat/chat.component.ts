@@ -46,7 +46,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     private routeSub!: Subscription;
 
     constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute, private errorHandler: ErrorHandlerService, private cookieService: CookieService, private messageService: MessageService, private fb: FormBuilder) { }
-    
+
     messages: any[] = [];
     avatars: { [userId: string]: string } = {};
     changePasswordRequest!: FormGroup;
@@ -96,8 +96,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             })
         });
 
-        
-
         this.chatService.connection.on("ModifyMessageSeen", (userIdFromSignalR: string) => {
             this.chatService.messages[this.roomId].forEach((message) => {
                 if (!message.seenList) {
@@ -115,7 +113,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 }
             });
         });
-      
+
         this.chatService.connectedUsers.subscribe((users) => {
             this.connectedUsers = users;
             users.forEach((user) => {
@@ -149,10 +147,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         });
     };
 
-    logMessage(message: any) {
-        console.log('Logging: ', message);
-      }
-      
     ngAfterViewChecked(): void {
         this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
     };
@@ -204,9 +198,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                         messageTime: res.message.sendTime,
                         seenList: res.message.seen
                     });
-    
+
                     resolve(res.message.messageId);
-                }, 
+                },
                 (error) => {
                     if (error.status === 403) {
                         this.errorHandler.handleError403(error);
@@ -244,19 +238,19 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 const userNames = response.map((element: any) =>
                     this.http.get(`/api/v1/User/GetUsername?userId=${element.senderId}`, { withCredentials: true })
                 );
-    
+
                 forkJoin(userNames).subscribe((usernames: any) => {
                     const fetchedMessages = response.map((element: any, index: number) => ({
                         messageId: element.messageId,
                         user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
                         userId: element.senderId,
                         message: element.text,
-                        messageTime: element.sendTime,                    
+                        messageTime: element.sendTime,
                         seenList: element.seen
                     }));
-                    
+
                     this.chatService.messages[this.roomId] = [...fetchedMessages, ...this.chatService.messages[this.roomId]];
-    
+
                     this.chatService.message$.next(this.chatService.messages[this.roomId]);
                 });
             });
@@ -290,7 +284,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 this.connectedUsers = users;
             });
         } else {
-            this.connectedUsers = this.chatService.connectedUsers.value.filter(user => 
+            this.connectedUsers = this.chatService.connectedUsers.value.filter(user =>
                 user.userName.toLowerCase().includes(this.searchTerm.toLowerCase())
             );
         }
@@ -369,7 +363,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     this.chatService.deleteMessage(messageId);
                 }
             })
-        }, 
+        },
         (error) => {
             if (error.status === 403) {
                 this.errorHandler.handleError403(error);
@@ -380,7 +374,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             }
         });
     };
-    
+
     @HostListener('window:focus', ['$event'])
     onFocus(): void {
         this.chatService.messages[this.roomId].forEach((message) => {
@@ -398,17 +392,17 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     examineIfNextMessageNotContainsUserId(userId: string, index: number) {
         const slicedMessages = this.chatService.messages[this.roomId].slice(index + 1);
-    
+
         for (const message of slicedMessages) {
             if (message.seenList == null) {
                 continue;
             }
-    
+
             if (message.seenList.includes(userId)) {
                 return false;
             }
         }
-    
+
         this.imageCount++;
         return true;
     };
@@ -427,7 +421,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             if (result) {
                 this.userIsTheCreator = true;
             }
-        }, 
+        },
         (error) => {
             if (error.status === 403) {
                 this.errorHandler.handleError403(error);
@@ -450,7 +444,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 } else {
                     this.isLoading = false;
                 }
-            }, 
+            },
             (error) => {
                 if (error.status === 403) {
                     this.errorHandler.handleError403(error);
@@ -481,7 +475,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 if (response.success) {
                     this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Password successfully updated.', styleClass: 'ui-toast-message-success' });
                 }
-            }, 
+            },
             (error) => {
                 if (error.status === 403) {
                     this.errorHandler.handleError403(error);

@@ -1,1 +1,111 @@
-<p>support-page works!</p>
+<app-nav-bar></app-nav-bar>
+<div class="container">
+    <p-toast position="top-center"></p-toast>
+    <div class="card-container">
+        <div class="text-center welcome-text-container">
+            <div class="welcome-text-support-page-1">
+                Frequently asked
+            </div>
+            <div class="welcome-text-support-page-2">
+                questions
+            </div>
+            <div class="welcome-text-support-page-3">
+                Do you need some help with something or do you have questions about some features?
+            </div>
+        </div>
+        <div class="text-center text-style support-card">
+            <div class="accordion" id="accordionExample">
+                <div class="accordion-container text-center">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                Is the registration free?
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                Yes, the registration to the website is completely <strong>FREE</strong>. We are happy that you are here and helping to grow our userbase! 
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                                How long does it take for support to answer my email?
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                We strive to respond as quickly as possible, usually within 1 hour on weekdays. Responses may take a bit longer on weekends, but we'll get back to you as soon as we can.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
+                                Is there any restriction on the number of users in one chat room?
+                            </button>
+                        </h2>
+                        <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                No, there is no restriction. You can join as many chat rooms as you like.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="true" aria-controls="collapseFour">
+                                How can I change my profile data?
+                            </button>
+                        </h2>
+                        <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                Once logged in, click on your Avatar image in the top right corner. Navigate to the Profile section where you can update your information.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="true" aria-controls="collapseFive">
+                                Can I send images to my friend?
+                            </button>
+                        </h2>
+                        <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                Currently, this feature is not available, but it's on our roadmap!
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="true" aria-controls="collapseSix">
+                                Can I make voice or video calls in the chatroom?
+                            </button>
+                        </h2>
+                        <div id="collapseSix" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                Not yet, but it's something we're actively working on implementing.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="other-question-class">
+                        Have any other questions?
+                        <div>
+                            Don't hesitate to send us an email with your <br> enquiry or statement at: <br>
+                            <div class="email-container">
+                                <span id="email">{{ email }}</span>
+                                <button class="button" (click)="copyToClipboard()">
+                                    copy
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<app-background-image [backgroundVideoSrc]="'./assets/videos/white_video.mp4'"></app-background-image>

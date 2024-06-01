@@ -1,0 +1,126 @@
+.accordion-container {
+    display: flex;
+    flex-direction: column;
+    padding: 50px;
+    margin: auto;
+    min-height: 700px;
+}
+
+.button {
+    background: white;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+    margin-left: 10px;
+}
+
+button svg {
+    fill: currentColor;
+}
+
+button:hover svg {
+    fill: #007BFF;
+}
+
+.support-card {
+    border-radius: 5px;
+    margin: 50px 200px 0px 200px;
+    background-color: rgba(240, 248, 255, 0.95);
+    min-height: 60vh;
+    @media (max-width: 1400px) {
+        margin: 50px 50px 0px 50px;
+    }
+    @media (max-width: 600px) {
+        margin: 50px 0px 0px 0px;
+    }
+}
+
+.accordion-button {
+    padding: 3px 15px 3px 15px;
+}
+
+.other-question-class {
+    margin-top: auto;
+    order: 999
+}
+
+.email-container {
+    display: inline-block;
+    padding: 5px 15px 5px 15px;
+    background-color: rgba(45, 72, 224, 0.4);
+    border-radius: 15px;
+    margin: auto;
+    width: auto;
+}
+
+.welcome-text-support-page-1 {
+    font-family: 'Courier New', Courier, monospace;
+    line-height: 75px;
+    font-size: 75px;
+    @media (max-width: 1400px) {
+        line-height: 50px;
+        font-size: 50px;
+    }
+    @media (max-width: 600px) {
+        line-height: 30px;
+        font-size: 30px;
+    }
+}
+
+.welcome-text-support-page-2 {
+    font-family: 'Courier New', Courier, monospace;
+    line-height: 75px;
+    font-size: 75px;
+    color: chocolate;
+    font-weight: bold;
+    letter-spacing: 10px;
+    @media (max-width: 1400px) {
+        line-height: 50px;
+        font-size: 50px;
+    }
+    @media (max-width: 600px) {
+        line-height: 30px;
+        font-size: 30px;
+    }
+}
+
+.welcome-text-support-page-3 {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 15px;
+    font-weight: bold;
+    width: 40%;
+    margin: auto;
+    @media (max-width: 1400px) {
+        width: 50%;
+        font-weight: normal;
+    }
+    @media (max-width: 600px) {
+        width: 60%;
+        font-weight: normal;
+        font-size: 12px;
+    }
+}
+
+.welcome-text-container {
+    margin-top: auto;
+}
+
+.card-container {
+    padding: 35px 0px 100px 0px;
+    background-color: white;
+    border-radius: 10px;
+}
+
+.container {
+    padding: 100px 150px 100px 150px;
+    @media (max-width: 1400px) {
+        padding: 100px 100px 100px 100px;
+    }
+    @media (max-width: 1000px) {
+        padding: 100px 50px 100px 50px;
+    }
+    @media (max-width: 600px) {
+        padding: 100px 0px 100px 0px;
+    }
+}
