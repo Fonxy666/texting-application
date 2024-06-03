@@ -11,6 +11,7 @@ export class BackgroundImageComponent implements AfterViewInit {
     @Input() backgroundVideoSrc: string = "./assets/videos/white_black_video.mp4";
     animation: boolean;
 
+
     constructor(private cookiesService: CookieService, private renderer: Renderer2) {
         this.animation = this.cookiesService.get("Animation") == "True";
     }
@@ -19,7 +20,12 @@ export class BackgroundImageComponent implements AfterViewInit {
         setTimeout(() => {
             const video = this.backgroundVideo?.nativeElement;
             if (video) {
-                this.renderer.setProperty(video, 'playbackRate', 1.2);
+                if (this.animation) {
+                    this.renderer.setProperty(video, 'playbackRate', 1.2);
+                } else {
+                    video.pause();
+                    this.renderer.setProperty(video, 'controls', false);
+                }
             } else {
                 console.error('Background video element not found');
             }
