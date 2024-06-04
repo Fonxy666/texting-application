@@ -14,6 +14,7 @@ using Server.Services.Chat.MessageService;
 using Server.Services.Chat.RoomService;
 using Server.Services.Cookie;
 using Server.Services.EmailSender;
+using Server.Services.FriendConnection;
 using Server.Services.User;
 
 namespace Server;
@@ -71,6 +72,7 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IUserServices, UserServices>();
         services.AddScoped<ICookieService, CookieService>();
+        services.AddScoped<IFriendConnectionService, FriendConnectionService>();
         services.AddSingleton<IDictionary<string, UserRoomConnection>>(opt =>
             new Dictionary<string, UserRoomConnection>());
         services.AddTransient<IEmailSender, EmailSender>();

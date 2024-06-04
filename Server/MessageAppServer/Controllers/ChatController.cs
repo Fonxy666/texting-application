@@ -16,8 +16,6 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
     [HttpPost("RegisterRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> RegisterRoom([FromBody]RoomRequest request)
     {
-        Console.WriteLine(request.RoomName);
-        Console.WriteLine(request.Password);
         try
         {
             if (!ModelState.IsValid)

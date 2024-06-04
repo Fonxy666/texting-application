@@ -9,6 +9,7 @@ using Server.Model.Responses.Auth;
 using Server.Model.Responses.User;
 using Server.Services.Authentication;
 using Server.Services.EmailSender;
+using Server.Services.FriendConnection;
 using Server.Services.User;
 
 namespace Server.Controllers;
@@ -22,6 +23,7 @@ public class UserController(
     IUserServices userServices,
     ILogger<UserController> logger,
     IEmailSender emailSender,
+    IFriendConnectionService friendConnectionService,
     IConfiguration configuration) : ControllerBase
 {
     [HttpGet("GetUsername"), Authorize(Roles = "User, Admin")]
@@ -286,6 +288,29 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error changing e-mail for user {email}");
+            return StatusCode(500);
+        }
+    }
+
+    [HttpPost("SendFriendRequest"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> SendFriendRequest([FromBody]FriendRequest request)
+    {
+        try
+        {
+            var existingSender = await userManager.FindByIdAsync(request.SenderId);
+            var existingReceiver = await userManager.FindByIdAsync(request.ReceiverId);
+            
+            if (existingSender == null || existingReceiver == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            await friendConnectionService.SendFriendRequest(request);
+            return Ok("Friend request sent.");
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error sending friend request.");
             return StatusCode(500);
         }
     }
