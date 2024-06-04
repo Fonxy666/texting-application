@@ -43,6 +43,16 @@
                             Change Password
                         </button>
                     </div>
+                    <div class="col">
+                        <button 
+                            type="button" 
+                            class="btn text-style-20-px" 
+                            [ngClass]="{'active': isActive('/profile/profile/friendrequest')}" 
+                            (click)="handleButtonClick('/profile/profile/friendrequest')" 
+                            [attr.aria-pressed]="isActive('/profile/profile/friendrequest') ? 'true' : 'false'">
+                            Manage Friend Requests
+                        </button>
+                    </div>
                 </div>
             </div>
             <router-outlet/>

@@ -298,14 +298,16 @@ public class UserController(
         try
         {
             var existingSender = await userManager.FindByIdAsync(request.SenderId);
-            var existingReceiver = await userManager.FindByIdAsync(request.ReceiverId);
+            var existingReceiver = await userManager.FindByNameAsync(request.Receiver);
             
             if (existingSender == null || existingReceiver == null)
             {
                 return NotFound("User not found.");
             }
 
-            await friendConnectionService.SendFriendRequest(request);
+            var databaseRequest = request with { Receiver = existingReceiver.Id.ToString() };
+
+            await friendConnectionService.SendFriendRequest(databaseRequest);
             return Ok("Friend request sent.");
         }
         catch (Exception e)

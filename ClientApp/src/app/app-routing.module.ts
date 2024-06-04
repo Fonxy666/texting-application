@@ -16,6 +16,7 @@ import { SupportPageComponent } from './support-page/support-page.component';
 import { GenerateEmailChangeRequestComponent } from './profile/profile/generate-email-change-request/generate-email-change-request.component';
 import { GenerateAvatarChangeRequestComponent } from './profile/profile/generate-avatar-change-request/generate-avatar-change-request.component';
 import { GeneratePasswordChangeRequestComponent } from './profile/profile/generate-password-change-request/generate-password-change-request.component';
+import { SendFriendRequestComponent } from './profile/profile/send-friend-request/send-friend-request.component';
 import { AuthGuard } from './auth.guard';
 
 const routes: Routes = [
@@ -27,7 +28,8 @@ const routes: Routes = [
     { path: 'profile/profile', component: ProfileComponent, title: 'Profile', canActivate: [AuthGuard], children: [
         { path: 'emailchange', component: GenerateEmailChangeRequestComponent },
         { path: 'avatarchange', component: GenerateAvatarChangeRequestComponent },
-        { path: 'passwordchange', component: GeneratePasswordChangeRequestComponent }
+        { path: 'passwordchange', component: GeneratePasswordChangeRequestComponent },
+        { path: 'friendrequest', component: SendFriendRequestComponent }
     ]},
     { path: 'profile/settings', component: SettingsComponent, title: 'Settings', canActivate: [AuthGuard] },
     { path: 'create-room', component: CreateRoomComponent, title: 'Create room', canActivate: [AuthGuard] },

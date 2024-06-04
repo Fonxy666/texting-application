@@ -9,7 +9,7 @@ public class FriendConnectionService(DatabaseContext context) : IFriendConnectio
     public async Task SendFriendRequest(FriendRequest request)
     {
         var senderGuidId = new Guid(request.SenderId);
-        var receiverGuidId = new Guid(request.ReceiverId);
+        var receiverGuidId = new Guid(request.Receiver);
         var friendRequest = new Model.FriendConnection(senderGuidId, receiverGuidId);
 
         await Context.FriendConnections!.AddAsync(friendRequest);
