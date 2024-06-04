@@ -20,7 +20,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : Identi
             .HasOne(fc => fc.Sender)
             .WithMany(au => au.SentFriendRequests)
             .HasForeignKey(fc => fc.SenderId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<FriendConnection>()
             .HasOne(fc => fc.Receiver)
@@ -32,5 +32,11 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : Identi
             .HasMany(au => au.Friends)
             .WithMany()
             .UsingEntity(j => j.ToTable("UserFriends"));
+
+        modelBuilder.Entity<Message>()
+            .HasOne(m => m.Room)
+            .WithMany(r => r.Messages)
+            .HasForeignKey(m => m.RoomId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

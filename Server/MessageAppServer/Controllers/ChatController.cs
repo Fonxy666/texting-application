@@ -96,7 +96,6 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
                 return BadRequest(false);
             }
 
-            await messageService.DeleteMessages(guidRoomId);
             await roomService.DeleteRoomAsync(existingRoom);
             
             return Ok(true);
