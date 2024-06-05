@@ -8,7 +8,8 @@ import { CookieService } from 'ngx-cookie-service';
 @Component({
   selector: 'app-send-friend-request',
   templateUrl: './send-friend-request.component.html',
-  styleUrl: './send-friend-request.component.css'
+  styleUrl: './send-friend-request.component.css',
+  providers: [ MessageService ]
 })
 export class SendFriendRequestComponent implements OnInit {
     constructor(private fb: FormBuilder, private http: HttpClient, private errorHandler: ErrorHandlerService, private messageService: MessageService, private cookieService: CookieService) { }
@@ -29,13 +30,18 @@ export class SendFriendRequestComponent implements OnInit {
         )
         .subscribe(
             (response: any) => {
-                console.log(response);
+                console.log(response.message == "Friend request sent.")
+                if (response.message == "Friend request sent.") {
+                    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Friend request successfully sent to '${friendRequest.receiver}'.`, styleClass: 'ui-toast-message-success' });
+
+                    this.friendName.reset();
+                }
             },
             (error: any) => {
                 if (error.status === 403) {
                     this.errorHandler.handleError403(error);
-                } else if (error.error && error.error.error === "This room's name already taken.") {
-                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'This room name is already taken. Choose another one!' });
+                } else if (error.status === 400) {
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: `${error.error.message}` });
                 } else {
                     console.log(error);
                 }

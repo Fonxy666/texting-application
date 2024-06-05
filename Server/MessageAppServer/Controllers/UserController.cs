@@ -293,27 +293,35 @@ public class UserController(
     }
 
     [HttpPost("SendFriendRequest"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult> SendFriendRequest([FromBody]FriendRequest request)
+    public async Task<ActionResult> SendFriendRequest([FromBody] FriendRequest request)
     {
         try
         {
             var existingSender = await userManager.FindByIdAsync(request.SenderId);
             var existingReceiver = await userManager.FindByNameAsync(request.Receiver);
-            
+        
             if (existingSender == null || existingReceiver == null)
             {
-                return NotFound("User not found.");
+                return NotFound(new { message = "User not found." });
+            }
+        
+            var databaseRequest = request with { Receiver = existingReceiver.Id.ToString() };
+        
+            var alreadySent = await friendConnectionService.AlreadySentFriendRequest(databaseRequest);
+            if (alreadySent)
+            {
+                return BadRequest(new { message = "You already sent a friend request to this user!" });
             }
 
-            var databaseRequest = request with { Receiver = existingReceiver.Id.ToString() };
-
             await friendConnectionService.SendFriendRequest(databaseRequest);
-            return Ok("Friend request sent.");
+            await friendConnectionService.GetPendingFriendRequests(request.SenderId);
+        
+            return Ok(new { message = "Friend request sent." });
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Error sending friend request.");
-            return StatusCode(500);
+            return StatusCode(500, new { message = "An error occurred while sending the friend request." });
         }
     }
 }

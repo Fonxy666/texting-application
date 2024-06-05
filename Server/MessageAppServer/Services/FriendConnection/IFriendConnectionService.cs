@@ -5,4 +5,6 @@ namespace Server.Services.FriendConnection;
 public interface IFriendConnectionService
 {
     Task SendFriendRequest(FriendRequest request);
+    Task<IEnumerable<Model.FriendConnection>> GetPendingFriendRequests(string userId);
+    Task<bool> AlreadySentFriendRequest(FriendRequest request);
 }

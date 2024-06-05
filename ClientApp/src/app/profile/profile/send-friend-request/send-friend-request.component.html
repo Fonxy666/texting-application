@@ -1,11 +1,12 @@
 <div>
+    <p-toast position="top-center"></p-toast>
     <form [formGroup]="friendName" (ngSubmit)="OnFormSubmit()">
         <div class="mb-3 text-style-15-px input-container">
             <label for="inputEmail" class="form-label">Friend username</label>
-            <input formControlName="userName" type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp">
+            <input formControlName="userName" type="email" placeholder="Username" class="form-control" id="inputEmail" aria-describedby="emailHelp">
             <div class="error-messages-container">
                 <div class="text-style-15-px" *ngIf="friendName.get('userName')?.invalid && (friendName.get('userName')?.dirty || friendName.get('userName')?.touched)" class="text-danger">
-                    <div *ngIf="friendName.get('userName')?.errors?.['required']">Email is required</div>
+                    <div *ngIf="friendName.get('userName')?.errors?.['required']">Username is required</div>
                 </div>
             </div>
         </div>
