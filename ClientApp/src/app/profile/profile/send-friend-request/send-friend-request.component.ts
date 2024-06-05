@@ -4,6 +4,8 @@ import { ErrorHandlerService } from '../../../services/error-handler.service';
 import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CookieService } from 'ngx-cookie-service';
+import { FriendRequest } from '../../../model/FriendRequest';
+import { FriendService } from '../../../services/friend-service/friend.service';
 
 @Component({
   selector: 'app-send-friend-request',
@@ -12,7 +14,14 @@ import { CookieService } from 'ngx-cookie-service';
   providers: [ MessageService ]
 })
 export class SendFriendRequestComponent implements OnInit {
-    constructor(private fb: FormBuilder, private http: HttpClient, private errorHandler: ErrorHandlerService, private messageService: MessageService, private cookieService: CookieService) { }
+    constructor(
+        private friendService: FriendService,
+        private fb: FormBuilder,
+        private http: HttpClient,
+        private errorHandler: ErrorHandlerService,
+        private messageService: MessageService,
+        private cookieService: CookieService
+    ) { }
     
     friendName!: FormGroup;
 
@@ -23,7 +32,7 @@ export class SendFriendRequestComponent implements OnInit {
     }
 
     OnFormSubmit() {
-        var friendRequest = {senderId: this.cookieService.get("UserId"), receiver: this.friendName.get('userName')?.value }
+        var friendRequest = new FriendRequest(this.cookieService.get("UserId"), this.friendName.get('userName')?.value);
         this.http.post(`/api/v1/User/SendFriendRequest`, friendRequest, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
@@ -33,7 +42,7 @@ export class SendFriendRequestComponent implements OnInit {
                 console.log(response.message == "Friend request sent.")
                 if (response.message == "Friend request sent.") {
                     this.messageService.add({ severity: 'success', summary: 'Success', detail: `Friend request successfully sent to '${friendRequest.receiver}'.`, styleClass: 'ui-toast-message-success' });
-
+                    this.friendService.sendFriendRequest(friendRequest);
                     this.friendName.reset();
                 }
             },

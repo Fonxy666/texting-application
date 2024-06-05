@@ -204,6 +204,7 @@ public class Startup(IConfiguration configuration)
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapHub<ChatHub>("/chat");
+            endpoints.MapHub<FriendRequestHub>("/friend");
             endpoints.MapControllers();
         });
 

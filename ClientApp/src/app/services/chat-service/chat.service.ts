@@ -6,6 +6,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
 import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
 import { ConnectedUser } from '../../model/ConnectedUser';
+import { FriendRequest } from '../../model/FriendRequest';
 
 @Injectable({
     providedIn: 'root'
@@ -13,8 +14,8 @@ import { ConnectedUser } from '../../model/ConnectedUser';
 
 export class ChatService {
     public connection: signalR.HubConnection;
-    public message$ = new BehaviorSubject<any[]>([]);
-    public connectedUsers = new BehaviorSubject<ConnectedUser[]>([]);
+    public messages$ = new BehaviorSubject<any[]>([]);
+    public connectedUsers$ = new BehaviorSubject<ConnectedUser[]>([]);
     public messages: { [roomId: string]: any[] } = {};
     public users: ConnectedUser[] = [];
     public roomDeleted$: Subject<string> = new Subject<string>();
@@ -38,7 +39,7 @@ export class ChatService {
                 this.messages[roomId].push({ user, message, messageTime, userId, messageId, seenList });
             }
             if (this.currentRoom === roomId) {
-                this.message$.next([...this.messages[roomId]]);
+                this.messages$.next([...this.messages[roomId]]);
             }
         });
 
@@ -47,26 +48,28 @@ export class ChatService {
                 userId: userDictionary[userName],
                 userName: userName
             }));
-            this.connectedUsers.next(users);
+            this.connectedUsers$.next(users);
         });
 
         this.connection.on("UserDisconnected", (username: string) => {
-            const updatedUsers = this.connectedUsers.value.filter(user => user.userName !== username);
-            this.connectedUsers.next(updatedUsers);
+            const updatedUsers = this.connectedUsers$.value.filter(user => user.userName !== username);
+            this.connectedUsers$.next(updatedUsers);
         });
+
+        
 
         this.connection.on("RoomDeleted", (roomId: string) => {
             this.roomDeleted$.next(roomId);
             delete this.messages[roomId];
             if (this.currentRoom === roomId) {
-                this.message$.next([]);
+                this.messages$.next([]);
             }
         });
     }
 
     public setCurrentRoom(roomId: string) {
         this.currentRoom = roomId;
-        this.message$.next(this.messages[roomId] || []);
+        this.messages$.next(this.messages[roomId] || []);
     }
 
     private async initializeConnection() {
@@ -79,25 +82,25 @@ export class ChatService {
                 await this.joinRoom(userName, roomId);
             }
         } catch (error) {
-            console.error('SignalR connection failed to start:', error);
+            console.error('Chat-SignalR connection failed to start:', error);
         }
     
         this.connection.onclose(async () => {
-            console.log('SignalR connection closed, attempting to reconnect...');
+            console.log('Chat-SignalR connection closed, attempting to reconnect...');
             await this.reconnect();
         });
     
         this.connection.onreconnecting(() => {
-            console.log('SignalR connection is attempting to reconnect...');
+            console.log('Chat-SignalR connection is attempting to reconnect...');
         });
     }
 
     private async start() {
         try {
             await this.connection.start();
-            console.log('SignalR connection established.');
+            console.log('Chat-SignalR connection established.');
         } catch (error) {
-            console.error('Error starting SignalR connection:', error);
+            console.error('Error starting Chat-SignalR connection:', error);
             throw error;
         }
     }
@@ -105,9 +108,9 @@ export class ChatService {
     private async reconnect() {
         try {
             await this.start();
-            console.log('SignalR reconnected successfully.');
+            console.log('Chat-SignalR reconnected successfully.');
         } catch (error) {
-            console.error('SignalR reconnection failed:', error);
+            console.error('Chat-SignalR reconnection failed:', error);
             setTimeout(() => this.reconnect(), 5000);
         }
     }
@@ -171,9 +174,9 @@ export class ChatService {
             sessionStorage.removeItem("roomId");
             this.messages[this.currentRoom!] = [];
             await this.connection.stop();
-            console.log('SignalR connection stopped.');
+            console.log('Chat-SignalR connection stopped.');
         } catch (error) {
-            console.error('Error stopping SignalR connection:', error);
+            console.error('Error stopping Chat-SignalR connection:', error);
         }
     }
 }

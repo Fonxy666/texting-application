@@ -45,7 +45,15 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     private routeSub!: Subscription;
 
-    constructor(public chatService: ChatService, public router: Router, private http: HttpClient, private route: ActivatedRoute, private errorHandler: ErrorHandlerService, private cookieService: CookieService, private messageService: MessageService, private fb: FormBuilder) { }
+    constructor(
+        public chatService: ChatService,
+        public router: Router,
+        private http: HttpClient,
+        private errorHandler: ErrorHandlerService,
+        private cookieService: CookieService,
+        private messageService: MessageService,
+        private fb: FormBuilder
+    ) { }
 
     messages: any[] = [];
     avatars: { [userId: string]: string } = {};
@@ -72,7 +80,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             console.error('No roomId found in session storage.');
         }
 
-        this.chatService.message$.subscribe(res => {
+        this.chatService.messages$.subscribe(res => {
             this.messages = res;
             this.messages.forEach(message => {
                 this.loadAvatarsFromMessages(message.userId);
@@ -114,7 +122,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             });
         });
 
-        this.chatService.connectedUsers.subscribe((users) => {
+        this.chatService.connectedUsers$.subscribe((users) => {
             this.connectedUsers = users;
             users.forEach((user) => {
                 this.getAvatarImage(user.userId).subscribe(
@@ -251,7 +259,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
                     this.chatService.messages[this.roomId] = [...fetchedMessages, ...this.chatService.messages[this.roomId]];
 
-                    this.chatService.message$.next(this.chatService.messages[this.roomId]);
+                    this.chatService.messages$.next(this.chatService.messages[this.roomId]);
                 });
             });
     };
@@ -280,11 +288,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     searchInConnectedUsers() {
         if (this.searchTerm.trim() === '') {
-            this.chatService.connectedUsers.subscribe(users => {
+            this.chatService.connectedUsers$.subscribe(users => {
                 this.connectedUsers = users;
             });
         } else {
-            this.connectedUsers = this.chatService.connectedUsers.value.filter(user =>
+            this.connectedUsers = this.chatService.connectedUsers$.value.filter(user =>
                 user.userName.toLowerCase().includes(this.searchTerm.toLowerCase())
             );
         }
