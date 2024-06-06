@@ -333,30 +333,47 @@ public class UserController(
     [HttpGet("GetFriendRequestCount"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult> GetFriendRequestCount([FromQuery]string userId)
     {
-        var existingUser = await userManager.FindByIdAsync(userId);
-        
-        if (existingUser == null)
+        try
         {
-            return NotFound(new { message = "User not found." });
+            var existingUser = await userManager.FindByIdAsync(userId);
+        
+            if (existingUser == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            var result = await friendConnectionService.GetPendingRequestCount(userId);
+
+            return Ok(result);
         }
-
-        var result = await friendConnectionService.GetPendingRequestCount(userId);
-
-        return Ok(result);
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error sending friend request.");
+            return StatusCode(500, new { message = "An error occurred while trying to get friend requests count." });
+        }
+        
     }
     
     [HttpGet("GetFriendRequests"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult> GetFriendRequests([FromQuery]string userId)
     {
-        var existingUser = await userManager.FindByIdAsync(userId);
-        
-        if (existingUser == null)
+        try
         {
-            return NotFound(new { message = "User not found." });
+            var existingUser = await userManager.FindByIdAsync(userId);
+
+            if (existingUser == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            var result = await friendConnectionService.GetPendingFriendRequests(userId);
+
+            return Ok(result);
         }
-
-        var result = await friendConnectionService.GetPendingFriendRequests(userId);
-
-        return Ok(result);
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error sending friend request.");
+            return StatusCode(500, new { message = "An error occurred while trying to get friend requests." });
+        }
     }
 }

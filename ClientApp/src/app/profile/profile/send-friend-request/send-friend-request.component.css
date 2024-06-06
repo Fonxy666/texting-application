@@ -1,0 +1,24 @@
+.display-request {
+    margin-bottom: 20px;
+    display: flex;
+    border: 1px solid black;
+    border-radius: 15px;
+    padding: 10px 20px 10px 20px;
+    @media (max-width: 1400px) {
+        display: block;
+    }
+    @media (max-width: 400px) {
+        font-size: 12px;
+    }
+}
+
+.display-time-buttons {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+.avatar-image {
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+}

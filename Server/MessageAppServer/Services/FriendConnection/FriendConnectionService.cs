@@ -2,6 +2,7 @@
 using Server.Database;
 using Server.Model;
 using Server.Model.Requests.User;
+using Server.Model.Responses.User;
 
 namespace Server.Services.FriendConnection;
 
@@ -21,18 +22,36 @@ public class FriendConnectionService(DatabaseContext context) : IFriendConnectio
         await Context.SaveChangesAsync();
     }
 
-    public Task<IEnumerable<Model.FriendConnection>> GetPendingFriendRequests(string userId)
+    public Task<IEnumerable<ShowFriendRequestResponse>> GetPendingFriendRequests(string userId)
     {
-        if (!Guid.TryParse(userId, out var userGuid))
-        {
-            throw new ArgumentException("Invalid userId format.");
-        }
-        
-        return Task.FromResult(Context.Users
+        var userGuid = new Guid(userId);
+        var user = Context.Users
             .Include(u => u.ReceivedFriendRequests)
-            .Include(applicationUser => applicationUser.SentFriendRequests)
-            .FirstOrDefault(u => u.Id == userGuid)!
-            .SentFriendRequests.Where(fc => fc.Status == FriendStatus.Pending));
+            .ThenInclude(fr => fr.Sender)
+            .FirstOrDefault(u => u.Id == userGuid);
+
+        if (user == null)
+        {
+            throw new ArgumentException("User not found.");
+        }
+
+        Console.WriteLine(user.UserName);
+
+        if (user.ReceivedFriendRequests == null)
+        {
+            throw new InvalidOperationException("ReceivedFriendRequests collection is null.");
+        }
+
+        var pendingRequests = user.ReceivedFriendRequests
+            .Where(fr => fr.Status == FriendStatus.Pending)
+            .Select(fr => new ShowFriendRequestResponse(
+                fr.ConnectionId, 
+                fr.Sender.UserName!,
+                fr.Sender.Id.ToString(),
+                fr.SentTime))
+            .ToList();
+
+        return Task.FromResult<IEnumerable<ShowFriendRequestResponse>>(pendingRequests);
     }
     
     public async Task<int> GetPendingRequestCount(string userId)

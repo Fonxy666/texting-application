@@ -1,8 +1,21 @@
 <div>
     <p-toast position="top-center"></p-toast>
     <div class="mb-3 text-style-15-px input-container">
-        <label for="inputEmail" class="form-label">placeholder username</label>
-        <input type="email" placeholder="Username" class="form-control" id="inputEmail" aria-describedby="emailHelp">
+        <ng-container *ngFor="let request of this.friendRequests">
+            <div class="display-request">
+                <div class="display-name">
+                    Incoming friend request from {{ request.senderName }}
+                    <img class="avatar-image" [src]="avatarUrl[request.senderId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
+                </div>
+                <div class="display-time-buttons">
+                    <label>
+                        {{ this.displayRemainingTime(request.sentTime) }}
+                    </label>
+                    <i class="fa fa-check ms-3" aria-hidden="true"></i>
+                    <i class="fa fa-close mx-3" aria-hidden="true"></i>
+                </div>
+            </div>
+        </ng-container>
     </div>
     <form [formGroup]="friendName" (ngSubmit)="OnFormSubmit()">
         <div class="mb-3 text-style-15-px input-container">

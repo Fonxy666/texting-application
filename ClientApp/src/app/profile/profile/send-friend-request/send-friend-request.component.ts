@@ -6,6 +6,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CookieService } from 'ngx-cookie-service';
 import { FriendRequest } from '../../../model/FriendRequest';
 import { FriendService } from '../../../services/friend-service/friend.service';
+import { FriendRequestManage } from '../../../model/FriendRequestManage';
 
 @Component({
   selector: 'app-send-friend-request',
@@ -14,6 +15,9 @@ import { FriendService } from '../../../services/friend-service/friend.service';
   providers: [ MessageService ]
 })
 export class SendFriendRequestComponent implements OnInit {
+    public friendRequests: FriendRequestManage[] = [];
+    avatarUrl: { [key: string]: string } = {};
+
     constructor(
         private friendService: FriendService,
         private fb: FormBuilder,
@@ -29,8 +33,10 @@ export class SendFriendRequestComponent implements OnInit {
         this.friendName = this.fb.group({
             userName: ['', [Validators.required]]
         });
+        
+        this.getFriendRequests();
     }
-
+    
     OnFormSubmit() {
         var friendRequest = new FriendRequest(this.cookieService.get("UserId"), this.friendName.get('userName')?.value);
         
@@ -57,6 +63,94 @@ export class SendFriendRequestComponent implements OnInit {
                 } else {
                     console.log(error);
                 }
+            }
+        );
+    }
+
+    getFriendRequests() {
+        const userId = this.cookieService.get("UserId");
+        this.http.get(`/api/v1/User/GetFriendRequests?userId=${userId}`, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(
+            (response: FriendRequestManage[]) => {
+                this.friendRequests = response;
+                console.log(response);
+
+                this.friendRequests.forEach(request => {
+                    this.loadUserAvatar(request.senderId);
+                });
+            },
+            (error: any) => {
+                console.log(error);
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                } else {
+                    console.log(error);
+                }
+            }
+        );
+    }
+
+    displayRemainingTime(time: string) {
+        const givenTime = new Date(time);
+        const currentTime = new Date();
+
+        let years = currentTime.getFullYear() - givenTime.getFullYear();
+        let months = currentTime.getMonth() - givenTime.getMonth();
+        let days = currentTime.getDate() - givenTime.getDate();
+        let hours = currentTime.getHours() - givenTime.getHours();
+        let minutes = currentTime.getMinutes() - givenTime.getMinutes();
+
+        if (minutes < 0) {
+            minutes += 60;
+            hours--;
+        }
+        if (hours < 0) {
+            hours += 24;
+            days--;
+        }
+        if (days < 0) {
+            const daysInPreviousMonth = new Date(currentTime.getFullYear(), currentTime.getMonth(), 0).getDate();
+            days += daysInPreviousMonth;
+            months--;
+        }
+        if (months < 0) {
+            months += 12;
+            years--;
+        }
+
+        const parts = [];
+        if (years > 0) parts.push(`${years} year${years !== 1 ? 's' : ''}`);
+        if (months > 0) parts.push(`${months} month${months !== 1 ? 's' : ''}`);
+        if (days > 0) parts.push(`${days} day${days !== 1 ? 's' : ''}`);
+        if (hours > 0) parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
+        if (minutes > 0) parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
+
+        return parts.join(', ');
+    }
+
+    loadUserAvatar(userId: string) {
+        this.http.get(`/api/v1/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(
+            (response: Blob) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    this.avatarUrl[userId] = reader.result as string;
+                };
+                reader.readAsDataURL(response);
+            },
+            (error) => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                console.error(error);
+                console.log("There is no Avatar for this user.");
+                this.avatarUrl[userId] = "https://ptetutorials.com/images/user-profile.png";
             }
         );
     }

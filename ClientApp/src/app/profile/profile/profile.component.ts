@@ -189,7 +189,6 @@ export class ProfileComponent implements OnInit {
             .subscribe(
                 (response: any) => {
                     this.announceNumber = response;
-                    console.log(response);
                 },
                 (error) => {
                     if (error.status === 403) {
