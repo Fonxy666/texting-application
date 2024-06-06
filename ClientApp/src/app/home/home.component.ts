@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
 import { MessageService } from 'primeng/api';
-import { FriendService } from '../services/friend-service/friend.service';
 
 @Component({
   selector: 'app-home',
@@ -11,7 +10,7 @@ import { FriendService } from '../services/friend-service/friend.service';
 })
 
 export class HomeComponent implements OnInit {
-    constructor(private cookieService: CookieService, private messageService: MessageService,private friendService: FriendService) { }
+    constructor(private cookieService: CookieService, private messageService: MessageService) { }
 
     starsImage: string = "./assets/images/4-out-of-5-stars.webp"
     animation: boolean = true;

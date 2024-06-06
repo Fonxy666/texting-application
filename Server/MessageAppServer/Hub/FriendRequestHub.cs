@@ -1,30 +1,48 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
+using System.Collections.Concurrent;
+using Microsoft.AspNetCore.Identity;
 using Server.Model;
-using Server.Model.Requests.User;
+using Server.Model.Responses.User;
 
 namespace Server.Hub;
 
-public class FriendRequestHub(IDictionary<string, UserRoomConnection> connection, UserManager<ApplicationUser> userManager)
-    : Microsoft.AspNetCore.SignalR.Hub
+public class FriendRequestHub(UserManager<ApplicationUser> userManager) : Microsoft.AspNetCore.SignalR.Hub
 {
-    public async Task OnFriendRequestSend(FriendRequest request)
+    private static readonly ConcurrentDictionary<string, string> Connections = new();
+
+    public override async Task OnConnectedAsync()
     {
-        Console.WriteLine("-----------------------------");
-        foreach (var userRoomConnection in connection.Values)
+        var userId = Context.GetHttpContext().Request.Query["userId"].ToString();
+        if (!string.IsNullOrEmpty(userId))
         {
-            Console.WriteLine(userRoomConnection.User);
+            Connections[userId] = Context.ConnectionId;
         }
-        Console.WriteLine("-----------------------------");
-        var receiverConnection = connection.Values.FirstOrDefault(conn => conn.User == request.Receiver);
-        if (receiverConnection != null)
+        await base.OnConnectedAsync();
+    }
+
+    public override async Task OnDisconnectedAsync(Exception exception)
+    {
+        var userId = Connections.FirstOrDefault(x => x.Value == Context.ConnectionId).Key;
+        if (userId != null)
         {
-            await Clients.Client(receiverConnection.User!).SendAsync("ReceiveFriendRequest", request.SenderId, request.Receiver);
+            Connections.TryRemove(userId, out _);
         }
-        else
+        await base.OnDisconnectedAsync(exception);
+    }
+
+    public async Task<UserResponseForWs> JoinToHub(string userId)
+    {
+        Connections[userId] = Context.ConnectionId;
+        var result = new UserResponseForWs(userId, Context.ConnectionId);
+        return result;
+    }
+
+    public async Task SendFriendRequest(string senderId, string receiver)
+    {
+        var receiverId = userManager.Users.FirstOrDefault(au => au.UserName == receiver)!.Id;
+        if (Connections.TryGetValue(receiverId.ToString(), out var connectionId))
         {
-            Console.WriteLine("Receiver connection not found.");
+            await Clients.Client(connectionId).SendAsync("ReceiveFriendRequest", senderId, receiverId);
         }
-        Console.WriteLine($"Friend request sent from {request.SenderId} to {request.Receiver}");
     }
 }

@@ -33,20 +33,23 @@ export class SendFriendRequestComponent implements OnInit {
 
     OnFormSubmit() {
         var friendRequest = new FriendRequest(this.cookieService.get("UserId"), this.friendName.get('userName')?.value);
+        
         this.http.post(`/api/v1/User/SendFriendRequest`, friendRequest, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )
         .subscribe(
             (response: any) => {
-                console.log(response.message == "Friend request sent.")
                 if (response.message == "Friend request sent.") {
                     this.messageService.add({ severity: 'success', summary: 'Success', detail: `Friend request successfully sent to '${friendRequest.receiver}'.`, styleClass: 'ui-toast-message-success' });
                     this.friendService.sendFriendRequest(friendRequest);
                     this.friendName.reset();
+                } else {
+                    console.log(response);
                 }
             },
             (error: any) => {
+                console.log(error);
                 if (error.status === 403) {
                     this.errorHandler.handleError403(error);
                 } else if (error.status === 400) {
@@ -57,5 +60,4 @@ export class SendFriendRequestComponent implements OnInit {
             }
         );
     }
-    
 }

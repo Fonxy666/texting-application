@@ -304,6 +304,11 @@ public class UserController(
             {
                 return NotFound(new { message = "User not found." });
             }
+            
+            if (existingSender == existingReceiver)
+            {
+                return BadRequest(new { message = "You cannot send friend request to yourself." });
+            }
         
             var databaseRequest = request with { Receiver = existingReceiver.Id.ToString() };
         

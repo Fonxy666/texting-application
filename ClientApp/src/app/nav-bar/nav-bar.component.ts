@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { ErrorHandlerService } from '../services/error-handler.service';
+import { FriendService } from '../services/friend-service/friend.service';
 
 @Component({
     selector: 'app-nav-bar',
@@ -11,14 +12,20 @@ import { ErrorHandlerService } from '../services/error-handler.service';
 })
 
 export class NavBarComponent implements OnInit {
-    constructor(private cookieService : CookieService, private router: Router, private http: HttpClient, private errorHandler: ErrorHandlerService) {}
+    constructor(private cookieService : CookieService, private router: Router, private http: HttpClient, private errorHandler: ErrorHandlerService, private friendService: FriendService) {}
 
     isDropstart: boolean = true;
+    friendRequests: any[] = [];
 
     ngOnInit(): void {
         this.isLoggedIn();
         this.loadProfileData();
         this.checkScreenSize();
+
+        this.friendService.friendRequests$.subscribe(requests => {
+            this.friendRequests = requests;
+            this.displayNewFriendRequests();
+        });
     }
 
     profilePic: string = "";
@@ -79,5 +86,12 @@ export class NavBarComponent implements OnInit {
         } else {
             this.isDropstart = true;
         }
+    }
+
+    private displayNewFriendRequests() {
+        this.friendRequests.forEach(request => {
+            console.log("haha")
+            // console.log(`New friend request from ${request.senderId} to ${request.receiver}`);
+        });
     }
 }
