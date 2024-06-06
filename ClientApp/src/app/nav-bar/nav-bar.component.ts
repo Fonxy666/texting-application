@@ -12,16 +12,27 @@ import { FriendService } from '../services/friend-service/friend.service';
 })
 
 export class NavBarComponent implements OnInit {
-    constructor(private cookieService : CookieService, private router: Router, private http: HttpClient, private errorHandler: ErrorHandlerService, private friendService: FriendService) {}
+    constructor(
+        private cookieService : CookieService,
+        private router: Router,
+        private http: HttpClient,
+        private errorHandler: ErrorHandlerService,
+        private friendService: FriendService
+    ) {}
 
     isDropstart: boolean = true;
     friendRequests: any[] = [];
     announceNumber: number = 0;
+    userId: string = "";
 
     ngOnInit(): void {
+        this.userId = this.cookieService.get("UserId");
+
         this.isLoggedIn();
         this.loadProfileData();
         this.checkScreenSize();
+
+        this.getAnnounceNumber();
 
         this.friendService.friendRequests$.subscribe(requests => {
             this.friendRequests = requests;
@@ -35,11 +46,9 @@ export class NavBarComponent implements OnInit {
         return this.cookieService.check('UserId');
     }
 
-    loadProfileData() {
-        const userId = this.cookieService.get('UserId');
-        
-        if (userId) {
-            this.http.get(`/api/v1/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
+    loadProfileData() {        
+        if (this.userId) {
+            this.http.get(`/api/v1/User/GetImage?userId=${this.userId}`, { withCredentials: true, responseType: 'blob' })
             .pipe(
                 this.errorHandler.handleError401()
             )
@@ -89,9 +98,28 @@ export class NavBarComponent implements OnInit {
         }
     }
 
+    getAnnounceNumber() {
+        if (this.userId) {
+            this.http.get(`/api/v1/User/GetFriendRequestCount?userId=${this.userId}`, { withCredentials: true })
+            .pipe(
+                this.errorHandler.handleError401()
+            )
+            .subscribe(
+                (response: any) => {
+                    this.announceNumber = response;
+                    console.log(response);
+                },
+                (error) => {
+                    if (error.status === 403) {
+                        this.errorHandler.handleError403(error);
+                    }
+                }
+            );
+        }
+    }
+
     private displayNewFriendRequests() {
         this.friendRequests.forEach(request => {
-            console.log(`New friend request from ${request.senderId} to ${request.receiver}`);
             this.announceNumber++;
         });
     }

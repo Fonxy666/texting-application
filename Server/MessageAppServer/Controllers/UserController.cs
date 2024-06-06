@@ -329,4 +329,34 @@ public class UserController(
             return StatusCode(500, new { message = "An error occurred while sending the friend request." });
         }
     }
+
+    [HttpGet("GetFriendRequestCount"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> GetFriendRequestCount([FromQuery]string userId)
+    {
+        var existingUser = await userManager.FindByIdAsync(userId);
+        
+        if (existingUser == null)
+        {
+            return NotFound(new { message = "User not found." });
+        }
+
+        var result = await friendConnectionService.GetPendingRequestCount(userId);
+
+        return Ok(result);
+    }
+    
+    [HttpGet("GetFriendRequests"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> GetFriendRequests([FromQuery]string userId)
+    {
+        var existingUser = await userManager.FindByIdAsync(userId);
+        
+        if (existingUser == null)
+        {
+            return NotFound(new { message = "User not found." });
+        }
+
+        var result = await friendConnectionService.GetPendingFriendRequests(userId);
+
+        return Ok(result);
+    }
 }

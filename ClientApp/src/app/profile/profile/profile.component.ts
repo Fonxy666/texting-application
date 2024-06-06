@@ -10,6 +10,7 @@ import { ErrorHandlerService } from '../../services/error-handler.service';
 import { MessageService } from 'primeng/api';
 import { filter } from 'rxjs';
 import { UserService } from '../../services/user.service';
+import { FriendService } from '../../services/friend-service/friend.service';
 
 @Component({
     selector: 'app-profile',
@@ -27,6 +28,9 @@ export class ProfileComponent implements OnInit {
     myImage: string = "./assets/images/chat-mountain.jpg";
     user: { id: string, name: string, image: string, token: string, email: string, twoFactorEnabled: boolean } = { id: "", name: '', image: '', token: '', email: '', twoFactorEnabled: false };
     passwordChangeRequest!: FormGroup;
+    announceNumber: number = 0;
+    friendRequests: any[] = [];
+    userId: string = "";
 
     constructor(
         private http: HttpClient,
@@ -36,7 +40,8 @@ export class ProfileComponent implements OnInit {
         private sanitizer: DomSanitizer,
         private errorHandler: ErrorHandlerService,
         private messageService: MessageService,
-        private userService: UserService
+        private userService: UserService,
+        private friendService: FriendService
     ) {
         this.user.id = this.cookieService.get('UserId');
 
@@ -48,6 +53,7 @@ export class ProfileComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.userId = this.cookieService.get("UserId");
         this.isLoading = true;
         this.getUser(this.user.id);
         this.loadProfileData(this.user.id);
@@ -59,6 +65,13 @@ export class ProfileComponent implements OnInit {
 
         this.userService.email$.subscribe(email => {
             this.user.email = email;
+        });
+
+        this.getAnnounceNumber();
+
+        this.friendService.friendRequests$.subscribe(requests => {
+            this.friendRequests = requests;
+            this.displayNewFriendRequests();
         });
     }
 
@@ -164,6 +177,32 @@ export class ProfileComponent implements OnInit {
             if (error.status === 403) {
                 this.errorHandler.handleError403(error);
             }
+        });
+    }
+
+    getAnnounceNumber() {
+        if (this.userId) {
+            this.http.get(`/api/v1/User/GetFriendRequestCount?userId=${this.userId}`, { withCredentials: true })
+            .pipe(
+                this.errorHandler.handleError401()
+            )
+            .subscribe(
+                (response: any) => {
+                    this.announceNumber = response;
+                    console.log(response);
+                },
+                (error) => {
+                    if (error.status === 403) {
+                        this.errorHandler.handleError403(error);
+                    }
+                }
+            );
+        }
+    }
+
+    private displayNewFriendRequests() {
+        this.friendRequests.forEach(request => {
+            this.announceNumber++;
         });
     }
 }

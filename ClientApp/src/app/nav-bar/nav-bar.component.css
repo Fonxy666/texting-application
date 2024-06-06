@@ -16,11 +16,22 @@
 }
 
 .announce-number {
+    position: absolute;
+    top: 0;
+    right: 0;
     background-color: red;
     border-radius: 50%;
-    width: 25px;
-    height: 25px;
+    width: 20px;
+    height: 20px;
     display: flex;
     justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.image-announce {
+    display: flex;
     align-items: center;
 }

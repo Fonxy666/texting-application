@@ -46,11 +46,18 @@
                     <div class="col">
                         <button 
                             type="button" 
-                            class="btn text-style-20-px" 
+                            class="btn text-style-20-px announce-wrapper" 
                             [ngClass]="{'active': isActive('/profile/profile/friendrequest')}" 
                             (click)="handleButtonClick('/profile/profile/friendrequest')" 
                             [attr.aria-pressed]="isActive('/profile/profile/friendrequest') ? 'true' : 'false'">
-                            Manage Friend Requests
+                            <div class="button-content">
+                                Manage Friend Requests
+                                <ng-container *ngIf="announceNumber != 0">
+                                    <div class="announce-number">
+                                        {{ announceNumber }}
+                                    </div>
+                                </ng-container>
+                            </div>
                         </button>
                     </div>
                 </div>

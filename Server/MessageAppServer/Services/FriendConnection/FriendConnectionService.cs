@@ -34,6 +34,24 @@ public class FriendConnectionService(DatabaseContext context) : IFriendConnectio
             .FirstOrDefault(u => u.Id == userGuid)!
             .SentFriendRequests.Where(fc => fc.Status == FriendStatus.Pending));
     }
+    
+    public async Task<int> GetPendingRequestCount(string userId)
+    {
+        var userGuid = new Guid(userId);
+        var user = await Context.Users
+            .Include(u => u.ReceivedFriendRequests)
+            .FirstOrDefaultAsync(u => u.Id == userGuid);
+
+        if (user == null)
+        {
+            throw new Exception("User not found");
+        }
+
+        var pendingRequestsCount = user.ReceivedFriendRequests
+            .Count(fc => fc.Status == FriendStatus.Pending);
+
+        return pendingRequestsCount;
+    }
 
     public async Task<bool> AlreadySentFriendRequest(FriendRequest request)
     {
