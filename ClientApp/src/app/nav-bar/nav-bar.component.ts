@@ -16,6 +16,7 @@ export class NavBarComponent implements OnInit {
 
     isDropstart: boolean = true;
     friendRequests: any[] = [];
+    announceNumber: number = 0;
 
     ngOnInit(): void {
         this.isLoggedIn();
@@ -90,8 +91,8 @@ export class NavBarComponent implements OnInit {
 
     private displayNewFriendRequests() {
         this.friendRequests.forEach(request => {
-            console.log("haha")
-            // console.log(`New friend request from ${request.senderId} to ${request.receiver}`);
+            console.log(`New friend request from ${request.senderId} to ${request.receiver}`);
+            this.announceNumber++;
         });
     }
 }

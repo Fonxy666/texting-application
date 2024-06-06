@@ -14,3 +14,13 @@
     height: 35px;
     border-radius: 50%;
 }
+
+.announce-number {
+    background-color: red;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
