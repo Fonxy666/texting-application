@@ -376,4 +376,73 @@ public class UserController(
             return StatusCode(500, new { message = "An error occurred while trying to get friend requests." });
         }
     }
+    
+    [HttpPatch("AcceptReceivedFriendRequest"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> AcceptFriendRequest([FromBody]FriendRequestManage request)
+    {
+        try
+        {
+            var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(request.RequestId);
+
+            if (existingRequest == null)
+            {
+                return NotFound(new { message = "Friend request not found." });
+            }
+
+            await friendConnectionService.AcceptReceivedFriendRequest(request.RequestId, request.UserId);
+
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error accepting friend request.");
+            return StatusCode(500, new { message = "An error occurred while trying to accept the friend request." });
+        }
+    }
+    
+    [HttpPatch("DeclineReceivedFriendRequest"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> DeclineFriendRequest([FromBody]FriendRequestManage request)
+    {
+        try
+        {
+            var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(request.RequestId);
+
+            if (existingRequest == null)
+            {
+                return NotFound(new { message = "Friend request not found." });
+            }
+
+            await friendConnectionService.DeclineReceivedFriendRequest(request.RequestId, request.UserId);
+
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error declining friend request.");
+            return StatusCode(500, new { message = "An error occurred while trying to decline the friend request." });
+        }
+    }
+    
+    [HttpDelete("DeleteSentFriendRequest"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> DeleteSentFriendRequest([FromQuery]FriendRequestManage request)
+    {
+        try
+        {
+            var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(request.RequestId);
+
+            if (existingRequest == null)
+            {
+                return NotFound(new { message = "Friend request not found." });
+            }
+
+            await friendConnectionService.DeleteSentFriendRequest(request.RequestId, request.UserId);
+
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error deleting friend request.");
+            return StatusCode(500, new { message = "An error occurred while trying to delete the friend request." });
+        }
+    }
 }

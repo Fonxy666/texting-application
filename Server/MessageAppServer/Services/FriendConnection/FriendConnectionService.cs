@@ -3,12 +3,23 @@ using Server.Database;
 using Server.Model;
 using Server.Model.Requests.User;
 using Server.Model.Responses.User;
+using Server.Services.User;
 
 namespace Server.Services.FriendConnection;
 
-public class FriendConnectionService(DatabaseContext context) : IFriendConnectionService
+public class FriendConnectionService(DatabaseContext context, IUserServices userServices) : IFriendConnectionService
 {
     private DatabaseContext Context { get; } = context;
+
+    public async Task<Model.FriendConnection> GetFriendRequestByIdAsync(string requestId)
+    {
+        if (!Guid.TryParse(requestId, out var requestGuid))
+        {
+            throw new ArgumentException("Invalid userId format.");
+        }
+        
+        return (await Context.FriendConnections!.FirstOrDefaultAsync(fc => fc.ConnectionId == requestGuid))!;
+    }
     public async Task SendFriendRequest(FriendRequest request)
     {
         if (!Guid.TryParse(request.SenderId, out var senderGuid) || !Guid.TryParse(request.Receiver, out var receiverGuid))
@@ -83,5 +94,71 @@ public class FriendConnectionService(DatabaseContext context) : IFriendConnectio
         return await Context.Users
             .AnyAsync(u => u.ReceivedFriendRequests
                 .Any(fc => fc.ReceiverId == receiverGuid && fc.SenderId == senderGuid && fc.Status != FriendStatus.Declined));
+    }
+
+    public async Task<bool> AcceptReceivedFriendRequest(string requestId, string receiverId)
+    {
+        if (!Guid.TryParse(requestId, out var requestGuid))
+        {
+            throw new ArgumentException("Invalid requestId format.");
+        }
+
+        var user = userServices.GetUserWithReceivedRequests(receiverId).Result;
+
+        var request = user.ReceivedFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestGuid);
+
+        if (request == null)
+        {
+            return false;
+        }
+        
+        request.SetStatusToAccepted();
+        
+        await Context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteSentFriendRequest(string requestId, string senderId)
+    {
+        if (!Guid.TryParse(requestId, out var requestGuid))
+        {
+            throw new ArgumentException("Invalid requestId format.");
+        }
+
+        var user = userServices.GetUserWithSentRequests(senderId).Result;
+
+        var request = user.SentFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestGuid);
+
+        if (request == null)
+        {
+            return false;
+        }
+        
+        request.SetStatusToDeclined();
+        
+        await Context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeclineReceivedFriendRequest(string requestId, string receiverId)
+    {
+        if (!Guid.TryParse(requestId, out var requestGuid))
+        {
+            throw new ArgumentException("Invalid requestId format.");
+        }
+
+        var user = userServices.GetUserWithReceivedRequests(receiverId).Result;
+
+        var request = user.ReceivedFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestGuid);
+
+        if (request == null)
+        {
+            return false;
+        }
+        
+        request.SetStatusToDeclined();
+        
+        await Context.SaveChangesAsync();
+        return true;
     }
 }

@@ -13,6 +13,30 @@ public class UserServices(UserManager<ApplicationUser> userManager, IConfigurati
         return userManager.Users.AnyAsync(user => user.Id.ToString() == id);
     }
 
+    public Task<ApplicationUser> GetUserWithSentRequests(string userId)
+    {
+        if (!Guid.TryParse(userId, out var userGuid))
+        {
+            throw new ArgumentException("Invalid id format.");
+        }
+
+        return Task.FromResult(userManager.Users
+            .Include(u => u.SentFriendRequests)
+            .FirstOrDefaultAsync(u => u.Id == userGuid).Result!);
+    }
+
+    public Task<ApplicationUser> GetUserWithReceivedRequests(string userId)
+    {
+        if (!Guid.TryParse(userId, out var userGuid))
+        {
+            throw new ArgumentException("Invalid id format.");
+        }
+
+        return Task.FromResult(userManager.Users
+            .Include(u => u.SentFriendRequests)
+            .FirstOrDefaultAsync(u => u.Id == userGuid).Result!);
+    }
+
     public string SaveImageLocally(string userNameFileName, string base64Image)
     {
         var folderPath = configuration["ImageFolderPath"]??Path.Combine(Directory.GetCurrentDirectory(), "Avatars");

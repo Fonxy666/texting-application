@@ -7,6 +7,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { FriendRequest } from '../../../model/FriendRequest';
 import { FriendService } from '../../../services/friend-service/friend.service';
 import { FriendRequestManage } from '../../../model/FriendRequestManage';
+import { FriendRequestManageRequest } from '../../../model/FriendRequestManageRequest';
 
 @Component({
   selector: 'app-send-friend-request',
@@ -17,6 +18,7 @@ import { FriendRequestManage } from '../../../model/FriendRequestManage';
 export class SendFriendRequestComponent implements OnInit {
     public friendRequests: FriendRequestManage[] = [];
     avatarUrl: { [key: string]: string } = {};
+    userId: string = "";
 
     constructor(
         private friendService: FriendService,
@@ -30,6 +32,7 @@ export class SendFriendRequestComponent implements OnInit {
     friendName!: FormGroup;
 
     ngOnInit(): void {
+        this.userId = this.cookieService.get("UserId");
         this.friendName = this.fb.group({
             userName: ['', [Validators.required]]
         });
@@ -38,7 +41,7 @@ export class SendFriendRequestComponent implements OnInit {
     }
     
     OnFormSubmit() {
-        var friendRequest = new FriendRequest(this.cookieService.get("UserId"), this.friendName.get('userName')?.value);
+        var friendRequest = new FriendRequest(this.userId, this.friendName.get('userName')?.value);
         
         this.http.post(`/api/v1/User/SendFriendRequest`, friendRequest, { withCredentials: true })
         .pipe(
@@ -68,8 +71,7 @@ export class SendFriendRequestComponent implements OnInit {
     }
 
     getFriendRequests() {
-        const userId = this.cookieService.get("UserId");
-        this.http.get(`/api/v1/User/GetFriendRequests?userId=${userId}`, { withCredentials: true })
+        this.http.get(`/api/v1/User/GetFriendRequests?userId=${this.userId}`, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )
@@ -131,6 +133,14 @@ export class SendFriendRequestComponent implements OnInit {
         return parts.join(', ');
     }
 
+    displayUserName(name: string) {
+        if (name.length <= 8) {
+            return name;
+        } else {
+            return name.slice(0, 8) + '...';
+        }
+    }
+
     loadUserAvatar(userId: string) {
         this.http.get(`/api/v1/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
         .pipe(
@@ -151,6 +161,46 @@ export class SendFriendRequestComponent implements OnInit {
                 console.error(error);
                 console.log("There is no Avatar for this user.");
                 this.avatarUrl[userId] = "https://ptetutorials.com/images/user-profile.png";
+            }
+        );
+    }
+
+    handleFriendRequestAccept(requestId: string) {
+        console.log(requestId);
+        var request = new FriendRequestManageRequest(requestId, this.userId);
+        this.http.patch(`/api/v1/User/AcceptReceivedFriendRequest`, request, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(
+            (response: any) => {
+                console.log(response);
+            },
+            (error) => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                console.error(error);
+            }
+        );
+    }
+
+    handleFriendRequestDecline(requestId: string) {
+        console.log(requestId);
+        var request = new FriendRequestManageRequest(requestId, this.userId);
+        this.http.patch(`/api/v1/User/DeclineReceivedFriendRequest`, request, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(
+            (response: any) => {
+                console.log(response);
+            },
+            (error) => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                console.error(error);
             }
         );
     }

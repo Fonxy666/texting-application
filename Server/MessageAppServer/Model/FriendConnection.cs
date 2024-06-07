@@ -34,4 +34,9 @@ public class FriendConnection
         Status = FriendStatus.Accepted;
         AcceptedTime = DateTime.Now;
     }
+
+    public void SetStatusToDeclined()
+    {
+        Status = FriendStatus.Declined;
+    }
 }
