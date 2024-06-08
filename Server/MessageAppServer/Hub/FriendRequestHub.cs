@@ -1,12 +1,15 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Server.Model;
+using Server.Model.Requests.User;
 using Server.Model.Responses.User;
+using Server.Services.User;
 
 namespace Server.Hub;
 
-public class FriendRequestHub(UserManager<ApplicationUser> userManager) : Microsoft.AspNetCore.SignalR.Hub
+public class FriendRequestHub(UserManager<ApplicationUser> userManager, IUserServices userServices) : Microsoft.AspNetCore.SignalR.Hub
 {
     private static readonly ConcurrentDictionary<string, string> Connections = new();
 
@@ -37,12 +40,20 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager) : Micros
         return result;
     }
 
-    public async Task SendFriendRequest(string senderId, string receiver)
+    public async Task SendFriendRequest(string requestId, string senderName, string senderId, string sentTime, string receiverName)
     {
-        var receiverId = userManager.Users.FirstOrDefault(au => au.UserName == receiver)!.Id;
-        if (Connections.TryGetValue(receiverId.ToString(), out var connectionId))
+        var receiverId = userManager.FindByNameAsync(receiverName).Result.Id.ToString();
+        if (Connections.TryGetValue(receiverId, out var connectionId))
         {
-            await Clients.Client(connectionId).SendAsync("ReceiveFriendRequest", senderId, receiverId);
+            await Clients.Client(connectionId).SendAsync("ReceiveFriendRequest", requestId, senderName, senderId, sentTime, receiverName);
+        }
+    }
+    
+    public async Task AcceptFriendRequest(string requestId, string senderName, string senderId, string sentTime)
+    {
+        if (Connections.TryGetValue(senderId, out var connectionId))
+        {
+            await Clients.Client(connectionId).SendAsync("AcceptFriendRequest", requestId, senderName, senderId, sentTime);
         }
     }
 }

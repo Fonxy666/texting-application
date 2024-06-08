@@ -22,3 +22,8 @@
     height: 30px;
     border-radius: 15px;
 }
+
+.border-top {
+    margin: 30px 0px 30px 0px;
+    border-top: 12px solid black;
+}

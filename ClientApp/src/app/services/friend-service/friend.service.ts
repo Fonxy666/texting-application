@@ -1,15 +1,17 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject } from 'rxjs';
-import { FriendRequest } from '../../model/FriendRequest';
 import { CookieService } from 'ngx-cookie-service';
+import { FriendRequestManage } from '../../model/FriendRequestManage';
+import { FriendRequestManageWithReceiverId } from '../../model/FriendRequestManageWithReceiverId';
 
 @Injectable({
     providedIn: 'root'
 })
 export class FriendService {
     public connection: signalR.HubConnection;
-    public friendRequests$ = new BehaviorSubject<FriendRequest[]>([]);
+    public friendRequests$ = new BehaviorSubject<FriendRequestManage[]>([]);
+    public friends$ = new BehaviorSubject<FriendRequestManage[]>([]);
 
     constructor(private cookieService: CookieService) {
         this.connection = new signalR.HubConnectionBuilder()
@@ -19,8 +21,12 @@ export class FriendService {
 
         this.initializeConnection();
 
-        this.connection.on("ReceiveFriendRequest", (senderId: string, receiver: string) => {
-            this.addRequest({ senderId, receiver });
+        this.connection.on("ReceiveFriendRequest", (requestId: string, senderName: string, senderId: string, sentTime: string) => {
+            this.addRequest(new FriendRequestManage(requestId, senderName, senderId, sentTime));
+        });
+
+        this.connection.on("AcceptFriendRequest", (requestId: string, senderName: string, senderId: string, sentTime: string) => {
+            this.updateFriendRequests(new FriendRequestManage(requestId, senderName, senderId, sentTime));
         });
     }
 
@@ -28,18 +34,19 @@ export class FriendService {
         try {
             await this.start();
             await this.joinHub(this.cookieService.get("UserId"));
+
+            this.connection.onclose(async () => {
+                console.log('Friend-SignalR connection closed, attempting to reconnect...');
+                await this.reconnect();
+            });
+
+            this.connection.onreconnecting(() => {
+                console.log('Friend-SignalR connection is attempting to reconnect...');
+            });
+
         } catch (error) {
             console.error('Friend-SignalR connection failed to start:', error);
         }
-    
-        this.connection.onclose(async () => {
-            console.log('Friend-SignalR connection closed, attempting to reconnect...');
-            await this.reconnect();
-        });
-    
-        this.connection.onreconnecting(() => {
-            console.log('Friend-SignalR connection is attempting to reconnect...');
-        });
     }
 
     private async start() {
@@ -70,17 +77,31 @@ export class FriendService {
         }
     }
 
-    public async sendFriendRequest(request: FriendRequest) {
+    public async sendFriendRequest(request: FriendRequestManageWithReceiverId) {
         try {
-            await this.connection.invoke("SendFriendRequest", request.senderId, request.receiver);
+            await this.connection.invoke("SendFriendRequest", request.requestId, request.senderName, request.senderId, request.sentTime, request.receiverName);
         } catch (error) {
-            console.error('Error sending friend request:', error);
+            console.error('Error sending friend request via SignalR:', error);
         }
     }
 
-    private addRequest(request: FriendRequest) {
+    private addRequest(request: FriendRequestManage) {
         const currentRequests = this.friendRequests$.value;
         const updatedRequests = [...currentRequests, request];
         this.friendRequests$.next(updatedRequests);
+    }
+
+    public async acceptFriendRequest(request: FriendRequestManage) {
+        try {
+            await this.connection.invoke("AcceptFriendRequest", request.requestId, request.senderName, request.senderId, request.sentTime);
+        } catch (error) {
+            console.error('Error sending friend request via SignalR:', error);
+        }
+    }
+
+    private updateFriendRequests(request: FriendRequestManage) {
+        const currentFriends = this.friends$.value;
+        const updatedFriends = [...currentFriends, request];
+        this.friendRequests$.next(updatedFriends);
     }
 }

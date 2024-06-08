@@ -20,7 +20,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
         
         return (await Context.FriendConnections!.FirstOrDefaultAsync(fc => fc.ConnectionId == requestGuid))!;
     }
-    public async Task SendFriendRequest(FriendRequest request)
+    public async Task<ShowFriendRequestResponse> SendFriendRequest(FriendRequest request)
     {
         if (!Guid.TryParse(request.SenderId, out var senderGuid) || !Guid.TryParse(request.Receiver, out var receiverGuid))
         {
@@ -29,8 +29,12 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
         
         var friendRequest = new Model.FriendConnection(senderGuid, receiverGuid);
         
-        await Context.FriendConnections!.AddAsync(friendRequest);
+        var savedRequest = await Context.FriendConnections!.AddAsync(friendRequest);
         await Context.SaveChangesAsync();
+
+        var result = new ShowFriendRequestResponse(savedRequest.Entity.ConnectionId, savedRequest.Entity.Sender.UserName!, savedRequest.Entity.SenderId.ToString(), savedRequest.Entity.SentTime);
+
+        return result;
     }
 
     public Task<IEnumerable<ShowFriendRequestResponse>> GetPendingFriendRequests(string userId)

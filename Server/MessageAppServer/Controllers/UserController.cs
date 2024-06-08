@@ -293,7 +293,7 @@ public class UserController(
     }
 
     [HttpPost("SendFriendRequest"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult> SendFriendRequest([FromBody] FriendRequest request)
+    public async Task<ActionResult<ShowFriendRequestResponse>> SendFriendRequest([FromBody]FriendRequest request)
     {
         try
         {
@@ -318,10 +318,9 @@ public class UserController(
                 return BadRequest(new { message = "You already sent a friend request to this user!" });
             }
 
-            await friendConnectionService.SendFriendRequest(databaseRequest);
-            await friendConnectionService.GetPendingFriendRequests(request.SenderId);
+            var result = await friendConnectionService.SendFriendRequest(databaseRequest);
         
-            return Ok(new { message = "Friend request sent." });
+            return Ok(result);
         }
         catch (Exception e)
         {
