@@ -1,4 +1,5 @@
-﻿using Server.Model.Requests.User;
+﻿using Server.Model;
+using Server.Model.Requests.User;
 using Server.Model.Responses.User;
 
 namespace Server.Services.FriendConnection;
@@ -13,4 +14,5 @@ public interface IFriendConnectionService
     Task<bool> AcceptReceivedFriendRequest(string requestId, string receiverId);
     Task<bool> DeleteSentFriendRequest(string requestId, string senderId);
     Task<bool> DeclineReceivedFriendRequest(string requestId, string receiverId);
+    Task<IEnumerable<ShowFriendRequestResponse>> GetFriends(string userId);
 }

@@ -93,15 +93,19 @@ export class FriendService {
 
     public async acceptFriendRequest(request: FriendRequestManage) {
         try {
-            await this.connection.invoke("AcceptFriendRequest", request.requestId, request.senderName, request.senderId, request.sentTime);
+            const sentTime = request.sentTime.toString();
+            await this.connection.invoke("AcceptFriendRequest", request.requestId, request.senderName, request.senderId, sentTime);
+            this.updateFriendRequests(request);
         } catch (error) {
-            console.error('Error sending friend request via SignalR:', error);
+            console.error('Error accepting friend request via SignalR:', error);
         }
     }
-
+    
     private updateFriendRequests(request: FriendRequestManage) {
-        const currentFriends = this.friends$.value;
-        const updatedFriends = [...currentFriends, request];
-        this.friendRequests$.next(updatedFriends);
+        const currentRequests = this.friendRequests$.value.filter(r => r.requestId !== request.requestId);
+        const updatedFriends = [...this.friends$.value, request];
+    
+        this.friendRequests$.next(currentRequests);
+        this.friends$.next(updatedFriends);
     }
 }

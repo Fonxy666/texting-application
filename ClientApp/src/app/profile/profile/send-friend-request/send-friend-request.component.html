@@ -1,10 +1,10 @@
 <div>
     <p-toast position="top-center"></p-toast>
     <div class="mb-3 text-style-15-px input-container">
+        <div class="border-top">
+            Friend requests
+        </div>
         <ng-container *ngFor="let request of this.friendRequests">
-            <div class="border-top">
-                Friend requests
-            </div>
             <div class="display-request">
                 <div class="display-name">
                     Incoming friend request from {{ this.displayUserName(request.senderName) }}
@@ -19,10 +19,10 @@
                 </div>
             </div>
         </ng-container>
+        <div class="border-top">
+            Friends
+        </div>
         <ng-container *ngFor="let request of this.friends">
-            <div class="border-top">
-                Friends
-            </div>
             <div class="display-request">
                 <div class="display-name">
                     {{ this.displayUserName(request.senderName) }}

@@ -53,6 +53,7 @@ export class SendFriendRequestComponent implements OnInit {
             })
         })
     
+        this.getPendingFriendRequests();
         this.getFriendRequests();
     }
 
@@ -66,7 +67,6 @@ export class SendFriendRequestComponent implements OnInit {
         .subscribe(
             (response: FriendRequestManage) => {
                 if (response) {
-                    console.log(response);
                     this.messageService.add({ severity: 'success', summary: 'Success', detail: `Friend request successfully sent to '${friendRequest.receiver}'.`, styleClass: 'ui-toast-message-success' });
                     this.friendService.sendFriendRequest(new FriendRequestManageWithReceiverId(response.requestId, response.senderName, response.senderId, response.sentTime, friendRequest.receiver));
                     this.friendName.reset();
@@ -85,7 +85,7 @@ export class SendFriendRequestComponent implements OnInit {
         );
     }
 
-    getFriendRequests() {
+    getPendingFriendRequests() {
         this.http.get(`/api/v1/User/GetFriendRequests?userId=${this.userId}`, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
@@ -95,6 +95,30 @@ export class SendFriendRequestComponent implements OnInit {
                 this.friendRequests = response;
 
                 this.friendRequests.forEach(request => {
+                    this.loadUserAvatar(request.senderId);
+                });
+            },
+            (error: any) => {
+                console.log(error);
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                } else {
+                    console.log(error);
+                }
+            }
+        );
+    }
+
+    getFriendRequests() {
+        this.http.get(`/api/v1/User/GetFriends?userId=${this.userId}`, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(
+            (response: FriendRequestManage[]) => {
+                this.friends = response;
+
+                this.friends.forEach(request => {
                     this.loadUserAvatar(request.senderId);
                 });
             },
@@ -181,14 +205,13 @@ export class SendFriendRequestComponent implements OnInit {
 
     handleFriendRequestAccept(request: FriendRequestManage) {
         const friendRequest = new FriendRequestManageRequest(request.requestId, this.userId);
-        this.http.patch(`/api/v1/User/AcceptReceivedFriendRequest`, request, { withCredentials: true })
+        this.http.patch(`/api/v1/User/AcceptReceivedFriendRequest`, friendRequest, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )
         .subscribe(
-            (response: any) => {
-                this.friendService.acceptFriendRequest(new FriendRequestManage(response.requestId, response.senderName, response.senderId, response.sentTime));
-                console.log(response);
+            () => {
+                this.friendService.acceptFriendRequest(new FriendRequestManage(request.requestId, request.senderName, request.senderId, request.sentTime));
             },
             (error) => {
                 if (error.status === 403) {

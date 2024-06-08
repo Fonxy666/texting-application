@@ -102,23 +102,27 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
 
     public async Task<bool> AcceptReceivedFriendRequest(string requestId, string receiverId)
     {
-        if (!Guid.TryParse(requestId, out var requestGuid))
+        var requestGuid = new Guid(requestId);
+        var userGuid = new Guid(receiverId);
+        var request = await Context.FriendConnections.FindAsync(requestGuid);
+
+        if (request == null || request.ReceiverId != userGuid)
         {
-            throw new ArgumentException("Invalid requestId format.");
+            throw new ArgumentException("Invalid request.");
         }
 
-        var user = userServices.GetUserWithReceivedRequests(receiverId).Result;
-
-        var request = user.ReceivedFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestGuid);
-
-        if (request == null)
-        {
-            return false;
-        }
-        
         request.SetStatusToAccepted();
-        
         await Context.SaveChangesAsync();
+
+        var user = await Context.Users.Include(u => u.Friends).FirstOrDefaultAsync(u => u.Id == userGuid);
+        var friend = await Context.Users.Include(u => u.Friends).FirstOrDefaultAsync(u => u.Id == request.SenderId);
+
+        if (user != null && friend != null)
+        {
+            user.Friends.Add(friend);
+            friend.Friends.Add(user);
+            await Context.SaveChangesAsync();
+        }
         return true;
     }
 
@@ -164,5 +168,44 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
         
         await Context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<IEnumerable<ShowFriendRequestResponse>> GetFriends(string userId)
+    {
+        var userGuid = new Guid(userId);
+        var user = await Context.Users
+            .Include(u => u.Friends)
+            .Include(u => u.ReceivedFriendRequests)
+            .ThenInclude(fr => fr.Sender)
+            .Include(u => u.SentFriendRequests)
+            .ThenInclude(fr => fr.Receiver)
+            .FirstOrDefaultAsync(u => u.Id == userGuid);
+
+        if (user == null)
+        {
+            throw new ArgumentException("User not found.");
+        }
+
+        var acceptedReceivedRequests = user.ReceivedFriendRequests
+            .Where(fr => fr.Status == FriendStatus.Accepted)
+            .Select(fr => new ShowFriendRequestResponse(
+                fr.ConnectionId, 
+                fr.Sender.UserName!,
+                fr.Sender.Id.ToString(),
+                fr.SentTime))
+            .ToList();
+
+        var acceptedSentRequests = user.SentFriendRequests
+            .Where(fr => fr.Status == FriendStatus.Accepted)
+            .Select(fr => new ShowFriendRequestResponse(
+                fr.ConnectionId, 
+                fr.Receiver.UserName!,
+                fr.Receiver.Id.ToString(),
+                fr.SentTime))
+            .ToList();
+
+        var allFriends = acceptedReceivedRequests.Concat(acceptedSentRequests).ToList();
+
+        return allFriends;
     }
 }

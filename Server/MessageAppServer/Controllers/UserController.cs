@@ -444,4 +444,27 @@ public class UserController(
             return StatusCode(500, new { message = "An error occurred while trying to delete the friend request." });
         }
     }
+    
+    [HttpGet("GetFriends"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> GetFriends([FromQuery]string userId)
+    {
+        try
+        {
+            var existingUser = await userManager.FindByIdAsync(userId);
+
+            if (existingUser == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            var result = await friendConnectionService.GetFriends(userId);
+
+            return Ok(result);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error sending friend request.");
+            return StatusCode(500, new { message = "An error occurred while trying to get friend requests." });
+        }
+    }
 }
