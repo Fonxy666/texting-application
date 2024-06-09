@@ -43,17 +43,24 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IUserSer
     public async Task SendFriendRequest(string requestId, string senderName, string senderId, string sentTime, string receiverName)
     {
         var receiverId = userManager.FindByNameAsync(receiverName).Result.Id.ToString();
-        if (Connections.TryGetValue(receiverId, out var connectionId))
+        if (Connections.TryGetValue(receiverId, out var receiverConnectionId))
         {
-            await Clients.Client(connectionId).SendAsync("ReceiveFriendRequest", requestId, senderName, senderId, sentTime, receiverName);
+            Console.WriteLine($"2. connection: {receiverConnectionId}");
+            await Clients.Client(receiverConnectionId).SendAsync("ReceiveFriendRequest", requestId, senderName, senderId, sentTime, receiverName, receiverId);
+        }
+        if (Connections.TryGetValue(senderId, out var senderConnectionId))
+        {
+            Console.WriteLine($"2. connection: {senderConnectionId}");
+            await Clients.Client(senderConnectionId).SendAsync("ReceiveFriendRequest", requestId, senderName, senderId, sentTime, receiverName, receiverId);
         }
     }
     
-    public async Task AcceptFriendRequest(string requestId, string senderName, string senderId, string sentTime)
+    public async Task AcceptFriendRequest(string requestId, string senderName, string senderId, string sentTime, string receiverName)
     {
+        var receiverId = userManager.FindByNameAsync(receiverName).Result.Id.ToString();
         if (Connections.TryGetValue(senderId, out var connectionId))
         {
-            await Clients.Client(connectionId).SendAsync("AcceptFriendRequest", requestId, senderName, senderId, sentTime);
+            await Clients.Client(connectionId).SendAsync("AcceptFriendRequest", requestId, senderName, senderId, sentTime, receiverName, receiverId);
         }
     }
 }

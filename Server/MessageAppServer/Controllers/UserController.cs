@@ -350,7 +350,6 @@ public class UserController(
             logger.LogError(e, $"Error sending friend request.");
             return StatusCode(500, new { message = "An error occurred while trying to get friend requests count." });
         }
-        
     }
     
     [HttpGet("GetFriendRequests"), Authorize(Roles = "User, Admin")]
@@ -365,9 +364,12 @@ public class UserController(
                 return NotFound(new { message = "User not found." });
             }
 
-            var result = await friendConnectionService.GetPendingFriendRequests(userId);
+            var receivedFriendRequests = await friendConnectionService.GetPendingReceivedFriendRequests(userId);
+            var sentFriendRequests = await friendConnectionService.GetPendingSentFriendRequests(userId);
 
-            return Ok(result);
+            var allFriendRequests = receivedFriendRequests.Concat(sentFriendRequests).ToList();
+
+            return Ok(allFriendRequests);
         }
         catch (Exception e)
         {

@@ -32,41 +32,71 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
         var savedRequest = await Context.FriendConnections!.AddAsync(friendRequest);
         await Context.SaveChangesAsync();
 
-        var result = new ShowFriendRequestResponse(savedRequest.Entity.ConnectionId, savedRequest.Entity.Sender.UserName!, savedRequest.Entity.SenderId.ToString(), savedRequest.Entity.SentTime);
+        var result = new ShowFriendRequestResponse(
+            savedRequest.Entity.ConnectionId,
+            savedRequest.Entity.Sender.UserName!,
+            savedRequest.Entity.SenderId.ToString(),
+            savedRequest.Entity.SentTime,
+            savedRequest.Entity.Receiver.UserName,
+            savedRequest.Entity.Receiver.Id.ToString());
 
         return result;
     }
 
-    public Task<IEnumerable<ShowFriendRequestResponse>> GetPendingFriendRequests(string userId)
+    public async Task<IEnumerable<ShowFriendRequestResponse>> GetPendingReceivedFriendRequests(string userId)
     {
         var userGuid = new Guid(userId);
-        var user = Context.Users
+        var user = await Context.Users
             .Include(u => u.ReceivedFriendRequests)
             .ThenInclude(fr => fr.Sender)
-            .FirstOrDefault(u => u.Id == userGuid);
+            .FirstOrDefaultAsync(u => u.Id == userGuid);
 
         if (user == null)
         {
             throw new ArgumentException("User not found.");
         }
 
-        Console.WriteLine(user.UserName);
-
-        if (user.ReceivedFriendRequests == null)
-        {
-            throw new InvalidOperationException("ReceivedFriendRequests collection is null.");
-        }
-
-        var pendingRequests = user.ReceivedFriendRequests
+        var pendingRequests = user.ReceivedFriendRequests?
             .Where(fr => fr.Status == FriendStatus.Pending)
             .Select(fr => new ShowFriendRequestResponse(
                 fr.ConnectionId, 
                 fr.Sender.UserName!,
                 fr.Sender.Id.ToString(),
-                fr.SentTime))
-            .ToList();
+                fr.SentTime,
+                fr.Receiver.UserName,
+                fr.Receiver.Id.ToString()
+            ))
+            .ToList() ?? new List<ShowFriendRequestResponse>();
 
-        return Task.FromResult<IEnumerable<ShowFriendRequestResponse>>(pendingRequests);
+        return pendingRequests;
+    }
+    
+    public async Task<IEnumerable<ShowFriendRequestResponse>> GetPendingSentFriendRequests(string userId)
+    {
+        var userGuid = new Guid(userId);
+        var user = await Context.Users
+            .Include(u => u.SentFriendRequests)
+            .ThenInclude(fr => fr.Receiver)
+            .FirstOrDefaultAsync(u => u.Id == userGuid);
+
+        if (user == null)
+        {
+            throw new ArgumentException("User not found.");
+        }
+
+        var pendingRequests = user.SentFriendRequests?
+            .Where(fr => fr.Status == FriendStatus.Pending)
+            .Select(fr => new ShowFriendRequestResponse(
+                fr.ConnectionId, 
+                fr.Sender.UserName!,
+                fr.Sender.Id.ToString(),
+                fr.SentTime,
+                fr.Receiver.UserName,
+                fr.Receiver.Id.ToString()
+            ))
+            .ToList() ?? new List<ShowFriendRequestResponse>();
+
+        return pendingRequests;
     }
     
     public async Task<int> GetPendingRequestCount(string userId)
@@ -192,16 +222,22 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
                 fr.ConnectionId, 
                 fr.Sender.UserName!,
                 fr.Sender.Id.ToString(),
-                fr.SentTime))
+                fr.SentTime, 
+                fr.Receiver.UserName,
+                fr.Receiver.Id.ToString()
+            ))
             .ToList();
 
         var acceptedSentRequests = user.SentFriendRequests
             .Where(fr => fr.Status == FriendStatus.Accepted)
             .Select(fr => new ShowFriendRequestResponse(
                 fr.ConnectionId, 
-                fr.Receiver.UserName!,
-                fr.Receiver.Id.ToString(),
-                fr.SentTime))
+                fr.Sender.UserName!,
+                fr.Sender.Id.ToString(),
+                fr.SentTime, 
+                fr.Receiver.UserName,
+                fr.Receiver.Id.ToString()
+            ))
             .ToList();
 
         var allFriends = acceptedReceivedRequests.Concat(acceptedSentRequests).ToList();
