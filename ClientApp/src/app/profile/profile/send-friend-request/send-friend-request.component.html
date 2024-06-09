@@ -49,7 +49,7 @@
                         <label>
                             {{ this.displayRemainingTime(request.sentTime) }}
                         </label>
-                        <i class="fa fa-close mx-3" aria-hidden="true" (click)="this.handleFriendRequestDecline(request.requestId)"></i>
+                        <i class="fa fa-close mx-3" aria-hidden="true" (click)="this.deleteFriend(request.requestId, request.receiverId, request.senderId)"></i>
                     </div>
                 </div>
             </ng-container>
@@ -63,7 +63,7 @@
                         <label>
                             {{ this.displayRemainingTime(request.sentTime) }}
                         </label>
-                        <i class="fa fa-close mx-3" aria-hidden="true" (click)="this.handleFriendRequestDecline(request.requestId)"></i>
+                        <i class="fa fa-close mx-3" aria-hidden="true" (click)="this.deleteFriend(request.requestId, request.receiverId, request.senderId)"></i>
                     </div>
                 </div>
             </ng-container>

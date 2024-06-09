@@ -32,6 +32,10 @@ export class FriendService {
         this.connection.on("DeclineFriendRequest", (requestId: string) => {
             this.updateFriendRequestsWithDeclinedRequest(requestId);
         });
+
+        this.connection.on("DeleteFriend", (requestId: string) => {
+            this.deleteFromFriends(requestId);
+        });
     }
 
     private async initializeConnection() {
@@ -125,5 +129,20 @@ export class FriendService {
         const currentRequests = this.friendRequests$.value.filter(r => r.requestId !== requestId);
     
         this.friendRequests$.next(currentRequests);
+    }
+
+    public async deleteFriend(requestId: string, receiverId: string, senderId: string) {
+        try {
+            await this.connection.invoke("DeleteFriend", requestId, receiverId, senderId);
+            this.deleteFromFriends(requestId);
+        } catch (error) {
+            console.error('Error accepting friend request via SignalR:', error);
+        }
+    }
+
+    private deleteFromFriends(requestId: string) {
+        const updatedFriends = this.friends$.value.filter(r => r.requestId !== requestId);
+    
+        this.friends$.next(updatedFriends);
     }
 }

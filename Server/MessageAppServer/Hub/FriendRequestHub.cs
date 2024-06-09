@@ -76,4 +76,16 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IUserSer
             await Clients.Client(senderConnectionId).SendAsync("DeclineFriendRequest", requestId);
         }
     }
+    
+    public async Task DeleteFriend(string requestId, string receiverId, string senderId)
+    {
+        if (Connections.TryGetValue(receiverId, out var receiverConnectionId))
+        {
+            await Clients.Client(receiverConnectionId).SendAsync("DeleteFriend", requestId);
+        }
+        if (Connections.TryGetValue(senderId, out var senderConnectionId))
+        {
+            await Clients.Client(senderConnectionId).SendAsync("DeleteFriend", requestId);
+        }
+    }
 }

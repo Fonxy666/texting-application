@@ -263,4 +263,25 @@ export class SendFriendRequestComponent implements OnInit {
             }
         );
     }
+
+    deleteFriend(requestId: string, receiverId: string, senderId: string) {
+        console.log(requestId);
+        this.http.delete(`/api/v1/User/DeleteFriend?connectionId=${requestId}`, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(
+            (response) => {
+                if (response) {
+                    this.friendService.deleteFriend(requestId, receiverId, senderId);
+                }
+            },
+            (error) => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                console.error(error);
+            }
+        );
+    }
 }

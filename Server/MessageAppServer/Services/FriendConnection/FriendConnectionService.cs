@@ -15,7 +15,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
     {
         if (!Guid.TryParse(requestId, out var requestGuid))
         {
-            throw new ArgumentException("Invalid userId format.");
+            throw new ArgumentException("Invalid requestId format.");
         }
         
         return (await Context.FriendConnections!.FirstOrDefaultAsync(fc => fc.ConnectionId == requestGuid))!;
@@ -243,5 +243,32 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
         var allFriends = acceptedReceivedRequests.Concat(acceptedSentRequests).ToList();
 
         return allFriends;
+    }
+
+    public async Task<bool> DeleteFriend(string connectionId)
+    {
+        if (!Guid.TryParse(connectionId, out var connectionGuid))
+        {
+            throw new ArgumentException("Invalid connectionId format.");
+        }
+
+        var friendConnection = await Context.FriendConnections
+            .Include(fc => fc.Sender)
+            .Include(fc => fc.Receiver)
+            .FirstOrDefaultAsync(fc => fc.ConnectionId == connectionGuid);
+
+        if (friendConnection == null)
+        {
+            return false;
+        }
+
+        friendConnection.Sender.Friends.Remove(friendConnection.Receiver);
+        friendConnection.Receiver.Friends.Remove(friendConnection.Sender);
+
+        Context.FriendConnections.Remove(friendConnection);
+
+        await Context.SaveChangesAsync();
+
+        return true;
     }
 }

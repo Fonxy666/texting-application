@@ -24,7 +24,8 @@ public class UserController(
     ILogger<UserController> logger,
     IEmailSender emailSender,
     IFriendConnectionService friendConnectionService,
-    IConfiguration configuration) : ControllerBase
+    IConfiguration configuration
+    ) : ControllerBase
 {
     [HttpGet("GetUsername"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<UsernameResponse>> GetUsername([FromQuery]string userId)
@@ -465,7 +466,30 @@ public class UserController(
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error sending friend request.");
+            logger.LogError(e, $"Error getting friend request.");
+            return StatusCode(500, new { message = "An error occurred while trying to get friend request." });
+        }
+    }
+    
+    [HttpDelete("DeleteFriend"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> DeleteFriend([FromQuery]string connectionId)
+    {
+        try
+        {
+            var existingFriendConnection = await friendConnectionService.GetFriendRequestByIdAsync(connectionId);
+
+            if (existingFriendConnection == null)
+            {
+                return NotFound(new { message = "Friend connection not found." });
+            }
+
+            var result = await friendConnectionService.DeleteFriend(connectionId);
+
+            return Ok(result);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error sending friend request.");
             return StatusCode(500, new { message = "An error occurred while trying to get friend requests." });
         }
     }
