@@ -21,12 +21,13 @@ export class FriendService {
 
         this.initializeConnection();
 
-        this.connection.on("ReceiveFriendRequest", (requestId: string, senderName: string, senderId: string, sentTime: string) => {
-            this.addRequest(new FriendRequestManage(requestId, senderName, senderId, sentTime));
+        this.connection.on("ReceiveFriendRequest", (requestId: string, senderName: string, senderId: string, sentTime: string, receiverName: string, receiverId: string) => {
+            console.log(receiverId);
+            this.addRequest(new FriendRequestManage(requestId, senderName, senderId, sentTime, receiverName, receiverId));
         });
 
-        this.connection.on("AcceptFriendRequest", (requestId: string, senderName: string, senderId: string, sentTime: string) => {
-            this.updateFriendRequests(new FriendRequestManage(requestId, senderName, senderId, sentTime));
+        this.connection.on("AcceptFriendRequest", (requestId: string, senderName: string, senderId: string, sentTime: string, receiverName: string, receiverId: string) => {
+            this.updateFriendRequests(new FriendRequestManage(requestId, senderName, senderId, sentTime, receiverName, receiverId));
         });
     }
 
@@ -93,8 +94,7 @@ export class FriendService {
 
     public async acceptFriendRequest(request: FriendRequestManage) {
         try {
-            const sentTime = request.sentTime.toString();
-            await this.connection.invoke("AcceptFriendRequest", request.requestId, request.senderName, request.senderId, sentTime);
+            await this.connection.invoke("AcceptFriendRequest", request.requestId, request.senderName, request.senderId, request.sentTime, request.receiverName);
             this.updateFriendRequests(request);
         } catch (error) {
             console.error('Error accepting friend request via SignalR:', error);

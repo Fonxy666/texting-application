@@ -43,6 +43,7 @@ export class SendFriendRequestComponent implements OnInit {
             this.friendRequests = res;
             res.forEach(request => {
                 this.loadUserAvatar(request.senderId);
+                this.loadUserAvatar(request.receiverId);
             })
         });
 
@@ -50,6 +51,7 @@ export class SendFriendRequestComponent implements OnInit {
             this.friends = res;
             res.forEach(request => {
                 this.loadUserAvatar(request.senderId);
+                this.loadUserAvatar(request.receiverId);
             })
         })
     
@@ -96,6 +98,7 @@ export class SendFriendRequestComponent implements OnInit {
 
                 this.friendRequests.forEach(request => {
                     this.loadUserAvatar(request.senderId);
+                    this.loadUserAvatar(request.receiverId);
                 });
             },
             (error: any) => {
@@ -116,10 +119,12 @@ export class SendFriendRequestComponent implements OnInit {
         )
         .subscribe(
             (response: FriendRequestManage[]) => {
+                console.log(response);
                 this.friends = response;
 
                 this.friends.forEach(request => {
                     this.loadUserAvatar(request.senderId);
+                    this.loadUserAvatar(request.receiverId);
                 });
             },
             (error: any) => {
@@ -211,7 +216,7 @@ export class SendFriendRequestComponent implements OnInit {
         )
         .subscribe(
             () => {
-                this.friendService.acceptFriendRequest(new FriendRequestManage(request.requestId, request.senderName, request.senderId, request.sentTime));
+                this.friendService.acceptFriendRequest(new FriendRequestManage(request.requestId, request.senderName, request.senderId, request.sentTime, request.receiverName, request.receiverId));
             },
             (error) => {
                 if (error.status === 403) {
