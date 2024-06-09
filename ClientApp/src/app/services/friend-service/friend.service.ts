@@ -22,12 +22,15 @@ export class FriendService {
         this.initializeConnection();
 
         this.connection.on("ReceiveFriendRequest", (requestId: string, senderName: string, senderId: string, sentTime: string, receiverName: string, receiverId: string) => {
-            console.log(receiverId);
             this.addRequest(new FriendRequestManage(requestId, senderName, senderId, sentTime, receiverName, receiverId));
         });
 
         this.connection.on("AcceptFriendRequest", (requestId: string, senderName: string, senderId: string, sentTime: string, receiverName: string, receiverId: string) => {
             this.updateFriendRequests(new FriendRequestManage(requestId, senderName, senderId, sentTime, receiverName, receiverId));
+        });
+
+        this.connection.on("DeclineFriendRequest", (requestId: string) => {
+            this.updateFriendRequestsWithDeclinedRequest(requestId);
         });
     }
 
@@ -107,5 +110,20 @@ export class FriendService {
     
         this.friendRequests$.next(currentRequests);
         this.friends$.next(updatedFriends);
+    }
+
+    public async declineFriendRequest(requestId: string) {
+        try {
+            await this.connection.invoke("DeclineFriendRequest", requestId);
+            this.updateFriendRequestsWithDeclinedRequest(requestId);
+        } catch (error) {
+            console.error('Error accepting friend request via SignalR:', error);
+        }
+    }
+
+    private updateFriendRequestsWithDeclinedRequest(requestId: string) {
+        const currentRequests = this.friendRequests$.value.filter(r => r.requestId !== requestId);
+    
+        this.friendRequests$.next(currentRequests);
     }
 }

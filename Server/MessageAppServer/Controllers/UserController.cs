@@ -425,18 +425,18 @@ public class UserController(
     }
     
     [HttpDelete("DeleteSentFriendRequest"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult> DeleteSentFriendRequest([FromQuery]FriendRequestManage request)
+    public async Task<ActionResult> DeleteSentFriendRequest([FromQuery]string requestId, string userId)
     {
         try
         {
-            var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(request.RequestId);
+            var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(requestId);
 
             if (existingRequest == null)
             {
                 return NotFound(new { message = "Friend request not found." });
             }
 
-            await friendConnectionService.DeleteSentFriendRequest(request.RequestId, request.UserId);
+            await friendConnectionService.DeleteSentFriendRequest(requestId, userId);
 
             return Ok();
         }

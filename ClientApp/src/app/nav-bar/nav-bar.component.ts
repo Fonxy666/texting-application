@@ -21,7 +21,6 @@ export class NavBarComponent implements OnInit {
     ) {}
 
     isDropstart: boolean = true;
-    friendRequests: any[] = [];
     announceNumber: number = 0;
     userId: string = "";
 
@@ -35,8 +34,12 @@ export class NavBarComponent implements OnInit {
         this.getAnnounceNumber();
 
         this.friendService.friendRequests$.subscribe(requests => {
-            this.friendRequests = requests;
-            this.displayNewFriendRequests();
+            this.announceNumber = 0;
+            requests.forEach(request => {
+                if (request.senderId !== this.userId) {
+                    this.announceNumber++;
+                }
+            })
         });
     }
 
@@ -115,11 +118,5 @@ export class NavBarComponent implements OnInit {
                 }
             );
         }
-    }
-
-    private displayNewFriendRequests() {
-        this.friendRequests.forEach(request => {
-            this.announceNumber++;
-        });
     }
 }

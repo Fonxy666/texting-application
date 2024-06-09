@@ -5,11 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using Server.Model;
 using Server.Model.Requests.User;
 using Server.Model.Responses.User;
+using Server.Services.FriendConnection;
 using Server.Services.User;
 
 namespace Server.Hub;
 
-public class FriendRequestHub(UserManager<ApplicationUser> userManager, IUserServices userServices) : Microsoft.AspNetCore.SignalR.Hub
+public class FriendRequestHub(UserManager<ApplicationUser> userManager, IUserServices userServices, IFriendConnectionService friendConnectionService) : Microsoft.AspNetCore.SignalR.Hub
 {
     private static readonly ConcurrentDictionary<string, string> Connections = new();
 
@@ -45,12 +46,10 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IUserSer
         var receiverId = userManager.FindByNameAsync(receiverName).Result.Id.ToString();
         if (Connections.TryGetValue(receiverId, out var receiverConnectionId))
         {
-            Console.WriteLine($"2. connection: {receiverConnectionId}");
             await Clients.Client(receiverConnectionId).SendAsync("ReceiveFriendRequest", requestId, senderName, senderId, sentTime, receiverName, receiverId);
         }
         if (Connections.TryGetValue(senderId, out var senderConnectionId))
         {
-            Console.WriteLine($"2. connection: {senderConnectionId}");
             await Clients.Client(senderConnectionId).SendAsync("ReceiveFriendRequest", requestId, senderName, senderId, sentTime, receiverName, receiverId);
         }
     }
@@ -61,6 +60,20 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IUserSer
         if (Connections.TryGetValue(senderId, out var connectionId))
         {
             await Clients.Client(connectionId).SendAsync("AcceptFriendRequest", requestId, senderName, senderId, sentTime, receiverName, receiverId);
+        }
+    }
+    
+    public async Task DeclineFriendRequest(string requestId)
+    {
+        var request = friendConnectionService.GetFriendRequestByIdAsync(requestId).Result;
+        
+        if (Connections.TryGetValue(request.ReceiverId.ToString(), out var receiverConnectionId))
+        {
+            await Clients.Client(receiverConnectionId).SendAsync("DeclineFriendRequest", requestId);
+        }
+        if (Connections.TryGetValue(request.SenderId.ToString(), out var senderConnectionId))
+        {
+            await Clients.Client(senderConnectionId).SendAsync("DeclineFriendRequest", requestId);
         }
     }
 }

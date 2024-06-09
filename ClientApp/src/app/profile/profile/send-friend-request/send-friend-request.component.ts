@@ -119,7 +119,6 @@ export class SendFriendRequestComponent implements OnInit {
         )
         .subscribe(
             (response: FriendRequestManage[]) => {
-                console.log(response);
                 this.friends = response;
 
                 this.friends.forEach(request => {
@@ -234,8 +233,27 @@ export class SendFriendRequestComponent implements OnInit {
             this.errorHandler.handleError401()
         )
         .subscribe(
-            (response: any) => {
+            () => {
+                this.friendService.declineFriendRequest(request.requestId);
+            },
+            (error) => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                console.error(error);
+            }
+        );
+    }
+
+    handleFriendRequestDelete(requestId: string) {
+        this.http.delete(`/api/v1/User/DeleteSentFriendRequest?requestId=${requestId}&userId=${this.userId}`, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(
+            (response) => {
                 console.log(response);
+                this.friendService.declineFriendRequest(requestId);
             },
             (error) => {
                 if (error.status === 403) {

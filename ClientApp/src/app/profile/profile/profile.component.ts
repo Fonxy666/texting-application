@@ -70,8 +70,13 @@ export class ProfileComponent implements OnInit {
         this.getAnnounceNumber();
 
         this.friendService.friendRequests$.subscribe(requests => {
+            this.announceNumber = 0;
             this.friendRequests = requests;
-            this.displayNewFriendRequests();
+            requests.forEach(request => {
+                if (request.senderId !== this.userId) {
+                    this.announceNumber++;
+                }
+            })
         });
     }
 
@@ -197,12 +202,6 @@ export class ProfileComponent implements OnInit {
                 }
             );
         }
-    }
-
-    private displayNewFriendRequests() {
-        this.friendRequests.forEach(request => {
-            this.announceNumber++;
-        });
     }
 }
 
