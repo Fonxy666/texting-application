@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Server.Model;
@@ -10,23 +11,14 @@ using Server.Services.User;
 
 namespace Server.Hub;
 
-public class FriendRequestHub(UserManager<ApplicationUser> userManager, IUserServices userServices, IFriendConnectionService friendConnectionService) : Microsoft.AspNetCore.SignalR.Hub
+public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendConnectionService friendConnectionService) : Microsoft.AspNetCore.SignalR.Hub
 {
-    private static readonly ConcurrentDictionary<string, string> Connections = new();
-
-    public override async Task OnConnectedAsync()
-    {
-        var userId = Context.GetHttpContext().Request.Query["userId"].ToString();
-        if (!string.IsNullOrEmpty(userId))
-        {
-            Connections[userId] = Context.ConnectionId;
-        }
-        await base.OnConnectedAsync();
-    }
+    public static ConcurrentDictionary<string, string> Connections = new();
 
     public override async Task OnDisconnectedAsync(Exception exception)
     {
-        var userId = Connections.FirstOrDefault(x => x.Value == Context.ConnectionId).Key;
+        var connectionId = Context.ConnectionId;
+        var userId = Connections.FirstOrDefault(x => x.Value == connectionId).Key;
         if (userId != null)
         {
             Connections.TryRemove(userId, out _);

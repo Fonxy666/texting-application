@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Server.Database;
 using Server.Model;
-using Server.Model.Requests;
 using Server.Model.Requests.User;
 using Server.Model.Responses.Auth;
 using Server.Model.Responses.User;
@@ -142,6 +142,7 @@ public class UserController(
         }
     }
 
+    [ExcludeFromCodeCoverage]
     [HttpGet("GetImage"), Authorize(Roles = "User, Admin")]
     public async Task<IActionResult> GetImageWithId([FromQuery]string userId)
     {

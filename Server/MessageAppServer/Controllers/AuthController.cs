@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -135,6 +136,7 @@ public class AuthController(
         }
     }
     
+    [ExcludeFromCodeCoverage]
     [HttpGet("LoginWithFacebook")]
     public async Task FacebookLogin()
     {
@@ -152,6 +154,7 @@ public class AuthController(
         }
     }
     
+    [ExcludeFromCodeCoverage]
     [HttpGet("FacebookResponse")]
     public async Task<IActionResult> FacebookResponse()
     {
@@ -184,6 +187,7 @@ public class AuthController(
         }
     }
     
+    [ExcludeFromCodeCoverage]
     [HttpGet("LoginWithGoogle")]
     public async Task GoogleLogin()
     {
@@ -201,6 +205,7 @@ public class AuthController(
         }
     }
 
+    [ExcludeFromCodeCoverage]
     [HttpGet("GoogleResponse")]
     public async Task<IActionResult> GoogleResponse()
     {
