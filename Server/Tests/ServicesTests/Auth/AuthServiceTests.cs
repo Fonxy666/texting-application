@@ -10,15 +10,9 @@ using Assert = NUnit.Framework.Assert;
 
 namespace Tests.ServicesTests.Auth;
 
-public class AuthServiceTests
+public class AuthServiceTests(ITestOutputHelper testOutputHelper)
 {
-    private readonly ITestOutputHelper _testOutputHelper;
     private readonly Mock<UserManager<ApplicationUser>> _mockUserManager = MockUserManager.Create();
-
-    public AuthServiceTests(ITestOutputHelper testOutputHelper)
-    {
-        _testOutputHelper = testOutputHelper;
-    }
 
     [Fact]
     public async Task RegisterAsync_SuccessfulRegistration_ReturnsAuthResultWithToken()
@@ -102,7 +96,7 @@ public class AuthServiceTests
         var authService = CreateAuthService();
 
         var result = await authService.ExamineLoginCredentials(user.UserName, "TestPassword");
-        _testOutputHelper.WriteLine(result.ErrorMessages.Keys.ToString());
+        testOutputHelper.WriteLine(result.ErrorMessages.Keys.ToString());
 
         Assert.False(result.Success);
     }

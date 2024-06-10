@@ -163,7 +163,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
             throw new ArgumentException("Invalid requestId format.");
         }
 
-        var user = userServices.GetUserWithSentRequests(senderId).Result;
+        var user = await userServices.GetUserWithSentRequests(senderId);
 
         var request = user.SentFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestGuid);
 
@@ -185,7 +185,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
             throw new ArgumentException("Invalid requestId format.");
         }
 
-        var user = userServices.GetUserWithReceivedRequests(receiverId).Result;
+        var user = await userServices.GetUserWithReceivedRequests(receiverId);
 
         var request = user.ReceivedFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestGuid);
 
@@ -193,7 +193,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
         {
             return false;
         }
-        
+
         request.SetStatusToDeclined();
         
         await Context.SaveChangesAsync();
