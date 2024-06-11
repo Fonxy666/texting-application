@@ -5,7 +5,7 @@
             Friend requests
         </div>
         <div class="scrollable-container">
-            <ng-container *ngFor="let request of this.friendRequests">
+            <ng-container *ngFor="let request of friendRequests">
                 <ng-container *ngIf="request.senderId === this.userId">
                     <div class="display-request">
                         <div class="display-name">
@@ -41,7 +41,7 @@
             Friends
         </div>
         <div class="scrollable-container">
-            <ng-container *ngFor="let request of this.friends">
+            <ng-container *ngFor="let request of this.friendService.friends[this.userId]">
                 <ng-container *ngIf="request.receiverId === this.userId">
                     <div class="display-request">
                         <div class="display-name">

@@ -11,7 +11,9 @@ import { FriendRequestManageWithReceiverId } from '../../model/FriendRequestMana
 export class FriendService {
     public connection: signalR.HubConnection;
     public friendRequests$ = new BehaviorSubject<FriendRequestManage[]>([]);
+    public friendRequests: { [userId: string]: FriendRequestManage[] } = {};
     public friends$ = new BehaviorSubject<FriendRequestManage[]>([]);
+    public friends: { [userId: string]: FriendRequestManage[] } = {};
 
     constructor(private cookieService: CookieService) {
         this.connection = new signalR.HubConnectionBuilder()
@@ -94,9 +96,17 @@ export class FriendService {
     }
 
     private addRequest(request: FriendRequestManage) {
-        const currentRequests = this.friendRequests$.value;
-        const updatedRequests = [...currentRequests, request];
-        this.friendRequests$.next(updatedRequests);
+        if (!this.friendRequests[request.receiverId]) {
+            this.friendRequests[request.receiverId] = [];
+        }
+        if (!this.friendRequests[request.senderId]) {
+            this.friendRequests[request.senderId] = [];
+        }
+    
+        this.friendRequests[request.receiverId].push(request);
+        this.friendRequests[request.senderId].push(request);
+        console.log(this.friendRequests[request.receiverId]);
+        this.friendRequests$.next(this.friendRequests[this.cookieService.get('UserId')]);
     }
 
     public async acceptFriendRequest(request: FriendRequestManage) {
@@ -121,13 +131,12 @@ export class FriendService {
             await this.connection.invoke("DeclineFriendRequest", requestId);
             this.updateFriendRequestsWithDeclinedRequest(requestId);
         } catch (error) {
-            console.error('Error accepting friend request via SignalR:', error);
+            console.error('Error declining friend request via SignalR:', error);
         }
     }
 
     private updateFriendRequestsWithDeclinedRequest(requestId: string) {
         const currentRequests = this.friendRequests$.value.filter(r => r.requestId !== requestId);
-    
         this.friendRequests$.next(currentRequests);
     }
 
@@ -136,13 +145,20 @@ export class FriendService {
             await this.connection.invoke("DeleteFriend", requestId, receiverId, senderId);
             this.deleteFromFriends(requestId);
         } catch (error) {
-            console.error('Error accepting friend request via SignalR:', error);
+            console.error('Error deleting friend via SignalR:', error);
         }
     }
 
     private deleteFromFriends(requestId: string) {
         const updatedFriends = this.friends$.value.filter(r => r.requestId !== requestId);
-    
         this.friends$.next(updatedFriends);
+    }
+
+    public getFriendRequestsForUser(userId: string): FriendRequestManage[] {
+        return this.friendRequests[userId] || [];
+    }
+
+    public getFriendsForUser(userId: string): FriendRequestManage[] {
+        return this.friends[userId] || [];
     }
 }

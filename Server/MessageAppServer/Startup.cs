@@ -208,13 +208,14 @@ public class Startup(IConfiguration configuration)
             endpoints.MapHub<FriendRequestHub>("/friend");
             endpoints.MapControllers();
         });
-
         
         PopulateDbAndAddRoles.AddRolesAndAdmin(app, configuration).Wait();
-
+        PopulateDbAndAddRoles.CreateTestUsers(app, 20).Wait();
+        PopulateDbAndAddRoles.CreateFriendsAndFriendRequestsForTestUsers(app).Wait();
+        
         if (!env.IsEnvironment("Test")) return;
             
-        PopulateDbAndAddRoles.CreateTestUsers(app).Wait();
+        PopulateDbAndAddRoles.CreateTestUsers(app, 3).Wait();
         PopulateDbAndAddRoles.CreateTestRoom(app).Wait();
     }
 }

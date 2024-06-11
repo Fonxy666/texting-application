@@ -17,13 +17,13 @@ import { FriendRequestManageWithReceiverId } from '../../../model/FriendRequestM
   providers: [MessageService]
 })
 export class SendFriendRequestComponent implements OnInit {
-    public friendRequests: FriendRequestManage[] = [];
-    public friends: FriendRequestManage[] = [];
     avatarUrl: { [key: string]: string } = {};
     userId: string = "";
+    friendRequests: FriendRequestManage[] | undefined;
+    friends: FriendRequestManage[] | undefined;
 
     constructor(
-        private friendService: FriendService,
+        public friendService: FriendService,
         private fb: FormBuilder,
         private http: HttpClient,
         private errorHandler: ErrorHandlerService,
@@ -39,24 +39,24 @@ export class SendFriendRequestComponent implements OnInit {
             userName: ['', [Validators.required]]
         });
     
-        this.friendService.friendRequests$.subscribe(res => {
-            this.friendRequests = res;
-            res.forEach(request => {
+        this.friendService.friendRequests$.subscribe(requests => {
+            this.friendRequests = requests;
+            this.friendRequests.forEach(request => {
                 this.loadUserAvatar(request.senderId);
                 this.loadUserAvatar(request.receiverId);
-            })
+            });
         });
-
-        this.friendService.friends$.subscribe(res => {
-            this.friends = res;
-            res.forEach(request => {
+    
+        this.friendService.friends$.subscribe(friends => {
+            this.friends = friends;
+            this.friends.forEach(request => {
                 this.loadUserAvatar(request.senderId);
                 this.loadUserAvatar(request.receiverId);
-            })
-        })
+            });
+        });
     
         this.getPendingFriendRequests();
-        this.getFriendRequests();
+        this.getFriends();
     }
 
     OnFormSubmit() {
@@ -94,11 +94,14 @@ export class SendFriendRequestComponent implements OnInit {
         )
         .subscribe(
             (response: FriendRequestManage[]) => {
-                this.friendRequests = response;
+                if (!this.friendService.friendRequests[this.userId]) {
+                    this.friendService.friendRequests[this.userId] = [];
+                }
+    
+                response.forEach(res => {
+                    this.friendService.friendRequests[this.userId].push(res);
 
-                this.friendRequests.forEach(request => {
-                    this.loadUserAvatar(request.senderId);
-                    this.loadUserAvatar(request.receiverId);
+                    this.friendService.friendRequests$.next(this.friendService.friendRequests[this.userId]);
                 });
             },
             (error: any) => {
@@ -112,18 +115,21 @@ export class SendFriendRequestComponent implements OnInit {
         );
     }
 
-    getFriendRequests() {
+    getFriends() {
         this.http.get(`/api/v1/User/GetFriends?userId=${this.userId}`, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )
         .subscribe(
             (response: FriendRequestManage[]) => {
-                this.friends = response;
+                if (!this.friendService.friends[this.userId]) {
+                    this.friendService.friends[this.userId] = [];
+                }
+    
+                response.forEach(res => {
+                    this.friendService.friends[this.userId].push(res);
 
-                this.friends.forEach(request => {
-                    this.loadUserAvatar(request.senderId);
-                    this.loadUserAvatar(request.receiverId);
+                    this.friendService.friends$.next(this.friendService.friends[this.userId]);
                 });
             },
             (error: any) => {
@@ -266,7 +272,7 @@ export class SendFriendRequestComponent implements OnInit {
 
     deleteFriend(requestId: string, receiverId: string, senderId: string) {
         console.log(requestId);
-        this.http.delete(`/api/v1/User/DeleteFriend?connectionId=${requestId}`, { withCredentials: true })
+        this.http.delete(`/api/v1/User/DeleteFriend?connectionId=${requestId}&userId=${this.userId}`, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )

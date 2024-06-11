@@ -507,7 +507,7 @@ public class UserController(
             
             var userGuid = new Guid(userId);
             
-            if (userGuid != existingFriendConnection.ReceiverId || userGuid != existingFriendConnection.ReceiverId)
+            if (userGuid != existingFriendConnection.SenderId && userGuid != existingFriendConnection.ReceiverId)
             {
                 return BadRequest(new { message = "You don't have permission for deletion." });
             }
