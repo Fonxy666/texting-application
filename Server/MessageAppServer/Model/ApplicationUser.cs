@@ -2,9 +2,9 @@
 
 namespace Server.Model;
 
-public class ApplicationUser(string? imageUrl) : IdentityUser<Guid>
+public class ApplicationUser : IdentityUser<Guid>
 {
-    public string? ImageUrl { get; private set; } = imageUrl;
+    public string? ImageUrl { get; private set; }
     public string? RefreshToken { get; private set; } = string.Empty;
     public DateTime? RefreshTokenCreated { get; private set; }
     public DateTime? RefreshTokenExpires { get; private set; }
@@ -12,8 +12,9 @@ public class ApplicationUser(string? imageUrl) : IdentityUser<Guid>
     public ICollection<FriendConnection> ReceivedFriendRequests { get; set; } = new List<FriendConnection>();
     public ICollection<ApplicationUser> Friends { get; set; } = new List<ApplicationUser>();
 
-    public ApplicationUser() : this("-")
+    public ApplicationUser(string? imageUrl = "-")
     {
+        ImageUrl = imageUrl;
     }
 
     public void SetRefreshToken(string? token)

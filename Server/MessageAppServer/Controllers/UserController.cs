@@ -385,6 +385,13 @@ public class UserController(
     {
         try
         {
+            var existingUser = await userManager.FindByIdAsync(request.UserId);
+
+            if (existingUser == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+            
             var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(request.RequestId);
 
             if (existingRequest == null)
@@ -408,6 +415,13 @@ public class UserController(
     {
         try
         {
+            var existingUser = await userManager.FindByIdAsync(request.UserId);
+
+            if (existingUser == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+            
             var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(request.RequestId);
 
             if (existingRequest == null)
@@ -431,6 +445,13 @@ public class UserController(
     {
         try
         {
+            var existingUser = await userManager.FindByIdAsync(userId);
+
+            if (existingUser == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+            
             var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(requestId);
 
             if (existingRequest == null)
@@ -473,7 +494,7 @@ public class UserController(
     }
     
     [HttpDelete("DeleteFriend"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult> DeleteFriend([FromQuery]string connectionId)
+    public async Task<ActionResult> DeleteFriend([FromQuery]string connectionId, string userId)
     {
         try
         {
@@ -482,6 +503,13 @@ public class UserController(
             if (existingFriendConnection == null)
             {
                 return NotFound(new { message = "Friend connection not found." });
+            }
+            
+            var userGuid = new Guid(userId);
+            
+            if (userGuid != existingFriendConnection.ReceiverId || userGuid != existingFriendConnection.ReceiverId)
+            {
+                return BadRequest(new { message = "You don't have permission for deletion." });
             }
 
             var result = await friendConnectionService.DeleteFriend(connectionId);

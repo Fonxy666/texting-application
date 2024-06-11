@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Server.Database;
 using Server.Model;
 using Server.Model.Responses.User;
 
 namespace Server.Services.User;
 
-public class UserServices(UserManager<ApplicationUser> userManager, IConfiguration configuration) : IUserServices
+public class UserServices(UserManager<ApplicationUser> userManager, IConfiguration configuration, DatabaseContext context) : IUserServices
 {
     public Task<bool> ExistingUser(string id)
     {
@@ -85,6 +86,32 @@ public class UserServices(UserManager<ApplicationUser> userManager, IConfigurati
 
     public async Task<DeleteUserResponse> DeleteAsync(ApplicationUser user)
     {
+        var sentFriendRequests = context.FriendConnections.Where(fc => fc.SenderId == user.Id);
+        var receivedFriendRequests = context.FriendConnections.Where(fc => fc.ReceiverId == user.Id);
+
+        foreach (var friendRequest in sentFriendRequests)
+        {
+            var receiver = await userManager.FindByIdAsync(friendRequest.ReceiverId.ToString());
+            if (receiver != null)
+            {
+                await context.Entry(receiver).Collection(u => u.Friends).LoadAsync();
+                receiver.Friends.Remove(user);
+            }
+        }
+
+        foreach (var friendRequest in receivedFriendRequests)
+        {
+            var sender = await userManager.FindByIdAsync(friendRequest.SenderId.ToString());
+            if (sender != null)
+            {
+                await context.Entry(sender).Collection(u => u.Friends).LoadAsync();
+                sender.Friends.Remove(user);
+            }
+        }
+
+        context.FriendConnections.RemoveRange(sentFriendRequests);
+        context.FriendConnections.RemoveRange(receivedFriendRequests);
+
         await userManager.DeleteAsync(user);
 
         return new DeleteUserResponse($"{user.UserName}", "Delete successful.", true);

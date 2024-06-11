@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MockQueryable.Moq;
 using Moq;
+using Server.Database;
 using Server.Model;
 using Server.Services.User;
 using Xunit;
@@ -14,11 +16,16 @@ public class UserServiceTests
     private readonly Mock<IConfiguration> _mockConfiguration;
     private readonly UserServices _userServices;
     private readonly Mock<UserManager<ApplicationUser>> _mockUserManager = MockUserManager.Create();
+    private DbContextOptions<DatabaseContext> options;
 
     public UserServiceTests()
     {
+        options = new DbContextOptionsBuilder<DatabaseContext>()
+            .UseInMemoryDatabase(databaseName: "Test_Database")
+            .Options;
+        
         _mockConfiguration = new Mock<IConfiguration>();
-        _userServices = new UserServices(_mockUserManager.Object, _mockConfiguration.Object);
+        _userServices = new UserServices(_mockUserManager.Object, _mockConfiguration.Object, new DatabaseContext(options));
     }
 
     [Fact]
