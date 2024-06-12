@@ -48,6 +48,7 @@ export class SendFriendRequestComponent implements OnInit {
         });
     
         this.friendService.friends$.subscribe(friends => {
+            console.log(friends);
             this.friends = friends;
             this.friends.forEach(request => {
                 this.loadUserAvatar(request.senderId);

@@ -96,6 +96,8 @@ export class FriendService {
     }
 
     private addRequest(request: FriendRequestManage) {
+        const userId = this.cookieService.get('UserId');
+
         if (!this.friendRequests[request.receiverId]) {
             this.friendRequests[request.receiverId] = [];
         }
@@ -105,8 +107,7 @@ export class FriendService {
     
         this.friendRequests[request.receiverId].push(request);
         this.friendRequests[request.senderId].push(request);
-        console.log(this.friendRequests[request.receiverId]);
-        this.friendRequests$.next(this.friendRequests[this.cookieService.get('UserId')]);
+        this.friendRequests$.next(this.friendRequests[userId]);
     }
 
     public async acceptFriendRequest(request: FriendRequestManage) {
@@ -119,11 +120,12 @@ export class FriendService {
     }
     
     private updateFriendRequests(request: FriendRequestManage) {
-        const currentRequests = this.friendRequests$.value.filter(r => r.requestId !== request.requestId);
-        const updatedFriends = [...this.friends$.value, request];
+        const userId = this.cookieService.get('UserId');
+        this.friendRequests[userId] = this.friendRequests[userId].filter(r => r.requestId !== request.requestId);
+        this.friends[userId] = [...this.friends[userId], request];
     
-        this.friendRequests$.next(currentRequests);
-        this.friends$.next(updatedFriends);
+        this.friendRequests$.next(this.friendRequests[userId]);
+        this.friends$.next(this.friends[userId]);
     }
 
     public async declineFriendRequest(requestId: string) {
@@ -136,8 +138,9 @@ export class FriendService {
     }
 
     private updateFriendRequestsWithDeclinedRequest(requestId: string) {
-        const currentRequests = this.friendRequests$.value.filter(r => r.requestId !== requestId);
-        this.friendRequests$.next(currentRequests);
+        const userId = this.cookieService.get('UserId');
+        this.friendRequests[userId] = this.friendRequests[userId].filter(r => r.requestId !== requestId);
+        this.friendRequests$.next(this.friendRequests[userId]);
     }
 
     public async deleteFriend(requestId: string, receiverId: string, senderId: string) {
@@ -150,15 +153,8 @@ export class FriendService {
     }
 
     private deleteFromFriends(requestId: string) {
-        const updatedFriends = this.friends$.value.filter(r => r.requestId !== requestId);
-        this.friends$.next(updatedFriends);
-    }
-
-    public getFriendRequestsForUser(userId: string): FriendRequestManage[] {
-        return this.friendRequests[userId] || [];
-    }
-
-    public getFriendsForUser(userId: string): FriendRequestManage[] {
-        return this.friends[userId] || [];
+        const userId = this.cookieService.get('UserId');
+        this.friends[userId] = this.friends[userId].filter(r => r.requestId !== requestId)
+        this.friends$.next(this.friends[userId]);
     }
 }
