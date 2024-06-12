@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { ErrorHandlerService } from '../services/error-handler.service';
 import { FriendService } from '../services/friend-service/friend.service';
+import { isEqual } from 'lodash';
 
 @Component({
     selector: 'app-nav-bar',
@@ -17,12 +18,13 @@ export class NavBarComponent implements OnInit {
         private router: Router,
         private http: HttpClient,
         private errorHandler: ErrorHandlerService,
-        private friendService: FriendService
+        private friendService: FriendService,
     ) {}
 
     isDropstart: boolean = true;
     announceNumber: number = 0;
     userId: string = "";
+    friendRequests: any[] = [];
 
     ngOnInit(): void {
         this.userId = this.cookieService.get("UserId");
@@ -35,8 +37,10 @@ export class NavBarComponent implements OnInit {
 
         this.friendService.friendRequests$.subscribe(requests => {
             this.announceNumber = 0;
+            this.friendRequests = [];
             requests.forEach(request => {
-                if (request.senderId !== this.userId) {
+                if (!this.friendRequests?.some(friend => isEqual(friend.requestId, request.requestId)) && request.senderId !== this.userId) {
+                    this.friendRequests?.push(request);
                     this.announceNumber++;
                 }
             })

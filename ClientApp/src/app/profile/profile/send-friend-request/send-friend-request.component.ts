@@ -9,6 +9,7 @@ import { FriendService } from '../../../services/friend-service/friend.service';
 import { FriendRequestManage } from '../../../model/FriendRequestManage';
 import { FriendRequestManageRequest } from '../../../model/FriendRequestManageRequest';
 import { FriendRequestManageWithReceiverId } from '../../../model/FriendRequestManageWithReceiverId';
+import { isEqual } from 'lodash';
 
 @Component({
   selector: 'app-send-friend-request',
@@ -38,26 +39,32 @@ export class SendFriendRequestComponent implements OnInit {
         this.friendName = this.fb.group({
             userName: ['', [Validators.required]]
         });
+
+        this.getPendingFriendRequests();
+        this.getFriends();
     
         this.friendService.friendRequests$.subscribe(requests => {
-            this.friendRequests = requests;
-            this.friendRequests.forEach(request => {
+            this.friendRequests = [];
+            requests.forEach(request => {
+                if (!this.friendRequests?.some(friend => isEqual(friend.requestId, request.requestId))) {
+                    this.friendRequests?.push(request);
+                }
                 this.loadUserAvatar(request.senderId);
                 this.loadUserAvatar(request.receiverId);
             });
         });
     
         this.friendService.friends$.subscribe(friends => {
-            console.log(friends);
-            this.friends = friends;
-            this.friends.forEach(request => {
+            this.friends = [];
+            friends.forEach(request => {
+                if (!this.friends?.some(friend => isEqual(friend.requestId, request.requestId))) {
+                    this.friends?.push(request);
+                }
                 this.loadUserAvatar(request.senderId);
                 this.loadUserAvatar(request.receiverId);
             });
         });
     
-        this.getPendingFriendRequests();
-        this.getFriends();
     }
 
     OnFormSubmit() {
@@ -100,9 +107,13 @@ export class SendFriendRequestComponent implements OnInit {
                 }
     
                 response.forEach(res => {
-                    this.friendService.friendRequests[this.userId].push(res);
+                    const requestList = this.friendService.friendRequests[this.userId];
+                    
+                    if (!requestList.some(request => isEqual(request, res))) {
+                        requestList.push(res);
+                    }
 
-                    this.friendService.friendRequests$.next(this.friendService.friendRequests[this.userId]);
+                    this.friendService.friendRequests$.next(requestList);
                 });
             },
             (error: any) => {
@@ -128,9 +139,13 @@ export class SendFriendRequestComponent implements OnInit {
                 }
     
                 response.forEach(res => {
-                    this.friendService.friends[this.userId].push(res);
-
-                    this.friendService.friends$.next(this.friendService.friends[this.userId]);
+                    const friendsList = this.friendService.friends[this.userId];
+                    
+                    if (!friendsList.some(friend => isEqual(friend, res))) {
+                        friendsList.push(res);
+                    }
+    
+                    this.friendService.friends$.next(friendsList);
                 });
             },
             (error: any) => {
@@ -258,8 +273,7 @@ export class SendFriendRequestComponent implements OnInit {
             this.errorHandler.handleError401()
         )
         .subscribe(
-            (response) => {
-                console.log(response);
+            () => {
                 this.friendService.declineFriendRequest(requestId);
             },
             (error) => {

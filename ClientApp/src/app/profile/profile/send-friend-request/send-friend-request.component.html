@@ -23,7 +23,10 @@
                 <ng-container *ngIf="request.senderId !== this.userId">
                     <div class="display-request">
                         <div class="display-name">
-                            Incoming friend request from {{ this.displayUserName(request.senderName) }}
+                            Incoming friend request from 
+                            <span [title]="request.senderName">
+                                {{ displayUserName(request.senderName) }}
+                            </span>
                             <img class="avatar-image" [src]="avatarUrl[request.senderId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
                         </div>
                         <div class="display-time-buttons">
@@ -45,7 +48,9 @@
                 <ng-container *ngIf="request.receiverId === this.userId">
                     <div class="display-request">
                         <div class="display-name">
-                            {{ this.displayUserName(request.senderName) }}
+                            <span [title]="request.senderName">
+                                {{ displayUserName(request.senderName) }}
+                            </span>
                             <img class="avatar-image" [src]="avatarUrl[request.senderId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
                         </div>
                         <div class="display-time-buttons">

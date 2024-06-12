@@ -11,6 +11,7 @@ import { MessageService } from 'primeng/api';
 import { filter } from 'rxjs';
 import { UserService } from '../../services/user.service';
 import { FriendService } from '../../services/friend-service/friend.service';
+import { isEqual } from 'lodash';
 
 @Component({
     selector: 'app-profile',
@@ -71,9 +72,10 @@ export class ProfileComponent implements OnInit {
 
         this.friendService.friendRequests$.subscribe(requests => {
             this.announceNumber = 0;
-            this.friendRequests = requests;
+            this.friendRequests = [];
             requests.forEach(request => {
-                if (request.senderId !== this.userId) {
+                if (!this.friendRequests?.some(friend => isEqual(friend.requestId, request.requestId)) && request.senderId !== this.userId) {
+                    this.friendRequests?.push(request);
                     this.announceNumber++;
                 }
             })

@@ -4,6 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { FriendRequestManage } from '../../model/FriendRequestManage';
 import { FriendRequestManageWithReceiverId } from '../../model/FriendRequestManageWithReceiverId';
+import { isEqual } from 'lodash';
 
 @Injectable({
     providedIn: 'root'
@@ -105,8 +106,14 @@ export class FriendService {
             this.friendRequests[request.senderId] = [];
         }
     
-        this.friendRequests[request.receiverId].push(request);
-        this.friendRequests[request.senderId].push(request);
+        if (!this.friendRequests[request.receiverId].some(friend => isEqual(friend.requestId, request.requestId))) {
+            this.friendRequests[request.receiverId].push(request);
+        }
+
+        if (!this.friendRequests[request.senderId].some(friend => isEqual(friend.requestId, request.requestId))) {
+            this.friendRequests[request.senderId].push(request);
+        }
+
         this.friendRequests$.next(this.friendRequests[userId]);
     }
 
