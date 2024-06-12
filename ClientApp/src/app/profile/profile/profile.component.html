@@ -1,6 +1,6 @@
 <div class="settings-container">
     <app-loading-screen *ngIf="this.isLoading"></app-loading-screen>
-    <div [ngClass]="{'blur-content': isLoading}" class="content-wrapper">
+    <div [ngClass]="{'blur-content': isLoading}">
         <app-nav-bar></app-nav-bar>
         <p-toast></p-toast>
         <div class="profile-card">
@@ -41,6 +41,23 @@
                             (click)="handleButtonClick('/profile/profile/passwordchange')" 
                             [attr.aria-pressed]="isActive('/profile/profile/passwordchange') ? 'true' : 'false'">
                             Change Password
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button 
+                            type="button" 
+                            class="btn text-style-20-px announce-wrapper" 
+                            [ngClass]="{'active': isActive('/profile/profile/friendrequest')}" 
+                            (click)="handleButtonClick('/profile/profile/friendrequest')" 
+                            [attr.aria-pressed]="isActive('/profile/profile/friendrequest') ? 'true' : 'false'">
+                            <div class="button-content">
+                                Manage Friend Requests
+                                <ng-container *ngIf="announceNumber != 0">
+                                    <div class="announce-number">
+                                        {{ announceNumber }}
+                                    </div>
+                                </ng-container>
+                            </div>
                         </button>
                     </div>
                 </div>

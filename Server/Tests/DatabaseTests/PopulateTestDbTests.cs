@@ -89,7 +89,7 @@ public class PopulateDbAndAddRolesTests
         _mockUserManager.Setup(x => x.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync((ApplicationUser)null);
         _mockUserManager.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>())).ReturnsAsync(IdentityResult.Success);
         
-        await PopulateDbAndAddRoles.CreateTestUsers(_mockAppBuilder.Object);
+        await PopulateDbAndAddRoles.CreateTestUsers(_mockAppBuilder.Object, 3);
 
         _mockUserManager.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()), Times.Exactly(3));
         _mockUserManager.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), "User"), Times.Exactly(3));
@@ -104,7 +104,7 @@ public class PopulateDbAndAddRolesTests
         _mockUserManager.Setup(x => x.FindByEmailAsync("test3@hotmail.com")).ReturnsAsync((ApplicationUser)null);
         _mockUserManager.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>())).ReturnsAsync(IdentityResult.Success);
 
-        await PopulateDbAndAddRoles.CreateTestUsers(_mockAppBuilder.Object);
+        await PopulateDbAndAddRoles.CreateTestUsers(_mockAppBuilder.Object, 3);
 
         _mockUserManager.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()), Times.Exactly(2));
         _mockUserManager.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), "User"), Times.Exactly(2));

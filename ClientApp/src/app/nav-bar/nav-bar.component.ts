@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { ErrorHandlerService } from '../services/error-handler.service';
+import { FriendService } from '../services/friend-service/friend.service';
 
 @Component({
     selector: 'app-nav-bar',
@@ -11,14 +12,35 @@ import { ErrorHandlerService } from '../services/error-handler.service';
 })
 
 export class NavBarComponent implements OnInit {
-    constructor(private cookieService : CookieService, private router: Router, private http: HttpClient, private errorHandler: ErrorHandlerService) {}
+    constructor(
+        private cookieService : CookieService,
+        private router: Router,
+        private http: HttpClient,
+        private errorHandler: ErrorHandlerService,
+        private friendService: FriendService
+    ) {}
 
     isDropstart: boolean = true;
+    announceNumber: number = 0;
+    userId: string = "";
 
     ngOnInit(): void {
+        this.userId = this.cookieService.get("UserId");
+
         this.isLoggedIn();
         this.loadProfileData();
         this.checkScreenSize();
+
+        this.getAnnounceNumber();
+
+        this.friendService.friendRequests$.subscribe(requests => {
+            this.announceNumber = 0;
+            requests.forEach(request => {
+                if (request.senderId !== this.userId) {
+                    this.announceNumber++;
+                }
+            })
+        });
     }
 
     profilePic: string = "";
@@ -27,11 +49,9 @@ export class NavBarComponent implements OnInit {
         return this.cookieService.check('UserId');
     }
 
-    loadProfileData() {
-        const userId = this.cookieService.get('UserId');
-        
-        if (userId) {
-            this.http.get(`/api/v1/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
+    loadProfileData() {        
+        if (this.userId) {
+            this.http.get(`/api/v1/User/GetImage?userId=${this.userId}`, { withCredentials: true, responseType: 'blob' })
             .pipe(
                 this.errorHandler.handleError401()
             )
@@ -78,6 +98,25 @@ export class NavBarComponent implements OnInit {
             this.isDropstart = false;
         } else {
             this.isDropstart = true;
+        }
+    }
+
+    getAnnounceNumber() {
+        if (this.userId) {
+            this.http.get(`/api/v1/User/GetFriendRequestCount?userId=${this.userId}`, { withCredentials: true })
+            .pipe(
+                this.errorHandler.handleError401()
+            )
+            .subscribe(
+                (response: any) => {
+                    this.announceNumber = response;
+                },
+                (error) => {
+                    if (error.status === 403) {
+                        this.errorHandler.handleError403(error);
+                    }
+                }
+            );
         }
     }
 }

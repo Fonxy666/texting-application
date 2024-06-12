@@ -13,6 +13,7 @@ using Server.Model.Requests.Auth;
 using Server.Model.Requests.User;
 using Server.Model.Responses.User;
 using Server.Services.EmailSender;
+using Server.Services.FriendConnection;
 using Xunit;
 using Xunit.Abstractions;
 using Assert = Xunit.Assert;
@@ -27,6 +28,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     private readonly HttpClient _client;
     private readonly TestServer _testServer;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IFriendConnectionService _friendConnectionService;
 
     public UserControllerTests(ITestOutputHelper testOutputHelper)
     {
@@ -45,6 +47,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
             });
 
         _testServer = new TestServer(builder);
+        _friendConnectionService = _testServer.Services.GetRequiredService<IFriendConnectionService>();
         _userManager = _testServer.Services.GetRequiredService<UserManager<ApplicationUser>>();
         _client = _testServer.CreateClient();
         
@@ -365,7 +368,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task SetNewPasswordAfterReset_WithWrongTokenl_ReturnBadRequest()
+    public async Task SetNewPasswordAfterReset_WithWrongToken_ReturnBadRequest()
     {
         var existingUser = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername3");
         var passwordResetRequest = new PasswordResetRequest(existingUser.Email, "testUserPassword123###asd");
@@ -383,5 +386,231 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var getUserResponse = await _client.PostAsync($"api/v1/User/SetNewPassword?resetId={wrongToken}", resetPasswordJson);
     
         Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task SendFriendRequest_ReturnFriendResponse_AfterIt_SendAgain_ReturnBadRequest_ThanDeclineIt()
+    {
+        var existingUser1 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername1");
+        var existingUser2 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername2");
+        var request = new FriendRequest(existingUser1.Id.ToString(), existingUser2.UserName);
+        var jsonRequest = JsonConvert.SerializeObject(request);
+        var sendFriendRequest = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+    
+        var sendFriendResponse = await _client.PostAsync("api/v1/User/SendFriendRequest", sendFriendRequest);
+        sendFriendResponse.EnsureSuccessStatusCode();
+        
+        var sendFriendResponse2 = await _client.PostAsync("api/v1/User/SendFriendRequest", sendFriendRequest);
+        Assert.Equal(HttpStatusCode.BadRequest, sendFriendResponse2.StatusCode);
+
+        var requests = await _friendConnectionService.GetPendingReceivedFriendRequests(existingUser2.Id.ToString());
+
+        var requestForDecline = new FriendRequestManage(existingUser2.Id.ToString(), requests.ToList()[0].RequestId.ToString());
+        var jsonRequestForDecline = JsonConvert.SerializeObject(requestForDecline);
+        var declineFriendRequest = new StringContent(jsonRequestForDecline, Encoding.UTF8, "application/json");
+        
+        var declineFriendRequestResponse = await _client.PatchAsync($"api/v1/User/DeclineReceivedFriendRequest", declineFriendRequest);
+        declineFriendRequestResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task SendFriendRequest_WithNotExistingUser_ReturnNotFound()
+    {
+        var request = new FriendRequest(Guid.NewGuid().ToString(), "TestUsername1");
+        var jsonRequest = JsonConvert.SerializeObject(request);
+        var sendFriendRequest = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+    
+        var getFriendResponse = await _client.PostAsync($"api/v1/User/SendFriendRequest", sendFriendRequest);
+    
+        Assert.Equal(HttpStatusCode.NotFound, getFriendResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task SendFriendRequest_ToYourself_ReturnBadRequest()
+    {
+        var request = new FriendRequest("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "TestUsername1");
+        var jsonRequest = JsonConvert.SerializeObject(request);
+        var sendFriendRequest = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+    
+        var getFriendResponse = await _client.PostAsync($"api/v1/User/SendFriendRequest", sendFriendRequest);
+    
+        Assert.Equal(HttpStatusCode.BadRequest, getFriendResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetFriendRequestCount_ReturnRequests()
+    {
+        var existingUser = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername2");
+    
+        var getFriendResponse = await _client.GetAsync($"api/v1/User/GetFriendRequestCount?userId={existingUser.Id}");
+    
+        getFriendResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task GetFriendRequestCount_WithNotExistingUser_ReturnNotFound()
+    {
+        var getFriendResponse = await _client.GetAsync($"api/v1/User/GetFriendRequestCount?userId={Guid.NewGuid()}");
+    
+        Assert.Equal(HttpStatusCode.NotFound, getFriendResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task DeclineFriendRequest_WithNotExistingUser_ReturnNotFound()
+    {
+        var existingUser1 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername1");
+        var existingUser2 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername2");
+        var request1 = new FriendRequest(existingUser1.Id.ToString(), existingUser2.UserName);
+        var jsonRequest1 = JsonConvert.SerializeObject(request1);
+        var sendFriendRequest1 = new StringContent(jsonRequest1, Encoding.UTF8, "application/json");
+    
+        await _client.PostAsync("api/v1/User/SendFriendRequest", sendFriendRequest1);
+        
+        var request2 = new FriendRequestManage(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
+        var jsonRequest2 = JsonConvert.SerializeObject(request2);
+        var declineFriendRequest1 = new StringContent(jsonRequest2, Encoding.UTF8, "application/json");
+        
+        var declineFriendResponse1 = await _client.PatchAsync($"api/v1/User/DeclineReceivedFriendRequest", declineFriendRequest1);
+    
+        Assert.Equal(HttpStatusCode.NotFound, declineFriendResponse1.StatusCode);
+        
+        var request3 = new FriendRequestManage(existingUser2.Id.ToString(), Guid.NewGuid().ToString());
+        var jsonRequest3 = JsonConvert.SerializeObject(request3);
+        var declineFriendRequest2 = new StringContent(jsonRequest3, Encoding.UTF8, "application/json");
+        
+        var declineFriendResponse2 = await _client.PatchAsync($"api/v1/User/DeclineReceivedFriendRequest", declineFriendRequest2);
+    
+        Assert.Equal(HttpStatusCode.NotFound, declineFriendResponse2.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetFriendRequests_WithExistingUser_ReturnFriends()
+    {
+        var existingUser1 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername1");
+        var existingUser2 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername2");
+        var request1 = new FriendRequest(existingUser1.Id.ToString(), existingUser2.UserName);
+        var jsonRequest1 = JsonConvert.SerializeObject(request1);
+        var sendFriendRequest1 = new StringContent(jsonRequest1, Encoding.UTF8, "application/json");
+    
+        await _client.PostAsync("api/v1/User/SendFriendRequest", sendFriendRequest1);
+        
+        var getFriendsWrongResponse = await _client.GetAsync($"api/v1/User/GetFriendRequests?userId={Guid.NewGuid()}");
+        Assert.Equal(HttpStatusCode.NotFound, getFriendsWrongResponse.StatusCode);
+        
+        var getFriendsResponse = await _client.GetAsync($"api/v1/User/GetFriendRequests?userId={existingUser2.Id}");
+    
+        getFriendsResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task AcceptFriendRequest_WithExistingUser_ReturnOk()
+    {
+        var existingUser1 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername1");
+        var existingUser2 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername2");
+        var request1 = new FriendRequest(existingUser1.Id.ToString(), existingUser2.UserName);
+        var jsonRequest1 = JsonConvert.SerializeObject(request1);
+        var sendFriendRequest1 = new StringContent(jsonRequest1, Encoding.UTF8, "application/json");
+    
+        await _client.PostAsync("api/v1/User/SendFriendRequest", sendFriendRequest1);
+        
+        var requests = await _friendConnectionService.GetPendingReceivedFriendRequests(existingUser2.Id.ToString());
+        
+        var requestForAcceptWithInvalidId = new FriendRequestManage(Guid.NewGuid().ToString(), requests.ToList()[0].RequestId.ToString());
+        var jsonRequestForAcceptWithInvalidId = JsonConvert.SerializeObject(requestForAcceptWithInvalidId);
+        var requestWithInvalidId = new StringContent(jsonRequestForAcceptWithInvalidId, Encoding.UTF8, "application/json");
+        
+        var acceptResponseWithInvalidUser = await _client.PatchAsync("api/v1/User/AcceptReceivedFriendRequest", requestWithInvalidId);
+        Assert.Equal(HttpStatusCode.NotFound, acceptResponseWithInvalidUser.StatusCode);
+        
+        var requestForAcceptWithInvalidId2 = new FriendRequestManage(existingUser2.Id.ToString(), Guid.NewGuid().ToString());
+        var jsonRequestForAcceptWithInvalidId2 = JsonConvert.SerializeObject(requestForAcceptWithInvalidId2);
+        var requestWithInvalidId2 = new StringContent(jsonRequestForAcceptWithInvalidId2, Encoding.UTF8, "application/json");
+        
+        var acceptResponseWithInvalidUser2 = await _client.PatchAsync("api/v1/User/AcceptReceivedFriendRequest", requestWithInvalidId2);
+        Assert.Equal(HttpStatusCode.NotFound, acceptResponseWithInvalidUser2.StatusCode);
+
+        var requestForAccept = new FriendRequestManage(existingUser2.Id.ToString(), requests.ToList()[0].RequestId.ToString());
+        var jsonRequestForAccept = JsonConvert.SerializeObject(requestForAccept);
+        var request = new StringContent(jsonRequestForAccept, Encoding.UTF8, "application/json");
+        
+        var acceptResponse = await _client.PatchAsync("api/v1/User/AcceptReceivedFriendRequest", request);
+        
+        acceptResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task DeleteSentFriendRequest_WithExistingUser_ReturnOk()
+    {
+        var existingUser1 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername1");
+        var existingUser2 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername3");
+        var request1 = new FriendRequest(existingUser1.Id.ToString(), existingUser2.UserName);
+        var jsonRequest1 = JsonConvert.SerializeObject(request1);
+        var sendFriendRequest1 = new StringContent(jsonRequest1, Encoding.UTF8, "application/json");
+    
+        await _client.PostAsync("api/v1/User/SendFriendRequest", sendFriendRequest1);
+        
+        var requests = await _friendConnectionService.GetPendingReceivedFriendRequests(existingUser2.Id.ToString());
+        
+        var deleteSentFriendRequest = await _client.DeleteAsync($"api/v1/User/DeleteSentFriendRequest?requestId={requests.ToList()[0].RequestId.ToString()}&userId={Guid.NewGuid().ToString()}");
+        Assert.Equal(HttpStatusCode.NotFound, deleteSentFriendRequest.StatusCode);
+        
+        var deleteResponseWithInvalidUser2 = await _client.DeleteAsync($"api/v1/User/DeleteSentFriendRequest?requestId={Guid.NewGuid().ToString()}&userId={existingUser2.Id.ToString()}");
+        Assert.Equal(HttpStatusCode.NotFound, deleteResponseWithInvalidUser2.StatusCode);
+        
+        var deleteResponse = await _client.DeleteAsync($"api/v1/User/DeleteSentFriendRequest?requestId={requests.ToList()[0].RequestId.ToString()}&userId={existingUser2.Id.ToString()}");
+        
+        deleteResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task GetFriends_WithExistingUser_ReturnOk()
+    {
+        var existingUser2 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername2");
+        
+        var getFriendsResponse = await _client.GetAsync($"api/v1/User/GetFriends?userId={existingUser2.Id}");
+        
+        getFriendsResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task GetFriends_WithNotExistingUser_NotFound()
+    {
+        var getFriendsResponse = await _client.GetAsync($"api/v1/User/GetFriends?userId={Guid.NewGuid()}");
+        
+        Assert.Equal(HttpStatusCode.NotFound, getFriendsResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Delete_WithExistingUser_ReturnOk_AfterIt_DeleteFriend_WithExistingId_And_WithNotExistingOne_FirstReturnOk_NotExisting_ReturnNotFound()
+    {
+        var existingUser1 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername1");
+        var existingUser2 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername2");
+        var request1 = new FriendRequest(existingUser2.Id.ToString(), existingUser1.UserName);
+        var jsonRequest1 = JsonConvert.SerializeObject(request1);
+        var sendFriendRequest1 = new StringContent(jsonRequest1, Encoding.UTF8, "application/json");
+    
+        await _client.PostAsync("api/v1/User/SendFriendRequest", sendFriendRequest1);
+        
+        var requests1 = await _friendConnectionService.GetPendingReceivedFriendRequests(existingUser1.Id.ToString());
+
+        var requestForAccept = new FriendRequestManage(existingUser2.Id.ToString(), requests1.ToList()[0].RequestId.ToString());
+        var jsonRequestForAccept = JsonConvert.SerializeObject(requestForAccept);
+        var request = new StringContent(jsonRequestForAccept, Encoding.UTF8, "application/json");
+        
+        await _client.PatchAsync("api/v1/User/AcceptReceivedFriendRequest", request);
+        
+        var requests2 = await _friendConnectionService.GetPendingReceivedFriendRequests(existingUser1.Id.ToString());
+        
+        var deleteFriendResponseWithInvalidUser = await _client.DeleteAsync($"api/v1/User/DeleteFriend?connectionId={requests2.ToList()[0].RequestId}&userId={Guid.NewGuid()}");
+        
+        Assert.Equal(HttpStatusCode.BadRequest, deleteFriendResponseWithInvalidUser.StatusCode);
+        
+        var deleteFriendResponseWithInvalidConnectionId = await _client.DeleteAsync($"api/v1/User/DeleteFriend?connectionId={Guid.NewGuid()}&userId={existingUser1.Id}");
+        
+        Assert.Equal(HttpStatusCode.NotFound, deleteFriendResponseWithInvalidConnectionId.StatusCode);
+        
+        var deleteFriendResponse = await _client.DeleteAsync($"api/v1/User/DeleteFriend?connectionId={requests2.ToList()[0].RequestId}&userId={existingUser1.Id}");
+        
+        deleteFriendResponse.EnsureSuccessStatusCode();
     }
 }

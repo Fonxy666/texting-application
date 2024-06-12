@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Concurrent;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -14,6 +15,7 @@ using Server.Services.Chat.MessageService;
 using Server.Services.Chat.RoomService;
 using Server.Services.Cookie;
 using Server.Services.EmailSender;
+using Server.Services.FriendConnection;
 using Server.Services.User;
 
 namespace Server;
@@ -71,6 +73,7 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IUserServices, UserServices>();
         services.AddScoped<ICookieService, CookieService>();
+        services.AddScoped<IFriendConnectionService, FriendConnectionService>();
         services.AddSingleton<IDictionary<string, UserRoomConnection>>(opt =>
             new Dictionary<string, UserRoomConnection>());
         services.AddTransient<IEmailSender, EmailSender>();
@@ -202,15 +205,17 @@ public class Startup(IConfiguration configuration)
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapHub<ChatHub>("/chat");
+            endpoints.MapHub<FriendRequestHub>("/friend");
             endpoints.MapControllers();
         });
-
         
         PopulateDbAndAddRoles.AddRolesAndAdmin(app, configuration).Wait();
-
+        PopulateDbAndAddRoles.CreateTestUsers(app, 20).Wait();
+        PopulateDbAndAddRoles.CreateFriendsAndFriendRequestsForTestUsers(app).Wait();
+        
         if (!env.IsEnvironment("Test")) return;
             
-        PopulateDbAndAddRoles.CreateTestUsers(app).Wait();
+        PopulateDbAndAddRoles.CreateTestUsers(app, 3).Wait();
         PopulateDbAndAddRoles.CreateTestRoom(app).Wait();
     }
 }

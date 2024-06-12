@@ -14,7 +14,7 @@
                     Are you sure you want to delete this room?
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-color" data-bs-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-color" data-bs-dismiss="modal">No</button> 
                     <button type="button" (click)="deleteRoom()" data-bs-dismiss="modal" class="btn btn-color">Yes</button>
                 </div>
             </div>
@@ -100,7 +100,7 @@
                 </div>
                 <div class="mesgs">
                     <div #scrollMe class="msg_history">
-                        <ng-container *ngFor="let message of this.chatService.message$ | async; let i = index">
+                        <ng-container *ngFor="let message of this.chatService.messages$ | async; let i = index">
                             <div [ngClass]="{'incoming_msg': message.UserName != this.userId && message.user !== 'Textinger bot', 'outgoing_msg': message.userId === this.userId}">
                                 <div *ngIf="message.userId != this.userId && message.user !== 'Textinger bot'" class="incoming_msg_img">
                                     <img class="user_image" [src]="avatars[message.userId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">

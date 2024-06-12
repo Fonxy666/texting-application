@@ -32,6 +32,7 @@ import { NewPasswordRequestComponent } from './forgot-password/new-password-requ
 import { SupportPageComponent } from './support-page/support-page.component';
 import { AboutUsPageComponent } from './about-us-page/about-us-page.component';
 import { BackgroundImageComponent } from './background-image/background-image.component';
+import { SendFriendRequestComponent } from './profile/profile/send-friend-request/send-friend-request.component';
 
 @NgModule({
   declarations: [
@@ -56,7 +57,8 @@ import { BackgroundImageComponent } from './background-image/background-image.co
     NewPasswordRequestComponent,
     SupportPageComponent,
     AboutUsPageComponent,
-    BackgroundImageComponent
+    BackgroundImageComponent,
+    SendFriendRequestComponent
   ],
   imports: [
     BrowserModule,

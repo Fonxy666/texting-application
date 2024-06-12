@@ -1,14 +1,15 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Server.Database;
 using Server.Model;
-using Server.Model.Requests;
 using Server.Model.Requests.User;
 using Server.Model.Responses.Auth;
 using Server.Model.Responses.User;
 using Server.Services.Authentication;
 using Server.Services.EmailSender;
+using Server.Services.FriendConnection;
 using Server.Services.User;
 
 namespace Server.Controllers;
@@ -22,7 +23,9 @@ public class UserController(
     IUserServices userServices,
     ILogger<UserController> logger,
     IEmailSender emailSender,
-    IConfiguration configuration) : ControllerBase
+    IFriendConnectionService friendConnectionService,
+    IConfiguration configuration
+    ) : ControllerBase
 {
     [HttpGet("GetUsername"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<UsernameResponse>> GetUsername([FromQuery]string userId)
@@ -139,6 +142,7 @@ public class UserController(
         }
     }
 
+    [ExcludeFromCodeCoverage]
     [HttpGet("GetImage"), Authorize(Roles = "User, Admin")]
     public async Task<IActionResult> GetImageWithId([FromQuery]string userId)
     {
@@ -287,6 +291,235 @@ public class UserController(
         {
             logger.LogError(e, $"Error changing e-mail for user {email}");
             return StatusCode(500);
+        }
+    }
+
+    [HttpPost("SendFriendRequest"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<ShowFriendRequestResponse>> SendFriendRequest([FromBody]FriendRequest request)
+    {
+        try
+        {
+            var existingSender = await userManager.FindByIdAsync(request.SenderId);
+            var existingReceiver = await userManager.FindByNameAsync(request.Receiver);
+        
+            if (existingSender == null || existingReceiver == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+            
+            if (existingSender == existingReceiver)
+            {
+                return BadRequest(new { message = "You cannot send friend request to yourself." });
+            }
+        
+            var databaseRequest = request with { Receiver = existingReceiver.Id.ToString() };
+        
+            var alreadySent = await friendConnectionService.AlreadySentFriendRequest(databaseRequest);
+            if (alreadySent)
+            {
+                return BadRequest(new { message = "You already sent a friend request to this user!" });
+            }
+
+            var result = await friendConnectionService.SendFriendRequest(databaseRequest);
+        
+            return Ok(result);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error sending friend request.");
+            return StatusCode(500, new { message = "An error occurred while sending the friend request." });
+        }
+    }
+
+    [HttpGet("GetFriendRequestCount"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> GetFriendRequestCount([FromQuery]string userId)
+    {
+        try
+        {
+            var existingUser = await userManager.FindByIdAsync(userId);
+        
+            if (existingUser == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            var result = await friendConnectionService.GetPendingRequestCount(userId);
+
+            return Ok(result);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error sending friend request.");
+            return StatusCode(500, new { message = "An error occurred while trying to get friend requests count." });
+        }
+    }
+    
+    [HttpGet("GetFriendRequests"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> GetFriendRequests([FromQuery]string userId)
+    {
+        try
+        {
+            var existingUser = await userManager.FindByIdAsync(userId);
+
+            if (existingUser == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            var receivedFriendRequests = await friendConnectionService.GetPendingReceivedFriendRequests(userId);
+            var sentFriendRequests = await friendConnectionService.GetPendingSentFriendRequests(userId);
+
+            var allFriendRequests = receivedFriendRequests.Concat(sentFriendRequests).ToList();
+
+            return Ok(allFriendRequests);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error sending friend request.");
+            return StatusCode(500, new { message = "An error occurred while trying to get friend requests." });
+        }
+    }
+    
+    [HttpPatch("AcceptReceivedFriendRequest"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> AcceptFriendRequest([FromBody]FriendRequestManage request)
+    {
+        try
+        {
+            var existingUser = await userManager.FindByIdAsync(request.UserId);
+
+            if (existingUser == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+            
+            var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(request.RequestId);
+
+            if (existingRequest == null)
+            {
+                return NotFound(new { message = "Friend request not found." });
+            }
+
+            await friendConnectionService.AcceptReceivedFriendRequest(request.RequestId, request.UserId);
+
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error accepting friend request.");
+            return StatusCode(500, new { message = "An error occurred while trying to accept the friend request." });
+        }
+    }
+    
+    [HttpPatch("DeclineReceivedFriendRequest"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> DeclineFriendRequest([FromBody]FriendRequestManage request)
+    {
+        try
+        {
+            var existingUser = await userManager.FindByIdAsync(request.UserId);
+
+            if (existingUser == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+            
+            var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(request.RequestId);
+
+            if (existingRequest == null)
+            {
+                return NotFound(new { message = "Friend request not found." });
+            }
+
+            await friendConnectionService.DeclineReceivedFriendRequest(request.RequestId, request.UserId);
+
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error declining friend request.");
+            return StatusCode(500, new { message = "An error occurred while trying to decline the friend request." });
+        }
+    }
+    
+    [HttpDelete("DeleteSentFriendRequest"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> DeleteSentFriendRequest([FromQuery]string requestId, string userId)
+    {
+        try
+        {
+            var existingUser = await userManager.FindByIdAsync(userId);
+
+            if (existingUser == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+            
+            var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(requestId);
+
+            if (existingRequest == null)
+            {
+                return NotFound(new { message = "Friend request not found." });
+            }
+
+            await friendConnectionService.DeleteSentFriendRequest(requestId, userId);
+
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error deleting friend request.");
+            return StatusCode(500, new { message = "An error occurred while trying to delete the friend request." });
+        }
+    }
+    
+    [HttpGet("GetFriends"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> GetFriends([FromQuery]string userId)
+    {
+        try
+        {
+            var existingUser = await userManager.FindByIdAsync(userId);
+
+            if (existingUser == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            var result = await friendConnectionService.GetFriends(userId);
+
+            return Ok(result);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error getting friend request.");
+            return StatusCode(500, new { message = "An error occurred while trying to get friend request." });
+        }
+    }
+    
+    [HttpDelete("DeleteFriend"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> DeleteFriend([FromQuery]string connectionId, string userId)
+    {
+        try
+        {
+            var existingFriendConnection = await friendConnectionService.GetFriendRequestByIdAsync(connectionId);
+
+            if (existingFriendConnection == null)
+            {
+                return NotFound(new { message = "Friend connection not found." });
+            }
+            
+            var userGuid = new Guid(userId);
+            
+            if (userGuid != existingFriendConnection.SenderId && userGuid != existingFriendConnection.ReceiverId)
+            {
+                return BadRequest(new { message = "You don't have permission for deletion." });
+            }
+
+            var result = await friendConnectionService.DeleteFriend(connectionId);
+
+            return Ok(result);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error sending friend request.");
+            return StatusCode(500, new { message = "An error occurred while trying to get friend requests." });
         }
     }
 }

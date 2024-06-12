@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Server.Model;
+using Server.Model.Requests.User;
 using Server.Services.Chat.RoomService;
+using Server.Services.FriendConnection;
+using Server.Services.User;
 
 namespace Server.Database;
 
@@ -66,11 +69,11 @@ public static class PopulateDbAndAddRoles
         }
     }
     
-    public static async Task CreateTestUsers(IApplicationBuilder app)
+    public static async Task CreateTestUsers(IApplicationBuilder app, int numberOfTestUsers)
     {
         using var scope = app.ApplicationServices.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        for (var i = 1; i <= 3; i++)
+        for (var i = 1; i <= numberOfTestUsers; i++)
         {
             var testEmail = $"test{i}@hotmail.com";
             var testInDb = await userManager.FindByEmailAsync(testEmail);
@@ -83,7 +86,8 @@ public static class PopulateDbAndAddRoles
                 {
                     1 => new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"),
                     2 => new Guid("10f96e12-e245-420a-8bad-b61fb21c4b2d"),
-                    _ => new Guid("995f04da-d4d3-447c-9c69-fab370bca312")
+                    3 => new Guid("995f04da-d4d3-447c-9c69-fab370bca312"),
+                    _ => Guid.NewGuid()
                 },
                 
                 UserName = $"TestUsername{i}",
@@ -102,6 +106,22 @@ public static class PopulateDbAndAddRoles
                 Console.WriteLine($"Error creating test user: {string.Join(", ", testUserCreated.Errors)}");
             }
 
+        }
+    }
+    
+    public static async Task CreateFriendsAndFriendRequestsForTestUsers(IApplicationBuilder app)
+    {
+        using var scope = app.ApplicationServices.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var friendConnectionService = scope.ServiceProvider.GetRequiredService<IFriendConnectionService>();
+
+        var uiTestUser = await userManager.FindByNameAsync("Fonxy666");
+        
+        for (var i = 1; i <= 20; i++)
+        {
+            var userToSend = await userManager.FindByNameAsync($"TestUsername{i}");
+            var friendRequest = new FriendRequest(userToSend!.Id.ToString(), uiTestUser!.Id.ToString());
+            var friendRequestId = await friendConnectionService.SendFriendRequest(friendRequest);
         }
     }
 }

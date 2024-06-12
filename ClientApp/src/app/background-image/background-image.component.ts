@@ -11,7 +11,6 @@ export class BackgroundImageComponent implements AfterViewInit {
     @Input() backgroundVideoSrc: string = "./assets/videos/white_black_video.mp4";
     animation: boolean;
 
-
     constructor(private cookiesService: CookieService, private renderer: Renderer2) {
         this.animation = this.cookiesService.get("Animation") == "True";
     }

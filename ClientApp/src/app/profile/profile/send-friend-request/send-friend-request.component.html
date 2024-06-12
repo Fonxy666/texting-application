@@ -1,0 +1,90 @@
+<div class="home">
+    <p-toast position="top-center"></p-toast>
+    <div class="mb-3 text-style-15-px input-container">
+        <div class="border-top">
+            Friend requests
+        </div>
+        <div class="scrollable-container">
+            <ng-container *ngFor="let request of friendRequests">
+                <ng-container *ngIf="request.senderId === this.userId">
+                    <div class="display-request">
+                        <div class="display-name">
+                           Sent request to {{ this.displayUserName(request.receiverName) }}
+                            <img class="avatar-image" [src]="avatarUrl[request.receiverId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
+                        </div>
+                        <div class="display-time-buttons">
+                            <label>
+                                {{ this.displayRemainingTime(request.sentTime) }}
+                            </label>
+                            <i class="fa fa-close mx-3" aria-hidden="true" (click)="this.handleFriendRequestDelete(request.requestId)"></i>
+                        </div>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="request.senderId !== this.userId">
+                    <div class="display-request">
+                        <div class="display-name">
+                            Incoming friend request from {{ this.displayUserName(request.senderName) }}
+                            <img class="avatar-image" [src]="avatarUrl[request.senderId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
+                        </div>
+                        <div class="display-time-buttons">
+                            <label>
+                                {{ this.displayRemainingTime(request.sentTime) }}
+                            </label>
+                            <i class="fa fa-check ms-3" aria-hidden="true" (click)="this.handleFriendRequestAccept(request)"></i>
+                            <i class="fa fa-close mx-3" aria-hidden="true" (click)="this.handleFriendRequestDecline(request.requestId)"></i>
+                        </div>
+                    </div>
+                </ng-container>
+            </ng-container>
+        </div>
+        <div class="border-top">
+            Friends
+        </div>
+        <div class="scrollable-container">
+            <ng-container *ngFor="let request of this.friends">
+                <ng-container *ngIf="request.receiverId === this.userId">
+                    <div class="display-request">
+                        <div class="display-name">
+                            {{ this.displayUserName(request.senderName) }}
+                            <img class="avatar-image" [src]="avatarUrl[request.senderId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
+                        </div>
+                        <div class="display-time-buttons">
+                            <label>
+                                {{ this.displayRemainingTime(request.sentTime) }}
+                            </label>
+                            <i class="fa fa-close mx-3" aria-hidden="true" (click)="this.deleteFriend(request.requestId, request.receiverId, request.senderId)"></i>
+                        </div>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="request.receiverId !== this.userId">
+                    <div class="display-request">
+                        <div class="display-name">
+                            {{ this.displayUserName(request.receiverName) }}
+                            <img class="avatar-image" [src]="avatarUrl[request.receiverId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
+                        </div>
+                        <div class="display-time-buttons">
+                            <label>
+                                {{ this.displayRemainingTime(request.sentTime) }}
+                            </label>
+                            <i class="fa fa-close mx-3" aria-hidden="true" (click)="this.deleteFriend(request.requestId, request.receiverId, request.senderId)"></i>
+                        </div>
+                    </div>
+                </ng-container>
+            </ng-container>
+        </div>
+    </div>
+    <form [formGroup]="friendName" (ngSubmit)="OnFormSubmit()">
+        <div class="mb-3 text-style-15-px input-container">
+            <label for="inputEmail" class="form-label">Add a friend:</label>
+            <input formControlName="userName" type="email" placeholder="Username" class="form-control" id="inputEmail" aria-describedby="emailHelp">
+            <div class="error-messages-container">
+                <div class="text-style-15-px" *ngIf="friendName.get('userName')?.invalid && (friendName.get('userName')?.dirty || friendName.get('userName')?.touched)" class="text-danger">
+                    <div *ngIf="friendName.get('userName')?.errors?.['required']">Username is required</div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center">
+            <button type="submit" class="btn btn-color" [disabled]="!friendName.valid">Submit</button>
+        </div>
+    </form>
+</div>

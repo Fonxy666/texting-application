@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 
 namespace Server.Model.Chat;
@@ -7,9 +8,11 @@ public class Message
 {
     [Key]
     public Guid MessageId { get; private set; }
-    public Guid RoomId { get; init; } 
-    public Guid SenderId { get; init; } 
-    public string Text { get; private set; } 
+    public Guid RoomId { get; init; }
+    [ForeignKey("RoomId")]
+    public Room Room { get; set; }
+    public Guid SenderId { get; init; }
+    public string Text { get; private set; }
     public string SendTime { get; init; } = DateTime.Now.ToString(CultureInfo.InvariantCulture);
     public bool SentAsAnonymous { get; init; }
     public List<Guid> Seen { get; set; }

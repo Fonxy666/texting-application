@@ -8,10 +8,10 @@ public class Room
 {
     [Key]
     public Guid RoomId { get; private set; }
-
     public Guid CreatorId { get; init; }
     public string RoomName { get; init; }
     public string Password { get; private set; }
+    public ICollection<Message> Messages { get; set; } = new List<Message>();
     
     public Room() {}
     

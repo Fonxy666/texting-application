@@ -11,14 +11,12 @@ namespace Tests.ServicesTests;
 
 public class EmailSenderTests
 {
-    private readonly ITestOutputHelper _testOutputHelper;
     private readonly Mock<IConfiguration> _mockConfiguration;
     private readonly Mock<ISmtpClientWrapper> _mockSmtpClientWrapper;
     private readonly EmailSender _emailSender;
 
-    public EmailSenderTests(ITestOutputHelper testOutputHelper)
+    public EmailSenderTests()
     {
-        _testOutputHelper = testOutputHelper;
         _mockConfiguration = new Mock<IConfiguration>();
         _mockSmtpClientWrapper = new Mock<ISmtpClientWrapper>();
 
