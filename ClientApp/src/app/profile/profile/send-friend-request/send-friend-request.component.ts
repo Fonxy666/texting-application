@@ -23,7 +23,7 @@ export class SendFriendRequestComponent implements OnInit {
     friends: FriendRequestManage[] | undefined;
 
     constructor(
-        public friendService: FriendService,
+        private friendService: FriendService,
         private fb: FormBuilder,
         private http: HttpClient,
         private errorHandler: ErrorHandlerService,

@@ -54,7 +54,7 @@
                                 Manage Friend Requests
                                 <ng-container *ngIf="announceNumber != 0">
                                     <div class="announce-number">
-                                        {{ announceNumber }}
+                                        {{ announceNumber > 9 ? '9+' : announceNumber }}
                                     </div>
                                 </ng-container>
                             </div>

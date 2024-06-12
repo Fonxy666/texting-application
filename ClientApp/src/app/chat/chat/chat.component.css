@@ -373,3 +373,10 @@ input::placeholder {
 .dropdown-item {
     padding-left: 40px;
 }
+
+.modal-search {
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

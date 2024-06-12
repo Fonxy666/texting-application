@@ -14,6 +14,9 @@ import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ChangePasswordRequest } from '../../model/ChangePasswordRequest';
 import { passwordMatchValidator, passwordValidator } from '../../validators/ValidPasswordValidator';
+import { FriendService } from '../../services/friend-service/friend.service';
+import { FriendRequestManage } from '../../model/FriendRequestManage';
+import { isEqual } from 'lodash';
 
 @Component({
   selector: 'app-chat',
@@ -31,6 +34,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     myImage: string = "./assets/images/chat-mountain.jpg";
     connectedUsers: ConnectedUser[] = [];
     searchTerm: string = '';
+    searchTermForFriends: string = '';
     messageModifyBool: boolean = false;
     messageModifyRequest: ChangeMessageRequest = {id: "", message: ""};
     isPageVisible = true;
@@ -39,6 +43,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     showPassword: boolean = false;
     isLoading: boolean = false;
     private subscriptions: Subscription = new Subscription();
+    friends: FriendRequestManage[] | undefined;
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
@@ -52,7 +57,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         private errorHandler: ErrorHandlerService,
         private cookieService: CookieService,
         private messageService: MessageService,
-        private fb: FormBuilder
+        private fb: FormBuilder,
+        private friendService: FriendService
     ) { }
 
     messages: any[] = [];
@@ -153,6 +159,16 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }, {
             validators: passwordMatchValidator.bind(this)
         });
+
+        this.friendService.friends$.subscribe(friends => {
+            this.friends = friends;
+            this.friends.forEach(request => {
+                this.getAvatarImage(request.senderId);
+                this.getAvatarImage(request.receiverId);
+            });
+        });
+
+        this.getFriends();
     };
 
     ngAfterViewChecked(): void {
@@ -494,4 +510,94 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 }
             });
     }
+
+    getFriends() {
+        this.http.get(`/api/v1/User/GetFriends?userId=${this.userId}`, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(
+            (response: FriendRequestManage[]) => {
+                if (!this.friendService.friends[this.userId]) {
+                    this.friendService.friends[this.userId] = [];
+                }
+    
+                response.forEach(res => {
+                    const friendsList = this.friendService.friends[this.userId];
+                    
+                    if (!friendsList.some(friend => isEqual(friend, res))) {
+                        friendsList.push(res);
+                    }
+    
+                    this.friendService.friends$.next(friendsList);
+                });
+            },
+            (error: any) => {
+                console.log(error);
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                } else {
+                    console.log(error);
+                }
+            }
+        );
+    }
+
+    displayUserName(name: string) {
+        if (name.length <= 8) {
+            return name;
+        } else {
+            return name.slice(0, 8) + '...';
+        }
+    }
+
+    displayRemainingTime(time: string) {
+        const givenTime = new Date(time);
+        const currentTime = new Date();
+
+        let years = currentTime.getFullYear() - givenTime.getFullYear();
+        let months = currentTime.getMonth() - givenTime.getMonth();
+        let days = currentTime.getDate() - givenTime.getDate();
+        let hours = currentTime.getHours() - givenTime.getHours();
+        let minutes = currentTime.getMinutes() - givenTime.getMinutes();
+
+        if (minutes < 0) {
+            minutes += 60;
+            hours--;
+        }
+        if (hours < 0) {
+            hours += 24;
+            days--;
+        }
+        if (days < 0) {
+            const daysInPreviousMonth = new Date(currentTime.getFullYear(), currentTime.getMonth(), 0).getDate();
+            days += daysInPreviousMonth;
+            months--;
+        }
+        if (months < 0) {
+            months += 12;
+            years--;
+        }
+
+        const parts = [];
+        if (years > 0) parts.push(`${years} year${years !== 1 ? 's' : ''}`);
+        if (months > 0) parts.push(`${months} month${months !== 1 ? 's' : ''}`);
+        if (days > 0) parts.push(`${days} day${days !== 1 ? 's' : ''}`);
+        if (hours > 0) parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
+        if (minutes > 0) parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
+
+        return parts.join(', ');
+    }
+
+    searchInFriends() {
+        if (this.searchTermForFriends.trim() === '') {
+            this.friendService.friends$.subscribe(users => {
+                this.friends = users;
+            });
+        } else {
+            this.friends = this.friendService.friends$.value.filter(user =>
+                this.userId !== user.senderId? user.senderName.toLowerCase().includes(this.searchTermForFriends.toLowerCase()) : user.receiverName.toLowerCase().includes(this.searchTermForFriends.toLowerCase())
+            );
+        }
+    };
 }

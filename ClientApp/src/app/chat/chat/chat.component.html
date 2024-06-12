@@ -1,4 +1,4 @@
-<div class="cont">
+<div class="cont text-style">
     <app-nav-bar />
     <app-loading-screen *ngIf="isLoading"/>
     <p-toast position="top-center"></p-toast>
@@ -16,6 +16,45 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-color" data-bs-dismiss="modal">No</button> 
                     <button type="button" (click)="deleteRoom()" data-bs-dismiss="modal" class="btn btn-color">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="friendsModal" tabindex="-1" aria-labelledby="exampleModalLabel" data-bs-theme="dark" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-white" id="exampleModalLabel">Friends</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-search text-white">
+                    <div>
+                        Username:
+                    </div>
+                    <div class="srch_bar">
+                        <div class="stylish-input-group">
+                            <input type="text" class="search-bar text-white" placeholder="Search" [(ngModel)]="searchTermForFriends" (input)="searchInFriends()">
+                            <span class="input-group-addon">
+                                <button type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body text-white" style="max-height: 500px; overflow-y: auto;">
+                    <ng-container *ngFor="let request of this.friends; let i = index">
+                        <ng-container *ngIf="request.receiverId === this.userId">
+                            <div class="chat_header">
+                                {{ request.senderName }}
+                                <i class="fa fa-check mx-3" aria-hidden="true"></i>
+                            </div>
+                        </ng-container>
+                        <ng-container *ngIf="request.receiverId !== this.userId">
+                            <div class="chat_header">
+                                {{ request.receiverName }}
+                                <i class="fa fa-check mx-3" aria-hidden="true"></i>
+                            </div>
+                        </ng-container>
+                    </ng-container>
                 </div>
             </div>
         </div>
@@ -48,6 +87,9 @@
     <div class="container mt-5" [ngClass]="{'blur-content': isLoading}">
         <div class="chat_header">
             <h3 class="text-center my-2 place_headers text-white">Welcome to <span class="group-name">{{roomName.toUpperCase()}}</span> group</h3>
+            <button type="button" class="btn text-white btn-color" data-bs-toggle="modal" data-bs-target="#friendsModal">
+                Invite a friend
+            </button>
             <ng-container *ngIf="this.userIsTheCreator">
                 <div class="dropdown">
                     <button type="button" class="decorated_button_for_dropdown btn-color" data-bs-toggle="dropdown" aria-expanded="false">
@@ -91,7 +133,7 @@
                                 <img class="user_image" [src]="avatars[user.userId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
                               </div>
                               <div class="chat_ib mt-3">
-                                <h5>{{user.userName}} <span class="online"></span> </h5>
+                                <h5>{{this.displayUserName(user.userName)}} <span class="online"></span> </h5>
                               </div>
                             </div>
                           </div>
@@ -109,7 +151,7 @@
                                     <div class="received_withd_msg">
                                         <p> {{message.message}} </p>
                                         <div class="message-data-container">
-                                            <span class="time_date">{{message.user}} | {{message.messageTime | date: 'medium'}}</span>
+                                            <span class="time_date">{{displayUserName(message.user)}} | {{message.messageTime | date: 'medium'}}</span>
                                             <div class="seen-images-container">
                                                 <ng-container *ngIf="message.seenList != null && message.seenList.length > 2">
                                                     {{this.resetImageCount()}}
