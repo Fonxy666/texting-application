@@ -71,14 +71,7 @@ export class ProfileComponent implements OnInit {
         this.getAnnounceNumber();
 
         this.friendService.friendRequests$.subscribe(requests => {
-            this.announceNumber = 0;
-            this.friendRequests = [];
-            requests.forEach(request => {
-                if (!this.friendRequests?.some(friend => isEqual(friend.requestId, request.requestId)) && request.senderId !== this.userId) {
-                    this.friendRequests?.push(request);
-                    this.announceNumber++;
-                }
-            })
+            this.announceNumber = requests.length;
         });
     }
 

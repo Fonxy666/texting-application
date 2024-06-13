@@ -39,27 +39,18 @@ export class SendFriendRequestComponent implements OnInit {
         this.friendName = this.fb.group({
             userName: ['', [Validators.required]]
         });
-
-        this.getPendingFriendRequests();
-        this.getFriends();
     
         this.friendService.friendRequests$.subscribe(requests => {
-            this.friendRequests = [];
+            this.friendRequests = requests;
             requests.forEach(request => {
-                if (!this.friendRequests?.some(friend => isEqual(friend.requestId, request.requestId))) {
-                    this.friendRequests?.push(request);
-                }
                 this.loadUserAvatar(request.senderId);
                 this.loadUserAvatar(request.receiverId);
             });
         });
     
         this.friendService.friends$.subscribe(friends => {
-            this.friends = [];
+            this.friends = friends;
             friends.forEach(request => {
-                if (!this.friends?.some(friend => isEqual(friend.requestId, request.requestId))) {
-                    this.friends?.push(request);
-                }
                 this.loadUserAvatar(request.senderId);
                 this.loadUserAvatar(request.receiverId);
             });
@@ -88,70 +79,6 @@ export class SendFriendRequestComponent implements OnInit {
                     this.errorHandler.handleError403(error);
                 } else if (error.status === 400) {
                     this.messageService.add({ severity: 'error', summary: 'Error', detail: `${error.error.message}` });
-                } else {
-                    console.log(error);
-                }
-            }
-        );
-    }
-
-    getPendingFriendRequests() {
-        this.http.get(`/api/v1/User/GetFriendRequests?userId=${this.userId}`, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe(
-            (response: FriendRequestManage[]) => {
-                if (!this.friendService.friendRequests[this.userId]) {
-                    this.friendService.friendRequests[this.userId] = [];
-                }
-    
-                response.forEach(res => {
-                    const requestList = this.friendService.friendRequests[this.userId];
-                    
-                    if (!requestList.some(request => isEqual(request, res))) {
-                        requestList.push(res);
-                    }
-
-                    this.friendService.friendRequests$.next(requestList);
-                });
-            },
-            (error: any) => {
-                console.log(error);
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                } else {
-                    console.log(error);
-                }
-            }
-        );
-    }
-
-    getFriends() {
-        this.http.get(`/api/v1/User/GetFriends?userId=${this.userId}`, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe(
-            (response: FriendRequestManage[]) => {
-                if (!this.friendService.friends[this.userId]) {
-                    this.friendService.friends[this.userId] = [];
-                }
-    
-                response.forEach(res => {
-                    const friendsList = this.friendService.friends[this.userId];
-                    
-                    if (!friendsList.some(friend => isEqual(friend, res))) {
-                        friendsList.push(res);
-                    }
-    
-                    this.friendService.friends$.next(friendsList);
-                });
-            },
-            (error: any) => {
-                console.log(error);
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
                 } else {
                     console.log(error);
                 }

@@ -5,6 +5,8 @@ import { CookieService } from 'ngx-cookie-service';
 import { FriendRequestManage } from '../../model/FriendRequestManage';
 import { FriendRequestManageWithReceiverId } from '../../model/FriendRequestManageWithReceiverId';
 import { isEqual } from 'lodash';
+import { HttpClient } from '@angular/common/http';
+import { ErrorHandlerService } from '../error-handler.service';
 
 @Injectable({
     providedIn: 'root'
@@ -15,12 +17,16 @@ export class FriendService {
     public friendRequests: { [userId: string]: FriendRequestManage[] } = {};
     public friends$ = new BehaviorSubject<FriendRequestManage[]>([]);
     public friends: { [userId: string]: FriendRequestManage[] } = {};
+    public announceNumber: number = 0;
 
-    constructor(private cookieService: CookieService) {
+    constructor(private cookieService: CookieService, private http: HttpClient, private errorHandler: ErrorHandlerService) {
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl('/friend', { accessTokenFactory: () => this.cookieService.get('UserId') })
             .configureLogging(signalR.LogLevel.Critical)
             .build();
+
+            this.getPendingFriendRequests();
+            this.getFriends();
 
         this.initializeConnection();
 
@@ -163,5 +169,71 @@ export class FriendService {
         const userId = this.cookieService.get('UserId');
         this.friends[userId] = this.friends[userId].filter(r => r.requestId !== requestId)
         this.friends$.next(this.friends[userId]);
+    }
+
+    getPendingFriendRequests() {
+        const userId = this.cookieService.get("UserId");
+        this.http.get(`/api/v1/User/GetFriendRequests?userId=${userId}`, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(
+            (response: FriendRequestManage[]) => {
+                if (!this.friendRequests[userId]) {
+                    this.friendRequests[userId] = [];
+                }
+    
+                response.forEach(res => {
+                    const requestList = this.friendRequests[userId];
+                    
+                    if (!requestList.some(request => isEqual(request, res))) {
+                        requestList.push(res);
+                    }
+
+                    this.friendRequests$.next(requestList);
+                });
+            },
+            (error: any) => {
+                console.log(error);
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                } else {
+                    console.log(error);
+                }
+            }
+        );
+    }
+
+    getFriends() {
+        const userId = this.cookieService.get("UserId");
+        this.http.get(`/api/v1/User/GetFriends?userId=${userId}`, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(
+            (response: FriendRequestManage[]) => {
+                if (!this.friends[userId]) {
+                    this.friends[userId] = [];
+                }
+    
+                response.forEach(res => {
+                    const friendsList = this.friends[userId];
+                    
+                    if (!friendsList.some(friend => isEqual(friend, res))) {
+                        friendsList.push(res);
+                    }
+    
+                    this.friends$.next(friendsList);
+                });
+            },
+            (error: any) => {
+                console.log(error);
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                } else {
+                    console.log(error);
+                }
+            }
+        );
     }
 }
