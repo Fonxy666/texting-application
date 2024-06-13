@@ -25,8 +25,8 @@ export class FriendService {
             .configureLogging(signalR.LogLevel.Critical)
             .build();
 
-            this.getPendingFriendRequests();
-            this.getFriends();
+        this.getPendingFriendRequests();
+        this.getFriends();
 
         this.initializeConnection();
 
@@ -134,8 +134,17 @@ export class FriendService {
     
     private updateFriendRequests(request: FriendRequestManage) {
         const userId = this.cookieService.get('UserId');
+        
+        if (!this.friendRequests[userId]) {
+            this.friendRequests[userId] = [];
+        }
+        if (!this.friends[userId]) {
+            this.friends[userId] = [];
+        }
+    
         this.friendRequests[userId] = this.friendRequests[userId].filter(r => r.requestId !== request.requestId);
-        this.friends[userId] = [...this.friends[userId], request];
+        
+        this.friends[userId].push(request);
     
         this.friendRequests$.next(this.friendRequests[userId]);
         this.friends$.next(this.friends[userId]);

@@ -167,8 +167,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 this.getAvatarImage(request.receiverId);
             });
         });
-
-        this.getFriends();
     };
 
     ngAfterViewChecked(): void {
@@ -509,38 +507,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     console.error("An error occurred:", error);
                 }
             });
-    }
-
-    getFriends() {
-        this.http.get(`/api/v1/User/GetFriends?userId=${this.userId}`, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe(
-            (response: FriendRequestManage[]) => {
-                if (!this.friendService.friends[this.userId]) {
-                    this.friendService.friends[this.userId] = [];
-                }
-    
-                response.forEach(res => {
-                    const friendsList = this.friendService.friends[this.userId];
-                    
-                    if (!friendsList.some(friend => isEqual(friend, res))) {
-                        friendsList.push(res);
-                    }
-    
-                    this.friendService.friends$.next(friendsList);
-                });
-            },
-            (error: any) => {
-                console.log(error);
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                } else {
-                    console.log(error);
-                }
-            }
-        );
     }
 
     displayUserName(name: string) {

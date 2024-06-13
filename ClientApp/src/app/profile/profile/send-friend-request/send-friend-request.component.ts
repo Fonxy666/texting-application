@@ -55,7 +55,6 @@ export class SendFriendRequestComponent implements OnInit {
                 this.loadUserAvatar(request.receiverId);
             });
         });
-    
     }
 
     OnFormSubmit() {
