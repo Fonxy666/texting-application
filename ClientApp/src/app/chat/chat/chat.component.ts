@@ -521,4 +521,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             );
         }
     };
+
+    handleInviteToRoom(name: string) {
+        console.log(name);
+        console.log(sessionStorage.getItem("roomId"));
+        console.log(sessionStorage.getItem("room"));
+    }
 }

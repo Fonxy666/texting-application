@@ -24,6 +24,7 @@ export class NavBarComponent implements OnInit {
 
     isDropstart: boolean = true;
     announceNumber: number = 0;
+    announceNumberForInvite: number = 2;
     userId: string = "";
     friendRequests: any[] = [];
     profilePic: string = "";

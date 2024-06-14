@@ -45,13 +45,13 @@
                         <ng-container *ngIf="request.receiverId === this.userId">
                             <div class="chat_header">
                                 {{ request.senderName }}
-                                <i class="fa fa-check mx-3" aria-hidden="true"></i>
+                                <i class="fa fa-check mx-3" aria-hidden="true" (click)="handleInviteToRoom(request.senderName)"></i>
                             </div>
                         </ng-container>
                         <ng-container *ngIf="request.receiverId !== this.userId">
                             <div class="chat_header">
                                 {{ request.receiverName }}
-                                <i class="fa fa-check mx-3" aria-hidden="true"></i>
+                                <i class="fa fa-check mx-3" aria-hidden="true" (click)="handleInviteToRoom(request.receiverName)"></i>
                             </div>
                         </ng-container>
                     </ng-container>
