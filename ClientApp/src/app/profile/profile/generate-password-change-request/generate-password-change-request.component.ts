@@ -4,8 +4,8 @@ import { ChangePasswordRequest } from '../../../model/ChangePasswordRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { passwordValidator, passwordMatchValidator } from '../../../validators/ValidPasswordValidator';
 import { HttpClient } from '@angular/common/http';
-import { ErrorHandlerService } from '../../../services/error-handler.service';
 import { MessageService } from 'primeng/api';
+import { ErrorHandlerService } from '../../../services/error-handler-service/error-handler.service';
 
 @Component({
   selector: 'app-generate-password-change-request',

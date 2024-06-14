@@ -2,10 +2,9 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
-import { ErrorHandlerService } from '../services/error-handler.service';
 import { FriendService } from '../services/friend-service/friend.service';
-import { isEqual } from 'lodash';
 import { MediaService } from '../services/media-service/media.service';
+import { ErrorHandlerService } from '../services/error-handler-service/error-handler.service';
 
 @Component({
     selector: 'app-nav-bar',

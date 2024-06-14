@@ -2,10 +2,12 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
 export class UserService {
-    private emailSubject = new BehaviorSubject<string>('');
+  constructor() { }
+
+  private emailSubject = new BehaviorSubject<string>('');
     private imageSubject = new BehaviorSubject<string>('');
     email$ = this.emailSubject.asObservable();
     image$ = this.imageSubject.asObservable();

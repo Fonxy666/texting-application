@@ -5,7 +5,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of, forkJoin, Subscription  } from 'rxjs';
 import { catchError, filter, switchMap, take } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';
-import { ErrorHandlerService } from '../../services/error-handler.service';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
 import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
@@ -17,6 +16,7 @@ import { passwordMatchValidator, passwordValidator } from '../../validators/Vali
 import { FriendService } from '../../services/friend-service/friend.service';
 import { FriendRequestManage } from '../../model/FriendRequestManage';
 import { DisplayService } from '../../services/display-service/display.service';
+import { ErrorHandlerService } from '../../services/error-handler-service/error-handler.service';
 
 @Component({
   selector: 'app-chat',

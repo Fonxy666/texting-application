@@ -6,7 +6,7 @@ import { FriendRequestManage } from '../../model/FriendRequestManage';
 import { FriendRequestManageWithReceiverId } from '../../model/FriendRequestManageWithReceiverId';
 import { isEqual } from 'lodash';
 import { HttpClient } from '@angular/common/http';
-import { ErrorHandlerService } from '../error-handler.service';
+import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 
 @Injectable({
     providedIn: 'root'

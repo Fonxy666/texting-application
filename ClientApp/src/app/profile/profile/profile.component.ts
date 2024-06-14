@@ -6,13 +6,12 @@ import { NavigationEnd, Router } from '@angular/router';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { ChangeAvatarRequest } from '../../model/ChangeAvatarRequest';
-import { ErrorHandlerService } from '../../services/error-handler.service';
 import { MessageService } from 'primeng/api';
 import { filter } from 'rxjs';
-import { UserService } from '../../services/user.service';
 import { FriendService } from '../../services/friend-service/friend.service';
-import { isEqual } from 'lodash';
 import { MediaService } from '../../services/media-service/media.service';
+import { UserService } from '../../services/user-service/user.service';
+import { ErrorHandlerService } from '../../services/error-handler-service/error-handler.service';
 
 @Component({
     selector: 'app-profile',

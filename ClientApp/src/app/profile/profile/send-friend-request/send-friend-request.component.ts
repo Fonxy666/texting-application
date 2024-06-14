@@ -1,6 +1,5 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { ErrorHandlerService } from '../../../services/error-handler.service';
 import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CookieService } from 'ngx-cookie-service';
@@ -11,6 +10,7 @@ import { FriendRequestManageRequest } from '../../../model/FriendRequestManageRe
 import { FriendRequestManageWithReceiverId } from '../../../model/FriendRequestManageWithReceiverId';
 import { MediaService } from '../../../services/media-service/media.service';
 import { DisplayService } from '../../../services/display-service/display.service';
+import { ErrorHandlerService } from '../../../services/error-handler-service/error-handler.service';
 
 @Component({
   selector: 'app-send-friend-request',
