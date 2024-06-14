@@ -5,6 +5,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { ErrorHandlerService } from '../services/error-handler.service';
 import { FriendService } from '../services/friend-service/friend.service';
 import { isEqual } from 'lodash';
+import { MediaService } from '../services/media-service/media.service';
 
 @Component({
     selector: 'app-nav-bar',
@@ -19,18 +20,19 @@ export class NavBarComponent implements OnInit {
         private http: HttpClient,
         private errorHandler: ErrorHandlerService,
         private friendService: FriendService,
+        private mediaService: MediaService
     ) {}
 
     isDropstart: boolean = true;
     announceNumber: number = 0;
     userId: string = "";
     friendRequests: any[] = [];
+    profilePic: string = "";
 
     ngOnInit(): void {
         this.userId = this.cookieService.get("UserId");
 
         this.isLoggedIn();
-        this.loadProfileData();
         this.checkScreenSize();
 
         this.getAnnounceNumber();
@@ -38,38 +40,15 @@ export class NavBarComponent implements OnInit {
         this.friendService.friendRequests$.subscribe(requests => {
             this.announceNumber = requests.length;
         });
+
+        this.mediaService.getAvatarImage(this.userId).subscribe((image) => {
+            this.profilePic = image;
+        });
     }
 
-    profilePic: string = "";
 
     isLoggedIn(): boolean {
         return this.cookieService.check('UserId');
-    }
-
-    loadProfileData() {        
-        if (this.userId) {
-            this.http.get(`/api/v1/User/GetImage?userId=${this.userId}`, { withCredentials: true, responseType: 'blob' })
-            .pipe(
-                this.errorHandler.handleError401()
-            )
-            .subscribe(
-                (response: Blob) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        this.profilePic = reader.result as string;
-                    };
-                    reader.readAsDataURL(response);
-                },
-                (error) => {
-                    if (error.status === 403) {
-                        this.errorHandler.handleError403(error);
-                    }
-                    console.error(error);
-                    console.log("There is no Avatar for this user.");
-                    this.profilePic = "https://ptetutorials.com/images/user-profile.png";
-                }
-            );
-        }
     }
 
     logout() {

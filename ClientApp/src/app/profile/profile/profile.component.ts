@@ -12,6 +12,7 @@ import { filter } from 'rxjs';
 import { UserService } from '../../services/user.service';
 import { FriendService } from '../../services/friend-service/friend.service';
 import { isEqual } from 'lodash';
+import { MediaService } from '../../services/media-service/media.service';
 
 @Component({
     selector: 'app-profile',
@@ -42,7 +43,8 @@ export class ProfileComponent implements OnInit {
         private errorHandler: ErrorHandlerService,
         private messageService: MessageService,
         private userService: UserService,
-        private friendService: FriendService
+        private friendService: FriendService,
+        private mediaService: MediaService
     ) {
         this.user.id = this.cookieService.get('UserId');
 
@@ -57,7 +59,9 @@ export class ProfileComponent implements OnInit {
         this.userId = this.cookieService.get("UserId");
         this.isLoading = true;
         this.getUser(this.user.id);
-        this.loadProfileData(this.user.id);
+        this.mediaService.getAvatarImage(this.userId).subscribe((image) => {
+            this.user.image = image;
+        });
         this.passwordChangeRequest = this.fb.group({
             oldPassword: ['', Validators.required],
             newPassword: ['', Validators.required]
@@ -108,33 +112,6 @@ export class ProfileComponent implements OnInit {
             });
         } else {
             console.error('Username parameter is null or undefined.');
-        }
-    }
-
-    loadProfileData(userId: string) {
-        if (userId) {
-            this.http.get(`/api/v1/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
-            .pipe(
-                this.errorHandler.handleError401()
-            )
-            .subscribe(
-                (response: any) => {
-                    if (response instanceof Blob) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                            this.user.image = reader.result as string;
-                        };
-                        reader.readAsDataURL(response);
-                    }
-                },
-                (error) => {
-                    if (error.status === 403) {
-                        this.errorHandler.handleError403(error);
-                    }
-                    console.log(error);
-                    this.user.image = "https://ptetutorials.com/images/user-profile.png";
-                }
-            );
         }
     }
 

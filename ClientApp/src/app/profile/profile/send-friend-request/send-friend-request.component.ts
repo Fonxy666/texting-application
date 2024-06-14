@@ -10,6 +10,7 @@ import { FriendRequestManage } from '../../../model/FriendRequestManage';
 import { FriendRequestManageRequest } from '../../../model/FriendRequestManageRequest';
 import { FriendRequestManageWithReceiverId } from '../../../model/FriendRequestManageWithReceiverId';
 import { isEqual } from 'lodash';
+import { MediaService } from '../../../services/media-service/media.service';
 
 @Component({
   selector: 'app-send-friend-request',
@@ -29,7 +30,8 @@ export class SendFriendRequestComponent implements OnInit {
         private http: HttpClient,
         private errorHandler: ErrorHandlerService,
         private messageService: MessageService,
-        private cookieService: CookieService
+        private cookieService: CookieService,
+        private mediaService: MediaService
     ) { }
 
     friendName!: FormGroup;
@@ -43,16 +45,24 @@ export class SendFriendRequestComponent implements OnInit {
         this.friendService.friendRequests$.subscribe(requests => {
             this.friendRequests = requests;
             requests.forEach(request => {
-                this.loadUserAvatar(request.senderId);
-                this.loadUserAvatar(request.receiverId);
+                this.mediaService.getAvatarImage(request.senderId).subscribe((image) => {
+                    this.avatarUrl[request.senderId] = image;
+                });
+                this.mediaService.getAvatarImage(request.receiverId).subscribe((image) => {
+                    this.avatarUrl[request.receiverId] = image;
+                });
             });
         });
     
         this.friendService.friends$.subscribe(friends => {
             this.friends = friends;
             friends.forEach(request => {
-                this.loadUserAvatar(request.senderId);
-                this.loadUserAvatar(request.receiverId);
+                this.mediaService.getAvatarImage(request.senderId).subscribe((image) => {
+                    this.avatarUrl[request.senderId] = image;
+                });
+                this.mediaService.getAvatarImage(request.receiverId).subscribe((image) => {
+                    this.avatarUrl[request.receiverId] = image;
+                });
             });
         });
     }
@@ -129,30 +139,6 @@ export class SendFriendRequestComponent implements OnInit {
         } else {
             return name.slice(0, 8) + '...';
         }
-    }
-
-    loadUserAvatar(userId: string) {
-        this.http.get(`/api/v1/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe(
-            (response: Blob) => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    this.avatarUrl[userId] = reader.result as string;
-                };
-                reader.readAsDataURL(response);
-            },
-            (error) => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                }
-                console.error(error);
-                console.log("There is no Avatar for this user.");
-                this.avatarUrl[userId] = "https://ptetutorials.com/images/user-profile.png";
-            }
-        );
     }
 
     handleFriendRequestAccept(request: FriendRequestManage) {
