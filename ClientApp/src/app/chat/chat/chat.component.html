@@ -133,7 +133,7 @@
                                 <img class="user_image" [src]="avatars[user.userId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
                               </div>
                               <div class="chat_ib mt-3">
-                                <h5>{{this.displayUserName(user.userName)}} <span class="online"></span> </h5>
+                                <h5>{{this.displayService.displayUserName(user.userName)}} <span class="online"></span> </h5>
                               </div>
                             </div>
                           </div>
@@ -151,7 +151,7 @@
                                     <div class="received_withd_msg">
                                         <p> {{message.message}} </p>
                                         <div class="message-data-container">
-                                            <span class="time_date">{{displayUserName(message.user)}} | {{message.messageTime | date: 'medium'}}</span>
+                                            <span class="time_date">{{this.displayService.displayUserName(message.user)}} | {{message.messageTime | date: 'medium'}}</span>
                                             <div class="seen-images-container">
                                                 <ng-container *ngIf="message.seenList != null && message.seenList.length > 2">
                                                     {{this.resetImageCount()}}

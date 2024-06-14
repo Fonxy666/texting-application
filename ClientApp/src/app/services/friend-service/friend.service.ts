@@ -25,8 +25,7 @@ export class FriendService {
             .configureLogging(signalR.LogLevel.Critical)
             .build();
 
-        this.getPendingFriendRequests();
-        this.getFriends();
+        this.loadInitialData();
 
         this.initializeConnection();
 
@@ -45,6 +44,14 @@ export class FriendService {
         this.connection.on("DeleteFriend", (requestId: string) => {
             this.deleteFromFriends(requestId);
         });
+    }
+
+    private async loadInitialData() {
+        try {
+            await Promise.all([this.getPendingFriendRequests(), this.getFriends()]);
+        } catch (error) {
+            console.error('Error loading initial data:', error);
+        }
     }
 
     private async initializeConnection() {
