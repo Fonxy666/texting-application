@@ -7,6 +7,7 @@ import { FriendRequestManageWithReceiverId } from '../../model/FriendRequestMana
 import { isEqual } from 'lodash';
 import { HttpClient } from '@angular/common/http';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
+import { ChatRoomInvite } from '../../model/ChatRoomInvite';
 
 @Injectable({
     providedIn: 'root'
@@ -17,6 +18,8 @@ export class FriendService {
     public friendRequests: { [userId: string]: FriendRequestManage[] } = {};
     public friends$ = new BehaviorSubject<FriendRequestManage[]>([]);
     public friends: { [userId: string]: FriendRequestManage[] } = {};
+    public chatRoomInvites$ = new BehaviorSubject<ChatRoomInvite[]>([]);
+    public chatRoomInvites: { [userId: string]: ChatRoomInvite[] } = {};
     public announceNumber: number = 0;
 
     constructor(private cookieService: CookieService, private http: HttpClient, private errorHandler: ErrorHandlerService) {
@@ -43,6 +46,10 @@ export class FriendService {
 
         this.connection.on("DeleteFriend", (requestId: string) => {
             this.deleteFromFriends(requestId);
+        });
+
+        this.connection.on("ReceiveChatRoomInvite", (roomId: string, roomName: string, receiverId: string, senderId: string, senderName: string) => {
+            this.updateChatInvites(roomId, roomName, receiverId, senderId, senderName);
         });
     }
 
@@ -185,6 +192,30 @@ export class FriendService {
         const userId = this.cookieService.get('UserId');
         this.friends[userId] = this.friends[userId].filter(r => r.requestId !== requestId)
         this.friends$.next(this.friends[userId]);
+    }
+
+    public async sendChatRoomInvite(roomId: string, roomName: string, receiverName: string, senderId: string, senderName: string) {
+        try {
+            console.log(`Roomid: ${roomId}`);
+            console.log(`Roomname: ${roomName}`);
+            console.log(`receiverName: ${receiverName}`);
+            console.log(`senderId: ${senderId}`);
+            console.log(`senderName: ${senderName}`);
+            await this.connection.invoke("SendChatRoomInvite", roomId, roomName, receiverName, senderId, senderName);
+        } catch (error) {
+            console.error('Error declining friend request via SignalR:', error);
+        }
+    }
+
+    private updateChatInvites(roomId: string, roomName: string, receiverId: string, senderId: string, senderName: string) {
+        if (!this.chatRoomInvites[receiverId]) {
+            this.chatRoomInvites[receiverId] = [];
+        }
+        
+        this.chatRoomInvites[receiverId].push(new ChatRoomInvite(senderId, roomId, roomName, senderName));
+        console.log(this.chatRoomInvites[receiverId]);
+        
+        this.chatRoomInvites$.next(this.chatRoomInvites[receiverId]);
     }
 
     getPendingFriendRequests() {

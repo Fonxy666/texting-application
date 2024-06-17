@@ -6,7 +6,6 @@ import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
 import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
 import { ConnectedUser } from '../../model/ConnectedUser';
-import { FriendRequest } from '../../model/FriendRequest';
 
 @Injectable({
     providedIn: 'root'

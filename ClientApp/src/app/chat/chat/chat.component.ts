@@ -1,6 +1,6 @@
 import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { ChatService } from '../../services/chat-service/chat.service';
-import { Router, ActivatedRoute  } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, forkJoin, Subscription  } from 'rxjs';
 import { catchError, filter, switchMap, take } from 'rxjs/operators';
@@ -522,9 +522,20 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }
     };
 
-    handleInviteToRoom(name: string) {
-        console.log(name);
-        console.log(sessionStorage.getItem("roomId"));
-        console.log(sessionStorage.getItem("room"));
+    handleInviteToRoom(receiverName: string) {
+        let userName = "";
+        this.connectedUsers.forEach(user => {
+            if (user.userId == this.userId) {
+                userName = user.userName
+            }
+        })
+        this.friendService.sendChatRoomInvite(
+            sessionStorage.getItem("roomId")!,
+            sessionStorage.getItem("room")!,
+            receiverName,
+            this.userId!,
+            userName
+        )
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: `Room invite successfully sent to ${receiverName}.`, styleClass: 'ui-toast-message-success' });
     }
 }

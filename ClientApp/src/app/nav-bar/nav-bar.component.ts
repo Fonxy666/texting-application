@@ -4,7 +4,9 @@ import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { FriendService } from '../services/friend-service/friend.service';
 import { MediaService } from '../services/media-service/media.service';
-import { ErrorHandlerService } from '../services/error-handler-service/error-handler.service';
+import { ChatRoomInvite } from '../model/ChatRoomInvite';
+import { ChatService } from '../services/chat-service/chat.service';
+import { UserService } from '../services/user-service/user.service';
 
 @Component({
     selector: 'app-nav-bar',
@@ -17,25 +19,25 @@ export class NavBarComponent implements OnInit {
         private cookieService : CookieService,
         private router: Router,
         private http: HttpClient,
-        private errorHandler: ErrorHandlerService,
         private friendService: FriendService,
-        private mediaService: MediaService
+        private mediaService: MediaService,
+        private chatService: ChatService,
+        private userService: UserService
     ) {}
 
     isDropstart: boolean = true;
     announceNumber: number = 0;
-    announceNumberForInvite: number = 2;
+    announceNumberForInvite: number = 0;
     userId: string = "";
     friendRequests: any[] = [];
     profilePic: string = "";
+    public chatRoomInvites: ChatRoomInvite[] = [];
 
     ngOnInit(): void {
         this.userId = this.cookieService.get("UserId");
 
         this.isLoggedIn();
         this.checkScreenSize();
-
-        this.getAnnounceNumber();
 
         this.friendService.friendRequests$.subscribe(requests => {
             this.announceNumber = requests.length;
@@ -44,6 +46,11 @@ export class NavBarComponent implements OnInit {
         this.mediaService.getAvatarImage(this.userId).subscribe((image) => {
             this.profilePic = image;
         });
+
+        this.friendService.chatRoomInvites$.subscribe(requests => {
+            this.announceNumberForInvite = requests.length;
+            this.chatRoomInvites = requests;
+        })
     }
 
 
@@ -77,22 +84,27 @@ export class NavBarComponent implements OnInit {
         }
     }
 
-    getAnnounceNumber() {
-        if (this.userId) {
-            this.http.get(`/api/v1/User/GetFriendRequestCount?userId=${this.userId}`, { withCredentials: true })
-            .pipe(
-                this.errorHandler.handleError401()
-            )
-            .subscribe(
-                (response: any) => {
-                    this.announceNumber = response;
-                },
-                (error) => {
-                    if (error.status === 403) {
-                        this.errorHandler.handleError403(error);
-                    }
-                }
-            );
+    setRoomCredentialsAndNavigate(roomName: any, roomId: string) {
+        if (this.cookieService.get("Anonymous") === "True") {
+            this.chatService.joinRoom("Anonymous", roomId)
+            .then(() => {
+                this.router.navigate([`/message-room/${roomId}`]);
+                sessionStorage.setItem("roomId", roomId);
+                sessionStorage.setItem("room", roomName);
+                sessionStorage.setItem("user", "Anonymous");
+            }).catch((err) => {
+                console.log(err);
+            })
+        } else {
+            this.chatService.joinRoom(this.userService.userName, roomId)
+            .then(() => {
+                this.router.navigate([`/message-room/${roomId}`]);
+                sessionStorage.setItem("roomId", roomId);
+                sessionStorage.setItem("room", roomName);
+                sessionStorage.setItem("user", "asd");
+            }).catch((err) => {
+                console.log(err);
+            })
         }
-    }
+    };
 }

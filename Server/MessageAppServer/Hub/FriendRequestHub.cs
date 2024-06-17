@@ -80,4 +80,13 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
             await Clients.Client(senderConnectionId).SendAsync("DeleteFriend", requestId);
         }
     }
+
+    public async Task SendChatRoomInvite(string roomId, string roomName, string receiverName, string senderId, string senderName)
+    {
+        var receiverId = userManager.FindByNameAsync(receiverName).Result.Id.ToString();
+        if (Connections.TryGetValue(receiverId, out var connectionId))
+        {
+            await Clients.Client(connectionId).SendAsync("ReceiveChatRoomInvite", roomId, roomName, receiverId, senderId, senderName);
+        }
+    }
 }

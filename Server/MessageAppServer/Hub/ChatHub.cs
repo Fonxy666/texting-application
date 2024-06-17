@@ -10,6 +10,10 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
 {
     public async Task<string> JoinRoom(UserRoomConnection userConnection)
     {
+        Console.WriteLine("----------------------------------");
+        Console.WriteLine(userConnection.User);
+        Console.WriteLine(userConnection.Room);
+        Console.WriteLine("----------------------------------");
         await Groups.AddToGroupAsync(Context.ConnectionId, userConnection.Room!);
         connection[Context.ConnectionId] = userConnection;
         await Clients.Group(userConnection.Room!).SendAsync("ReceiveMessage", "Textinger bot", $"{userConnection.User} has joined the room!", DateTime.Now, null, null, null, userConnection.Room);
@@ -78,9 +82,14 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
     {
         var users = connection.Values.Where(user => user.Room == room).Select(connection => connection.User);
         var newDictionary = new Dictionary<string, string>();
+
         foreach (var user in users)
         {
-            newDictionary.TryAdd(user!, userManager.Users.FirstOrDefault(applicationUser => applicationUser.UserName == user)!.Id.ToString());
+            var applicationUser = userManager.Users.FirstOrDefault(applicationUser => applicationUser.UserName == user);
+            if (applicationUser != null)
+            {
+                newDictionary.TryAdd(user!, applicationUser.Id.ToString());
+            }
         }
         return Clients.Group(room).SendAsync("ConnectedUser", newDictionary);
     }
