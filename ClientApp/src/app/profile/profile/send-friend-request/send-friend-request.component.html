@@ -9,7 +9,10 @@
                 <ng-container *ngIf="request.senderId === this.userId">
                     <div class="display-request">
                         <div class="display-name">
-                           Sent request to {{ this.displayService.displayUserName(request.receiverName) }}
+                            Sent request to 
+                            <span [title]="request.receiverName">
+                                {{ this.displayService.displayUserName(request.receiverName) }}
+                            </span>
                             <img class="avatar-image" [src]="avatarUrl[request.receiverId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
                         </div>
                         <div class="display-time-buttons">
@@ -64,7 +67,9 @@
                 <ng-container *ngIf="request.receiverId !== this.userId">
                     <div class="display-request">
                         <div class="display-name">
-                            {{ this.displayService.displayUserName(request.receiverName) }}
+                            <span [title]="request.receiverName">
+                                {{ this.displayService.displayUserName(request.receiverName) }}
+                            </span>
                             <img class="avatar-image" [src]="avatarUrl[request.receiverId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
                         </div>
                         <div class="display-time-buttons">

@@ -210,9 +210,8 @@ public class Startup(IConfiguration configuration)
         });
         
         PopulateDbAndAddRoles.AddRolesAndAdmin(app, configuration).Wait();
-        PopulateDbAndAddRoles.CreateTestUsers(app, 20).Wait();                                            //    Create Test users for ui testing
-        PopulateDbAndAddRoles.CreateFriendsAndFriendRequestsForTestUsers(app).Wait();                                   //    Create Test friend requests for ui testing
-        
+        /*PopulateDbAndAddRoles.CreateTestUsers(app, 20).Wait();                                            //    Create Test users for ui testing
+        PopulateDbAndAddRoles.CreateFriendsAndFriendRequestsForTestUsers(app).Wait();                                   //    Create Test friend requests for ui testing*/
         
         if (!env.IsEnvironment("Test")) return;
             

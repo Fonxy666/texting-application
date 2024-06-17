@@ -66,6 +66,8 @@ export class SendFriendRequestComponent implements OnInit {
                 });
             });
         });
+
+        console.log(this.friendRequests);
     }
 
     OnFormSubmit() {

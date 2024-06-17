@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Server.Database;
 using Server.Model;
 using Server.Model.Requests.User;
@@ -62,7 +63,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
                 fr.ConnectionId, 
                 fr.Sender.UserName!,
                 fr.Sender.Id.ToString(),
-                fr.SentTime,
+                fr.AcceptedTime,
                 fr.Receiver.UserName,
                 fr.Receiver.Id.ToString()
             ))
@@ -205,44 +206,35 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
         var userGuid = new Guid(userId);
         var user = await Context.Users
             .Include(u => u.Friends)
-            .Include(u => u.ReceivedFriendRequests)
-            .ThenInclude(fr => fr.Sender)
-            .Include(u => u.SentFriendRequests)
-            .ThenInclude(fr => fr.Receiver)
             .FirstOrDefaultAsync(u => u.Id == userGuid);
-
+    
         if (user == null)
         {
             throw new ArgumentException("User not found.");
         }
 
-        var acceptedReceivedRequests = user.ReceivedFriendRequests
-            .Where(fr => fr.Status == FriendStatus.Accepted)
-            .Select(fr => new ShowFriendRequestResponse(
-                fr.ConnectionId, 
-                fr.Sender.UserName!,
-                fr.Sender.Id.ToString(),
-                fr.SentTime, 
-                fr.Receiver.UserName,
-                fr.Receiver.Id.ToString()
-            ))
-            .ToList();
+        var friendsResponses = new List<ShowFriendRequestResponse>();
 
-        var acceptedSentRequests = user.SentFriendRequests
-            .Where(fr => fr.Status == FriendStatus.Accepted)
-            .Select(fr => new ShowFriendRequestResponse(
-                fr.ConnectionId, 
-                fr.Sender.UserName!,
-                fr.Sender.Id.ToString(),
-                fr.SentTime, 
-                fr.Receiver.UserName,
-                fr.Receiver.Id.ToString()
-            ))
-            .ToList();
+        foreach (var fr in user.Friends)
+        {
+            var connection = await GetConnectionId(user.Id, fr.Id);
+            friendsResponses.Add(new ShowFriendRequestResponse(
+                connection.ConnectionId,
+                user.UserName!,
+                user.Id.ToString(),
+                connection.AcceptedTime,
+                fr.UserName,
+                fr.Id.ToString()
+            ));
+        }
 
-        var allFriends = acceptedReceivedRequests.Concat(acceptedSentRequests).ToList();
+        return friendsResponses;
+    }
 
-        return allFriends;
+    private async Task<Model.FriendConnection?> GetConnectionId(Guid userId, Guid friendId)
+    {
+        return await Context.FriendConnections.FirstOrDefaultAsync(fc =>
+            (fc.ReceiverId == userId && fc.SenderId == friendId) || (fc.ReceiverId == friendId && fc.SenderId == userId));
     }
 
     public async Task<bool> DeleteFriend(string connectionId)
@@ -262,10 +254,23 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
             return false;
         }
 
-        friendConnection.Sender.Friends.Remove(friendConnection.Receiver);
-        friendConnection.Receiver.Friends.Remove(friendConnection.Sender);
+        friendConnection.SetStatusToDeclined();
+    
+        var sender = await Context.Users
+            .Include(u => u.Friends)
+            .FirstOrDefaultAsync(u => u.Id == friendConnection.SenderId);
+    
+        var receiver = await Context.Users
+            .Include(u => u.Friends)
+            .FirstOrDefaultAsync(u => u.Id == friendConnection.ReceiverId);
+    
+        if (sender == null || receiver == null)
+        {
+            return false;
+        }
 
-        Context.FriendConnections.Remove(friendConnection);
+        sender.Friends.Remove(receiver);
+        receiver.Friends.Remove(sender);
 
         await Context.SaveChangesAsync();
 
