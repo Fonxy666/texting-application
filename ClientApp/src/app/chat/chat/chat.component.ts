@@ -2,7 +2,7 @@ import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, HostL
 import { ChatService } from '../../services/chat-service/chat.service';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, forkJoin, Subscription  } from 'rxjs';
+import { Observable, of, forkJoin, Subscription, BehaviorSubject  } from 'rxjs';
 import { catchError, filter, switchMap, take } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
@@ -49,6 +49,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     @ViewChild('messageInput') public inputElement!: ElementRef;
 
     private routeSub!: Subscription;
+    private roomIdSubject: BehaviorSubject<string> = new BehaviorSubject<string>(this.roomId);
 
     constructor(
         public chatService: ChatService,
@@ -69,6 +70,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     ngOnInit(): void {
         this.userId = this.cookieService.get("UserId");
         this.roomId = sessionStorage.getItem("roomId")!;
+        this.roomName = sessionStorage.getItem("room")!;
 
         this.chatService.setCurrentRoom(this.roomId);
 

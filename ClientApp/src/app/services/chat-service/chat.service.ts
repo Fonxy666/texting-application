@@ -6,6 +6,9 @@ import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
 import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
 import { ConnectedUser } from '../../model/ConnectedUser';
+import { Router } from '@angular/router';
+import { UserService } from '../user-service/user.service';
+import { FriendService } from '../friend-service/friend.service';
 
 @Injectable({
     providedIn: 'root'
@@ -21,7 +24,7 @@ export class ChatService {
     private currentRoom: string | null = null;
     public messagesInitialized$ = new Subject<string>();
 
-    constructor(private cookieService: CookieService) {
+    constructor(private cookieService: CookieService, private router: Router, private userService: UserService, private friendService: FriendService) {
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl('/chat')
             .configureLogging(signalR.LogLevel.Critical)
@@ -157,9 +160,7 @@ export class ChatService {
     public async deleteRoom(roomId: string) {
         try {
             await this.connection.invoke("OnRoomDelete", roomId);
-            sessionStorage.removeItem("room");
-            sessionStorage.removeItem("user");
-            sessionStorage.removeItem("roomId");
+            this.removeSessionStates()
             this.messages[this.currentRoom!] = [];
         } catch (error) {
             console.error('Error deleting message:', error);
@@ -168,14 +169,60 @@ export class ChatService {
 
     public async leaveChat() {
         try {
-            sessionStorage.removeItem("room");
-            sessionStorage.removeItem("user");
-            sessionStorage.removeItem("roomId");
+            this.removeSessionStates()
             this.messages[this.currentRoom!] = [];
             await this.connection.stop();
             console.log('Chat-SignalR connection stopped.');
         } catch (error) {
             console.error('Error stopping Chat-SignalR connection:', error);
         }
+    }
+
+    public setRoomCredentialsAndNavigate(roomName: any, roomId: string, senderId?: string) {
+        if (this.userInRoom()) {
+            this.leaveChat();
+        };
+
+        if (this.cookieService.get("Anonymous") === "True") {
+            this.joinRoom("Anonymous", roomId)
+            .then(() => {
+                this.router.navigate([`/message-room/${roomId}`]);
+                sessionStorage.setItem("roomId", roomId);
+                sessionStorage.setItem("room", roomName);
+                sessionStorage.setItem("user", "Anonymous");
+                if (senderId) {
+                    this.friendService.handleChatInviteClick(roomId, senderId);
+                }
+            }).catch((err) => {
+                console.log(err);
+            })
+        } else {
+            this.joinRoom(this.userService.userName, roomId)
+            .then(() => {
+                this.router.navigate([`/message-room/${roomId}`]);
+                sessionStorage.setItem("roomId", roomId);
+                sessionStorage.setItem("room", roomName);
+                sessionStorage.setItem("user", this.userService.userName);
+                if (senderId) {
+                    this.friendService.handleChatInviteClick(roomId, senderId);
+                }
+            }).catch((err) => {
+                console.log(err);
+            })
+        }
+    };
+
+    private removeSessionStates() {
+        sessionStorage.removeItem("room");
+        sessionStorage.removeItem("user");
+        sessionStorage.removeItem("roomId");
+    }
+
+    private userInRoom():boolean {
+        if (sessionStorage.getItem("room") && sessionStorage.getItem("user") && sessionStorage.getItem("roomId")) {
+            return true;
+        }
+
+        return false;
     }
 }

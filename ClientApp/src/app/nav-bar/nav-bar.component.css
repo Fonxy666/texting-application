@@ -35,3 +35,12 @@
     display: flex;
     align-items: center;
 }
+
+.chat-invite-modal-loop {
+    margin: 20px;
+    border-bottom: 1px solid black;
+}
+
+.poninter-div {
+    cursor: pointer;
+}

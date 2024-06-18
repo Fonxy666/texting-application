@@ -213,9 +213,18 @@ export class FriendService {
         }
         
         this.chatRoomInvites[receiverId].push(new ChatRoomInvite(senderId, roomId, roomName, senderName));
-        console.log(this.chatRoomInvites[receiverId]);
         
         this.chatRoomInvites$.next(this.chatRoomInvites[receiverId]);
+    }
+
+    public handleChatInviteClick(roomId: string, senderId: string) {
+        const userId = this.cookieService.get('UserId');
+        this.chatRoomInvites[userId] = this.chatRoomInvites[userId].filter(request => {
+            return request.roomId !== roomId && request.senderId !== senderId
+        })
+
+        console.log(this.chatRoomInvites[userId]);
+        this.chatRoomInvites$.next(this.chatRoomInvites[userId]);
     }
 
     getPendingFriendRequests() {

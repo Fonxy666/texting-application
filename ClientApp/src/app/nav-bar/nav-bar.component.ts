@@ -19,9 +19,9 @@ export class NavBarComponent implements OnInit {
         private cookieService : CookieService,
         private router: Router,
         private http: HttpClient,
-        private friendService: FriendService,
+        public friendService: FriendService,
         private mediaService: MediaService,
-        private chatService: ChatService,
+        public chatService: ChatService,
         private userService: UserService
     ) {}
 
@@ -32,6 +32,8 @@ export class NavBarComponent implements OnInit {
     friendRequests: any[] = [];
     profilePic: string = "";
     public chatRoomInvites: ChatRoomInvite[] = [];
+    roomId: string = "";
+    roomName: string = "";
 
     ngOnInit(): void {
         this.userId = this.cookieService.get("UserId");
@@ -51,6 +53,9 @@ export class NavBarComponent implements OnInit {
             this.announceNumberForInvite = requests.length;
             this.chatRoomInvites = requests;
         })
+
+        this.roomId = sessionStorage.getItem("roomId")!;
+        this.roomName = sessionStorage.getItem("room")!;
     }
 
 
@@ -84,27 +89,7 @@ export class NavBarComponent implements OnInit {
         }
     }
 
-    setRoomCredentialsAndNavigate(roomName: any, roomId: string) {
-        if (this.cookieService.get("Anonymous") === "True") {
-            this.chatService.joinRoom("Anonymous", roomId)
-            .then(() => {
-                this.router.navigate([`/message-room/${roomId}`]);
-                sessionStorage.setItem("roomId", roomId);
-                sessionStorage.setItem("room", roomName);
-                sessionStorage.setItem("user", "Anonymous");
-            }).catch((err) => {
-                console.log(err);
-            })
-        } else {
-            this.chatService.joinRoom(this.userService.userName, roomId)
-            .then(() => {
-                this.router.navigate([`/message-room/${roomId}`]);
-                sessionStorage.setItem("roomId", roomId);
-                sessionStorage.setItem("room", roomName);
-                sessionStorage.setItem("user", "asd");
-            }).catch((err) => {
-                console.log(err);
-            })
-        }
-    };
+    isCurrentRoute(routerLink: string): boolean {
+        return this.router.url === routerLink;
+    }
 }

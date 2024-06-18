@@ -1,20 +1,18 @@
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+<div class="modal fade" data-bs-theme="dark" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog text-style">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">Invites</h1>
+                <h1 class="modal-title text-style fs-5 text-white" id="exampleModalLabel">Invites</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <ng-container *ngFor="let request of this.chatRoomInvites">
-                    {{request.senderName}} invited you to {{request.roomName}} room.
-                    <i class="fa fa-check ms-3" aria-hidden="true" data-bs-dismiss="modal" aria-label="Close" (click)="setRoomCredentialsAndNavigate(request.roomName, request.roomId)"></i>
-                    <i class="fa fa-close mx-3" aria-hidden="true"></i>
+                    <div class="text-style chat-invite-modal-loop text-white">
+                        {{request.senderName}} invited you to '{{request.roomName}}' room.
+                        <i class="fa fa-check ms-3" aria-hidden="true" data-bs-dismiss="modal" aria-label="Close" (click)="this.chatService.setRoomCredentialsAndNavigate(request.roomName, request.roomId, request.senderId)"></i>
+                        <i class="fa fa-close mx-3" aria-hidden="true" data-bs-dismiss="modal" aria-label="Close" (click)="this.friendService.handleChatInviteClick(request.roomId, request.senderId)"></i>
+                    </div>
                 </ng-container>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
             </div>
         </div>
     </div>
@@ -37,9 +35,18 @@
                         <a class="nav-link active text-white mx-4 text-style-15-px" aria-current="page" routerLink="/support">Support</a>
                     </li>
                     <ng-container *ngIf="isLoggedIn()">
-                        <li class="nav-item">
-                            <a class="nav-link active text-white mx-4 text-style-15-px" aria-current="page" routerLink="/join-room">Connect to a room</a>
-                        </li>
+                        <ng-container *ngIf="roomId && roomName && !isCurrentRoute('/message-room/' + roomId)">
+                            <li class="nav-item">
+                                <a class="nav-link active text-white mx-4 text-style-15-px" aria-current="page" [routerLink]="['/message-room', roomId]">
+                                    Go back to {{ roomName }} room
+                                </a>
+                            </li>
+                        </ng-container>
+                        <ng-container *ngIf="!roomId && !roomName">
+                            <li class="nav-item">
+                                <a class="nav-link active text-white mx-4 text-style-15-px" aria-current="page" routerLink="/join-room">Connect to a room</a>
+                            </li>
+                        </ng-container>
                     </ng-container>
                 </ul>
                 <ng-container *ngIf="!isLoggedIn(); else loggedIn">
@@ -58,9 +65,9 @@
                         <ul class="dropdown-menu dropdown-menu-dark">
                             <li>
                                 <a class="dropdown-item text-style-15-px">
-                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                    <div class="poninter-div" data-bs-toggle="modal" data-bs-target="#exampleModal">
                                         Invites
-                                    </button>
+                                    </div>
                                     <ng-container *ngIf="announceNumberForInvite != 0">
                                         <div class="announce-number">
                                             {{ announceNumberForInvite > 9 ? '9+' : announceNumberForInvite }}
