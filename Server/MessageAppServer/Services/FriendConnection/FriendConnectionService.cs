@@ -231,7 +231,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
         return friendsResponses;
     }
 
-    private async Task<Model.FriendConnection?> GetConnectionId(Guid userId, Guid friendId)
+    public async Task<Model.FriendConnection?> GetConnectionId(Guid userId, Guid friendId)
     {
         return await Context.FriendConnections.FirstOrDefaultAsync(fc =>
             (fc.ReceiverId == userId && fc.SenderId == friendId) || (fc.ReceiverId == friendId && fc.SenderId == userId));

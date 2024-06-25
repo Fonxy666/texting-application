@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Server.Model;
-using Server.Model.Requests.User;
 using Server.Model.Responses.User;
 using Server.Services.FriendConnection;
-using Server.Services.User;
 
 namespace Server.Hub;
 
@@ -24,6 +21,51 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
             Connections.TryRemove(userId, out _);
         }
         await base.OnDisconnectedAsync(exception);
+    }
+    
+    public async Task GetOnlineFriends(string userId)
+    {
+        var onlineFriendList = new List<FriendHubFriend>();
+        var userWithFriends = await userManager.Users
+            .Include(user => user.Friends)
+            .FirstOrDefaultAsync(user => user.Id == new Guid(userId));
+
+        foreach (var friend in userWithFriends.Friends)
+        {
+            Console.WriteLine("-----------------------------------------");
+            Console.WriteLine("-----------------------------------------");
+            Console.WriteLine("-----------------------------------------");
+            Console.WriteLine("-----------------------------------------");
+            Console.WriteLine("-----------------------------------------");
+            Console.WriteLine("bejott");
+            Console.WriteLine($"friendid: {friend.Id}");
+            if (Connections.TryGetValue(friend.Id.ToString(), out var receiverConnectionId))
+            {
+                Console.WriteLine("bejon?");
+                var connection = await friendConnectionService.GetConnectionId(userWithFriends.Id, friend.Id);
+                onlineFriendList.Add(new FriendHubFriend(
+                    connection!.ConnectionId.ToString(),
+                    userWithFriends.UserName!,
+                    userWithFriends.Id.ToString(),
+                    connection.AcceptedTime.ToString()!,
+                    friend.UserName!,
+                    friend.Id.ToString()
+                ));
+                Console.WriteLine($"conid: {connection!.ConnectionId.ToString()}");
+                Console.WriteLine($"sendername: {userWithFriends.UserName!}");
+                Console.WriteLine($"senderid: {userWithFriends.Id.ToString()}");
+                Console.WriteLine($"acctime: {connection.AcceptedTime.ToString()}");
+                Console.WriteLine($"receiver: {friend.UserName!}");
+                Console.WriteLine($"receiverid: {friend.Id.ToString()}");
+                Console.WriteLine("-----------------------------------------");
+                Console.WriteLine("-----------------------------------------");
+                Console.WriteLine("-----------------------------------------");
+                Console.WriteLine("-----------------------------------------");
+                Console.WriteLine("-----------------------------------------");
+            }
+        }
+        
+        await Clients.Client(Connections[userId]).SendAsync("ReceiveOnlineFriends", onlineFriendList);
     }
 
     public async Task<UserResponseForWs> JoinToHub(string userId)

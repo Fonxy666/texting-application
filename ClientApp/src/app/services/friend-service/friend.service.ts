@@ -20,6 +20,8 @@ export class FriendService {
     public friends: { [userId: string]: FriendRequestManage[] } = {};
     public chatRoomInvites$ = new BehaviorSubject<ChatRoomInvite[]>([]);
     public chatRoomInvites: { [userId: string]: ChatRoomInvite[] } = {};
+    public onlineFriends$ = new BehaviorSubject<FriendRequestManage[]>([]);
+    public onlineFriends: { [userId: string]: FriendRequestManage[] } = {};
     public announceNumber: number = 0;
 
     constructor(private cookieService: CookieService, private http: HttpClient, private errorHandler: ErrorHandlerService) {
@@ -29,7 +31,6 @@ export class FriendService {
             .build();
 
         this.loadInitialData();
-
         this.initializeConnection();
 
         this.connection.on("ReceiveFriendRequest", (requestId: string, senderName: string, senderId: string, sentTime: string, receiverName: string, receiverId: string) => {
@@ -50,6 +51,10 @@ export class FriendService {
 
         this.connection.on("ReceiveChatRoomInvite", (roomId: string, roomName: string, receiverId: string, senderId: string, senderName: string) => {
             this.updateChatInvites(roomId, roomName, receiverId, senderId, senderName);
+        });
+
+        this.connection.on("ReceiveOnlineFriends", (onlineFriends: FriendRequestManage[]) => {
+            this.onlineFriends$.next(onlineFriends);
         });
     }
 
@@ -196,11 +201,6 @@ export class FriendService {
 
     public async sendChatRoomInvite(roomId: string, roomName: string, receiverName: string, senderId: string, senderName: string) {
         try {
-            console.log(`Roomid: ${roomId}`);
-            console.log(`Roomname: ${roomName}`);
-            console.log(`receiverName: ${receiverName}`);
-            console.log(`senderId: ${senderId}`);
-            console.log(`senderName: ${senderName}`);
             await this.connection.invoke("SendChatRoomInvite", roomId, roomName, receiverName, senderId, senderName);
         } catch (error) {
             console.error('Error declining friend request via SignalR:', error);
@@ -223,8 +223,15 @@ export class FriendService {
             return request.roomId !== roomId && request.senderId !== senderId
         })
 
-        console.log(this.chatRoomInvites[userId]);
         this.chatRoomInvites$.next(this.chatRoomInvites[userId]);
+    }
+
+    public async getOnlineFriends() {
+        try {
+            await this.connection.invoke("GetOnlineFriends", this.cookieService.get('UserId'));
+        } catch (error) {
+            console.error('Error fetching online friends:', error);
+        }
     }
 
     getPendingFriendRequests() {

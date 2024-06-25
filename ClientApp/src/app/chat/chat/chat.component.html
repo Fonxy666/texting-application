@@ -24,7 +24,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5 text-white" id="exampleModalLabel">Friends</h1>
+                    <h1 class="modal-title fs-5 text-white" id="exampleModalLabel">Online friends</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-search text-white">
@@ -41,7 +41,7 @@
                     </div>
                 </div>
                 <div class="modal-body text-white" style="max-height: 500px; overflow-y: auto;">
-                    <ng-container *ngFor="let request of this.friends; let i = index">
+                    <ng-container *ngFor="let request of this.onlineFriends; let i = index">
                         <ng-container *ngIf="request.receiverId === this.userId">
                             <div class="chat_header">
                                 {{ request.senderName }}
@@ -87,7 +87,7 @@
     <div class="container mt-5" [ngClass]="{'blur-content': isLoading}">
         <div class="chat_header">
             <h3 class="text-center my-2 place_headers text-white">Welcome to <span class="group-name">{{roomName.toUpperCase()}}</span> group</h3>
-            <button type="button" class="btn text-white btn-color" data-bs-toggle="modal" data-bs-target="#friendsModal">
+            <button type="button" class="btn text-white btn-color" data-bs-toggle="modal" data-bs-target="#friendsModal" (click)="this.friendService.getOnlineFriends()">
                 Invite a friend
             </button>
             <ng-container *ngIf="this.userIsTheCreator">

@@ -2,7 +2,7 @@ import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, HostL
 import { ChatService } from '../../services/chat-service/chat.service';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, forkJoin, Subscription, BehaviorSubject  } from 'rxjs';
+import { Observable, of, forkJoin, Subscription } from 'rxjs';
 import { catchError, filter, switchMap, take } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
@@ -43,13 +43,12 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     showPassword: boolean = false;
     isLoading: boolean = false;
     private subscriptions: Subscription = new Subscription();
-    friends: FriendRequestManage[] | undefined;
+    onlineFriends: FriendRequestManage[] | undefined;
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
 
     private routeSub!: Subscription;
-    private roomIdSubject: BehaviorSubject<string> = new BehaviorSubject<string>(this.roomId);
 
     constructor(
         public chatService: ChatService,
@@ -59,7 +58,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         private cookieService: CookieService,
         private messageService: MessageService,
         private fb: FormBuilder,
-        private friendService: FriendService,
+        public friendService: FriendService,
         public displayService: DisplayService
     ) { }
 
@@ -163,13 +162,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             validators: passwordMatchValidator.bind(this)
         });
 
-        this.friendService.friends$.subscribe(friends => {
-            this.friends = friends;
-            this.friends.forEach(request => {
-                this.getAvatarImage(request.senderId);
-                this.getAvatarImage(request.receiverId);
-            });
-        });
+        this.friendService.onlineFriends$.subscribe(friends => {
+            this.onlineFriends = friends;
+        })
     };
 
     ngAfterViewChecked(): void {
@@ -514,11 +509,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     searchInFriends() {
         if (this.searchTermForFriends.trim() === '') {
-            this.friendService.friends$.subscribe(users => {
-                this.friends = users;
+            this.friendService.onlineFriends$.subscribe(users => {
+                this.onlineFriends = users;
             });
         } else {
-            this.friends = this.friendService.friends$.value.filter(user =>
+            this.onlineFriends = this.friendService.onlineFriends$.value.filter(user =>
                 this.userId !== user.senderId? user.senderName.toLowerCase().includes(this.searchTermForFriends.toLowerCase()) : user.receiverName.toLowerCase().includes(this.searchTermForFriends.toLowerCase())
             );
         }
