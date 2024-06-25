@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
-import { CookieService } from 'ngx-cookie-service';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 
 @Injectable({

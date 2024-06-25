@@ -17,6 +17,7 @@ import { FriendService } from '../../services/friend-service/friend.service';
 import { FriendRequestManage } from '../../model/FriendRequestManage';
 import { DisplayService } from '../../services/display-service/display.service';
 import { ErrorHandlerService } from '../../services/error-handler-service/error-handler.service';
+import { MediaService } from '../../services/media-service/media.service';
 
 @Component({
   selector: 'app-chat',
@@ -59,7 +60,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         private messageService: MessageService,
         private fb: FormBuilder,
         public friendService: FriendService,
-        public displayService: DisplayService
+        public displayService: DisplayService,
+        private mediaService: MediaService
     ) { }
 
     messages: any[] = [];
@@ -133,7 +135,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.chatService.connectedUsers$.subscribe((users) => {
             this.connectedUsers = users;
             users.forEach((user) => {
-                this.getAvatarImage(user.userId).subscribe(
+                this.mediaService.getAvatarImage(user.userId).subscribe(
                     (avatar) => {
                         this.avatars[user.userId] = avatar;
                     },
@@ -185,7 +187,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }
 
         if (this.avatars[userId] == null) {
-            this.getAvatarImage(userId).subscribe(
+            this.mediaService.getAvatarImage(userId).subscribe(
                 (avatar) => {
                     this.avatars[userId] = avatar;
                 })
@@ -274,28 +276,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     this.chatService.messages$.next(this.chatService.messages[this.roomId]);
                 });
             });
-    };
-
-    getAvatarImage(userId: string): Observable<string> {
-        return this.http.get(`/api/v1/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
-            .pipe(
-                this.errorHandler.handleError401(),
-                switchMap((response: Blob) => {
-                    const reader = new FileReader();
-                    const result$ = new Observable<string>((observer) => {
-                        reader.onloadend = () => {
-                            observer.next(reader.result as string);
-                            observer.complete();
-                        };
-                    });
-                    reader.readAsDataURL(response);
-                    return result$;
-                }),
-                catchError((error) => {
-                    console.log(error);
-                    return of("https://ptetutorials.com/images/user-profile.png");
-                })
-            );
     };
 
     searchInConnectedUsers() {
