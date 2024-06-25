@@ -32,16 +32,8 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
 
         foreach (var friend in userWithFriends.Friends)
         {
-            Console.WriteLine("-----------------------------------------");
-            Console.WriteLine("-----------------------------------------");
-            Console.WriteLine("-----------------------------------------");
-            Console.WriteLine("-----------------------------------------");
-            Console.WriteLine("-----------------------------------------");
-            Console.WriteLine("bejott");
-            Console.WriteLine($"friendid: {friend.Id}");
             if (Connections.TryGetValue(friend.Id.ToString(), out var receiverConnectionId))
             {
-                Console.WriteLine("bejon?");
                 var connection = await friendConnectionService.GetConnectionId(userWithFriends.Id, friend.Id);
                 onlineFriendList.Add(new FriendHubFriend(
                     connection!.ConnectionId.ToString(),
@@ -51,17 +43,6 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
                     friend.UserName!,
                     friend.Id.ToString()
                 ));
-                Console.WriteLine($"conid: {connection!.ConnectionId.ToString()}");
-                Console.WriteLine($"sendername: {userWithFriends.UserName!}");
-                Console.WriteLine($"senderid: {userWithFriends.Id.ToString()}");
-                Console.WriteLine($"acctime: {connection.AcceptedTime.ToString()}");
-                Console.WriteLine($"receiver: {friend.UserName!}");
-                Console.WriteLine($"receiverid: {friend.Id.ToString()}");
-                Console.WriteLine("-----------------------------------------");
-                Console.WriteLine("-----------------------------------------");
-                Console.WriteLine("-----------------------------------------");
-                Console.WriteLine("-----------------------------------------");
-                Console.WriteLine("-----------------------------------------");
             }
         }
         
