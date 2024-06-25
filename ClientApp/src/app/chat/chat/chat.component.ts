@@ -2,8 +2,8 @@ import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, HostL
 import { ChatService } from '../../services/chat-service/chat.service';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, forkJoin, Subscription } from 'rxjs';
-import { catchError, filter, switchMap, take } from 'rxjs/operators';
+import { forkJoin, Subscription } from 'rxjs';
+import { filter, take } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
@@ -93,7 +93,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.chatService.messages$.subscribe(res => {
             this.messages = res;
             this.messages.forEach(message => {
-                this.loadAvatarsFromMessages(message.userId);
+                this.mediaService.getAvatarImage(this.userId).subscribe((image) => {
+                    this.avatars[this.userId] = image;
+                });
+                
                 setTimeout(() => {
                     if (message.userId == undefined) {
                         const currentIndex = this.messages.indexOf(message);
@@ -251,7 +254,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         if (this.chatService.messages[this.roomId] === undefined) {
             return;
         }
-
+    
         this.http.get(`/api/v1/Message/GetMessages/${this.roomId}`, { withCredentials: true })
             .pipe(
                 this.errorHandler.handleError401()
@@ -260,7 +263,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 const userNames = response.map((element: any) =>
                     this.http.get(`/api/v1/User/GetUsername?userId=${element.senderId}`, { withCredentials: true })
                 );
-
+    
                 forkJoin(userNames).subscribe((usernames: any) => {
                     const fetchedMessages = response.map((element: any, index: number) => ({
                         messageId: element.messageId,
@@ -271,8 +274,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                         seenList: element.seen
                     }));
 
-                    this.chatService.messages[this.roomId] = [...fetchedMessages, ...this.chatService.messages[this.roomId]];
-
+                    const existingMessageIds = new Set(this.chatService.messages[this.roomId].map((msg: any) => msg.messageId));
+                    const uniqueMessages = fetchedMessages.filter((msg: any) => !existingMessageIds.has(msg.messageId));
+    
+                    this.chatService.messages[this.roomId] = [...uniqueMessages, ...this.chatService.messages[this.roomId]];
+    
                     this.chatService.messages$.next(this.chatService.messages[this.roomId]);
                 });
             });
