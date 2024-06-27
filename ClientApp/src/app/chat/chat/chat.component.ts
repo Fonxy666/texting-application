@@ -1,11 +1,10 @@
 import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { ChatService } from '../../services/chat-service/chat.service';
-import { Router, ActivatedRoute  } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, forkJoin, Subscription  } from 'rxjs';
-import { catchError, filter, switchMap, take } from 'rxjs/operators';
+import { forkJoin, Subscription } from 'rxjs';
+import { filter, take } from 'rxjs/operators';
 import { MessageRequest } from '../../model/MessageRequest';
-import { ErrorHandlerService } from '../../services/error-handler.service';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
 import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
@@ -14,6 +13,11 @@ import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ChangePasswordRequest } from '../../model/ChangePasswordRequest';
 import { passwordMatchValidator, passwordValidator } from '../../validators/ValidPasswordValidator';
+import { FriendService } from '../../services/friend-service/friend.service';
+import { FriendRequestManage } from '../../model/FriendRequestManage';
+import { DisplayService } from '../../services/display-service/display.service';
+import { ErrorHandlerService } from '../../services/error-handler-service/error-handler.service';
+import { MediaService } from '../../services/media-service/media.service';
 
 @Component({
   selector: 'app-chat',
@@ -31,6 +35,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     myImage: string = "./assets/images/chat-mountain.jpg";
     connectedUsers: ConnectedUser[] = [];
     searchTerm: string = '';
+    searchTermForFriends: string = '';
     messageModifyBool: boolean = false;
     messageModifyRequest: ChangeMessageRequest = {id: "", message: ""};
     isPageVisible = true;
@@ -39,6 +44,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     showPassword: boolean = false;
     isLoading: boolean = false;
     private subscriptions: Subscription = new Subscription();
+    onlineFriends: FriendRequestManage[] | undefined;
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
@@ -52,7 +58,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         private errorHandler: ErrorHandlerService,
         private cookieService: CookieService,
         private messageService: MessageService,
-        private fb: FormBuilder
+        private fb: FormBuilder,
+        public friendService: FriendService,
+        public displayService: DisplayService,
+        private mediaService: MediaService
     ) { }
 
     messages: any[] = [];
@@ -62,6 +71,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     ngOnInit(): void {
         this.userId = this.cookieService.get("UserId");
         this.roomId = sessionStorage.getItem("roomId")!;
+        this.roomName = sessionStorage.getItem("room")!;
 
         this.chatService.setCurrentRoom(this.roomId);
 
@@ -83,7 +93,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.chatService.messages$.subscribe(res => {
             this.messages = res;
             this.messages.forEach(message => {
-                this.loadAvatarsFromMessages(message.userId);
+                this.mediaService.getAvatarImage(this.userId).subscribe((image) => {
+                    this.avatars[this.userId] = image;
+                });
+                
                 setTimeout(() => {
                     if (message.userId == undefined) {
                         const currentIndex = this.messages.indexOf(message);
@@ -125,7 +138,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.chatService.connectedUsers$.subscribe((users) => {
             this.connectedUsers = users;
             users.forEach((user) => {
-                this.getAvatarImage(user.userId).subscribe(
+                this.mediaService.getAvatarImage(user.userId).subscribe(
                     (avatar) => {
                         this.avatars[user.userId] = avatar;
                     },
@@ -153,6 +166,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }, {
             validators: passwordMatchValidator.bind(this)
         });
+
+        this.friendService.onlineFriends$.subscribe(friends => {
+            this.onlineFriends = friends;
+        })
     };
 
     ngAfterViewChecked(): void {
@@ -173,7 +190,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }
 
         if (this.avatars[userId] == null) {
-            this.getAvatarImage(userId).subscribe(
+            this.mediaService.getAvatarImage(userId).subscribe(
                 (avatar) => {
                     this.avatars[userId] = avatar;
                 })
@@ -237,7 +254,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         if (this.chatService.messages[this.roomId] === undefined) {
             return;
         }
-
+    
         this.http.get(`/api/v1/Message/GetMessages/${this.roomId}`, { withCredentials: true })
             .pipe(
                 this.errorHandler.handleError401()
@@ -246,7 +263,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 const userNames = response.map((element: any) =>
                     this.http.get(`/api/v1/User/GetUsername?userId=${element.senderId}`, { withCredentials: true })
                 );
-
+    
                 forkJoin(userNames).subscribe((usernames: any) => {
                     const fetchedMessages = response.map((element: any, index: number) => ({
                         messageId: element.messageId,
@@ -257,33 +274,14 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                         seenList: element.seen
                     }));
 
-                    this.chatService.messages[this.roomId] = [...fetchedMessages, ...this.chatService.messages[this.roomId]];
-
+                    const existingMessageIds = new Set(this.chatService.messages[this.roomId].map((msg: any) => msg.messageId));
+                    const uniqueMessages = fetchedMessages.filter((msg: any) => !existingMessageIds.has(msg.messageId));
+    
+                    this.chatService.messages[this.roomId] = [...uniqueMessages, ...this.chatService.messages[this.roomId]];
+    
                     this.chatService.messages$.next(this.chatService.messages[this.roomId]);
                 });
             });
-    };
-
-    getAvatarImage(userId: string): Observable<string> {
-        return this.http.get(`/api/v1/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
-            .pipe(
-                this.errorHandler.handleError401(),
-                switchMap((response: Blob) => {
-                    const reader = new FileReader();
-                    const result$ = new Observable<string>((observer) => {
-                        reader.onloadend = () => {
-                            observer.next(reader.result as string);
-                            observer.complete();
-                        };
-                    });
-                    reader.readAsDataURL(response);
-                    return result$;
-                }),
-                catchError((error) => {
-                    console.log(error);
-                    return of("https://ptetutorials.com/images/user-profile.png");
-                })
-            );
     };
 
     searchInConnectedUsers() {
@@ -493,5 +491,34 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     console.error("An error occurred:", error);
                 }
             });
+    }
+
+    searchInFriends() {
+        if (this.searchTermForFriends.trim() === '') {
+            this.friendService.onlineFriends$.subscribe(users => {
+                this.onlineFriends = users;
+            });
+        } else {
+            this.onlineFriends = this.friendService.onlineFriends$.value.filter(user =>
+                this.userId !== user.senderId? user.senderName.toLowerCase().includes(this.searchTermForFriends.toLowerCase()) : user.receiverName.toLowerCase().includes(this.searchTermForFriends.toLowerCase())
+            );
+        }
+    };
+
+    handleInviteToRoom(receiverName: string) {
+        let userName = "";
+        this.connectedUsers.forEach(user => {
+            if (user.userId == this.userId) {
+                userName = user.userName
+            }
+        })
+        this.friendService.sendChatRoomInvite(
+            sessionStorage.getItem("roomId")!,
+            sessionStorage.getItem("room")!,
+            receiverName,
+            this.userId!,
+            userName
+        )
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: `Room invite successfully sent to ${receiverName}.`, styleClass: 'ui-toast-message-success' });
     }
 }

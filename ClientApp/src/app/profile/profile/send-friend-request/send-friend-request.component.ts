@@ -1,6 +1,5 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { ErrorHandlerService } from '../../../services/error-handler.service';
 import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CookieService } from 'ngx-cookie-service';
@@ -9,6 +8,9 @@ import { FriendService } from '../../../services/friend-service/friend.service';
 import { FriendRequestManage } from '../../../model/FriendRequestManage';
 import { FriendRequestManageRequest } from '../../../model/FriendRequestManageRequest';
 import { FriendRequestManageWithReceiverId } from '../../../model/FriendRequestManageWithReceiverId';
+import { MediaService } from '../../../services/media-service/media.service';
+import { DisplayService } from '../../../services/display-service/display.service';
+import { ErrorHandlerService } from '../../../services/error-handler-service/error-handler.service';
 
 @Component({
   selector: 'app-send-friend-request',
@@ -23,12 +25,14 @@ export class SendFriendRequestComponent implements OnInit {
     friends: FriendRequestManage[] | undefined;
 
     constructor(
-        public friendService: FriendService,
+        private friendService: FriendService,
         private fb: FormBuilder,
         private http: HttpClient,
         private errorHandler: ErrorHandlerService,
         private messageService: MessageService,
-        private cookieService: CookieService
+        private cookieService: CookieService,
+        private mediaService: MediaService,
+        public displayService: DisplayService
     ) { }
 
     friendName!: FormGroup;
@@ -41,23 +45,29 @@ export class SendFriendRequestComponent implements OnInit {
     
         this.friendService.friendRequests$.subscribe(requests => {
             this.friendRequests = requests;
-            this.friendRequests.forEach(request => {
-                this.loadUserAvatar(request.senderId);
-                this.loadUserAvatar(request.receiverId);
+            requests.forEach(request => {
+                this.mediaService.getAvatarImage(request.senderId).subscribe((image) => {
+                    this.avatarUrl[request.senderId] = image;
+                });
+                this.mediaService.getAvatarImage(request.receiverId).subscribe((image) => {
+                    this.avatarUrl[request.receiverId] = image;
+                });
             });
         });
     
         this.friendService.friends$.subscribe(friends => {
-            console.log(friends);
             this.friends = friends;
-            this.friends.forEach(request => {
-                this.loadUserAvatar(request.senderId);
-                this.loadUserAvatar(request.receiverId);
+            friends.forEach(request => {
+                this.mediaService.getAvatarImage(request.senderId).subscribe((image) => {
+                    this.avatarUrl[request.senderId] = image;
+                });
+                this.mediaService.getAvatarImage(request.receiverId).subscribe((image) => {
+                    this.avatarUrl[request.receiverId] = image;
+                });
             });
         });
-    
-        this.getPendingFriendRequests();
-        this.getFriends();
+
+        console.log(this.friendRequests);
     }
 
     OnFormSubmit() {
@@ -84,132 +94,6 @@ export class SendFriendRequestComponent implements OnInit {
                 } else {
                     console.log(error);
                 }
-            }
-        );
-    }
-
-    getPendingFriendRequests() {
-        this.http.get(`/api/v1/User/GetFriendRequests?userId=${this.userId}`, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe(
-            (response: FriendRequestManage[]) => {
-                if (!this.friendService.friendRequests[this.userId]) {
-                    this.friendService.friendRequests[this.userId] = [];
-                }
-    
-                response.forEach(res => {
-                    this.friendService.friendRequests[this.userId].push(res);
-
-                    this.friendService.friendRequests$.next(this.friendService.friendRequests[this.userId]);
-                });
-            },
-            (error: any) => {
-                console.log(error);
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                } else {
-                    console.log(error);
-                }
-            }
-        );
-    }
-
-    getFriends() {
-        this.http.get(`/api/v1/User/GetFriends?userId=${this.userId}`, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe(
-            (response: FriendRequestManage[]) => {
-                if (!this.friendService.friends[this.userId]) {
-                    this.friendService.friends[this.userId] = [];
-                }
-    
-                response.forEach(res => {
-                    this.friendService.friends[this.userId].push(res);
-
-                    this.friendService.friends$.next(this.friendService.friends[this.userId]);
-                });
-            },
-            (error: any) => {
-                console.log(error);
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                } else {
-                    console.log(error);
-                }
-            }
-        );
-    }
-
-    displayRemainingTime(time: string) {
-        const givenTime = new Date(time);
-        const currentTime = new Date();
-
-        let years = currentTime.getFullYear() - givenTime.getFullYear();
-        let months = currentTime.getMonth() - givenTime.getMonth();
-        let days = currentTime.getDate() - givenTime.getDate();
-        let hours = currentTime.getHours() - givenTime.getHours();
-        let minutes = currentTime.getMinutes() - givenTime.getMinutes();
-
-        if (minutes < 0) {
-            minutes += 60;
-            hours--;
-        }
-        if (hours < 0) {
-            hours += 24;
-            days--;
-        }
-        if (days < 0) {
-            const daysInPreviousMonth = new Date(currentTime.getFullYear(), currentTime.getMonth(), 0).getDate();
-            days += daysInPreviousMonth;
-            months--;
-        }
-        if (months < 0) {
-            months += 12;
-            years--;
-        }
-
-        const parts = [];
-        if (years > 0) parts.push(`${years} year${years !== 1 ? 's' : ''}`);
-        if (months > 0) parts.push(`${months} month${months !== 1 ? 's' : ''}`);
-        if (days > 0) parts.push(`${days} day${days !== 1 ? 's' : ''}`);
-        if (hours > 0) parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
-        if (minutes > 0) parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
-
-        return parts.join(', ');
-    }
-
-    displayUserName(name: string) {
-        if (name.length <= 8) {
-            return name;
-        } else {
-            return name.slice(0, 8) + '...';
-        }
-    }
-
-    loadUserAvatar(userId: string) {
-        this.http.get(`/api/v1/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe(
-            (response: Blob) => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    this.avatarUrl[userId] = reader.result as string;
-                };
-                reader.readAsDataURL(response);
-            },
-            (error) => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                }
-                console.error(error);
-                console.log("There is no Avatar for this user.");
-                this.avatarUrl[userId] = "https://ptetutorials.com/images/user-profile.png";
             }
         );
     }
@@ -258,8 +142,7 @@ export class SendFriendRequestComponent implements OnInit {
             this.errorHandler.handleError401()
         )
         .subscribe(
-            (response) => {
-                console.log(response);
+            () => {
                 this.friendService.declineFriendRequest(requestId);
             },
             (error) => {

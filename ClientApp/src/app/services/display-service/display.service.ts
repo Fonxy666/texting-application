@@ -1,0 +1,55 @@
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class DisplayService {
+
+    constructor() { }
+
+    displayRemainingTime(time: string) {
+        const givenTime = new Date(time);
+        const currentTime = new Date();
+
+        let years = currentTime.getFullYear() - givenTime.getFullYear();
+        let months = currentTime.getMonth() - givenTime.getMonth();
+        let days = currentTime.getDate() - givenTime.getDate();
+        let hours = currentTime.getHours() - givenTime.getHours();
+        let minutes = currentTime.getMinutes() - givenTime.getMinutes();
+
+        if (minutes < 0) {
+            minutes += 60;
+            hours--;
+        }
+        if (hours < 0) {
+            hours += 24;
+            days--;
+        }
+        if (days < 0) {
+            const daysInPreviousMonth = new Date(currentTime.getFullYear(), currentTime.getMonth(), 0).getDate();
+            days += daysInPreviousMonth;
+            months--;
+        }
+        if (months < 0) {
+            months += 12;
+            years--;
+        }
+
+        const parts = [];
+        if (years > 0) parts.push(`${years} year${years !== 1 ? 's' : ''}`);
+        if (months > 0) parts.push(`${months} month${months !== 1 ? 's' : ''}`);
+        if (days > 0) parts.push(`${days} day${days !== 1 ? 's' : ''}`);
+        if (hours > 0) parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
+        if (minutes > 0) parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
+
+        return parts.join(', ');
+    }
+
+    displayUserName(name: string) {
+        if (name.length <= 8) {
+            return name;
+        } else {
+            return name.slice(0, 8) + '...';
+        }
+    }
+}

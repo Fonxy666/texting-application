@@ -4,8 +4,8 @@ import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { HttpClient } from '@angular/common/http';
 import { CreateRoomRequest } from '../../model/CreateRoomRequest';
-import { ErrorHandlerService } from '../../services/error-handler.service';
 import { MessageService } from 'primeng/api';
+import { ErrorHandlerService } from '../../services/error-handler-service/error-handler.service';
 
 @Component({
   selector: 'app-create-room',

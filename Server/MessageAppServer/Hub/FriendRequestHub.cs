@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Server.Model;
-using Server.Model.Requests.User;
 using Server.Model.Responses.User;
 using Server.Services.FriendConnection;
-using Server.Services.User;
 
 namespace Server.Hub;
 
@@ -24,6 +21,32 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
             Connections.TryRemove(userId, out _);
         }
         await base.OnDisconnectedAsync(exception);
+    }
+    
+    public async Task GetOnlineFriends(string userId)
+    {
+        var onlineFriendList = new List<FriendHubFriend>();
+        var userWithFriends = await userManager.Users
+            .Include(user => user.Friends)
+            .FirstOrDefaultAsync(user => user.Id == new Guid(userId));
+
+        foreach (var friend in userWithFriends.Friends)
+        {
+            if (Connections.TryGetValue(friend.Id.ToString(), out var receiverConnectionId))
+            {
+                var connection = await friendConnectionService.GetConnectionId(userWithFriends.Id, friend.Id);
+                onlineFriendList.Add(new FriendHubFriend(
+                    connection!.ConnectionId.ToString(),
+                    userWithFriends.UserName!,
+                    userWithFriends.Id.ToString(),
+                    connection.AcceptedTime.ToString()!,
+                    friend.UserName!,
+                    friend.Id.ToString()
+                ));
+            }
+        }
+        
+        await Clients.Client(Connections[userId]).SendAsync("ReceiveOnlineFriends", onlineFriendList);
     }
 
     public async Task<UserResponseForWs> JoinToHub(string userId)
@@ -78,6 +101,15 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
         if (Connections.TryGetValue(senderId, out var senderConnectionId))
         {
             await Clients.Client(senderConnectionId).SendAsync("DeleteFriend", requestId);
+        }
+    }
+
+    public async Task SendChatRoomInvite(string roomId, string roomName, string receiverName, string senderId, string senderName)
+    {
+        var receiverId = userManager.FindByNameAsync(receiverName).Result.Id.ToString();
+        if (Connections.TryGetValue(receiverId, out var connectionId))
+        {
+            await Clients.Client(connectionId).SendAsync("ReceiveChatRoomInvite", roomId, roomName, receiverId, senderId, senderName);
         }
     }
 }

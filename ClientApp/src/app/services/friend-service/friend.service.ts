@@ -4,6 +4,10 @@ import { BehaviorSubject } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { FriendRequestManage } from '../../model/FriendRequestManage';
 import { FriendRequestManageWithReceiverId } from '../../model/FriendRequestManageWithReceiverId';
+import { isEqual } from 'lodash';
+import { HttpClient } from '@angular/common/http';
+import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
+import { ChatRoomInvite } from '../../model/ChatRoomInvite';
 
 @Injectable({
     providedIn: 'root'
@@ -14,13 +18,19 @@ export class FriendService {
     public friendRequests: { [userId: string]: FriendRequestManage[] } = {};
     public friends$ = new BehaviorSubject<FriendRequestManage[]>([]);
     public friends: { [userId: string]: FriendRequestManage[] } = {};
+    public chatRoomInvites$ = new BehaviorSubject<ChatRoomInvite[]>([]);
+    public chatRoomInvites: { [userId: string]: ChatRoomInvite[] } = {};
+    public onlineFriends$ = new BehaviorSubject<FriendRequestManage[]>([]);
+    public onlineFriends: { [userId: string]: FriendRequestManage[] } = {};
+    public announceNumber: number = 0;
 
-    constructor(private cookieService: CookieService) {
+    constructor(private cookieService: CookieService, private http: HttpClient, private errorHandler: ErrorHandlerService) {
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl('/friend', { accessTokenFactory: () => this.cookieService.get('UserId') })
             .configureLogging(signalR.LogLevel.Critical)
             .build();
 
+        this.loadInitialData();
         this.initializeConnection();
 
         this.connection.on("ReceiveFriendRequest", (requestId: string, senderName: string, senderId: string, sentTime: string, receiverName: string, receiverId: string) => {
@@ -38,6 +48,22 @@ export class FriendService {
         this.connection.on("DeleteFriend", (requestId: string) => {
             this.deleteFromFriends(requestId);
         });
+
+        this.connection.on("ReceiveChatRoomInvite", (roomId: string, roomName: string, receiverId: string, senderId: string, senderName: string) => {
+            this.updateChatInvites(roomId, roomName, receiverId, senderId, senderName);
+        });
+
+        this.connection.on("ReceiveOnlineFriends", (onlineFriends: FriendRequestManage[]) => {
+            this.onlineFriends$.next(onlineFriends);
+        });
+    }
+
+    private async loadInitialData() {
+        try {
+            await Promise.all([this.getPendingFriendRequests(), this.getFriends()]);
+        } catch (error) {
+            console.error('Error loading initial data:', error);
+        }
     }
 
     private async initializeConnection() {
@@ -105,8 +131,14 @@ export class FriendService {
             this.friendRequests[request.senderId] = [];
         }
     
-        this.friendRequests[request.receiverId].push(request);
-        this.friendRequests[request.senderId].push(request);
+        if (!this.friendRequests[request.receiverId].some(friend => isEqual(friend.requestId, request.requestId))) {
+            this.friendRequests[request.receiverId].push(request);
+        }
+
+        if (!this.friendRequests[request.senderId].some(friend => isEqual(friend.requestId, request.requestId))) {
+            this.friendRequests[request.senderId].push(request);
+        }
+
         this.friendRequests$.next(this.friendRequests[userId]);
     }
 
@@ -121,8 +153,17 @@ export class FriendService {
     
     private updateFriendRequests(request: FriendRequestManage) {
         const userId = this.cookieService.get('UserId');
+        
+        if (!this.friendRequests[userId]) {
+            this.friendRequests[userId] = [];
+        }
+        if (!this.friends[userId]) {
+            this.friends[userId] = [];
+        }
+    
         this.friendRequests[userId] = this.friendRequests[userId].filter(r => r.requestId !== request.requestId);
-        this.friends[userId] = [...this.friends[userId], request];
+        
+        this.friends[userId].push(request);
     
         this.friendRequests$.next(this.friendRequests[userId]);
         this.friends$.next(this.friends[userId]);
@@ -156,5 +197,106 @@ export class FriendService {
         const userId = this.cookieService.get('UserId');
         this.friends[userId] = this.friends[userId].filter(r => r.requestId !== requestId)
         this.friends$.next(this.friends[userId]);
+    }
+
+    public async sendChatRoomInvite(roomId: string, roomName: string, receiverName: string, senderId: string, senderName: string) {
+        try {
+            await this.connection.invoke("SendChatRoomInvite", roomId, roomName, receiverName, senderId, senderName);
+        } catch (error) {
+            console.error('Error declining friend request via SignalR:', error);
+        }
+    }
+
+    private updateChatInvites(roomId: string, roomName: string, receiverId: string, senderId: string, senderName: string) {
+        if (!this.chatRoomInvites[receiverId]) {
+            this.chatRoomInvites[receiverId] = [];
+        }
+        
+        this.chatRoomInvites[receiverId].push(new ChatRoomInvite(senderId, roomId, roomName, senderName));
+        
+        this.chatRoomInvites$.next(this.chatRoomInvites[receiverId]);
+    }
+
+    public handleChatInviteClick(roomId: string, senderId: string) {
+        const userId = this.cookieService.get('UserId');
+        this.chatRoomInvites[userId] = this.chatRoomInvites[userId].filter(request => {
+            return request.roomId !== roomId && request.senderId !== senderId
+        })
+
+        this.chatRoomInvites$.next(this.chatRoomInvites[userId]);
+    }
+
+    public async getOnlineFriends() {
+        try {
+            await this.connection.invoke("GetOnlineFriends", this.cookieService.get('UserId'));
+        } catch (error) {
+            console.error('Error fetching online friends:', error);
+        }
+    }
+
+    getPendingFriendRequests() {
+        const userId = this.cookieService.get("UserId");
+        this.http.get(`/api/v1/User/GetFriendRequests?userId=${userId}`, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(
+            (response: FriendRequestManage[]) => {
+                if (!this.friendRequests[userId]) {
+                    this.friendRequests[userId] = [];
+                }
+    
+                response.forEach(res => {
+                    const requestList = this.friendRequests[userId];
+                    
+                    if (!requestList.some(request => isEqual(request, res))) {
+                        requestList.push(res);
+                    }
+
+                    this.friendRequests$.next(requestList);
+                });
+            },
+            (error: any) => {
+                console.log(error);
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                } else {
+                    console.log(error);
+                }
+            }
+        );
+    }
+
+    getFriends() {
+        const userId = this.cookieService.get("UserId");
+        this.http.get(`/api/v1/User/GetFriends?userId=${userId}`, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe(
+            (response: FriendRequestManage[]) => {
+                if (!this.friends[userId]) {
+                    this.friends[userId] = [];
+                }
+    
+                response.forEach(res => {
+                    const friendsList = this.friends[userId];
+                    
+                    if (!friendsList.some(friend => isEqual(friend, res))) {
+                        friendsList.push(res);
+                    }
+    
+                    this.friends$.next(friendsList);
+                });
+            },
+            (error: any) => {
+                console.log(error);
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                } else {
+                    console.log(error);
+                }
+            }
+        );
     }
 }

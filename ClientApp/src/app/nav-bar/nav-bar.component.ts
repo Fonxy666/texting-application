@@ -2,8 +2,11 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
-import { ErrorHandlerService } from '../services/error-handler.service';
 import { FriendService } from '../services/friend-service/friend.service';
+import { MediaService } from '../services/media-service/media.service';
+import { ChatRoomInvite } from '../model/ChatRoomInvite';
+import { ChatService } from '../services/chat-service/chat.service';
+import { UserService } from '../services/user-service/user.service';
 
 @Component({
     selector: 'app-nav-bar',
@@ -16,63 +19,48 @@ export class NavBarComponent implements OnInit {
         private cookieService : CookieService,
         private router: Router,
         private http: HttpClient,
-        private errorHandler: ErrorHandlerService,
-        private friendService: FriendService
+        public friendService: FriendService,
+        private mediaService: MediaService,
+        public chatService: ChatService,
+        private userService: UserService
     ) {}
 
     isDropstart: boolean = true;
     announceNumber: number = 0;
+    announceNumberForInvite: number = 0;
     userId: string = "";
+    friendRequests: any[] = [];
+    profilePic: string = "";
+    public chatRoomInvites: ChatRoomInvite[] = [];
+    roomId: string = "";
+    roomName: string = "";
 
     ngOnInit(): void {
         this.userId = this.cookieService.get("UserId");
 
         this.isLoggedIn();
-        this.loadProfileData();
         this.checkScreenSize();
 
-        this.getAnnounceNumber();
-
         this.friendService.friendRequests$.subscribe(requests => {
-            this.announceNumber = 0;
-            requests.forEach(request => {
-                if (request.senderId !== this.userId) {
-                    this.announceNumber++;
-                }
-            })
+            this.announceNumber = requests.length;
         });
+
+        this.mediaService.getAvatarImage(this.userId).subscribe((image) => {
+            this.profilePic = image;
+        });
+
+        this.friendService.chatRoomInvites$.subscribe(requests => {
+            this.announceNumberForInvite = requests.length;
+            this.chatRoomInvites = requests;
+        })
+
+        this.roomId = sessionStorage.getItem("roomId")!;
+        this.roomName = sessionStorage.getItem("room")!;
     }
 
-    profilePic: string = "";
 
     isLoggedIn(): boolean {
         return this.cookieService.check('UserId');
-    }
-
-    loadProfileData() {        
-        if (this.userId) {
-            this.http.get(`/api/v1/User/GetImage?userId=${this.userId}`, { withCredentials: true, responseType: 'blob' })
-            .pipe(
-                this.errorHandler.handleError401()
-            )
-            .subscribe(
-                (response: Blob) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        this.profilePic = reader.result as string;
-                    };
-                    reader.readAsDataURL(response);
-                },
-                (error) => {
-                    if (error.status === 403) {
-                        this.errorHandler.handleError403(error);
-                    }
-                    console.error(error);
-                    console.log("There is no Avatar for this user.");
-                    this.profilePic = "https://ptetutorials.com/images/user-profile.png";
-                }
-            );
-        }
     }
 
     logout() {
@@ -101,22 +89,7 @@ export class NavBarComponent implements OnInit {
         }
     }
 
-    getAnnounceNumber() {
-        if (this.userId) {
-            this.http.get(`/api/v1/User/GetFriendRequestCount?userId=${this.userId}`, { withCredentials: true })
-            .pipe(
-                this.errorHandler.handleError401()
-            )
-            .subscribe(
-                (response: any) => {
-                    this.announceNumber = response;
-                },
-                (error) => {
-                    if (error.status === 403) {
-                        this.errorHandler.handleError403(error);
-                    }
-                }
-            );
-        }
+    isCurrentRoute(routerLink: string): boolean {
+        return this.router.url === routerLink;
     }
 }

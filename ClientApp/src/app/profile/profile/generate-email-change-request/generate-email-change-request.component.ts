@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ChangeEmailRequest } from '../../../model/ChangeEmailRequest';
 import { MessageService } from 'primeng/api';
-import { ErrorHandlerService } from '../../../services/error-handler.service';
 import { HttpClient } from '@angular/common/http';
-import { UserService } from '../../../services/user.service';
+import { UserService } from '../../../services/user-service/user.service';
+import { ErrorHandlerService } from '../../../services/error-handler-service/error-handler.service';
 
 @Component({
   selector: 'app-generate-email-change-request',

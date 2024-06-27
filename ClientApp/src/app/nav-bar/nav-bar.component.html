@@ -1,3 +1,22 @@
+<div class="modal fade" data-bs-theme="dark" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog text-style">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title text-style fs-5 text-white" id="exampleModalLabel">Invites</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ng-container *ngFor="let request of this.chatRoomInvites">
+                    <div class="text-style chat-invite-modal-loop text-white">
+                        {{request.senderName}} invited you to '{{request.roomName}}' room.
+                        <i class="fa fa-check ms-3" aria-hidden="true" data-bs-dismiss="modal" aria-label="Close" (click)="this.chatService.setRoomCredentialsAndNavigate(request.roomName, request.roomId, request.senderId)"></i>
+                        <i class="fa fa-close mx-3" aria-hidden="true" data-bs-dismiss="modal" aria-label="Close" (click)="this.friendService.handleChatInviteClick(request.roomId, request.senderId)"></i>
+                    </div>
+                </ng-container>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="nav-placement">
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
@@ -16,9 +35,18 @@
                         <a class="nav-link active text-white mx-4 text-style-15-px" aria-current="page" routerLink="/support">Support</a>
                     </li>
                     <ng-container *ngIf="isLoggedIn()">
-                        <li class="nav-item">
-                            <a class="nav-link active text-white mx-4 text-style-15-px" aria-current="page" routerLink="/join-room">Connect to a room</a>
-                        </li>
+                        <ng-container *ngIf="roomId && roomName && !isCurrentRoute('/message-room/' + roomId)">
+                            <li class="nav-item">
+                                <a class="nav-link active text-white mx-4 text-style-15-px" aria-current="page" [routerLink]="['/message-room', roomId]">
+                                    Go back to {{ roomName }} room
+                                </a>
+                            </li>
+                        </ng-container>
+                        <ng-container *ngIf="!roomId && !roomName">
+                            <li class="nav-item">
+                                <a class="nav-link active text-white mx-4 text-style-15-px" aria-current="page" routerLink="/join-room">Connect to a room</a>
+                            </li>
+                        </ng-container>
                     </ng-container>
                 </ul>
                 <ng-container *ngIf="!isLoggedIn(); else loggedIn">
@@ -27,10 +55,32 @@
                 <ng-template #loggedIn>
                     <div [ngClass]="{'dropdown': true, 'ms-auto': true, 'btn-group': true, 'dropstart': isDropstart, 'dropend': !isDropstart}">
                         <button class="btn text-white dropdown-toggle mx-4 image-announce" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img [src]="profilePic" alt="Profile Image" class="profile-pic">
-                            <ng-container *ngIf="this.announceNumber != 0">
+                            <img [src]="'./assets/images/room-invite.png'" alt="Profile Image" class="profile-pic">
+                            <ng-container *ngIf="announceNumberForInvite != 0">
                                 <div class="announce-number">
-                                    {{ announceNumber }}
+                                    {{ announceNumberForInvite > 9 ? '9+' : announceNumberForInvite }}
+                                </div>
+                            </ng-container>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li>
+                                <a class="dropdown-item text-style-15-px">
+                                    <div class="poninter-div" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                        Invites
+                                    </div>
+                                    <ng-container *ngIf="announceNumberForInvite != 0">
+                                        <div class="announce-number">
+                                            {{ announceNumberForInvite > 9 ? '9+' : announceNumberForInvite }}
+                                        </div>
+                                    </ng-container>
+                                </a>
+                            </li>
+                        </ul>
+                        <button class="btn text-white dropdown-toggle mx-4 image-announce" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img [src]="profilePic" alt="Profile Image" class="profile-pic">
+                            <ng-container *ngIf="announceNumber != 0">
+                                <div class="announce-number">
+                                    {{ announceNumber > 9 ? '9+' : announceNumber }}
                                 </div>
                             </ng-container>
                         </button>
@@ -38,9 +88,9 @@
                             <li>
                                 <a class="dropdown-item text-style-15-px" href="/profile/profile">
                                     Profile
-                                    <ng-container *ngIf="this.announceNumber != 0">
+                                    <ng-container *ngIf="announceNumber != 0">
                                         <div class="announce-number">
-                                            {{ announceNumber }}
+                                            {{ announceNumber > 9 ? '9+' : announceNumber }}
                                         </div>
                                     </ng-container>
                                 </a>

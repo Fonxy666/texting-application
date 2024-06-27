@@ -6,8 +6,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { CookieService } from 'ngx-cookie-service';
 import { HttpClient } from '@angular/common/http';
 import { MessageService } from 'primeng/api';
-import { UserService } from '../../../services/user.service';
-import { ErrorHandlerService } from '../../../services/error-handler.service';
+import { ErrorHandlerService } from '../../../services/error-handler-service/error-handler.service';
 
 @Component({
   selector: 'app-generate-avatar-change-request',
@@ -19,7 +18,14 @@ export class GenerateAvatarChangeRequestComponent {
     imageChangedEvent: any = '';
     croppedImage: any = '';
 
-    constructor(private fb: FormBuilder, private sanitizer: DomSanitizer, private cookieService: CookieService, private http: HttpClient, private messageService: MessageService, private userService: UserService, private errorHandler: ErrorHandlerService) { }
+    constructor(
+        private fb: FormBuilder,
+        private sanitizer: DomSanitizer,
+        private cookieService: CookieService,
+        private http: HttpClient,
+        private messageService: MessageService,
+        private errorHandler: ErrorHandlerService
+    ) { }
     
     changeAvatarRequest!: FormGroup;
     

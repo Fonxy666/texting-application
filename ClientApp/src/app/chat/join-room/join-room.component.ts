@@ -5,8 +5,8 @@ import { CookieService } from 'ngx-cookie-service';
 import { ChatService } from '../../services/chat-service/chat.service';
 import { HttpClient } from '@angular/common/http';
 import { JoinRoomRequest } from '../../model/JoinRoomRequest';
-import { ErrorHandlerService } from '../../services/error-handler.service';
 import { MessageService } from 'primeng/api';
+import { ErrorHandlerService } from '../../services/error-handler-service/error-handler.service';
 
 @Component({
   selector: 'app-join-room',
@@ -105,7 +105,7 @@ export class JoinRoomComponent implements OnInit {
         .subscribe(
             (response: any) => {
                 if (response.success) {
-                    this.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
+                    this.chatService.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
                 }
             },
             (error: any) => {
@@ -139,30 +139,6 @@ export class JoinRoomComponent implements OnInit {
                 console.error("An error occurred:", error);
             }
         });
-    };
-
-    setRoomCredentialsAndNavigate(roomName: any, roomId: string) {
-        if (this.cookieService.get("Anonymous") === "True") {
-            this.chatService.joinRoom("Anonymous", roomId)
-            .then(() => {
-                this.router.navigate([`/message-room/${roomId}`]);
-                sessionStorage.setItem("roomId", roomId);
-                sessionStorage.setItem("room", roomName);
-                sessionStorage.setItem("user", "Anonymous");
-            }).catch((err) => {
-                console.log(err);
-            })
-        } else {
-            this.chatService.joinRoom(this.userName, roomId)
-            .then(() => {
-                this.router.navigate([`/message-room/${roomId}`]);
-                sessionStorage.setItem("roomId", roomId);
-                sessionStorage.setItem("room", roomName);
-                sessionStorage.setItem("user", this.userName);
-            }).catch((err) => {
-                console.log(err);
-            })
-        }
     };
 
     goToCreateRoom() {
