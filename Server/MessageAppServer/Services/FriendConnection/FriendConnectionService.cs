@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Server.Database;
 using Server.Model;
 using Server.Model.Requests.User;
@@ -21,6 +20,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
         
         return (await Context.FriendConnections!.FirstOrDefaultAsync(fc => fc.ConnectionId == requestGuid))!;
     }
+
     public async Task<ShowFriendRequestResponse> SendFriendRequest(FriendRequest request)
     {
         if (!Guid.TryParse(request.SenderId, out var senderGuid) || !Guid.TryParse(request.Receiver, out var receiverGuid))
@@ -38,7 +38,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
             savedRequest.Entity.Sender.UserName!,
             savedRequest.Entity.SenderId.ToString(),
             savedRequest.Entity.SentTime,
-            savedRequest.Entity.Receiver.UserName,
+            savedRequest.Entity.Receiver.UserName!,
             savedRequest.Entity.Receiver.Id.ToString());
 
         return result;
@@ -64,7 +64,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
                 fr.Sender.UserName!,
                 fr.Sender.Id.ToString(),
                 fr.AcceptedTime,
-                fr.Receiver.UserName,
+                fr.Receiver.UserName!,
                 fr.Receiver.Id.ToString()
             ))
             .ToList() ?? new List<ShowFriendRequestResponse>();
@@ -128,7 +128,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
 
         return await Context.Users
             .AnyAsync(u => u.ReceivedFriendRequests
-                .Any(fc => fc.ReceiverId == receiverGuid && fc.SenderId == senderGuid && fc.Status != FriendStatus.Declined));
+                .Any(fc => fc.ReceiverId == receiverGuid && fc.SenderId == senderGuid));
     }
 
     public async Task<bool> AcceptReceivedFriendRequest(string requestId, string receiverId)
@@ -173,8 +173,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
             return false;
         }
         
-        request.SetStatusToDeclined();
-        
+        Context.FriendConnections!.Remove(request);
         await Context.SaveChangesAsync();
         return true;
     }
@@ -194,9 +193,8 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
         {
             return false;
         }
-
-        request.SetStatusToDeclined();
         
+        Context.FriendConnections!.Remove(request);
         await Context.SaveChangesAsync();
         return true;
     }
@@ -213,6 +211,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
             throw new ArgumentException("User not found.");
         }
 
+        await Context.SaveChangesAsync();
         var friendsResponses = new List<ShowFriendRequestResponse>();
 
         foreach (var fr in user.Friends)
@@ -254,7 +253,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
             return false;
         }
 
-        friendConnection.SetStatusToDeclined();
+        Context.FriendConnections.Remove(friendConnection);
     
         var sender = await Context.Users
             .Include(u => u.Friends)
