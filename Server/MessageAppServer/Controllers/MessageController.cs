@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 using Server.Services.Chat.MessageService;
 using Microsoft.AspNetCore.Authorization;
 using Server.Model.Chat;
@@ -13,8 +14,7 @@ namespace Server.Controllers;
 public class MessageController(
     IMessageService messageService,
     IRoomService roomService,
-    ILogger<MessageController> logger,
-    IUserServices userServices
+    ILogger<MessageController> logger
     ) : ControllerBase
 {
     [HttpGet("GetMessages/{roomId}"), Authorize(Roles = "User, Admin")]
@@ -48,19 +48,16 @@ public class MessageController(
             {
                 return BadRequest(ModelState);
             }
+            
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var roomIdToGuid = new Guid(request.RoomId);
             if (!roomService.ExistingRoom(roomIdToGuid).Result)
             {
                 return NotFound($"There is no room with this id: {request.RoomId}");
             }
-
-            if (!userServices.ExistingUser(request.UserId).Result)
-            {
-                return NotFound($"There is no user with this id: {request.UserId}");
-            }
         
-            var result = await messageService.SendMessage(request);
+            var result = await messageService.SendMessage(request, userId!);
         
             return Ok(result);
         }

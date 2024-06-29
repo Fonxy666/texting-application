@@ -34,9 +34,9 @@ namespace Tests.ServicesTests.Chat
         [Test]
         public async Task SendMessage_ValidMessage_ReturnsSuccessResponse()
         {
-            var request = new MessageRequest("a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "Hello, World!", false, null);
+            var request = new MessageRequest("a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "Hello, World!", false, null);
 
-            var response = await _messageService.SendMessage(request);
+            var response = await _messageService.SendMessage(request, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
 
             Assert.IsTrue(response.Success);
         }

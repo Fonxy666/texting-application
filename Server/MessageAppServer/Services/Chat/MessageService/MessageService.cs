@@ -14,10 +14,10 @@ public class MessageService(DatabaseContext context) : IMessageService
         return context.Messages!.AnyAsync(message => message.MessageId == id);
     }
 
-    public async Task<SaveMessageResponse> SendMessage(MessageRequest request)
+    public async Task<SaveMessageResponse> SendMessage(MessageRequest request, string userId)
     {
         var roomIdToGuid = new Guid(request.RoomId);
-        var userIdToGuid = new Guid(request.UserId);
+        var userIdToGuid = new Guid(userId);
         var message = request.MessageId != null ? 
             new Message(roomIdToGuid, userIdToGuid, request.Message, new Guid(request.MessageId), request.AsAnonymous) : 
             new Message(roomIdToGuid, userIdToGuid, request.Message, request.AsAnonymous);

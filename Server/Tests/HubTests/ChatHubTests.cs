@@ -1,10 +1,18 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using MockQueryable.Moq;
 using Moq;
+using Server;
 using Server.Hub;
 using Server.Model;
+using Server.Model.Requests.Auth;
 using Server.Model.Requests.Message;
+using Server.Services.FriendConnection;
 using Xunit;
 using Assert = Xunit.Assert;
 
@@ -19,6 +27,9 @@ public class ChatHubTests
     private readonly Mock<IGroupManager> _groupsMock;
     private readonly IDictionary<string, UserRoomConnection> _connection;
     private readonly ChatHub _chatHub;
+    private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
+    private readonly HttpClient _client;
+    private readonly TestServer _testServer;
 
     public ChatHubTests()
     {
@@ -35,6 +46,21 @@ public class ChatHubTests
             Context = _contextMock.Object,
             Groups = _groupsMock.Object
         };
+        var builder = new WebHostBuilder()
+            .UseEnvironment("Test")
+            .UseStartup<Startup>()
+            .ConfigureAppConfiguration(config =>
+            {
+                config.AddConfiguration(
+                    new ConfigurationBuilder()
+                        .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile("testConfiguration.json")
+                        .Build()
+                );
+            });
+
+        _testServer = new TestServer(builder);
+        _client = _testServer.CreateClient();
     }
 
     [Fact]
@@ -62,13 +88,25 @@ public class ChatHubTests
     [Fact]
     public async Task SendMessage_ShouldSendToGroup()
     {
-        var request = new MessageRequest("room1", "user1", "test message", false, null);
+        var cookies = await TestLogin.Login_With_Test_User(new AuthRequest("TestUsername1", "testUserPassword123###"), _client, "test1@hotmail.com");
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+        
+        var request = new MessageRequest("room1", "test message", false, null);
         const string connectionId = "test-connection-id";
         var userRoomConnection = new UserRoomConnection("testUser", "testRoom");
 
         _contextMock.Setup(c => c.ConnectionId).Returns(connectionId);
         _clientsMock.Setup(c => c.Group(It.IsAny<string>())).Returns(_clientProxyMock.Object);
         _connection[connectionId] = userRoomConnection;
+
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, "test-user-id")
+        };
+        var identity = new ClaimsIdentity(claims, "TestAuthType");
+        var claimsPrincipal = new ClaimsPrincipal(identity);
+
+        _contextMock.Setup(c => c.User).Returns(claimsPrincipal);
 
         await _chatHub.SendMessage(request);
 

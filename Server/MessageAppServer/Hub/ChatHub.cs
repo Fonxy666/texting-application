@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Server.Model;
 using Server.Model.Requests.Message;
@@ -19,17 +20,19 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
 
     public async Task SendMessage(MessageRequest request)
     {
+        var userId = Context.User!.FindFirstValue(ClaimTypes.NameIdentifier);
+        
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
         {
             await Clients.Group(userRoomConnection.Room!).SendAsync("ReceiveMessage",
                 userRoomConnection.User,
                 request.Message,
                 DateTime.Now,
-                request.UserId,
+                userId,
                 request.MessageId,
                 new List<string>
                 {
-                    request.UserId
+                    userId!
                 },
                 request.RoomId);
         }

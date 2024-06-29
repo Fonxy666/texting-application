@@ -7,7 +7,7 @@ namespace Server.Services.Chat.MessageService;
 public interface IMessageService
 {
     Task<bool> MessageExisting(Guid id);
-    Task<SaveMessageResponse> SendMessage(MessageRequest request);
+    Task<SaveMessageResponse> SendMessage(MessageRequest request, string userId);
     Task<IQueryable<Message>> GetLast10Messages(Guid roomId);
     Task<MessageResponse> EditMessage(EditMessageRequest request);
     Task<MessageResponse> EditMessageSeen(EditMessageSeenRequest request);
