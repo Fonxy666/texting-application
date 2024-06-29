@@ -57,10 +57,6 @@ public class UserController(
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var existingUser = await userManager.FindByIdAsync(userId!);
-            if (existingUser == null)
-            {
-                return NotFound("User not found.");
-            }
 
             var response = new UserResponse(existingUser.UserName, existingUser.Email, existingUser.TwoFactorEnabled);
 
@@ -188,19 +184,15 @@ public class UserController(
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var existingUser = await userManager.FindByIdAsync(userId!);
-            if (existingUser == null)
-            {
-                return NotFound("User not found.");
-            }
 
-            if (!existingUser.TwoFactorEnabled)
+            if (!existingUser!.TwoFactorEnabled)
             {
                 return NotFound($"2FA not enabled for user: {existingUser.Id}");
             }
 
             if (existingUser.Email != request.OldEmail)
             {
-                return BadRequest("E-mail addresses not valid.");
+                return BadRequest("E-mail address not valid.");
             }
 
             if (userManager.Users.Any(user => user.Email == request.NewEmail))
@@ -230,12 +222,8 @@ public class UserController(
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var existingUser = await userManager.FindByIdAsync(userId!);
-            if (existingUser == null)
-            {
-                return NotFound("User not found.");
-            }
             
-            var correctPassword = await authenticationService.ExamineLoginCredentials(existingUser.UserName!, request.OldPassword);
+            var correctPassword = await authenticationService.ExamineLoginCredentials(existingUser!.UserName!, request.OldPassword);
             if (!correctPassword.Success)
             {
                 return BadRequest("Incorrect credentials.");
@@ -260,12 +248,8 @@ public class UserController(
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var existingUser = await userManager.FindByIdAsync(userId!);
-            if (existingUser == null)
-            {
-                return NotFound("User not found.");
-            }
 
-            userServices.SaveImageLocally(existingUser.UserName!, image);
+            userServices.SaveImageLocally(existingUser!.UserName!, image);
             return Ok(new { Status = "Ok" });
         }
         catch (Exception e)
@@ -276,16 +260,12 @@ public class UserController(
     } 
     
     [HttpDelete("DeleteUser"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<EmailUsernameResponse>> DeleteUser([FromQuery]string email, [FromQuery]string password)
+    public async Task<ActionResult<EmailUsernameResponse>> DeleteUser([FromQuery]string password)
     {
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var existingUser = await userManager.FindByIdAsync(userId!);
-            if (existingUser == null)
-            {
-                return NotFound("User not found.");
-            }
 
             if (!userManager.CheckPasswordAsync(existingUser, password).Result)
             {
@@ -300,7 +280,7 @@ public class UserController(
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error changing e-mail for user {email}");
+            logger.LogError(e, $"Error changing e-mail for user.");
             return StatusCode(500);
         }
     }
@@ -313,18 +293,13 @@ public class UserController(
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var existingSender = await userManager.FindByIdAsync(userId!);
             var existingReceiver = await userManager.FindByNameAsync(friendName);
-        
-            if (existingSender == null || existingReceiver == null)
-            {
-                return NotFound(new { message = "User not found." });
-            }
             
             if (existingSender == existingReceiver)
             {
                 return BadRequest(new { message = "You cannot send friend request to yourself." });
             }
         
-            var databaseRequest = new FriendRequest(userId!, existingReceiver.Id.ToString());
+            var databaseRequest = new FriendRequest(userId!, existingReceiver!.Id.ToString());
         
             var alreadySent = await friendConnectionService.AlreadySentFriendRequest(databaseRequest);
             if (alreadySent)
@@ -349,12 +324,6 @@ public class UserController(
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var existingUser = await userManager.FindByIdAsync(userId!);
-        
-            if (existingUser == null)
-            {
-                return NotFound(new { message = "User not found." });
-            }
 
             var result = await friendConnectionService.GetPendingRequestCount(userId!);
 
@@ -373,12 +342,6 @@ public class UserController(
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var existingUser = await userManager.FindByIdAsync(userId!);
-
-            if (existingUser == null)
-            {
-                return NotFound(new { message = "User not found." });
-            }
 
             var receivedFriendRequests = await friendConnectionService.GetPendingReceivedFriendRequests(userId!);
             var sentFriendRequests = await friendConnectionService.GetPendingSentFriendRequests(userId!);
@@ -400,12 +363,6 @@ public class UserController(
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var existingUser = await userManager.FindByIdAsync(userId!);
-
-            if (existingUser == null)
-            {
-                return NotFound(new { message = "User not found." });
-            }
             
             var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(requestId);
 
@@ -420,7 +377,7 @@ public class UserController(
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error accepting friend request.");
+            logger.LogError(e, "Error accepting friend request.");
             return StatusCode(500, new { message = "An error occurred while trying to accept the friend request." });
         }
     }
@@ -431,12 +388,6 @@ public class UserController(
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var existingUser = await userManager.FindByIdAsync(userId!);
-
-            if (existingUser == null)
-            {
-                return NotFound(new { message = "User not found." });
-            }
 
             var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(requestId);
 
@@ -471,12 +422,6 @@ public class UserController(
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var existingUser = await userManager.FindByIdAsync(userId!);
-
-            if (existingUser == null)
-            {
-                return NotFound(new { message = "User not found." });
-            }
 
             var result = await friendConnectionService.GetFriends(userId!);
 
@@ -502,7 +447,7 @@ public class UserController(
                 return NotFound(new { message = "Friend connection not found." });
             }
             
-            var userGuid = new Guid(userId);
+            var userGuid = new Guid(userId!);
             
             if (userGuid != existingFriendConnection.SenderId && userGuid != existingFriendConnection.ReceiverId)
             {

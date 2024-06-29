@@ -357,7 +357,7 @@ public class FriendConnectionServiceTests
 
         var friendConnectionService = new FriendConnectionService(context, _mockUserServices.Object);
 
-        var result = await friendConnectionService.DeclineReceivedFriendRequest(requestGuid.ToString(), user2Id);
+        var result = await friendConnectionService.DeleteReceivedFriendRequest(requestGuid.ToString(), user2Id);
 
         Assert.Multiple(() =>
         {
