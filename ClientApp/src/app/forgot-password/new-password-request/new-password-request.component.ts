@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { passwordMatchValidator, passwordValidator } from '../../validators/ValidPasswordValidator';
@@ -18,7 +18,14 @@ export class NewPasswordRequestComponent implements OnInit {
     @ViewChild('passwordToggleIconForNewPassword') passwordToggleIconForNewPassword!: ElementRef;
     @ViewChild('passwordToggleIconForNewPasswordRepeat') passwordToggleIconForNewPasswordRepeat!: ElementRef;
 
-    constructor(private route: ActivatedRoute, private http: HttpClient, private messageService: MessageService, private fb: FormBuilder, private renderer: Renderer2) {}
+    constructor(
+        private route: ActivatedRoute,
+        private http: HttpClient,
+        private messageService: MessageService,
+        private fb: FormBuilder,
+        private renderer: Renderer2,
+        private router: Router
+    ) {}
 
     idParam: string = "";
     emailParam: string = "";
@@ -99,6 +106,7 @@ export class NewPasswordRequestComponent implements OnInit {
         .subscribe((response: any) => {
             if (response == true) {
                 this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Password successfully updated.', styleClass: 'ui-toast-message-success' });
+                this.router.navigate(['/']);
             }
         },
         (error) => {

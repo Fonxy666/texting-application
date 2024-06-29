@@ -12,5 +12,4 @@ public interface IMessageService
     Task<MessageResponse> EditMessage(EditMessageRequest request);
     Task<MessageResponse> EditMessageSeen(EditMessageSeenRequest request);
     Task<MessageResponse> DeleteMessage(Guid roomId);
-    Task DeleteMessages(Guid roomId);
 }

@@ -68,8 +68,6 @@ export class JoinRoomComponent implements OnInit {
         setInterval(() => {
             this.toggleImageClasses();
         }, 10000);
-
-        this.getUsername(this.userId);
     };
 
     togglePasswordVisibility(event: Event): void {
@@ -116,29 +114,6 @@ export class JoinRoomComponent implements OnInit {
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Invalid roomname or password.' });
             }
         );
-    };
-
-    getUsername(user: any) {
-        this.http.get(`/api/v1/User/GetUsername?userId=${user}`, { withCredentials: true})
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe((response: any) => {
-            this.userName = response.username;
-            if (response.status === 403) {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Token expired, you need to log in again.' });
-                this.router.navigate(['/']);
-            }
-        }, 
-        (error) => {
-            if (error.status === 403) {
-                this.errorHandler.handleError403(error);
-            } else if (error.status === 400) {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Invalid username or password.' });
-            } else {
-                console.error("An error occurred:", error);
-            }
-        });
     };
 
     goToCreateRoom() {

@@ -57,7 +57,7 @@ export class ProfileComponent implements OnInit {
     ngOnInit(): void {
         this.userId = this.cookieService.get("UserId");
         this.isLoading = true;
-        this.getUser(this.user.id);
+        this.getUser();
         this.mediaService.getAvatarImage(this.userId).subscribe((image) => {
             this.user.image = image;
         });
@@ -90,28 +90,24 @@ export class ProfileComponent implements OnInit {
         }
     }
 
-    getUser(userId: string) {
-        if (userId) {
-            this.http.get(`/api/v1/User/GetUserCredentials?userId=${userId}`, { withCredentials: true })
-            .pipe(
-                this.errorHandler.handleError401()
-            )
-            .subscribe((response: any) => {
-                if (response) {
-                    this.user.name = response.userName;
-                    this.user.email = response.email;
-                    this.user.twoFactorEnabled = response.twoFactorEnabled;
-                    this.userService.setEmail(response.email);
-                }
-            },
-            (error) => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                }
-            });
-        } else {
-            console.error('Username parameter is null or undefined.');
-        }
+    getUser() {
+        this.http.get(`/api/v1/User/GetUserCredentials`, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401()
+        )
+        .subscribe((response: any) => {
+            if (response) {
+                this.user.name = response.userName;
+                this.user.email = response.email;
+                this.user.twoFactorEnabled = response.twoFactorEnabled;
+                this.userService.setEmail(response.email);
+            }
+        },
+        (error) => {
+            if (error.status === 403) {
+                this.errorHandler.handleError403(error);
+            }
+        });
     }
 
     fileChangeEvent(event: any): void {
@@ -137,28 +133,9 @@ export class ProfileComponent implements OnInit {
         });
     }
 
-    changeAvatar() {
-        const request = new ChangeAvatarRequest(this.user.id, this.profilePic);
-        this.http.patch(`/api/v1/User/ChangeAvatar`, request, { withCredentials: true})
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe((response: any) => {
-            if (response && response.status === 'Ok') {
-                this.getUser(this.user.id);
-                this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Avatar change succeeded :)', styleClass: 'ui-toast-message-info' });
-            }
-        }, 
-        (error) => {
-            if (error.status === 403) {
-                this.errorHandler.handleError403(error);
-            }
-        });
-    }
-
     getAnnounceNumber() {
         if (this.userId) {
-            this.http.get(`/api/v1/User/GetFriendRequestCount?userId=${this.userId}`, { withCredentials: true })
+            this.http.get(`/api/v1/User/GetFriendRequestCount`, { withCredentials: true })
             .pipe(
                 this.errorHandler.handleError401()
             )

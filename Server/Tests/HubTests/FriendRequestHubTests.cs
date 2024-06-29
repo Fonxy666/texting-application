@@ -150,28 +150,24 @@ public class FriendRequestHubTests
     }
     
     [Fact]
-    public async Task DeclineFriendRequest_SendsDeclineToSenderAndReceiver()
+    public async Task DeleteFriendRequest_SendsDeleteToSenderAndReceiver()
     {
         var requestId = Guid.NewGuid().ToString();
         var senderId = Guid.NewGuid();
         var receiverId = Guid.NewGuid();
-
-        var returningRequest = new FriendConnection(senderId, receiverId);
-
-        _friendConnectionMock.Setup(fcs => fcs.GetFriendRequestByIdAsync(requestId))
-            .ReturnsAsync(returningRequest);
-
-        _clientsMock.Setup(c => c.Client(It.IsAny<string>())).Returns(_clientProxyMock.Object);
 
         var testConnections = new ConcurrentDictionary<string, string>();
         testConnections.TryAdd(senderId.ToString(), "senderConnectionId");
         testConnections.TryAdd(receiverId.ToString(), "receiverConnectionId");
         FriendRequestHub.Connections = testConnections;
 
-        await _friendRequestHub.DeclineFriendRequest(requestId);
+        // Mock setup for clients and client proxies
+        _clientsMock.Setup(c => c.Client(It.IsAny<string>())).Returns(_clientProxyMock.Object);
+
+        await _friendRequestHub.DeleteFriendRequest(requestId, senderId.ToString(), receiverId.ToString());
 
         _clientProxyMock.Verify(
-            c => c.SendCoreAsync("DeclineFriendRequest",
+            c => c.SendCoreAsync("DeleteFriendRequest",
                 It.Is<object[]>(o =>
                     o != null &&
                     o.Length == 1 &&

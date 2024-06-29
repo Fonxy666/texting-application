@@ -71,17 +71,21 @@ export class SendFriendRequestComponent implements OnInit {
     }
 
     OnFormSubmit() {
-        const friendRequest = new FriendRequest(this.userId, this.friendName.get('userName')?.value);
-
-        this.http.post(`/api/v1/User/SendFriendRequest`, friendRequest, { withCredentials: true })
+        const friendName = this.friendName.get('userName')?.value;
+        this.http.post(`/api/v1/User/SendFriendRequest`, JSON.stringify(friendName), {
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            withCredentials: true
+        })
         .pipe(
             this.errorHandler.handleError401()
         )
         .subscribe(
             (response: FriendRequestManage) => {
                 if (response) {
-                    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Friend request successfully sent to '${friendRequest.receiver}'.`, styleClass: 'ui-toast-message-success' });
-                    this.friendService.sendFriendRequest(new FriendRequestManageWithReceiverId(response.requestId, response.senderName, response.senderId, response.sentTime, friendRequest.receiver));
+                    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Friend request successfully sent to '${friendName}'.`, styleClass: 'ui-toast-message-success' });
+                    this.friendService.sendFriendRequest(new FriendRequestManageWithReceiverId(response.requestId, response.senderName, response.senderId, response.sentTime, friendName));
                     this.friendName.reset();
                 }
             },
@@ -99,8 +103,12 @@ export class SendFriendRequestComponent implements OnInit {
     }
 
     handleFriendRequestAccept(request: FriendRequestManage) {
-        const friendRequest = new FriendRequestManageRequest(request.requestId, this.userId);
-        this.http.patch(`/api/v1/User/AcceptReceivedFriendRequest`, friendRequest, { withCredentials: true })
+        this.http.patch(`/api/v1/User/AcceptReceivedFriendRequest`, JSON.stringify(request.requestId), {
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            withCredentials: true
+        })
         .pipe(
             this.errorHandler.handleError401()
         )
@@ -117,33 +125,19 @@ export class SendFriendRequestComponent implements OnInit {
         );
     }
 
-    handleFriendRequestDecline(requestId: string) {
-        const request = new FriendRequestManageRequest(requestId, this.userId);
-        this.http.patch(`/api/v1/User/DeclineReceivedFriendRequest`, request, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe(
-            () => {
-                this.friendService.declineFriendRequest(request.requestId);
+    handleFriendRequestDecline(requestId: string, senderId: string, receiverId: string, userType: string) {
+        this.http.delete(`/api/v1/User/DeleteFriendRequest?requestId=${requestId}&userType=${userType}`, {
+            headers: {
+                'Content-Type': 'application/json'
             },
-            (error) => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                }
-                console.error(error);
-            }
-        );
-    }
-
-    handleFriendRequestDelete(requestId: string) {
-        this.http.delete(`/api/v1/User/DeleteSentFriendRequest?requestId=${requestId}&userId=${this.userId}`, { withCredentials: true })
+            withCredentials: true
+        })
         .pipe(
             this.errorHandler.handleError401()
         )
         .subscribe(
             () => {
-                this.friendService.declineFriendRequest(requestId);
+                this.friendService.deleteFriendRequest(requestId, senderId, receiverId);
             },
             (error) => {
                 if (error.status === 403) {
@@ -156,7 +150,7 @@ export class SendFriendRequestComponent implements OnInit {
 
     deleteFriend(requestId: string, receiverId: string, senderId: string) {
         console.log(requestId);
-        this.http.delete(`/api/v1/User/DeleteFriend?connectionId=${requestId}&userId=${this.userId}`, { withCredentials: true })
+        this.http.delete(`/api/v1/User/DeleteFriend?connectionId=${requestId}`, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )

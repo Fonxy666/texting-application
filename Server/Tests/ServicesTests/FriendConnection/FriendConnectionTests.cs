@@ -33,10 +33,10 @@ public class FriendConnectionServiceTests
         {
             ConnectionId = requestGuid,
             SenderId = Guid.NewGuid(),
-            ReceiverId = Guid.NewGuid(),
-            SentTime = DateTime.UtcNow
+            ReceiverId = Guid.NewGuid()
         };
 
+        friendConnection.ResetSentTime();
         context.FriendConnections?.Add(friendConnection);
         await context.SaveChangesAsync();
 
@@ -295,8 +295,7 @@ public class FriendConnectionServiceTests
                 {
                     ConnectionId = requestGuid,
                     SenderId = new Guid(user1Id),
-                    ReceiverId = new Guid(user2Id),
-                    SentTime = DateTime.UtcNow,
+                    ReceiverId = new Guid(user2Id)
                 }
             }
         };
@@ -305,7 +304,7 @@ public class FriendConnectionServiceTests
             Id = new Guid(user2Id),
             UserName = "TestUsername2",
         };
-
+        
         context.Users.AddRange(user1, user2);
         await context.SaveChangesAsync();
 
@@ -319,7 +318,6 @@ public class FriendConnectionServiceTests
         Assert.Multiple(() =>
         {
             Assert.That(result, Is.True);
-            Assert.That(user1.SentFriendRequests.First().Status, Is.EqualTo(FriendStatus.Declined));
         });
     }
     
@@ -346,8 +344,7 @@ public class FriendConnectionServiceTests
                 {
                     ConnectionId = requestGuid,
                     SenderId = new Guid(user1Id),
-                    ReceiverId = new Guid(user2Id),
-                    SentTime = DateTime.UtcNow,
+                    ReceiverId = new Guid(user2Id)
                 }
             }
         };
@@ -360,12 +357,11 @@ public class FriendConnectionServiceTests
 
         var friendConnectionService = new FriendConnectionService(context, _mockUserServices.Object);
 
-        var result = await friendConnectionService.DeclineReceivedFriendRequest(requestGuid.ToString(), user2Id);
+        var result = await friendConnectionService.DeleteReceivedFriendRequest(requestGuid.ToString(), user2Id);
 
         Assert.Multiple(() =>
         {
             Assert.That(result, Is.True);
-            Assert.That(user2.ReceivedFriendRequests.First().Status, Is.EqualTo(FriendStatus.Declined));
         });
     }
     

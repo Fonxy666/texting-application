@@ -11,13 +11,13 @@ import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
 import { ConnectedUser } from '../../model/ConnectedUser';
 import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ChangePasswordRequest } from '../../model/ChangePasswordRequest';
 import { passwordMatchValidator, passwordValidator } from '../../validators/ValidPasswordValidator';
 import { FriendService } from '../../services/friend-service/friend.service';
 import { FriendRequestManage } from '../../model/FriendRequestManage';
 import { DisplayService } from '../../services/display-service/display.service';
 import { ErrorHandlerService } from '../../services/error-handler-service/error-handler.service';
 import { MediaService } from '../../services/media-service/media.service';
+import { ChangePasswordRequestForRoom } from '../../model/ChangePasswordRequestForRoom';
 
 @Component({
   selector: 'app-chat',
@@ -468,7 +468,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     changePasswordForRoom() {
-        const changePasswordRequest = new ChangePasswordRequest(
+        const changePasswordRequest = new ChangePasswordRequestForRoom(
             this.roomId,
             this.changePasswordRequest.get('oldPassword')?.value,
             this.changePasswordRequest.get('newPassword')?.value
