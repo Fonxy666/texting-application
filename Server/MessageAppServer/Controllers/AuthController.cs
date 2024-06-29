@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
@@ -239,18 +240,15 @@ public class AuthController(
     }
     
     [HttpGet("Logout")]
-    public async Task<ActionResult<AuthResponse>> LogOut([FromQuery]string userId)
+    public async Task<ActionResult<AuthResponse>> LogOut()
     {
         try
         {
-            if (!userServices.ExistingUser(userId).Result)
-            {
-                return NotFound($"There is no user with the given id: {userId}");
-            }
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             
-            await authenticationService.LogOut(userId);
+            await authenticationService.LogOut(userId!);
 
-            return Ok(new AuthResponse(true, userId));
+            return Ok(new AuthResponse(true, userId!));
         }
         catch (Exception e)
         {
