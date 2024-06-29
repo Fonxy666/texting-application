@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -50,11 +51,12 @@ public class UserController(
     }
     
     [HttpGet("GetUserCredentials"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<UserResponse>> GetUserEmail([FromQuery]string userId)
+    public async Task<ActionResult<UserResponse>> GetUserCredentials()
     {
         try
         {
-            var existingUser = await userManager.FindByIdAsync(userId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var existingUser = await userManager.FindByIdAsync(userId!);
             if (existingUser == null)
             {
                 return NotFound("User not found.");
@@ -66,7 +68,7 @@ public class UserController(
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error getting e-mail for user {userId}");
+            logger.LogError(e, $"Error getting e-mail for user.");
             return StatusCode(500);
         }
     }
@@ -184,7 +186,8 @@ public class UserController(
     {
         try
         {
-            var existingUser = await userManager.FindByEmailAsync(request.OldEmail);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var existingUser = await userManager.FindByIdAsync(userId!);
             if (existingUser == null)
             {
                 return NotFound("User not found.");
@@ -193,6 +196,11 @@ public class UserController(
             if (!existingUser.TwoFactorEnabled)
             {
                 return NotFound($"2FA not enabled for user: {existingUser.Id}");
+            }
+
+            if (existingUser.Email != request.OldEmail)
+            {
+                return BadRequest("E-mail addresses not valid.");
             }
 
             if (userManager.Users.Any(user => user.Email == request.NewEmail))
@@ -220,7 +228,8 @@ public class UserController(
     {
         try
         {
-            var existingUser = await userManager.FindByIdAsync(request.Id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var existingUser = await userManager.FindByIdAsync(userId!);
             if (existingUser == null)
             {
                 return NotFound("User not found.");
@@ -239,28 +248,29 @@ public class UserController(
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error changing password for user {request.Id}");
+            logger.LogError(e, $"Error changing password for user.");
             return StatusCode(500);
         }
     }
 
     [HttpPatch("ChangeAvatar"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<AuthResponse>> ChangeAvatar([FromBody]AvatarChange request)
+    public async Task<ActionResult<AuthResponse>> ChangeAvatar([FromBody]string image)
     {
         try
         {
-            var existingUser = await userManager.FindByIdAsync(request.UserId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var existingUser = await userManager.FindByIdAsync(userId!);
             if (existingUser == null)
             {
                 return NotFound("User not found.");
             }
 
-            userServices.SaveImageLocally(existingUser.UserName!, request.Image);
+            userServices.SaveImageLocally(existingUser.UserName!, image);
             return Ok(new { Status = "Ok" });
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error changing avatar for user {request.UserId}");
+            logger.LogError(e, $"Error changing avatar for user.");
             return StatusCode(500);
         }
     } 
@@ -270,7 +280,8 @@ public class UserController(
     {
         try
         {
-            var existingUser = await userManager.FindByEmailAsync(email);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var existingUser = await userManager.FindByIdAsync(userId!);
             if (existingUser == null)
             {
                 return NotFound("User not found.");
@@ -295,12 +306,13 @@ public class UserController(
     }
 
     [HttpPost("SendFriendRequest"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<ShowFriendRequestResponse>> SendFriendRequest([FromBody]FriendRequest request)
+    public async Task<ActionResult<ShowFriendRequestResponse>> SendFriendRequest([FromBody]string friendName)
     {
         try
         {
-            var existingSender = await userManager.FindByIdAsync(request.SenderId);
-            var existingReceiver = await userManager.FindByNameAsync(request.Receiver);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var existingSender = await userManager.FindByIdAsync(userId!);
+            var existingReceiver = await userManager.FindByNameAsync(friendName);
         
             if (existingSender == null || existingReceiver == null)
             {
@@ -312,7 +324,7 @@ public class UserController(
                 return BadRequest(new { message = "You cannot send friend request to yourself." });
             }
         
-            var databaseRequest = request with { Receiver = existingReceiver.Id.ToString() };
+            var databaseRequest = new FriendRequest(userId!, existingReceiver.Id.ToString());
         
             var alreadySent = await friendConnectionService.AlreadySentFriendRequest(databaseRequest);
             if (alreadySent)
@@ -332,18 +344,19 @@ public class UserController(
     }
 
     [HttpGet("GetFriendRequestCount"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult> GetFriendRequestCount([FromQuery]string userId)
+    public async Task<ActionResult> GetFriendRequestCount()
     {
         try
         {
-            var existingUser = await userManager.FindByIdAsync(userId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var existingUser = await userManager.FindByIdAsync(userId!);
         
             if (existingUser == null)
             {
                 return NotFound(new { message = "User not found." });
             }
 
-            var result = await friendConnectionService.GetPendingRequestCount(userId);
+            var result = await friendConnectionService.GetPendingRequestCount(userId!);
 
             return Ok(result);
         }
@@ -355,19 +368,20 @@ public class UserController(
     }
     
     [HttpGet("GetFriendRequests"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult> GetFriendRequests([FromQuery]string userId)
+    public async Task<ActionResult> GetFriendRequests()
     {
         try
         {
-            var existingUser = await userManager.FindByIdAsync(userId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var existingUser = await userManager.FindByIdAsync(userId!);
 
             if (existingUser == null)
             {
                 return NotFound(new { message = "User not found." });
             }
 
-            var receivedFriendRequests = await friendConnectionService.GetPendingReceivedFriendRequests(userId);
-            var sentFriendRequests = await friendConnectionService.GetPendingSentFriendRequests(userId);
+            var receivedFriendRequests = await friendConnectionService.GetPendingReceivedFriendRequests(userId!);
+            var sentFriendRequests = await friendConnectionService.GetPendingSentFriendRequests(userId!);
 
             var allFriendRequests = receivedFriendRequests.Concat(sentFriendRequests).ToList();
 
@@ -381,71 +395,12 @@ public class UserController(
     }
     
     [HttpPatch("AcceptReceivedFriendRequest"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult> AcceptFriendRequest([FromBody]FriendRequestManage request)
+    public async Task<ActionResult> AcceptFriendRequest([FromBody]string requestId)
     {
         try
         {
-            var existingUser = await userManager.FindByIdAsync(request.UserId);
-
-            if (existingUser == null)
-            {
-                return NotFound(new { message = "User not found." });
-            }
-            
-            var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(request.RequestId);
-
-            if (existingRequest == null)
-            {
-                return NotFound(new { message = "Friend request not found." });
-            }
-
-            await friendConnectionService.AcceptReceivedFriendRequest(request.RequestId, request.UserId);
-
-            return Ok();
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, $"Error accepting friend request.");
-            return StatusCode(500, new { message = "An error occurred while trying to accept the friend request." });
-        }
-    }
-    
-    [HttpPatch("DeclineReceivedFriendRequest"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult> DeclineFriendRequest([FromBody]FriendRequestManage request)
-    {
-        try
-        {
-            var existingUser = await userManager.FindByIdAsync(request.UserId);
-
-            if (existingUser == null)
-            {
-                return NotFound(new { message = "User not found." });
-            }
-            
-            var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(request.RequestId);
-
-            if (existingRequest == null)
-            {
-                return NotFound(new { message = "Friend request not found." });
-            }
-
-            await friendConnectionService.DeclineReceivedFriendRequest(request.RequestId, request.UserId);
-
-            return Ok();
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, $"Error declining friend request.");
-            return StatusCode(500, new { message = "An error occurred while trying to decline the friend request." });
-        }
-    }
-    
-    [HttpDelete("DeleteSentFriendRequest"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult> DeleteSentFriendRequest([FromQuery]string requestId, string userId)
-    {
-        try
-        {
-            var existingUser = await userManager.FindByIdAsync(userId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var existingUser = await userManager.FindByIdAsync(userId!);
 
             if (existingUser == null)
             {
@@ -459,30 +414,71 @@ public class UserController(
                 return NotFound(new { message = "Friend request not found." });
             }
 
-            await friendConnectionService.DeleteSentFriendRequest(requestId, userId);
+            await friendConnectionService.AcceptReceivedFriendRequest(requestId, userId!);
 
             return Ok();
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error deleting friend request.");
-            return StatusCode(500, new { message = "An error occurred while trying to delete the friend request." });
+            logger.LogError(e, $"Error accepting friend request.");
+            return StatusCode(500, new { message = "An error occurred while trying to accept the friend request." });
         }
     }
     
-    [HttpGet("GetFriends"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult> GetFriends([FromQuery]string userId)
+    [HttpDelete("DeleteFriendRequest"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> DeleteFriendRequest([FromQuery]string requestId, string userType)
     {
         try
         {
-            var existingUser = await userManager.FindByIdAsync(userId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var existingUser = await userManager.FindByIdAsync(userId!);
 
             if (existingUser == null)
             {
                 return NotFound(new { message = "User not found." });
             }
 
-            var result = await friendConnectionService.GetFriends(userId);
+            var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(requestId);
+
+            if (existingRequest == null)
+            {
+                return NotFound(new { message = "Friend request not found." });
+            }
+            
+            switch (userType)
+            {
+                case "receiver":
+                    await friendConnectionService.DeleteReceivedFriendRequest(requestId, userId!);
+                    break;
+                case "sender":
+                    await friendConnectionService.DeleteSentFriendRequest(requestId, userId!);
+                    break;
+            }
+
+
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error declining friend request.");
+            return StatusCode(500, new { message = "An error occurred while trying to decline the friend request." });
+        }
+    }
+    
+    [HttpGet("GetFriends"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> GetFriends()
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var existingUser = await userManager.FindByIdAsync(userId!);
+
+            if (existingUser == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            var result = await friendConnectionService.GetFriends(userId!);
 
             return Ok(result);
         }
@@ -494,10 +490,11 @@ public class UserController(
     }
     
     [HttpDelete("DeleteFriend"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult> DeleteFriend([FromQuery]string connectionId, string userId)
+    public async Task<ActionResult> DeleteFriend([FromQuery]string connectionId)
     {
         try
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var existingFriendConnection = await friendConnectionService.GetFriendRequestByIdAsync(connectionId);
 
             if (existingFriendConnection == null)

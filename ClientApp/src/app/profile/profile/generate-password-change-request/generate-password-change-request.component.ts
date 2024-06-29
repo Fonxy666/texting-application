@@ -1,11 +1,11 @@
 import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ChangePasswordRequest } from '../../../model/ChangePasswordRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { passwordValidator, passwordMatchValidator } from '../../../validators/ValidPasswordValidator';
 import { HttpClient } from '@angular/common/http';
 import { MessageService } from 'primeng/api';
 import { ErrorHandlerService } from '../../../services/error-handler-service/error-handler.service';
+import { ChangePasswordRequestForUser } from '../../../model/ChangePasswordRequestForUser';
 
 @Component({
   selector: 'app-generate-password-change-request',
@@ -80,8 +80,7 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
     }
 
     OnFormSubmit() {
-        const changePasswordRequest = new ChangePasswordRequest(
-            this.cookieService.get("UserId"),
+        const changePasswordRequest = new ChangePasswordRequestForUser(
             this.changePasswordRequest.get('oldPassword')?.value,
             this.changePasswordRequest.get('password')?.value
         );

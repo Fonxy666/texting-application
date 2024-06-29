@@ -78,17 +78,24 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
         }
     }
     
-    public async Task DeclineFriendRequest(string requestId)
+    public async Task DeleteFriendRequest(string requestId, string senderId, string receiverId)
     {
-        var request = friendConnectionService.GetFriendRequestByIdAsync(requestId).Result;
-        
-        if (Connections.TryGetValue(request.ReceiverId.ToString(), out var receiverConnectionId))
+        if (!Guid.TryParse(senderId, out var senderGuid))
         {
-            await Clients.Client(receiverConnectionId).SendAsync("DeclineFriendRequest", requestId);
+            throw new ArgumentException("Invalid senderId format.");
         }
-        if (Connections.TryGetValue(request.SenderId.ToString(), out var senderConnectionId))
+        if (!Guid.TryParse(receiverId, out var receiverGuid))
         {
-            await Clients.Client(senderConnectionId).SendAsync("DeclineFriendRequest", requestId);
+            throw new ArgumentException("Invalid receiverId format.");
+        }
+
+        if (Connections.TryGetValue(senderGuid.ToString(), out var senderConnectionId))
+        {
+            await Clients.Client(senderConnectionId).SendAsync("DeleteFriendRequest", requestId);
+        }
+        if (Connections.TryGetValue(receiverGuid.ToString(), out var receiverConnectionId))
+        {
+            await Clients.Client(receiverConnectionId).SendAsync("DeleteFriendRequest", requestId);
         }
     }
     

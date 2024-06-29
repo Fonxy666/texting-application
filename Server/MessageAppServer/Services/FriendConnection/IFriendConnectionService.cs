@@ -14,7 +14,7 @@ public interface IFriendConnectionService
     Task<bool> AlreadySentFriendRequest(FriendRequest request);
     Task<bool> AcceptReceivedFriendRequest(string requestId, string receiverId);
     Task<bool> DeleteSentFriendRequest(string requestId, string senderId);
-    Task<bool> DeclineReceivedFriendRequest(string requestId, string receiverId);
+    Task<bool> DeleteReceivedFriendRequest(string requestId, string receiverId);
     Task<IEnumerable<ShowFriendRequestResponse>> GetFriends(string userId);
     Task<Model.FriendConnection?> GetConnectionId(Guid userId, Guid friendId);
     Task<bool> DeleteFriend(string connectionId);

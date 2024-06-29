@@ -13,6 +13,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
 
     public async Task<Model.FriendConnection> GetFriendRequestByIdAsync(string requestId)
     {
+        Console.WriteLine(requestId);
         if (!Guid.TryParse(requestId, out var requestGuid))
         {
             throw new ArgumentException("Invalid requestId format.");
@@ -178,7 +179,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
         return true;
     }
 
-    public async Task<bool> DeclineReceivedFriendRequest(string requestId, string receiverId)
+    public async Task<bool> DeleteReceivedFriendRequest(string requestId, string receiverId)
     {
         if (!Guid.TryParse(requestId, out var requestGuid))
         {

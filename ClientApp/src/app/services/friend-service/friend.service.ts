@@ -41,7 +41,7 @@ export class FriendService {
             this.updateFriendRequests(new FriendRequestManage(requestId, senderName, senderId, sentTime, receiverName, receiverId));
         });
 
-        this.connection.on("DeclineFriendRequest", (requestId: string) => {
+        this.connection.on("DeleteFriendRequest", (requestId: string) => {
             this.updateFriendRequestsWithDeclinedRequest(requestId);
         });
 
@@ -169,9 +169,10 @@ export class FriendService {
         this.friends$.next(this.friends[userId]);
     }
 
-    public async declineFriendRequest(requestId: string) {
+    public async deleteFriendRequest(requestId: string, senderId: string, receiverId: string) {
         try {
-            await this.connection.invoke("DeclineFriendRequest", requestId);
+            console.log(requestId);
+            await this.connection.invoke("DeleteFriendRequest", requestId, senderId, receiverId);
             this.updateFriendRequestsWithDeclinedRequest(requestId);
         } catch (error) {
             console.error('Error declining friend request via SignalR:', error);
@@ -236,7 +237,7 @@ export class FriendService {
 
     getPendingFriendRequests() {
         const userId = this.cookieService.get("UserId");
-        this.http.get(`/api/v1/User/GetFriendRequests?userId=${userId}`, { withCredentials: true })
+        this.http.get(`/api/v1/User/GetFriendRequests`, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )
@@ -269,7 +270,7 @@ export class FriendService {
 
     getFriends() {
         const userId = this.cookieService.get("UserId");
-        this.http.get(`/api/v1/User/GetFriends?userId=${userId}`, { withCredentials: true })
+        this.http.get(`/api/v1/User/GetFriends`, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401()
         )

@@ -49,7 +49,7 @@ public class TokenService(IConfiguration configuration, IHttpContextAccessor htt
     {
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, configuration["IssueAudience"]!),
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)),
             new(ClaimTypes.NameIdentifier, user.Id.ToString())

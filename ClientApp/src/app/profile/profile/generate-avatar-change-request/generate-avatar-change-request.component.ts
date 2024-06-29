@@ -62,9 +62,12 @@ export class GenerateAvatarChangeRequestComponent {
     SendAvatarChangeRequest: EventEmitter<ChangeAvatarRequest> = new EventEmitter<ChangeAvatarRequest>();
 
     OnFormSubmit() {
-        console.log("oki")
-        const request = new ChangeAvatarRequest(this.cookieService.get("UserId"), this.profilePic);
-        this.http.patch(`/api/v1/User/ChangeAvatar`, request, { withCredentials: true})
+        this.http.patch(`/api/v1/User/ChangeAvatar`, JSON.stringify(this.profilePic), {
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            withCredentials: true
+        })
         .pipe(
             this.errorHandler.handleError401()
         )
