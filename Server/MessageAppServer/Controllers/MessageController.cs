@@ -69,7 +69,7 @@ public class MessageController(
     }
     
     [HttpPatch("EditMessage"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<MessageResponse>> ModifyMessage([FromBody]EditMessageRequest request)
+    public async Task<ActionResult<MessageResponse>> EditMessage([FromBody]EditMessageRequest request)
     {
         try
         {
@@ -77,10 +77,18 @@ public class MessageController(
             {
                 return BadRequest(ModelState);
             }
+            
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userGuid = new Guid(userId!);
 
-            if (!messageService.MessageExisting(request.Id).Result)
+            if (!await messageService.MessageExisting(request.Id))
             {
                 return NotFound($"There is no message with this given id: {request.Id}");
+            }
+            
+            if (!await messageService.UserIsTheSender(userGuid, request.Id))
+            {
+                return BadRequest("You are not supposed to edit other user's messages.");
             }
             
             var result = await messageService.EditMessage(request);
@@ -103,14 +111,11 @@ public class MessageController(
             {
                 return BadRequest(ModelState);
             }
-
-            var messageIdToGuid = new Guid(request.MessageId);
-            if (!messageService.MessageExisting(messageIdToGuid).Result)
-            {
-                return NotFound($"There is no message with this given id: {request.MessageId}");
-            }
-
-            var result = await messageService.EditMessageSeen(request);
+            
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userGuid = new Guid(userId!);
+            
+            var result = await messageService.EditMessageSeen(request, userGuid);
 
             return Ok(result);
         }
@@ -126,10 +131,17 @@ public class MessageController(
     {
         try
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userGuid = new Guid(userId!);
             var idToGuid = new Guid(id);
             if (!messageService.MessageExisting(idToGuid).Result)
             {
                 return NotFound($"There is no message with this given id: {id}");
+            }
+
+            if (!await messageService.UserIsTheSender(userGuid, idToGuid))
+            {
+                return BadRequest("You are not allowed to delete other users messages.");
             }
             
             await messageService.DeleteMessage(idToGuid);

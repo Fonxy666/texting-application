@@ -40,6 +40,21 @@ namespace Tests.ServicesTests.Chat
 
             Assert.IsTrue(response.Success);
         }
+        
+        [Test]
+        public async Task EditMessage_WithNotTheCreator_ReturnFalse()
+        {
+            var request = new MessageRequest("a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "Hello, World!", false, null);
+
+            await _messageService.SendMessage(request, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
+
+            var message = await _messageService.GetLast10Messages(new Guid("a57f0d67-8670-4789-a580-3b4a3bd3bf9c"));
+
+            var messageId = message.ToList()[0].MessageId;
+            var result = await _messageService.UserIsTheSender(new Guid("a57f0d67-8670-4789-a580-3b4a3bd3bf9d"), messageId);
+
+            Assert.IsFalse(result);
+        }
 
         [Test]
         public async Task GetLast10Messages_ValidRoomId_ReturnsLast10Messages()
