@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, catchError, throwError } from 'rxjs';
 import { MessageRequest } from '../../model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/user-credential-requests/ChangeMessageRequest';
@@ -9,6 +9,10 @@ import { ConnectedUser } from '../../model/room-requests/ConnectedUser';
 import { Router } from '@angular/router';
 import { UserService } from '../user-service/user.service';
 import { FriendService } from '../friend-service/friend.service';
+import { CreateRoomRequest } from '../../model/room-requests/CreateRoomRequest';
+import { HttpClient } from '@angular/common/http';
+import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
+import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
 
 @Injectable({
     providedIn: 'root'
@@ -24,7 +28,14 @@ export class ChatService {
     private currentRoom: string | null = null;
     public messagesInitialized$ = new Subject<string>();
 
-    constructor(private cookieService: CookieService, private router: Router, private userService: UserService, private friendService: FriendService) {
+    constructor(
+        private cookieService: CookieService,
+        private router: Router,
+        private userService: UserService,
+        private friendService: FriendService,
+        private http: HttpClient,
+        private errorHandler: ErrorHandlerService
+    ) {
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl('/chat')
             .configureLogging(signalR.LogLevel.Critical)
@@ -224,5 +235,31 @@ export class ChatService {
         }
 
         return false;
+    }
+
+    registerRoom(form: CreateRoomRequest): Observable<any> {
+        return this.http.post(`/api/v1/Chat/RegisterRoom`, form, { withCredentials: true })
+            .pipe(
+                this.errorHandler.handleError401(),
+                catchError(error => {
+                    if (error.status === 403) {
+                        this.errorHandler.handleError403(error);
+                    }
+                    return throwError(error);
+                })
+            );
+    }
+
+    joinToRoom(form: JoinRoomRequest): Observable<any> {
+        return this.http.post(`/api/v1/Chat/JoinRoom`, form, { withCredentials: true })
+            .pipe(
+                this.errorHandler.handleError401(),
+                catchError(error => {
+                    if (error.status === 403) {
+                        this.errorHandler.handleError403(error);
+                    }
+                    return throwError(error);
+                })
+            )
     }
 }

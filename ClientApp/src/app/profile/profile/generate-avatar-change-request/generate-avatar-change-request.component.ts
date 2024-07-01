@@ -1,12 +1,12 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { ChangeAvatarRequest } from '../../../model/ChangeAvatarRequest';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { DomSanitizer } from '@angular/platform-browser';
 import { CookieService } from 'ngx-cookie-service';
 import { HttpClient } from '@angular/common/http';
 import { MessageService } from 'primeng/api';
 import { ErrorHandlerService } from '../../../services/error-handler-service/error-handler.service';
+import { ChangeAvatarRequest } from '../../../model/user-credential-requests/ChangeAvatarRequest';
 
 @Component({
   selector: 'app-generate-avatar-change-request',

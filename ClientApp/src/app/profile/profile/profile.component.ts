@@ -5,7 +5,6 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
-import { ChangeAvatarRequest } from '../../model/ChangeAvatarRequest';
 import { MessageService } from 'primeng/api';
 import { filter } from 'rxjs';
 import { FriendService } from '../../services/friend-service/friend.service';

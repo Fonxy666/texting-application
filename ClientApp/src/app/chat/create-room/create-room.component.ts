@@ -2,10 +2,9 @@ import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/co
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { HttpClient } from '@angular/common/http';
 import { CreateRoomRequest } from '../../model/room-requests/CreateRoomRequest';
 import { MessageService } from 'primeng/api';
-import { ErrorHandlerService } from '../../services/error-handler-service/error-handler.service';
+import { ChatService } from '../../services/chat-service/chat.service';
 
 @Component({
   selector: 'app-create-room',
@@ -20,10 +19,9 @@ export class CreateRoomComponent implements OnInit {
     constructor(private fb: FormBuilder,
         private cookieService: CookieService,
         private router: Router,
-        private http: HttpClient,
-        private errorHandler: ErrorHandlerService,
-        private messageService: MessageService,
-        private renderer: Renderer2
+        private renderer: Renderer2,
+        public chatService: ChatService,
+        private messageService: MessageService
     ) { }
 
     myImage: string = "./assets/images/backgroundpng.png";
@@ -67,36 +65,28 @@ export class CreateRoomComponent implements OnInit {
         )
     }
 
-    sendCreateRoomRequest() {
-        this.http.post(`/api/v1/Chat/RegisterRoom`, this.createForm(), { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe(
-            (response: any) => {
-                if (response.success) {
-                    this.router.navigate(['join-room'], { queryParams: { createRoom: 'true' } });
-                } else {
-                    console.log(response.error);
-                }
-            },
-            (error: any) => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                } else if (error.error && error.error.error === "This room's name already taken.") {
-                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'This room name is already taken. Choose another one!' });
-                } else {
-                    console.log(error);
-                }
-            }
-        );
-    }
-
     handleCancel() {
         this.router.navigate(['/join-room']);
     }
 
     toggleShowPassword() {
         this.showPassword = !this.showPassword;
+    }
+
+    callSendcreateRoomRequest() {
+        this.chatService.registerRoom(this.createForm()).subscribe(
+            response => {
+                if (response.success) {
+                    this.router.navigate(['join-room'], { queryParams: { createRoom: 'true' } });
+                }
+            },
+            error => {
+                if (error.error && error.error.error === "This room's name already taken.") {
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'This room name is already taken. Choose another one!' });
+                } else {
+                    console.log(error);
+                }
+            }   
+        )
     }
 }

@@ -3,10 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { ChatService } from '../../services/chat-service/chat.service';
-import { HttpClient } from '@angular/common/http';
 import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
 import { MessageService } from 'primeng/api';
-import { ErrorHandlerService } from '../../services/error-handler-service/error-handler.service';
 
 @Component({
   selector: 'app-join-room',
@@ -24,8 +22,6 @@ export class JoinRoomComponent implements OnInit {
         private cookieService: CookieService,
         private router: Router,
         private chatService: ChatService,
-        private http: HttpClient,
-        private errorHandler: ErrorHandlerService,
         private messageService: MessageService,
         private renderer: Renderer2
     ) { }
@@ -95,32 +91,21 @@ export class JoinRoomComponent implements OnInit {
     };
 
     joinRoom() {
-        const data = this.createForm();
-        this.http.post(`/api/v1/Chat/JoinRoom`, data, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe(
-            (response: any) => {
+        this.chatService.joinToRoom(this.createForm()).subscribe(
+            response => {
                 if (response.success) {
                     this.chatService.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
                 }
             },
-            (error: any) => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
+            error => {
+                if (error.error === 'Incorrect login credentials') {
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Invalid Roomname or password.' });
                 }
-
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Invalid roomname or password.' });
             }
-        );
+        )
     };
 
     goToCreateRoom() {
         this.router.navigate(['create-room']);
-    };
-
-    toggleShowPassword() {
-        this.showPassword = !this.showPassword;
     };
 }
