@@ -418,8 +418,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     userIsTheCreatorMethod(){
-        const userId = this.userId;
-        this.http.get(`/api/v1/Chat/ExamineIfTheUserIsTheCreator?userId=${userId}&roomId=${this.roomId}`, { withCredentials: true})
+        this.http.get(`/api/v1/Chat/ExamineIfTheUserIsTheCreator?roomId=${this.roomId}`, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401()
         )
@@ -438,7 +437,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     deleteRoom() {
         this.isLoading = true;
         this.chatService.deleteRoom(this.roomId).then(() => {
-            this.http.delete(`/api/v1/Chat/DeleteRoom?userId=${this.userId}&roomId=${this.roomId}`, { withCredentials: true})
+            this.http.delete(`/api/v1/Chat/DeleteRoom?roomId=${this.roomId}`, { withCredentials: true})
             .pipe(
                 this.errorHandler.handleError401()
             )

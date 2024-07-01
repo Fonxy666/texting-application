@@ -63,8 +63,7 @@ export class CreateRoomComponent implements OnInit {
     createForm() {
         return new CreateRoomRequest(
             this.createRoomForm.get('roomName')?.value,
-            this.createRoomForm.get('password')?.value,
-            this.cookieService.get("UserId")
+            this.createRoomForm.get('password')?.value
         )
     }
 

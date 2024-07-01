@@ -1,17 +1,20 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Server.Model;
 using Server.Model.Requests.Chat;
 using Server.Model.Responses.Chat;
-using Server.Services.Chat.MessageService;
 using Server.Services.Chat.RoomService;
 
 namespace Server.Controllers;
 
 [Route("api/v1/[controller]")]
-public class ChatController(IRoomService roomService, ILogger<ChatController> logger, UserManager<ApplicationUser> userManager, IMessageService messageService) : ControllerBase
+public class ChatController(
+    IRoomService roomService,
+    ILogger<ChatController> logger,
+    UserManager<ApplicationUser> userManager
+    ) : ControllerBase
 {
     [HttpPost("RegisterRoom"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<RoomResponse>> RegisterRoom([FromBody]RoomRequest request)
@@ -22,13 +25,15 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
             {
                 return BadRequest(new { error = "New room credentials not valid." });
             }
+            
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (roomService.RoomNameTaken(request.RoomName).Result.Result)
             {
                 return BadRequest(new { error = "This room's name already taken." });
             }
             
-            var result = await roomService.RegisterRoomAsync(request.RoomName, request.Password, new Guid(request.CreatorId));
+            var result = await roomService.RegisterRoomAsync(request.RoomName, request.Password, new Guid(userId!));
 
             return Ok(result);
         }
@@ -40,7 +45,7 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
     }
 
     [HttpGet("ExamineIfTheUserIsTheCreator"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<bool>> ExamineCreator([FromQuery]string userId, [FromQuery]string roomId)
+    public async Task<ActionResult<bool>> ExamineCreator([FromQuery]string roomId)
     {
         try
         {
@@ -50,13 +55,10 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
                 return NotFound(false);
             }
 
-            var existingUser = await userManager.Users.FirstOrDefaultAsync(user => user.Id == new Guid(userId));
-            if (existingUser == null)
-            {
-                return NotFound(false);
-            }
-
-            if (!existingRoom.IsCreator(existingUser.Id))
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userGuid = new Guid(userId!);
+            
+            if (!existingRoom.IsCreator(userGuid))
             {
                 return BadRequest(false);
             }
@@ -71,7 +73,7 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
     }
     
     [HttpDelete("DeleteRoom"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<bool>> DeleteRoom([FromQuery]string userId, [FromQuery]string roomId)
+    public async Task<ActionResult<bool>> DeleteRoom([FromQuery]string roomId)
     {
         try
         {
@@ -83,13 +85,10 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
                 return NotFound(false);
             }
 
-            var existingUser = await userManager.Users.FirstOrDefaultAsync(user => user.Id == new Guid(userId));
-            if (existingUser == null)
-            {
-                return NotFound(false);
-            }
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userGuid = new Guid(userId!);
 
-            if (!existingRoom.IsCreator(existingUser.Id))
+            if (!existingRoom.IsCreator(userGuid))
             {
                 return BadRequest(false);
             }
@@ -125,6 +124,14 @@ public class ChatController(IRoomService roomService, ILogger<ChatController> lo
             if (!existingRoom.PasswordMatch(request.OldPassword))
             {
                 return BadRequest("Incorrect old password credentials.");
+            }
+            
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userGuid = new Guid(userId!);
+
+            if (!existingRoom.IsCreator(userGuid))
+            {
+                return BadRequest(false);
             }
 
             await roomService.ChangePassword(existingRoom, request.Password);
