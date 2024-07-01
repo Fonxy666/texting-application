@@ -6,7 +6,6 @@ using Server.Model.Chat;
 using Server.Model.Requests.Message;
 using Server.Model.Responses.Message;
 using Server.Services.Chat.RoomService;
-using Server.Services.User;
 
 namespace Server.Controllers;
 
