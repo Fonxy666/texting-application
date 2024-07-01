@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { FriendService } from '../services/friend-service/friend.service';
 import { MediaService } from '../services/media-service/media.service';
-import { ChatRoomInvite } from '../model/ChatRoomInvite';
+import { ChatRoomInvite } from '../model/room-requests/ChatRoomInvite';
 import { ChatService } from '../services/chat-service/chat.service';
 import { UserService } from '../services/user-service/user.service';
 

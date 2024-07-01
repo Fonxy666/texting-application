@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { MessageRequest } from '../../model/MessageRequest';
+import { MessageRequest } from '../../model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
-import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
-import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
-import { ConnectedUser } from '../../model/ConnectedUser';
+import { ChangeMessageRequest } from '../../model/user-credential-requests/ChangeMessageRequest';
+import { ChangeMessageSeenRequest } from '../../model/message-requests/ChangeMessageSeenRequest';
+import { ConnectedUser } from '../../model/room-requests/ConnectedUser';
 import { Router } from '@angular/router';
 import { UserService } from '../user-service/user.service';
 import { FriendService } from '../friend-service/friend.service';

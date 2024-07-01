@@ -2,12 +2,12 @@ import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
-import { FriendRequestManage } from '../../model/FriendRequestManage';
-import { FriendRequestManageWithReceiverId } from '../../model/FriendRequestManageWithReceiverId';
+import { FriendRequestManage } from '../../model/friend-requests/FriendRequestManage';
+import { FriendRequestManageWithReceiverId } from '../../model/friend-requests/FriendRequestManageWithReceiverId';
 import { isEqual } from 'lodash';
 import { HttpClient } from '@angular/common/http';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
-import { ChatRoomInvite } from '../../model/ChatRoomInvite';
+import { ChatRoomInvite } from '../../model/room-requests/ChatRoomInvite';
 
 @Injectable({
     providedIn: 'root'

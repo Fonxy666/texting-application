@@ -5,7 +5,7 @@ import { passwordValidator, passwordMatchValidator } from '../../../validators/V
 import { HttpClient } from '@angular/common/http';
 import { MessageService } from 'primeng/api';
 import { ErrorHandlerService } from '../../../services/error-handler-service/error-handler.service';
-import { ChangePasswordRequestForUser } from '../../../model/ChangePasswordRequestForUser';
+import { ChangePasswordRequestForUser } from '../../../model/user-credential-requests/ChangePasswordRequestForUser';
 
 @Component({
   selector: 'app-generate-password-change-request',

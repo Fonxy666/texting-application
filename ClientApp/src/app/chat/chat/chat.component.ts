@@ -4,20 +4,20 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin, Subscription } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
-import { MessageRequest } from '../../model/MessageRequest';
+import { MessageRequest } from '../../model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
-import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
-import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
-import { ConnectedUser } from '../../model/ConnectedUser';
+import { ChangeMessageRequest } from '../../model/user-credential-requests/ChangeMessageRequest';
+import { ChangeMessageSeenRequest } from '../../model/message-requests/ChangeMessageSeenRequest';
+import { ConnectedUser } from '../../model/room-requests/ConnectedUser';
 import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { passwordMatchValidator, passwordValidator } from '../../validators/ValidPasswordValidator';
 import { FriendService } from '../../services/friend-service/friend.service';
-import { FriendRequestManage } from '../../model/FriendRequestManage';
+import { FriendRequestManage } from '../../model/friend-requests/FriendRequestManage';
 import { DisplayService } from '../../services/display-service/display.service';
 import { ErrorHandlerService } from '../../services/error-handler-service/error-handler.service';
 import { MediaService } from '../../services/media-service/media.service';
-import { ChangePasswordRequestForRoom } from '../../model/ChangePasswordRequestForRoom';
+import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePasswordRequestForRoom';
 
 @Component({
   selector: 'app-chat',

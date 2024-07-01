@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { ChatService } from '../../services/chat-service/chat.service';
 import { HttpClient } from '@angular/common/http';
-import { JoinRoomRequest } from '../../model/JoinRoomRequest';
+import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
 import { MessageService } from 'primeng/api';
 import { ErrorHandlerService } from '../../services/error-handler-service/error-handler.service';
 

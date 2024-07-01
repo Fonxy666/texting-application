@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { LoginRequest } from '../model/LoginRequest';
+import { LoginRequest } from '../model/auth-requests/LoginRequest';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { Router } from '@angular/router';
-import { LoginAuthTokenRequest } from '../model/LoginAuthTokenRequest';
+import { LoginAuthTokenRequest } from '../model/auth-requests/LoginAuthTokenRequest';
 import { MessageService } from 'primeng/api';
 
 @Component({

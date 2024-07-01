@@ -1,6 +1,6 @@
 import { Component, ElementRef, EventEmitter, Output, Renderer2, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup,  Validators } from '@angular/forms';
-import { RegistrationRequest } from '../../model/RegistrationRequest';
+import { RegistrationRequest } from '../../model/auth-requests/RegistrationRequest';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { DomSanitizer } from '@angular/platform-browser';
 import { passwordValidator, passwordMatchValidator } from '../../validators/ValidPasswordValidator';

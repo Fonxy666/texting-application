@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { HttpClient } from '@angular/common/http';
-import { CreateRoomRequest } from '../../model/CreateRoomRequest';
+import { CreateRoomRequest } from '../../model/room-requests/CreateRoomRequest';
 import { MessageService } from 'primeng/api';
 import { ErrorHandlerService } from '../../services/error-handler-service/error-handler.service';
 

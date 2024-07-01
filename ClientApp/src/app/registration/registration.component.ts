@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import { RegistrationRequest } from '../model/RegistrationRequest';
+import { RegistrationRequest } from '../model/auth-requests/RegistrationRequest';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { TokenValidatorRequest } from '../model/TokenValidatorRequest';
+import { TokenValidatorRequest } from '../model/auth-requests/TokenValidatorRequest';
 import { MessageService } from 'primeng/api';
 
 @Component({
