@@ -10,7 +10,6 @@ using Server.Model.Requests.Auth;
 using Server.Model.Requests.Message;
 using Xunit;
 using Assert = Xunit.Assert;
-using StringContent = System.Net.Http.StringContent;
 
 namespace Tests.IntegrationTests;
 

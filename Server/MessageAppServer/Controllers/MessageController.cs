@@ -1,10 +1,10 @@
 ﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
-using Server.Services.Chat.MessageService;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Server.Model.Chat;
 using Server.Model.Requests.Message;
 using Server.Model.Responses.Message;
+using Server.Services.Chat.MessageService;
 using Server.Services.Chat.RoomService;
 
 namespace Server.Controllers;

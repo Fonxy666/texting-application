@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Moq;
 using Server.Services.EmailSender;
 using Xunit;
-using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
 namespace Tests.ServicesTests;

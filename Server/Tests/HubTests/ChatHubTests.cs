@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using MockQueryable.Moq;
 using Moq;
 using Server;
@@ -12,7 +11,6 @@ using Server.Hub;
 using Server.Model;
 using Server.Model.Requests.Auth;
 using Server.Model.Requests.Message;
-using Server.Services.FriendConnection;
 using Xunit;
 using Assert = Xunit.Assert;
 

@@ -5,7 +5,6 @@ using Server.Services.Authentication;
 using Server.Services.Cookie;
 using Xunit;
 using Assert = NUnit.Framework.Assert;
-using CookieOptions = Microsoft.AspNetCore.Http.CookieOptions;
 
 namespace Tests.ServicesTests;
 
