@@ -13,6 +13,8 @@ import { CreateRoomRequest } from '../../model/room-requests/CreateRoomRequest';
 import { HttpClient } from '@angular/common/http';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
+import { Message } from 'primeng/api';
+import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePasswordRequestForRoom';
 
 @Injectable({
     providedIn: 'root'
@@ -261,5 +263,122 @@ export class ChatService {
                     return throwError(error);
                 })
             )
+    }
+
+    saveMessage(form: MessageRequest): Observable<any> {
+        return this.http.post(`api/v1/Message/SendMessage`, form, { withCredentials: true})
+        .pipe(
+            this.errorHandler.handleError401(),
+            catchError(error => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                return throwError(error);
+            })
+        )
+    }
+
+    getMessages(roomId: string) {
+        return this.http.get(`/api/v1/Message/GetMessages/${roomId}`, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401(),
+            catchError(error => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                return throwError(error);
+            })
+        )
+    }
+
+    getUsername(userId: string) {
+        return this.http.get(`/api/v1/User/GetUsername?userId=${userId}`, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401(),
+            catchError(error => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                return throwError(error);
+            })
+        )
+    }
+
+    editMessage(request: ChangeMessageRequest) {
+        return this.http.patch(`/api/v1/Message/EditMessage`, request, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401(),
+            catchError(error => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                return throwError(error);
+            })
+        )
+    }
+
+    editMessageSeen(request: ChangeMessageSeenRequest) {
+        return this.http.patch(`/api/v1/Message/EditMessageSeen`, request, { withCredentials: true })
+        .pipe(
+            this.errorHandler.handleError401(),
+            catchError(error => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                return throwError(error);
+            })
+        )
+    }
+
+    messageDelete(messageId: string) {
+        return this.http.delete(`/api/v1/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
+        .pipe(
+            this.errorHandler.handleError401(),
+            catchError(error => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                return throwError(error);
+            })
+        )
+    }
+
+    userIsTheCreator(roomId: string) {
+        return this.http.get(`/api/v1/Chat/ExamineIfTheUserIsTheCreator?roomId=${roomId}`, { withCredentials: true})
+        .pipe(
+            this.errorHandler.handleError401(),
+            catchError(error => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                return throwError(error);
+            })
+        )
+    }
+
+    deleteRoomHttpRequest(roomId: string) {
+        return this.http.delete(`/api/v1/Chat/DeleteRoom?roomId=${roomId}`, { withCredentials: true})
+        .pipe(
+            this.errorHandler.handleError401(),
+            catchError(error => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                return throwError(error);
+            })
+        )
+    }
+
+    changePasswordForRoom(form: ChangePasswordRequestForRoom) {
+        return this.http.patch(`/api/v1/Chat/ChangePasswordForRoom`, form, { withCredentials: true})
+        .pipe(
+            this.errorHandler.handleError401(),
+            catchError(error => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                return throwError(error);
+            })
+        )
     }
 }
