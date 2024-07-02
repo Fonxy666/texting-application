@@ -3,6 +3,7 @@ using Server.Model;
 using Server.Model.Requests.User;
 using Server.Services.Chat.RoomService;
 using Server.Services.FriendConnection;
+using Server.Services.User;
 
 namespace Server.Database;
 
@@ -86,8 +87,6 @@ public static class PopulateDbAndAddRoles
                     1 => new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"),
                     2 => new Guid("10f96e12-e245-420a-8bad-b61fb21c4b2d"),
                     3 => new Guid("995f04da-d4d3-447c-9c69-fab370bca312"),
-                    4 => new Guid("cdb02bca-42f8-43ca-5cfc-08dc9761a52b"),
-                    5 => new Guid("d80da069-4e65-4716-5cfb-08dc9761a52b"),
                     _ => Guid.NewGuid()
                 },
                 
