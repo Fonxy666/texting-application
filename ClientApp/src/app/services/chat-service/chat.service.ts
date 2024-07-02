@@ -13,7 +13,6 @@ import { CreateRoomRequest } from '../../model/room-requests/CreateRoomRequest';
 import { HttpClient } from '@angular/common/http';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
-import { Message } from 'primeng/api';
 import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePasswordRequestForRoom';
 
 @Injectable({
