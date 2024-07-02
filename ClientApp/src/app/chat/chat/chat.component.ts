@@ -16,6 +16,7 @@ import { FriendRequestManage } from '../../model/friend-requests/FriendRequestMa
 import { DisplayService } from '../../services/display-service/display.service';
 import { MediaService } from '../../services/media-service/media.service';
 import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePasswordRequestForRoom';
+import { UserService } from '../../services/user-service/user.service';
 
 @Component({
   selector: 'app-chat',
@@ -57,7 +58,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         private fb: FormBuilder,
         public friendService: FriendService,
         public displayService: DisplayService,
-        private mediaService: MediaService
+        private mediaService: MediaService,
+        private userService: UserService
     ) { }
 
     messages: any[] = [];
@@ -244,7 +246,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.chatService.getMessages(this.roomId)
             .subscribe((response: any) => {
                 const userNames = response.map((element: any) =>
-                    this.chatService.getUsername(element.senderId)
+                    this.userService.getUsername(element.senderId)
                 );
     
                 forkJoin(userNames).subscribe((usernames: any) => {

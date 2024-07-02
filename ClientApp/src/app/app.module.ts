@@ -33,7 +33,6 @@ import { SupportPageComponent } from './support-page/support-page.component';
 import { AboutUsPageComponent } from './about-us-page/about-us-page.component';
 import { BackgroundImageComponent } from './background-image/background-image.component';
 import { SendFriendRequestComponent } from './profile/profile/send-friend-request/send-friend-request.component';
-import { AuthServiceComponent } from './services/auth-service/auth-service.component';
 
 @NgModule({
   declarations: [
@@ -59,8 +58,7 @@ import { AuthServiceComponent } from './services/auth-service/auth-service.compo
     SupportPageComponent,
     AboutUsPageComponent,
     BackgroundImageComponent,
-    SendFriendRequestComponent,
-    AuthServiceComponent
+    SendFriendRequestComponent
   ],
   imports: [
     BrowserModule,

@@ -19,15 +19,8 @@ export class CookiesService {
         });
         const params = new HttpParams().set("request", param2);
         
-        return this.http.post(`/api/v1/Cookie/ChangeCookies`, null, { headers: headers, params: params, responseType: 'text', withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401(),
-            catchError(error => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                }
-                return throwError(error);
-            })
+        return this.errorHandler.handleErrors(
+            this.http.post(`/api/v1/Cookie/ChangeCookies`, null, { headers: headers, params: params, responseType: 'text', withCredentials: true })
         )
     }
 }

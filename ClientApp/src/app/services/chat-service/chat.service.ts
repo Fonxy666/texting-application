@@ -239,145 +239,62 @@ export class ChatService {
     }
 
     registerRoom(form: CreateRoomRequest): Observable<any> {
-        return this.http.post(`/api/v1/Chat/RegisterRoom`, form, { withCredentials: true })
-            .pipe(
-                this.errorHandler.handleError401(),
-                catchError(error => {
-                    if (error.status === 403) {
-                        this.errorHandler.handleError403(error);
-                    }
-                    return throwError(error);
-                })
-            );
+        return this.errorHandler.handleErrors(
+            this.http.post(`/api/v1/Chat/RegisterRoom`, form, { withCredentials: true })
+        )
     }
 
     joinToRoom(form: JoinRoomRequest): Observable<any> {
-        return this.http.post(`/api/v1/Chat/JoinRoom`, form, { withCredentials: true })
-            .pipe(
-                this.errorHandler.handleError401(),
-                catchError(error => {
-                    if (error.status === 403) {
-                        this.errorHandler.handleError403(error);
-                    }
-                    return throwError(error);
-                })
-            )
+        return this.errorHandler.handleErrors(
+            this.http.post(`/api/v1/Chat/JoinRoom`, form, { withCredentials: true })
+        )
     }
 
     saveMessage(form: MessageRequest): Observable<any> {
-        return this.http.post(`api/v1/Message/SendMessage`, form, { withCredentials: true})
-        .pipe(
-            this.errorHandler.handleError401(),
-            catchError(error => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                }
-                return throwError(error);
-            })
+        return this.errorHandler.handleErrors(
+            this.http.post(`api/v1/Message/SendMessage`, form, { withCredentials: true})
         )
     }
 
     getMessages(roomId: string): Observable<any> {
-        return this.http.get(`/api/v1/Message/GetMessages/${roomId}`, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401(),
-            catchError(error => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                }
-                return throwError(error);
-            })
-        )
-    }
-
-    getUsername(userId: string): Observable<any> {
-        return this.http.get(`/api/v1/User/GetUsername?userId=${userId}`, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401(),
-            catchError(error => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                }
-                return throwError(error);
-            })
+        return this.errorHandler.handleErrors(
+            this.http.get(`/api/v1/Message/GetMessages/${roomId}`, { withCredentials: true })
         )
     }
 
     editMessage(request: ChangeMessageRequest): Observable<any> {
-        return this.http.patch(`/api/v1/Message/EditMessage`, request, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401(),
-            catchError(error => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                }
-                return throwError(error);
-            })
+        return this.errorHandler.handleErrors(
+            this.http.patch(`/api/v1/Message/EditMessage`, request, { withCredentials: true })
         )
     }
 
     editMessageSeen(request: ChangeMessageSeenRequest): Observable<any> {
-        return this.http.patch(`/api/v1/Message/EditMessageSeen`, request, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401(),
-            catchError(error => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                }
-                return throwError(error);
-            })
+        return this.errorHandler.handleErrors(
+            this.http.patch(`/api/v1/Message/EditMessageSeen`, request, { withCredentials: true })
         )
     }
 
     messageDelete(messageId: string): Observable<any> {
-        return this.http.delete(`/api/v1/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
-        .pipe(
-            this.errorHandler.handleError401(),
-            catchError(error => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                }
-                return throwError(error);
-            })
+        return this.errorHandler.handleErrors(
+            this.http.delete(`/api/v1/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
         )
     }
 
     userIsTheCreator(roomId: string): Observable<any> {
-        return this.http.get(`/api/v1/Chat/ExamineIfTheUserIsTheCreator?roomId=${roomId}`, { withCredentials: true})
-        .pipe(
-            this.errorHandler.handleError401(),
-            catchError(error => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                }
-                return throwError(error);
-            })
+        return this.errorHandler.handleErrors(
+            this.http.get(`/api/v1/Chat/ExamineIfTheUserIsTheCreator?roomId=${roomId}`, { withCredentials: true})
         )
     }
 
     deleteRoomHttpRequest(roomId: string): Observable<any> {
-        return this.http.delete(`/api/v1/Chat/DeleteRoom?roomId=${roomId}`, { withCredentials: true})
-        .pipe(
-            this.errorHandler.handleError401(),
-            catchError(error => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                }
-                return throwError(error);
-            })
+        return this.errorHandler.handleErrors(
+            this.http.delete(`/api/v1/Chat/DeleteRoom?roomId=${roomId}`, { withCredentials: true})
         )
     }
 
     changePasswordForRoom(form: ChangePasswordRequestForRoom): Observable<any> {
-        return this.http.patch(`/api/v1/Chat/ChangePasswordForRoom`, form, { withCredentials: true})
-        .pipe(
-            this.errorHandler.handleError401(),
-            catchError(error => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                }
-                return throwError(error);
-            })
+        return this.errorHandler.handleErrors(
+            this.http.patch(`/api/v1/Chat/ChangePasswordForRoom`, form, { withCredentials: true})
         )
     }
 }
