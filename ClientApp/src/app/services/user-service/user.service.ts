@@ -4,6 +4,8 @@ import { ErrorHandlerService } from '../error-handler-service/error-handler.serv
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { ResetPasswordRequest } from '../../model/user-credential-requests/ResetPasswordRequest';
+import { ChangePasswordRequestForUser } from '../../model/user-credential-requests/ChangePasswordRequestForUser';
+import { ChangeEmailRequest } from '../../model/user-credential-requests/ChangeEmailRequest';
 
 @Injectable({
   providedIn: 'root'
@@ -63,9 +65,32 @@ export class UserService {
         );
     }
 
-    getFriendRequestCount() {
+    getFriendRequestCount(): Observable<any> {
         return this.errorHandler.handleErrors(
             this.http.get(`/api/v1/User/GetFriendRequestCount`, { withCredentials: true })
+        )
+    }
+
+    changePassword(form: ChangePasswordRequestForUser): Observable<any> {
+        return this. errorHandler.handleErrors(
+            this.http.patch(`/api/v1/User/ChangePassword`, form, { withCredentials: true })
+        )
+    }
+
+    changeEmail(form: ChangeEmailRequest) {
+        return this. errorHandler.handleErrors(
+            this.http.patch(`/api/v1/User/ChangeEmail`, form, { withCredentials: true})
+        )
+    }
+
+    changeAvatar(image: string) {
+        return this. errorHandler.handleErrors(
+            this.http.patch(`/api/v1/User/ChangeAvatar`, image, {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                withCredentials: true
+            })
         )
     }
 }

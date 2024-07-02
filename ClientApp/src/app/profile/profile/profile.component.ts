@@ -33,12 +33,10 @@ export class ProfileComponent implements OnInit {
     userId: string = "";
 
     constructor(
-        private http: HttpClient,
         private cookieService: CookieService,
         private fb: FormBuilder,
         private router: Router,
         private sanitizer: DomSanitizer,
-        private errorHandler: ErrorHandlerService,
         private userService: UserService,
         private friendService: FriendService,
         private mediaService: MediaService
@@ -128,11 +126,6 @@ export class ProfileComponent implements OnInit {
         .subscribe(
             (response: any) => {
                 this.announceNumber = response;
-            },
-            (error) => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                }
             }
         );
     }
