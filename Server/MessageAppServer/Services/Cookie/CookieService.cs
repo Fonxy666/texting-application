@@ -128,7 +128,6 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenServi
         Response.Cookies.Delete("UserId", cookieOptions);
         Response.Cookies.Delete("RefreshToken", cookieOptions);
         Response.Cookies.Delete("RememberMe", cookieOptions);
-        Response.Cookies.Delete("Animation", cookieOptions);
         Response.Cookies.Delete("Anonymous", cookieOptions);
     }
 

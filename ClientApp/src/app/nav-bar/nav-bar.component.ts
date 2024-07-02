@@ -6,7 +6,6 @@ import { FriendService } from '../services/friend-service/friend.service';
 import { MediaService } from '../services/media-service/media.service';
 import { ChatRoomInvite } from '../model/room-requests/ChatRoomInvite';
 import { ChatService } from '../services/chat-service/chat.service';
-import { UserService } from '../services/user-service/user.service';
 
 @Component({
     selector: 'app-nav-bar',
@@ -21,8 +20,7 @@ export class NavBarComponent implements OnInit {
         private http: HttpClient,
         public friendService: FriendService,
         private mediaService: MediaService,
-        public chatService: ChatService,
-        private userService: UserService
+        public chatService: ChatService
     ) {}
 
     isDropstart: boolean = true;
@@ -34,6 +32,7 @@ export class NavBarComponent implements OnInit {
     public chatRoomInvites: ChatRoomInvite[] = [];
     roomId: string = "";
     roomName: string = "";
+    loggedIn: boolean = false;
 
     ngOnInit(): void {
         this.userId = this.cookieService.get("UserId");
@@ -41,26 +40,13 @@ export class NavBarComponent implements OnInit {
         this.isLoggedIn();
         this.checkScreenSize();
 
-        this.friendService.friendRequests$.subscribe(requests => {
-            this.announceNumber = requests.length;
-        });
-
-        this.mediaService.getAvatarImage(this.userId).subscribe((image) => {
-            this.profilePic = image;
-        });
-
-        this.friendService.chatRoomInvites$.subscribe(requests => {
-            this.announceNumberForInvite = requests.length;
-            this.chatRoomInvites = requests;
-        })
-
         this.roomId = sessionStorage.getItem("roomId")!;
         this.roomName = sessionStorage.getItem("room")!;
     }
 
 
-    isLoggedIn(): boolean {
-        return this.cookieService.check('UserId');
+    isLoggedIn() {
+        this.loggedIn = this.cookieService.check('UserId');
     }
 
     logout() {

@@ -120,7 +120,9 @@ export class NewPasswordRequestComponent implements OnInit {
                     detail: 'Password successfully updated.',
                     styleClass: 'ui-toast-message-success'
                 });
-                this.router.navigate(['/']);
+                setTimeout(() => {
+                    this.router.navigate(['/']);
+                }, 2000);
             }
         },
         (error) => {
