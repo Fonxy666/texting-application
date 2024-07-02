@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, catchError, throwError } from 'rxjs';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
+import { ResetPasswordRequest } from '../../model/user-credential-requests/ResetPasswordRequest';
 
 @Injectable({
   providedIn: 'root'
@@ -46,4 +47,43 @@ export class UserService {
             }
         });
     };
+
+    forgotPassword(email: string) {
+        return this.http.get(`/api/v1/User/SendForgotPasswordToken?email=${email}`)
+        .pipe(
+            this.errorHandler.handleError401(),
+            catchError(error => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                return throwError(error);
+            })
+        )
+    }
+
+    examinePasswordResetLink(emailParam: string, idParam: string) {
+        return this.http.get(`/api/v1/User/ExaminePasswordResetLink?email=${emailParam}&resetId=${idParam}`)
+        .pipe(
+            this.errorHandler.handleError401(),
+            catchError(error => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                return throwError(error);
+            })
+        )
+    }
+
+    setNewPassword(idParam: string, newPasswordRequest: ResetPasswordRequest) {
+        return this.http.post(`/api/v1/User/SetNewPassword?resetId=${idParam}`, newPasswordRequest)
+        .pipe(
+            this.errorHandler.handleError401(),
+            catchError(error => {
+                if (error.status === 403) {
+                    this.errorHandler.handleError403(error);
+                }
+                return throwError(error);
+            })
+        )
+    }
 }

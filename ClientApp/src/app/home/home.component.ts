@@ -10,7 +10,10 @@ import { MessageService } from 'primeng/api';
 })
 
 export class HomeComponent implements OnInit {
-    constructor(private cookieService: CookieService, private messageService: MessageService) { }
+    constructor(
+        private cookieService: CookieService,
+        private messageService: MessageService
+    ) { }
 
     starsImage: string = "./assets/images/4-out-of-5-stars.webp"
     animation: boolean = true;
