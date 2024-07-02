@@ -9,6 +9,7 @@ using Server;
 using Server.Model.Requests.Auth;
 using Server.Services.EmailSender;
 using Xunit;
+using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
 namespace Tests.IntegrationTests;
@@ -16,12 +17,14 @@ namespace Tests.IntegrationTests;
 [Collection("Sequential")]
 public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
+    private readonly ITestOutputHelper _testOutputHelper;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
     private readonly HttpClient _client;
     private readonly TestServer _testServer;
 
-    public AuthControllerTests()
+    public AuthControllerTests(ITestOutputHelper testOutputHelper)
     {
+        _testOutputHelper = testOutputHelper;
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("testConfiguration.json")
@@ -170,12 +173,18 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task ExamineVerifyToken_WithWrongToken_ReturnBadRequest()
     {
+        // Debug log for tracking test execution
+        _testOutputHelper.WriteLine("Starting test: ExamineVerifyToken_WithWrongToken_ReturnBadRequest");
+
         var token = EmailSenderCodeGenerator.GenerateLongToken("test1@hotmail.com", "registration");
         var request = new VerifyTokenRequest("test1@hotmail.com", "asd");
         var jsonRequest = JsonConvert.SerializeObject(request);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
         var response = await _client.PostAsync("api/v1/Auth/ExamineVerifyToken", content);
+
+        // Debug log for response status
+        _testOutputHelper.WriteLine($"Response status: {response.StatusCode}");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
