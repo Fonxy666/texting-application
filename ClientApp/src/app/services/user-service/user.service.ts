@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, catchError, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, throwError } from 'rxjs';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -53,7 +53,7 @@ export class UserService {
         });
     };
 
-    forgotPassword(email: string) {
+    forgotPassword(email: string): Observable<any> {
         return this.http.get(`/api/v1/User/SendForgotPasswordToken?email=${email}`)
         .pipe(
             this.errorHandler.handleError401(),
@@ -66,7 +66,7 @@ export class UserService {
         )
     }
 
-    examinePasswordResetLink(emailParam: string, idParam: string) {
+    examinePasswordResetLink(emailParam: string, idParam: string): Observable<any> {
         return this.http.get(`/api/v1/User/ExaminePasswordResetLink?email=${emailParam}&resetId=${idParam}`)
         .pipe(
             this.errorHandler.handleError401(),
@@ -79,7 +79,7 @@ export class UserService {
         )
     }
 
-    setNewPassword(idParam: string, newPasswordRequest: ResetPasswordRequest) {
+    setNewPassword(idParam: string, newPasswordRequest: ResetPasswordRequest): Observable<any> {
         return this.http.post(`/api/v1/User/SetNewPassword?resetId=${idParam}`, newPasswordRequest)
         .pipe(
             this.errorHandler.handleError401(),

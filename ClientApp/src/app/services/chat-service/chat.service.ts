@@ -278,7 +278,7 @@ export class ChatService {
         )
     }
 
-    getMessages(roomId: string) {
+    getMessages(roomId: string): Observable<any> {
         return this.http.get(`/api/v1/Message/GetMessages/${roomId}`, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401(),
@@ -291,7 +291,7 @@ export class ChatService {
         )
     }
 
-    getUsername(userId: string) {
+    getUsername(userId: string): Observable<any> {
         return this.http.get(`/api/v1/User/GetUsername?userId=${userId}`, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401(),
@@ -304,7 +304,7 @@ export class ChatService {
         )
     }
 
-    editMessage(request: ChangeMessageRequest) {
+    editMessage(request: ChangeMessageRequest): Observable<any> {
         return this.http.patch(`/api/v1/Message/EditMessage`, request, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401(),
@@ -317,7 +317,7 @@ export class ChatService {
         )
     }
 
-    editMessageSeen(request: ChangeMessageSeenRequest) {
+    editMessageSeen(request: ChangeMessageSeenRequest): Observable<any> {
         return this.http.patch(`/api/v1/Message/EditMessageSeen`, request, { withCredentials: true })
         .pipe(
             this.errorHandler.handleError401(),
@@ -330,7 +330,7 @@ export class ChatService {
         )
     }
 
-    messageDelete(messageId: string) {
+    messageDelete(messageId: string): Observable<any> {
         return this.http.delete(`/api/v1/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401(),
@@ -343,7 +343,7 @@ export class ChatService {
         )
     }
 
-    userIsTheCreator(roomId: string) {
+    userIsTheCreator(roomId: string): Observable<any> {
         return this.http.get(`/api/v1/Chat/ExamineIfTheUserIsTheCreator?roomId=${roomId}`, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401(),
@@ -356,7 +356,7 @@ export class ChatService {
         )
     }
 
-    deleteRoomHttpRequest(roomId: string) {
+    deleteRoomHttpRequest(roomId: string): Observable<any> {
         return this.http.delete(`/api/v1/Chat/DeleteRoom?roomId=${roomId}`, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401(),
@@ -369,7 +369,7 @@ export class ChatService {
         )
     }
 
-    changePasswordForRoom(form: ChangePasswordRequestForRoom) {
+    changePasswordForRoom(form: ChangePasswordRequestForRoom): Observable<any> {
         return this.http.patch(`/api/v1/Chat/ChangePasswordForRoom`, form, { withCredentials: true})
         .pipe(
             this.errorHandler.handleError401(),
