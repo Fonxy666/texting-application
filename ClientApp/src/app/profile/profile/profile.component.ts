@@ -5,7 +5,6 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
-import { ChangeAvatarRequest } from '../../model/ChangeAvatarRequest';
 import { MessageService } from 'primeng/api';
 import { filter } from 'rxjs';
 import { FriendService } from '../../services/friend-service/friend.service';
@@ -34,13 +33,10 @@ export class ProfileComponent implements OnInit {
     userId: string = "";
 
     constructor(
-        private http: HttpClient,
         private cookieService: CookieService,
         private fb: FormBuilder,
         private router: Router,
         private sanitizer: DomSanitizer,
-        private errorHandler: ErrorHandlerService,
-        private messageService: MessageService,
         private userService: UserService,
         private friendService: FriendService,
         private mediaService: MediaService
@@ -91,23 +87,15 @@ export class ProfileComponent implements OnInit {
     }
 
     getUser() {
-        this.http.get(`/api/v1/User/GetUserCredentials`, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
-        .subscribe((response: any) => {
+        this.userService.getUserCredentials()
+        .subscribe(response => {
             if (response) {
                 this.user.name = response.userName;
                 this.user.email = response.email;
                 this.user.twoFactorEnabled = response.twoFactorEnabled;
                 this.userService.setEmail(response.email);
             }
-        },
-        (error) => {
-            if (error.status === 403) {
-                this.errorHandler.handleError403(error);
-            }
-        });
+        })
     }
 
     fileChangeEvent(event: any): void {
@@ -134,22 +122,12 @@ export class ProfileComponent implements OnInit {
     }
 
     getAnnounceNumber() {
-        if (this.userId) {
-            this.http.get(`/api/v1/User/GetFriendRequestCount`, { withCredentials: true })
-            .pipe(
-                this.errorHandler.handleError401()
-            )
-            .subscribe(
-                (response: any) => {
-                    this.announceNumber = response;
-                },
-                (error) => {
-                    if (error.status === 403) {
-                        this.errorHandler.handleError403(error);
-                    }
-                }
-            );
-        }
+        this.userService.getFriendRequestCount()
+        .subscribe(
+            (response: any) => {
+                this.announceNumber = response;
+            }
+        );
     }
 }
 

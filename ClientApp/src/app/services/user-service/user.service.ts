@@ -1,16 +1,24 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
-import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
+import { ResetPasswordRequest } from '../../model/user-credential-requests/ResetPasswordRequest';
+import { ChangePasswordRequestForUser } from '../../model/user-credential-requests/ChangePasswordRequestForUser';
+import { ChangeEmailRequest } from '../../model/user-credential-requests/ChangeEmailRequest';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-    constructor(private errorHandler: ErrorHandlerService, private router: Router, private http: HttpClient, private cookieService: CookieService) {
-        this.getUsername();
+    constructor(
+        private errorHandler: ErrorHandlerService,
+        private http: HttpClient,
+        private cookieService: CookieService
+    ) {
+        this.getUsername(this.cookieService.get("UserId")).subscribe(userName => {
+            this.userName = userName;
+        });
     }
 
     private emailSubject = new BehaviorSubject<string>('');
@@ -27,23 +35,62 @@ export class UserService {
         this.imageSubject.next(image);
     }
 
-    getUsername() {
-        this.http.get(`/api/v1/User/GetUsername?userId=${this.cookieService.get("UserId")}`, { withCredentials: true})
-        .pipe(
-            this.errorHandler.handleError401()
+    getUserCredentials(): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.get(`/api/v1/User/GetUserCredentials`, { withCredentials: true })
         )
-        .subscribe((response: any) => {
-            this.userName = response.username;
-            if (response.status === 403) {
-                this.router.navigate(['/']);
-            }
-        }, 
-        (error) => {
-            if (error.status === 403) {
-                this.errorHandler.handleError403(error);
-            } else {
-                console.error("An error occurred:", error);
-            }
-        });
+    }
+
+    getUsername(userId: string): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.get(`/api/v1/User/GetUsername?userId=${userId}`, { withCredentials: true})
+        )
     };
+
+    forgotPassword(email: string): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.get(`/api/v1/User/SendForgotPasswordToken?email=${email}`)
+        )
+    }
+
+    examinePasswordResetLink(emailParam: string, idParam: string): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.get(`/api/v1/User/ExaminePasswordResetLink?email=${emailParam}&resetId=${idParam}`)
+        )
+    }
+
+    setNewPassword(idParam: string, newPasswordRequest: ResetPasswordRequest): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.post(`/api/v1/User/SetNewPassword?resetId=${idParam}`, newPasswordRequest)
+        );
+    }
+
+    getFriendRequestCount(): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.get(`/api/v1/User/GetFriendRequestCount`, { withCredentials: true })
+        )
+    }
+
+    changePassword(form: ChangePasswordRequestForUser): Observable<any> {
+        return this. errorHandler.handleErrors(
+            this.http.patch(`/api/v1/User/ChangePassword`, form, { withCredentials: true })
+        )
+    }
+
+    changeEmail(form: ChangeEmailRequest) {
+        return this. errorHandler.handleErrors(
+            this.http.patch(`/api/v1/User/ChangeEmail`, form, { withCredentials: true})
+        )
+    }
+
+    changeAvatar(image: string) {
+        return this. errorHandler.handleErrors(
+            this.http.patch(`/api/v1/User/ChangeAvatar`, image, {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                withCredentials: true
+            })
+        )
+    }
 }

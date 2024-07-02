@@ -32,7 +32,7 @@ import { NewPasswordRequestComponent } from './forgot-password/new-password-requ
 import { SupportPageComponent } from './support-page/support-page.component';
 import { AboutUsPageComponent } from './about-us-page/about-us-page.component';
 import { BackgroundImageComponent } from './background-image/background-image.component';
-import { SendFriendRequestComponent } from './profile/profile/send-friend-request/send-friend-request.component';
+import { ManageFriendRequestComponent } from './profile/profile/manage-friend-request/manage-friend-request.component';
 
 @NgModule({
   declarations: [
@@ -58,7 +58,7 @@ import { SendFriendRequestComponent } from './profile/profile/send-friend-reques
     SupportPageComponent,
     AboutUsPageComponent,
     BackgroundImageComponent,
-    SendFriendRequestComponent
+    ManageFriendRequestComponent
   ],
   imports: [
     BrowserModule,

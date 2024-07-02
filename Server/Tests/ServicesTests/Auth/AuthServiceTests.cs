@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Moq;
 using Server.Model;
-using Server.Model.Responses.Auth;
 using Server.Services.Authentication;
 using Server.Services.Cookie;
 using Xunit;

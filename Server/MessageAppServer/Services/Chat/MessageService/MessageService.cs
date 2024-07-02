@@ -9,15 +9,21 @@ namespace Server.Services.Chat.MessageService;
 public class MessageService(DatabaseContext context) : IMessageService
 {
     private DatabaseContext Context { get; } = context;
-    public Task<bool> MessageExisting(Guid id)
+    public async Task<bool> UserIsTheSender(Guid userId, Guid messageId)
     {
-        return context.Messages!.AnyAsync(message => message.MessageId == id);
+        var message = await Context.Messages!.FirstOrDefaultAsync(m => m.MessageId == messageId);
+        return message!.SenderId == userId;
     }
 
-    public async Task<SaveMessageResponse> SendMessage(MessageRequest request)
+    public Task<bool> MessageExisting(Guid id)
+    {
+        return Context.Messages!.AnyAsync(message => message.MessageId == id);
+    }
+
+    public async Task<SaveMessageResponse> SendMessage(MessageRequest request, string userId)
     {
         var roomIdToGuid = new Guid(request.RoomId);
-        var userIdToGuid = new Guid(request.UserId);
+        var userIdToGuid = new Guid(userId);
         var message = request.MessageId != null ? 
             new Message(roomIdToGuid, userIdToGuid, request.Message, new Guid(request.MessageId), request.AsAnonymous) : 
             new Message(roomIdToGuid, userIdToGuid, request.Message, request.AsAnonymous);
@@ -51,11 +57,11 @@ public class MessageService(DatabaseContext context) : IMessageService
         return new MessageResponse(true, "", null);
     }
 
-    public async Task<MessageResponse> EditMessageSeen(EditMessageSeenRequest request)
+    public async Task<MessageResponse> EditMessageSeen(EditMessageSeenRequest request, Guid userId)
     {
         var existingMessage = Context.Messages!.FirstOrDefault(message => message.MessageId == new Guid(request.MessageId));
         
-        existingMessage!.AddUserToSeen(new Guid(request.UserId));
+        existingMessage!.AddUserToSeen(userId);
 
         Context.Messages!.Update(existingMessage);
         await Context.SaveChangesAsync();
@@ -71,10 +77,5 @@ public class MessageService(DatabaseContext context) : IMessageService
         await Context.SaveChangesAsync();
 
         return new MessageResponse(true, id.ToString(), null);
-    }
-
-    public async Task DeleteMessages(Guid roomId)
-    {
-        await context.Messages!.Where(message => message.RoomId == roomId).ExecuteDeleteAsync();
     }
 }

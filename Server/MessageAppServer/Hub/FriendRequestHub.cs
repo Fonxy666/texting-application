@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Server.Model;
 using Server.Model.Responses.User;

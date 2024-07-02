@@ -1,12 +1,10 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { ChangeAvatarRequest } from '../../../model/ChangeAvatarRequest';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { DomSanitizer } from '@angular/platform-browser';
-import { CookieService } from 'ngx-cookie-service';
-import { HttpClient } from '@angular/common/http';
 import { MessageService } from 'primeng/api';
-import { ErrorHandlerService } from '../../../services/error-handler-service/error-handler.service';
+import { ChangeAvatarRequest } from '../../../model/user-credential-requests/ChangeAvatarRequest';
+import { UserService } from '../../../services/user-service/user.service';
 
 @Component({
   selector: 'app-generate-avatar-change-request',
@@ -21,10 +19,8 @@ export class GenerateAvatarChangeRequestComponent {
     constructor(
         private fb: FormBuilder,
         private sanitizer: DomSanitizer,
-        private cookieService: CookieService,
-        private http: HttpClient,
         private messageService: MessageService,
-        private errorHandler: ErrorHandlerService
+        private userService: UserService
     ) { }
     
     changeAvatarRequest!: FormGroup;
@@ -62,23 +58,15 @@ export class GenerateAvatarChangeRequestComponent {
     SendAvatarChangeRequest: EventEmitter<ChangeAvatarRequest> = new EventEmitter<ChangeAvatarRequest>();
 
     OnFormSubmit() {
-        this.http.patch(`/api/v1/User/ChangeAvatar`, JSON.stringify(this.profilePic), {
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
-        })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
+        this.userService.changeAvatar(JSON.stringify(this.profilePic))
         .subscribe((response: any) => {
             if (response && response.status === 'Ok') {
-                this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Avatar change succeeded :)', styleClass: 'ui-toast-message-info' });
-            }
-        }, 
-        (error) => {
-            if (error.status === 403) {
-                this.errorHandler.handleError403(error);
+                this.messageService.add({
+                    severity: 'info',
+                    summary: 'Info',
+                    detail: 'Avatar change succeeded :)',
+                    styleClass: 'ui-toast-message-info'
+                });
             }
         });
     }

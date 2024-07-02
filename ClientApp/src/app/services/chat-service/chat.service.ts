@@ -1,14 +1,19 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { BehaviorSubject, Subject } from 'rxjs';
-import { MessageRequest } from '../../model/MessageRequest';
+import { BehaviorSubject, Observable, Subject, catchError, throwError } from 'rxjs';
+import { MessageRequest } from '../../model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
-import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
-import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
-import { ConnectedUser } from '../../model/ConnectedUser';
+import { ChangeMessageRequest } from '../../model/user-credential-requests/ChangeMessageRequest';
+import { ChangeMessageSeenRequest } from '../../model/message-requests/ChangeMessageSeenRequest';
+import { ConnectedUser } from '../../model/room-requests/ConnectedUser';
 import { Router } from '@angular/router';
 import { UserService } from '../user-service/user.service';
 import { FriendService } from '../friend-service/friend.service';
+import { CreateRoomRequest } from '../../model/room-requests/CreateRoomRequest';
+import { HttpClient } from '@angular/common/http';
+import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
+import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
+import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePasswordRequestForRoom';
 
 @Injectable({
     providedIn: 'root'
@@ -24,7 +29,14 @@ export class ChatService {
     private currentRoom: string | null = null;
     public messagesInitialized$ = new Subject<string>();
 
-    constructor(private cookieService: CookieService, private router: Router, private userService: UserService, private friendService: FriendService) {
+    constructor(
+        private cookieService: CookieService,
+        private router: Router,
+        private userService: UserService,
+        private friendService: FriendService,
+        private http: HttpClient,
+        private errorHandler: ErrorHandlerService
+    ) {
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl('/chat')
             .configureLogging(signalR.LogLevel.Critical)
@@ -224,5 +236,65 @@ export class ChatService {
         }
 
         return false;
+    }
+
+    registerRoom(form: CreateRoomRequest): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.post(`/api/v1/Chat/RegisterRoom`, form, { withCredentials: true })
+        )
+    }
+
+    joinToRoom(form: JoinRoomRequest): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.post(`/api/v1/Chat/JoinRoom`, form, { withCredentials: true })
+        )
+    }
+
+    saveMessage(form: MessageRequest): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.post(`api/v1/Message/SendMessage`, form, { withCredentials: true})
+        )
+    }
+
+    getMessages(roomId: string): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.get(`/api/v1/Message/GetMessages/${roomId}`, { withCredentials: true })
+        )
+    }
+
+    editMessage(request: ChangeMessageRequest): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.patch(`/api/v1/Message/EditMessage`, request, { withCredentials: true })
+        )
+    }
+
+    editMessageSeen(request: ChangeMessageSeenRequest): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.patch(`/api/v1/Message/EditMessageSeen`, request, { withCredentials: true })
+        )
+    }
+
+    messageDelete(messageId: string): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.delete(`/api/v1/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
+        )
+    }
+
+    userIsTheCreator(roomId: string): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.get(`/api/v1/Chat/ExamineIfTheUserIsTheCreator?roomId=${roomId}`, { withCredentials: true})
+        )
+    }
+
+    deleteRoomHttpRequest(roomId: string): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.delete(`/api/v1/Chat/DeleteRoom?roomId=${roomId}`, { withCredentials: true})
+        )
+    }
+
+    changePasswordForRoom(form: ChangePasswordRequestForRoom): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.patch(`/api/v1/Chat/ChangePasswordForRoom`, form, { withCredentials: true})
+        )
     }
 }

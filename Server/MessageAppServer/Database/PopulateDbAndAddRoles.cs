@@ -3,7 +3,6 @@ using Server.Model;
 using Server.Model.Requests.User;
 using Server.Services.Chat.RoomService;
 using Server.Services.FriendConnection;
-using Server.Services.User;
 
 namespace Server.Database;
 

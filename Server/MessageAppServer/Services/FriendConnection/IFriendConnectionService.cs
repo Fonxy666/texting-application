@@ -1,5 +1,4 @@
-﻿using Server.Model;
-using Server.Model.Requests.User;
+﻿using Server.Model.Requests.User;
 using Server.Model.Responses.User;
 
 namespace Server.Services.FriendConnection;

@@ -5,7 +5,6 @@ using MockQueryable.Moq;
 using Moq;
 using Server.Hub;
 using Server.Model;
-using Server.Model.Requests.User;
 using Server.Services.FriendConnection;
 using Xunit;
 using Assert = Xunit.Assert;

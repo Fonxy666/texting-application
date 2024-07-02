@@ -1,6 +1,6 @@
 import { Component, ElementRef, EventEmitter, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { LoginRequest } from '../../model/LoginRequest';
+import { LoginRequest } from '../../model/auth-requests/LoginRequest';
 
 @Component({
   selector: 'app-create-login-request',

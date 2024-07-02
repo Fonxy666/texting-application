@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { LoginRequest } from '../model/LoginRequest';
-import { HttpClient } from '@angular/common/http';
+import { LoginRequest } from '../model/auth-requests/LoginRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { Router } from '@angular/router';
-import { LoginAuthTokenRequest } from '../model/LoginAuthTokenRequest';
+import { LoginAuthTokenRequest } from '../model/auth-requests/LoginAuthTokenRequest';
 import { MessageService } from 'primeng/api';
+import { AuthService } from '../services/auth-service/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -15,7 +15,12 @@ import { MessageService } from 'primeng/api';
 
 export class LoginComponent implements OnInit {
     loadGoogleSigninLibrary: any;
-    constructor(private http: HttpClient, private cookieService: CookieService, private router: Router, private messageService: MessageService) { }
+    constructor(
+        private cookieService: CookieService,
+        private router: Router,
+        private messageService: MessageService,
+        private authService: AuthService
+    ) { }
 
     isLoading: boolean = false;
     loginStarted: boolean = false;
@@ -31,9 +36,17 @@ export class LoginComponent implements OnInit {
             const loginSuccessParam = urlParams.get('registrationSuccess');
 
             if (loginSuccessParam === 'true') {
-                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successful registration.', styleClass: 'ui-toast-message-success' });
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: 'Successful registration.',
+                    styleClass: 'ui-toast-message-success' });
             } else if (loginSuccessParam === 'false') {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Unsuccessful registration, please try again later.' });
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Unsuccessful registration, please try again later.'
+                });
             }
 
             const newUrl = window.location.pathname + window.location.search.replace('?registrationSuccess=true', '').replace('?registrationSuccess=false', '');
@@ -51,7 +64,7 @@ export class LoginComponent implements OnInit {
     
     createTask(data: LoginRequest) {
         this.isLoading = true;
-        this.http.post(`/api/v1/Auth/SendLoginToken`, data, { withCredentials: true })
+        this.authService.sendLoginToken(data)
         .subscribe((response: any) => {
             if (response.success) {
                 this.loginRequest.username = data.username;
@@ -65,21 +78,35 @@ export class LoginComponent implements OnInit {
                 if (!isNaN(error.error)) {
                     console.log(error);
                     if (error.error == 4) {
-                        this.messageService.add({ severity: 'error', summary: 'Error', detail: `Only 1 more try.` });
-                    } else if (error.error < 1) {
-                        console.log(error.error);
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: `Only 1 more try.`
+                        });
                     } else {
-                        this.messageService.add({ severity: 'error', summary: 'Error', detail: `Invalid username or password, you have ${5-error.error} tries.` });
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: `Invalid username or password, you have ${5-error.error} tries.`
+                        });
                     }
 
                     this.isLoading = false;
                 } else {
                     this.isLoading = false;
-                    this.messageService.add({ severity: 'error', summary: 'Error', detail: `${error.error.split(".")[0]}. ${error.error.split(".")[1]}` });
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: `${error.error.split(".")[0]}. ${error.error.split(".")[1]}`
+                    });
                 }
             } else {
                 this.isLoading = false;
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened. Try again later.' });
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Something unusual happened. Try again later.'
+                });
             }
         });
     }
@@ -88,9 +115,13 @@ export class LoginComponent implements OnInit {
         this.isLoading = true;
         const expirationDate = new Date();
         expirationDate.setFullYear(expirationDate.getFullYear() + 10);
-        const request = new LoginAuthTokenRequest(this.loginRequest.username, this.loginRequest.password, this.loginRequest.rememberme, token);
+        const request = new LoginAuthTokenRequest(
+            this.loginRequest.username,
+            this.loginRequest.password,
+            this.loginRequest.rememberme, token
+        );
 
-        this.http.post(`/api/v1/Auth/Login`, request, { withCredentials: true })
+        this.authService.login(request)
         .subscribe((response: any) => {
             if (response.success) {
                 this.loginStarted = false;
@@ -101,9 +132,17 @@ export class LoginComponent implements OnInit {
         (error) => {
             this.isLoading = false;
             if (error.status === 400) {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Wrong token.' });
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Wrong token.'
+                });
             } else {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened. Try again later.' });
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Something unusual happened. Try again later.'
+                });
             }
         });
     }

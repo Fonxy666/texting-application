@@ -1,11 +1,10 @@
 import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { CookieService } from 'ngx-cookie-service';
 import { passwordValidator, passwordMatchValidator } from '../../../validators/ValidPasswordValidator';
-import { HttpClient } from '@angular/common/http';
 import { MessageService } from 'primeng/api';
 import { ErrorHandlerService } from '../../../services/error-handler-service/error-handler.service';
-import { ChangePasswordRequestForUser } from '../../../model/ChangePasswordRequestForUser';
+import { ChangePasswordRequestForUser } from '../../../model/user-credential-requests/ChangePasswordRequestForUser';
+import { UserService } from '../../../services/user-service/user.service';
 
 @Component({
   selector: 'app-generate-password-change-request',
@@ -26,8 +25,7 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
 
     constructor(
         private fb: FormBuilder,
-        private cookieService: CookieService,
-        private http: HttpClient,
+        private userService: UserService,
         private errorHandler: ErrorHandlerService,
         private messageService: MessageService,
         private renderer: Renderer2
@@ -85,20 +83,24 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
             this.changePasswordRequest.get('password')?.value
         );
 
-        this.http.patch(`/api/v1/User/ChangePassword`, changePasswordRequest, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
+        this.userService.changePassword(changePasswordRequest)
         .subscribe((response: any) => {
             if (response) {
-                this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Your password changed.', styleClass: 'ui-toast-message-info' });
+                this.messageService.add({
+                    severity: 'info',
+                    summary: 'Info',
+                    detail: 'Your password changed.',
+                    styleClass: 'ui-toast-message-info'
+                });
             }
         }, 
         (error) => {
-            if (error.status === 403) {
-                this.errorHandler.handleError403(error);
-            } else if (error.status === 400) {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Unsuccessful change, wrong password(s).' });
+            if (error.status === 400) {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Unsuccessful change, wrong password(s).'
+                });
             }
         });
     }

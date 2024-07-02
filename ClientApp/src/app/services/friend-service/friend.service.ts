@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
-import { FriendRequestManage } from '../../model/FriendRequestManage';
-import { FriendRequestManageWithReceiverId } from '../../model/FriendRequestManageWithReceiverId';
+import { FriendRequestManage } from '../../model/friend-requests/FriendRequestManage';
+import { FriendRequestManageWithReceiverId } from '../../model/friend-requests/FriendRequestManageWithReceiverId';
 import { isEqual } from 'lodash';
 import { HttpClient } from '@angular/common/http';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
-import { ChatRoomInvite } from '../../model/ChatRoomInvite';
+import { ChatRoomInvite } from '../../model/room-requests/ChatRoomInvite';
 
 @Injectable({
     providedIn: 'root'
@@ -23,15 +23,23 @@ export class FriendService {
     public onlineFriends$ = new BehaviorSubject<FriendRequestManage[]>([]);
     public onlineFriends: { [userId: string]: FriendRequestManage[] } = {};
     public announceNumber: number = 0;
+    public loggedIn: boolean = this.cookieService.check("UserId");
 
-    constructor(private cookieService: CookieService, private http: HttpClient, private errorHandler: ErrorHandlerService) {
+    constructor(
+        private cookieService: CookieService,
+        private http: HttpClient,
+        private errorHandler: ErrorHandlerService
+    ) {
         this.connection = new signalR.HubConnectionBuilder()
-            .withUrl('/friend', { accessTokenFactory: () => this.cookieService.get('UserId') })
-            .configureLogging(signalR.LogLevel.Critical)
-            .build();
-
-        this.loadInitialData();
+        .withUrl('/friend', { accessTokenFactory: () => this.cookieService.get('UserId') })
+        .configureLogging(signalR.LogLevel.Critical)
+        .build();
+        
         this.initializeConnection();
+        
+        if (this.loggedIn) {
+            this.loadInitialData();
+        }
 
         this.connection.on("ReceiveFriendRequest", (requestId: string, senderName: string, senderId: string, sentTime: string, receiverName: string, receiverId: string) => {
             this.addRequest(new FriendRequestManage(requestId, senderName, senderId, sentTime, receiverName, receiverId));
@@ -58,9 +66,9 @@ export class FriendService {
         });
     }
 
-    private async loadInitialData() {
+    public async loadInitialData() {
         try {
-            await Promise.all([this.getPendingFriendRequests(), this.getFriends()]);
+            await Promise.all([this.savePendingFriendRequests(), this.saveFriends()]);
         } catch (error) {
             console.error('Error loading initial data:', error);
         }
@@ -235,12 +243,10 @@ export class FriendService {
         }
     }
 
-    getPendingFriendRequests() {
+    private savePendingFriendRequests() {
         const userId = this.cookieService.get("UserId");
-        this.http.get(`/api/v1/User/GetFriendRequests`, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
+
+        this.getPendingFriendRequests()
         .subscribe(
             (response: FriendRequestManage[]) => {
                 if (!this.friendRequests[userId]) {
@@ -256,24 +262,26 @@ export class FriendService {
 
                     this.friendRequests$.next(requestList);
                 });
-            },
-            (error: any) => {
-                console.log(error);
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                } else {
-                    console.log(error);
-                }
             }
         );
     }
 
-    getFriends() {
-        const userId = this.cookieService.get("UserId");
-        this.http.get(`/api/v1/User/GetFriends`, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401()
+    getPendingFriendRequests(): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.get(`/api/v1/User/GetFriendRequests`, { withCredentials: true })
         )
+    }
+
+    private getFriends(): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.get(`/api/v1/User/GetFriends`, { withCredentials: true })
+        )
+    }
+
+    private saveFriends() {
+        const userId = this.cookieService.get("UserId");
+
+        this.getFriends()
         .subscribe(
             (response: FriendRequestManage[]) => {
                 if (!this.friends[userId]) {
@@ -289,15 +297,46 @@ export class FriendService {
     
                     this.friends$.next(friendsList);
                 });
-            },
-            (error: any) => {
-                console.log(error);
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                } else {
-                    console.log(error);
-                }
             }
         );
+    }
+
+    sendFriendRequestHttp(friendName: string): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.post(`/api/v1/User/SendFriendRequest`, JSON.stringify(friendName), {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                withCredentials: true
+            })
+        )
+    }
+
+    acceptFriendRequestHttp(requestId: string) {
+        return this.errorHandler.handleErrors(
+            this.http.patch(`/api/v1/User/AcceptReceivedFriendRequest`, JSON.stringify(requestId), {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                withCredentials: true
+            })
+        )
+    }
+
+    friendRequestDecline(requestId: string, userType: string) {
+        return this.errorHandler.handleErrors(
+            this.http.delete(`/api/v1/User/DeleteFriendRequest?requestId=${requestId}&userType=${userType}`, {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                withCredentials: true
+            })
+        )
+    }
+
+    deleteFriendHttp(requestId: string) {
+        return this.errorHandler.handleErrors(
+            this.http.delete(`/api/v1/User/DeleteFriend?connectionId=${requestId}`, { withCredentials: true })
+        )
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Server.Model.Responses.Auth;
-using Server.Model.Responses.User;
 
 namespace Server.Services.Authentication;
 

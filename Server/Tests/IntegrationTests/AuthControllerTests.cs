@@ -208,26 +208,13 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Logout_Return_Ok()
     {
+        
         var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
-
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
 
         const string userId = "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916";
 
-        var response = await _client.GetAsync($"api/v1/Auth/Logout?userId={userId}");
+        var response = await _client.GetAsync($"api/v1/Auth/Logout");
         response.EnsureSuccessStatusCode();
-    }
-
-    [Fact]
-    public async Task Logout_WithEmptyContent_ReturnBadRequest()
-    {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
-
-        _client.DefaultRequestHeaders.Add("Cookie", cookies);
-
-        const string userId = "123";
-
-        var response = await _client.GetAsync($"api/v1/Auth/Logout?userId={userId}");
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

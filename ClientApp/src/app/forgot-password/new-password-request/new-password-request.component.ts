@@ -1,10 +1,10 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { passwordMatchValidator, passwordValidator } from '../../validators/ValidPasswordValidator';
-import { ResetPasswordRequest } from '../../model/ResetPasswordRequest';
+import { ResetPasswordRequest } from '../../model/user-credential-requests/ResetPasswordRequest';
+import { UserService } from '../../services/user-service/user.service';
 
 @Component({
   selector: 'app-new-password-request',
@@ -20,11 +20,11 @@ export class NewPasswordRequestComponent implements OnInit {
 
     constructor(
         private route: ActivatedRoute,
-        private http: HttpClient,
         private messageService: MessageService,
         private fb: FormBuilder,
         private renderer: Renderer2,
-        private router: Router
+        private router: Router,
+        private userService: UserService
     ) {}
 
     idParam: string = "";
@@ -45,7 +45,11 @@ export class NewPasswordRequestComponent implements OnInit {
         setTimeout(() => {
             this.isLoading = false;
             if (!this.validCode) {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'The code expired, try get another one.' });
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'The code expired, try get another one.'
+                });
             }
         }, 500);
 
@@ -86,7 +90,7 @@ export class NewPasswordRequestComponent implements OnInit {
     }
 
     examineCode() {
-        this.http.get(`/api/v1/User/ExaminePasswordResetLink?email=${this.emailParam}&resetId=${this.idParam}`)
+        this.userService.examinePasswordResetLink(this.emailParam, this.idParam)
         .subscribe((response: any) => {
             if (response == true) {
                 this.validCode = true;
@@ -100,13 +104,25 @@ export class NewPasswordRequestComponent implements OnInit {
     }
 
     onFormSubmit() {
-        const resetRequest = new ResetPasswordRequest(this.emailParam, this.idParam, this.passwordReset.get('password')?.value)
+        const resetRequest = new ResetPasswordRequest(
+            this.emailParam,
+            this.idParam,
+            this.passwordReset.get('password')?.value
+        )
 
-        this.http.post(`/api/v1/User/SetNewPassword?resetId=${this.idParam}`, resetRequest)
+        this.userService.setNewPassword(this.idParam, resetRequest)
         .subscribe((response: any) => {
+            console.log(response);
             if (response == true) {
-                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Password successfully updated.', styleClass: 'ui-toast-message-success' });
-                this.router.navigate(['/']);
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: 'Password successfully updated.',
+                    styleClass: 'ui-toast-message-success'
+                });
+                setTimeout(() => {
+                    this.router.navigate(['/']);
+                }, 2000);
             }
         },
         (error) => {

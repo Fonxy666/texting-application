@@ -1,23 +1,22 @@
 import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { ChatService } from '../../services/chat-service/chat.service';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { forkJoin, Subscription } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
-import { MessageRequest } from '../../model/MessageRequest';
+import { MessageRequest } from '../../model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
-import { ChangeMessageRequest } from '../../model/ChangeMessageRequest';
-import { ChangeMessageSeenRequest } from '../../model/ChangeMessageSeenRequest';
-import { ConnectedUser } from '../../model/ConnectedUser';
+import { ChangeMessageRequest } from '../../model/user-credential-requests/ChangeMessageRequest';
+import { ChangeMessageSeenRequest } from '../../model/message-requests/ChangeMessageSeenRequest';
+import { ConnectedUser } from '../../model/room-requests/ConnectedUser';
 import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { passwordMatchValidator, passwordValidator } from '../../validators/ValidPasswordValidator';
 import { FriendService } from '../../services/friend-service/friend.service';
-import { FriendRequestManage } from '../../model/FriendRequestManage';
+import { FriendRequestManage } from '../../model/friend-requests/FriendRequestManage';
 import { DisplayService } from '../../services/display-service/display.service';
-import { ErrorHandlerService } from '../../services/error-handler-service/error-handler.service';
 import { MediaService } from '../../services/media-service/media.service';
-import { ChangePasswordRequestForRoom } from '../../model/ChangePasswordRequestForRoom';
+import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePasswordRequestForRoom';
+import { UserService } from '../../services/user-service/user.service';
 
 @Component({
   selector: 'app-chat',
@@ -54,14 +53,13 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     constructor(
         public chatService: ChatService,
         public router: Router,
-        private http: HttpClient,
-        private errorHandler: ErrorHandlerService,
         private cookieService: CookieService,
         private messageService: MessageService,
         private fb: FormBuilder,
         public friendService: FriendService,
         public displayService: DisplayService,
-        private mediaService: MediaService
+        private mediaService: MediaService,
+        private userService: UserService
     ) { }
 
     messages: any[] = [];
@@ -210,10 +208,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     saveMessage(request: MessageRequest): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            this.http.post(`api/v1/Message/SendMessage`, request, { withCredentials: true})
-                .pipe(
-                    this.errorHandler.handleError401()
-                )
+            this.chatService.saveMessage(request)
                 .subscribe((res: any) => {
                     this.chatService.messages[this.roomId].push({
                         roomId: res.roomId,
@@ -227,13 +222,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     resolve(res.message.messageId);
                 },
                 (error) => {
-                    if (error.status === 403) {
-                        this.errorHandler.handleError403(error);
-                    } else if (error.status === 400) {
-                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened.' });
-                    } else {
-                        console.error("An error occurred:", error);
-                    }
                     reject(error);
                 });
         });
@@ -255,13 +243,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             return;
         }
     
-        this.http.get(`/api/v1/Message/GetMessages/${this.roomId}`, { withCredentials: true })
-            .pipe(
-                this.errorHandler.handleError401()
-            )
+        this.chatService.getMessages(this.roomId)
             .subscribe((response: any) => {
                 const userNames = response.map((element: any) =>
-                    this.http.get(`/api/v1/User/GetUsername?userId=${element.senderId}`, { withCredentials: true })
+                    this.userService.getUsername(element.senderId)
                 );
     
                 forkJoin(userNames).subscribe((usernames: any) => {
@@ -305,10 +290,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     sendMessageModifyHttpRequest(request: ChangeMessageRequest) {
         request.message = this.inputMessage;
-        this.http.patch(`/api/v1/Message/EditMessage`, request, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
+        this.chatService.editMessage(request)
         .subscribe(() => {
             this.chatService.messages[this.roomId].forEach((message: any) => {
                 if (message.messageId == request.id) {
@@ -319,10 +301,12 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             })
         },
         (error) => {
-            if (error.status === 403) {
-                this.errorHandler.handleError403(error);
-            } else if (error.status === 400) {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened.' });
+            if (error.status === 400) {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Something unusual happened.'
+                });
             } else {
                 console.error("An error occurred:", error);
             }
@@ -335,10 +319,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     sendMessageSeenModifyHttpRequest(request: ChangeMessageSeenRequest) {
-        this.http.patch(`/api/v1/Message/EditMessageSeen`, request, { withCredentials: true })
-        .pipe(
-            this.errorHandler.handleError401()
-        )
+        this.chatService.editMessageSeen(request)
         .subscribe(() => {
             this.chatService.messages[this.roomId].forEach((message: any) => {
                 if (message.messageId == request.userId) {
@@ -348,10 +329,12 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             })
         },
         (error) => {
-            if (error.status === 403) {
-                this.errorHandler.handleError403(error);
-            } else if (error.status === 400) {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened.' });
+            if (error.status === 400) {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Something unusual happened.'
+                });
             } else {
                 console.error("An error occurred:", error);
             }
@@ -359,10 +342,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     handleMessageDelete(messageId: any) {
-        this.http.delete(`/api/v1/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
-        .pipe(
-            this.errorHandler.handleError401()
-        )
+        this.chatService.messageDelete(messageId)
         .subscribe(() => {
             this.chatService.messages[this.roomId].forEach((message: any) => {
                 if (message.messageId == messageId) {
@@ -371,10 +351,12 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             })
         },
         (error) => {
-            if (error.status === 403) {
-                this.errorHandler.handleError403(error);
-            } else if (error.status === 400) {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened.' });
+            if (error.status === 400) {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Something unusual happened.'
+                });
             } else {
                 console.error("An error occurred:", error);
             }
@@ -418,30 +400,21 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     userIsTheCreatorMethod(){
-        const userId = this.userId;
-        this.http.get(`/api/v1/Chat/ExamineIfTheUserIsTheCreator?userId=${userId}&roomId=${this.roomId}`, { withCredentials: true})
-        .pipe(
-            this.errorHandler.handleError401()
-        )
+        this.chatService.userIsTheCreator(this.roomId)
         .subscribe((result: boolean) => {
             if (result) {
                 this.userIsTheCreator = true;
             }
         },
         (error) => {
-            if (error.status === 403) {
-                this.errorHandler.handleError403(error);
-            }
+            console.log(error);
         });
     }
 
     deleteRoom() {
         this.isLoading = true;
         this.chatService.deleteRoom(this.roomId).then(() => {
-            this.http.delete(`/api/v1/Chat/DeleteRoom?userId=${this.userId}&roomId=${this.roomId}`, { withCredentials: true})
-            .pipe(
-                this.errorHandler.handleError401()
-            )
+            this.chatService.deleteRoomHttpRequest(this.roomId)
             .subscribe((response: any) => {
                 if (response) {
                     this.isLoading = false;
@@ -452,10 +425,12 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 }
             },
             (error) => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                } else if (error.status === 400) {
-                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened.' });
+                if (error.status === 400) {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Something unusual happened.'
+                    });
                 } else {
                     console.error("An error occurred:", error);
                 }
@@ -473,20 +448,24 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             this.changePasswordRequest.get('oldPassword')?.value,
             this.changePasswordRequest.get('newPassword')?.value
             );
-            this.http.patch(`/api/v1/Chat/ChangePasswordForRoom`, changePasswordRequest, { withCredentials: true})
-            .pipe(
-                this.errorHandler.handleError401()
-            )
+            this.chatService.changePasswordForRoom(changePasswordRequest)
             .subscribe((response: any) => {
                 if (response.success) {
-                    this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Password successfully updated.', styleClass: 'ui-toast-message-success' });
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Success',
+                        detail: 'Password successfully updated.',
+                        styleClass: 'ui-toast-message-success'
+                    });
                 }
             },
             (error) => {
-                if (error.status === 403) {
-                    this.errorHandler.handleError403(error);
-                } else if (error.status === 400) {
-                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Wrong password.' });
+                if (error.status === 400) {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Wrong password.'
+                    });
                 } else {
                     console.error("An error occurred:", error);
                 }
@@ -519,6 +498,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             this.userId!,
             userName
         )
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: `Room invite successfully sent to ${receiverName}.`, styleClass: 'ui-toast-message-success' });
+        this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `Room invite successfully sent to ${receiverName}.`, styleClass: 'ui-toast-message-success'
+        });
     }
 }
