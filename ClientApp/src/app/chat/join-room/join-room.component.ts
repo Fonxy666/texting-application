@@ -45,11 +45,25 @@ export class JoinRoomComponent implements OnInit {
             const createRoomParam = urlParams.get('createRoom');
 
             if (deleteSuccessParam === 'true') {
-                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successful deletion.', styleClass: 'ui-toast-message-success' });
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: 'Successful deletion.',
+                    styleClass: 'ui-toast-message-success'
+                });
             } else if (createRoomParam === 'true') {
-                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successful room creation.', styleClass: 'ui-toast-message-success' });
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: 'Successful room creation.',
+                    styleClass: 'ui-toast-message-success'
+                });
             } else if (roomDeleted === 'true') {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'This room got deleted.' });
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'This room got deleted.'
+                });
             }
 
             const newUrl = window.location.pathname + window.location.search.replace('?deleteSuccess=true', '').replace('?createRoom=true', '').replace('?roomDeleted=true', '');
@@ -99,7 +113,11 @@ export class JoinRoomComponent implements OnInit {
             },
             error => {
                 if (error.error === 'Incorrect login credentials') {
-                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Invalid Roomname or password.' });
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Invalid Roomname or password.'
+                    });
                 }
             }
         )

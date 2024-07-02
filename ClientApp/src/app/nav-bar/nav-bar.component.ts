@@ -42,6 +42,21 @@ export class NavBarComponent implements OnInit {
 
         this.roomId = sessionStorage.getItem("roomId")!;
         this.roomName = sessionStorage.getItem("room")!;
+
+        if (this.loggedIn) {
+            this.friendService.friendRequests$.subscribe(requests => {
+                this.announceNumber = requests.length;
+            });
+    
+            this.mediaService.getAvatarImage(this.userId).subscribe(image =>
+                this.profilePic = image
+            );
+    
+            this.friendService.chatRoomInvites$.subscribe(requests => {
+                this.announceNumberForInvite = requests.length;
+                this.chatRoomInvites = requests;
+            })
+        }
     }
 
 

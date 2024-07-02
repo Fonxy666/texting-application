@@ -82,7 +82,11 @@ export class CreateRoomComponent implements OnInit {
             },
             error => {
                 if (error.error && error.error.error === "This room's name already taken.") {
-                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'This room name is already taken. Choose another one!' });
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'This room name is already taken. Choose another one!'
+                    });
                 } else {
                     console.log(error);
                 }

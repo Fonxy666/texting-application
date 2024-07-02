@@ -300,7 +300,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         },
         (error) => {
             if (error.status === 400) {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened.' });
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Something unusual happened.'
+                });
             } else {
                 console.error("An error occurred:", error);
             }
@@ -324,7 +328,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         },
         (error) => {
             if (error.status === 400) {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened.' });
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Something unusual happened.'
+                });
             } else {
                 console.error("An error occurred:", error);
             }
@@ -342,7 +350,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         },
         (error) => {
             if (error.status === 400) {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened.' });
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Something unusual happened.'
+                });
             } else {
                 console.error("An error occurred:", error);
             }
@@ -412,7 +424,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             },
             (error) => {
                 if (error.status === 400) {
-                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Something unusual happened.' });
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Something unusual happened.'
+                    });
                 } else {
                     console.error("An error occurred:", error);
                 }
@@ -433,12 +449,21 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             this.chatService.changePasswordForRoom(changePasswordRequest)
             .subscribe((response: any) => {
                 if (response.success) {
-                    this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Password successfully updated.', styleClass: 'ui-toast-message-success' });
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Success',
+                        detail: 'Password successfully updated.',
+                        styleClass: 'ui-toast-message-success'
+                    });
                 }
             },
             (error) => {
                 if (error.status === 400) {
-                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Wrong password.' });
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Wrong password.'
+                    });
                 } else {
                     console.error("An error occurred:", error);
                 }
@@ -471,6 +496,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             this.userId!,
             userName
         )
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: `Room invite successfully sent to ${receiverName}.`, styleClass: 'ui-toast-message-success' });
+        this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `Room invite successfully sent to ${receiverName}.`, styleClass: 'ui-toast-message-success'
+        });
     }
 }

@@ -28,13 +28,26 @@ export class HomeComponent implements OnInit {
             const logoutParam = urlParams.get('logout');
 
             if (logoutParam == 'true') {
-                this.messageService.add({ severity: 'info', summary: 'Info', detail: 'You logged out. Goodbye, hopefully we will meet later on ! :)', styleClass: 'ui-toast-message-info' });
+                this.messageService.add({
+                    severity: 'info',
+                    summary: 'Info',
+                    detail: 'You logged out. Goodbye, hopefully we will meet later on ! :)',
+                    styleClass: 'ui-toast-message-info'
+                });
             }
 
             if (loginSuccessParam == 'true') {
-                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Successful login.', styleClass: 'ui-toast-message-success' });
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Success', detail: 'Successful login.',
+                    styleClass: 'ui-toast-message-success'
+                });
             } else if (loginSuccessParam === 'false') {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Unsuccessful login, please try again later.' });
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Unsuccessful login, please try again later.'
+                });
             }
 
             const newUrl = window.location.pathname + window.location.search.replace('?loginSuccess=true', '').replace('?loginSuccess=false', '').replace('?logout=true', '');
