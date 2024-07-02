@@ -68,6 +68,7 @@ export class NavBarComponent implements OnInit {
         this.http.get(`/api/v1/Auth/Logout`, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {
+                this.loggedIn = false;
                 this.router.navigate(['/'], { queryParams: { logout: 'true' } });
             }
         }, 

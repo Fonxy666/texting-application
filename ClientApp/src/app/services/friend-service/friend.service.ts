@@ -23,15 +23,23 @@ export class FriendService {
     public onlineFriends$ = new BehaviorSubject<FriendRequestManage[]>([]);
     public onlineFriends: { [userId: string]: FriendRequestManage[] } = {};
     public announceNumber: number = 0;
+    public loggedIn: boolean = this.cookieService.check("UserId");
 
-    constructor(private cookieService: CookieService, private http: HttpClient, private errorHandler: ErrorHandlerService) {
+    constructor(
+        private cookieService: CookieService,
+        private http: HttpClient,
+        private errorHandler: ErrorHandlerService
+    ) {
         this.connection = new signalR.HubConnectionBuilder()
-            .withUrl('/friend', { accessTokenFactory: () => this.cookieService.get('UserId') })
-            .configureLogging(signalR.LogLevel.Critical)
-            .build();
-
-        this.loadInitialData();
+        .withUrl('/friend', { accessTokenFactory: () => this.cookieService.get('UserId') })
+        .configureLogging(signalR.LogLevel.Critical)
+        .build();
+        
         this.initializeConnection();
+        
+        if (this.loggedIn) {
+            this.loadInitialData();
+        }
 
         this.connection.on("ReceiveFriendRequest", (requestId: string, senderName: string, senderId: string, sentTime: string, receiverName: string, receiverId: string) => {
             this.addRequest(new FriendRequestManage(requestId, senderName, senderId, sentTime, receiverName, receiverId));
@@ -58,7 +66,7 @@ export class FriendService {
         });
     }
 
-    private async loadInitialData() {
+    public async loadInitialData() {
         try {
             await Promise.all([this.getPendingFriendRequests(), this.getFriends()]);
         } catch (error) {
