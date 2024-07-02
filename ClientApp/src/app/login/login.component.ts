@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { LoginRequest } from '../model/auth-requests/LoginRequest';
-import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { Router } from '@angular/router';
 import { LoginAuthTokenRequest } from '../model/auth-requests/LoginAuthTokenRequest';
 import { MessageService } from 'primeng/api';
+import { AuthService } from '../services/auth-service/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -15,7 +15,12 @@ import { MessageService } from 'primeng/api';
 
 export class LoginComponent implements OnInit {
     loadGoogleSigninLibrary: any;
-    constructor(private http: HttpClient, private cookieService: CookieService, private router: Router, private messageService: MessageService) { }
+    constructor(
+        private cookieService: CookieService,
+        private router: Router,
+        private messageService: MessageService,
+        private authService: AuthService
+    ) { }
 
     isLoading: boolean = false;
     loginStarted: boolean = false;
@@ -59,7 +64,7 @@ export class LoginComponent implements OnInit {
     
     createTask(data: LoginRequest) {
         this.isLoading = true;
-        this.http.post(`/api/v1/Auth/SendLoginToken`, data, { withCredentials: true })
+        this.authService.sendLoginToken(data)
         .subscribe((response: any) => {
             if (response.success) {
                 this.loginRequest.username = data.username;
@@ -78,8 +83,6 @@ export class LoginComponent implements OnInit {
                             summary: 'Error',
                             detail: `Only 1 more try.`
                         });
-                    } else if (error.error < 1) {
-                        console.log(error.error);
                     } else {
                         this.messageService.add({
                             severity: 'error',
@@ -118,7 +121,7 @@ export class LoginComponent implements OnInit {
             this.loginRequest.rememberme, token
         );
 
-        this.http.post(`/api/v1/Auth/Login`, request, { withCredentials: true })
+        this.authService.login(request)
         .subscribe((response: any) => {
             if (response.success) {
                 this.loginStarted = false;

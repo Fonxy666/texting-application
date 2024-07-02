@@ -10,7 +10,12 @@ import { ResetPasswordRequest } from '../../model/user-credential-requests/Reset
   providedIn: 'root'
 })
 export class UserService {
-    constructor(private errorHandler: ErrorHandlerService, private router: Router, private http: HttpClient, private cookieService: CookieService) {
+    constructor(
+        private errorHandler: ErrorHandlerService,
+        private router: Router,
+        private http: HttpClient,
+        private cookieService: CookieService
+    ) {
         this.getUsername();
     }
 

@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { TokenValidatorRequest } from '../model/auth-requests/TokenValidatorRequest';
 import { MessageService } from 'primeng/api';
+import { AuthService } from '../services/auth-service/auth.service';
 
 @Component({
   selector: 'app-registration',
@@ -12,7 +13,12 @@ import { MessageService } from 'primeng/api';
 })
 
 export class RegistrationComponent {
-    constructor(private http: HttpClient, private router: Router, private messageService: MessageService) { }
+    constructor(
+        private http: HttpClient,
+        private router: Router,
+        private messageService: MessageService,
+        private authService: AuthService
+    ) { }
 
     isLoading: boolean = false;
     user: any;
@@ -24,12 +30,7 @@ export class RegistrationComponent {
 
     sendVerifyEmail(data: any) {
         this.isLoading = true;
-        const requestData = { Email: data.email };
-        const headers = new HttpHeaders({
-            'Content-Type': 'application/json'
-        });
-
-        this.http.post(`/api/v1/Auth/SendEmailVerificationToken`, requestData, { headers: headers, responseType: 'text' })
+        this.authService.sendVerifyEmail({ Email: data.email })
         .subscribe((response: any) => {
             if (response) {
                 this.user = data;
@@ -46,7 +47,7 @@ export class RegistrationComponent {
     getVerifyTokenAndSendRegistration(verifyCode: String) {
         this.isLoading = true;
         const request = new TokenValidatorRequest(this.user.email, verifyCode.toString());
-        this.http.post(`/api/v1/Auth/ExamineVerifyToken`, request)
+        this.authService.examineVerifyToken(request)
         .subscribe((response: any) => {
             if (response) {
                 this.sendRegistration();
@@ -56,13 +57,17 @@ export class RegistrationComponent {
         },
         (error) => {
             this.isLoading = false;
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Wrong token.' });
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Wrong token.'
+            });
             console.error("An error occurred:", error);
         });
     }
 
     sendRegistration() {
-        this.http.post(`/api/v1/Auth/Register`, this.user)
+        this.authService.registration(this.user)
         .subscribe(() => {},
         (error) => {
             this.isLoading = false;
