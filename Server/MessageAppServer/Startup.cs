@@ -175,7 +175,7 @@ public class Startup(IConfiguration configuration)
         });
     }
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IConfiguration configuration)
+    public async Task Configure(IApplicationBuilder app, IWebHostEnvironment env, IConfiguration configuration)
     {
         if (env.IsDevelopment())
         {
@@ -208,13 +208,11 @@ public class Startup(IConfiguration configuration)
             endpoints.MapControllers();
         });
         
-        PopulateDbAndAddRoles.AddRolesAndAdmin(app, configuration).Wait();
-        /*PopulateDbAndAddRoles.CreateTestUsers(app, 20).Wait();                                            //    Create Test users for ui testing
-        PopulateDbAndAddRoles.CreateFriendsAndFriendRequestsForTestUsers(app).Wait();                                   //    Create Test friend requests for ui testing*/
+        await PopulateDbAndAddRoles.AddRolesAndAdmin(app, configuration);
         
         if (!env.IsEnvironment("Test")) return;
             
-        PopulateDbAndAddRoles.CreateTestUsers(app, 5).Wait();
-        PopulateDbAndAddRoles.CreateTestRoom(app).Wait();
+        await PopulateDbAndAddRoles.CreateTestUsers(app, 5);
+        await PopulateDbAndAddRoles.CreateTestRoom(app);
     }
 }
