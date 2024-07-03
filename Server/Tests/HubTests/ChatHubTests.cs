@@ -127,7 +127,7 @@ public class ChatHubTests
         _clientProxyMock.Verify(c => c.SendCoreAsync("ModifyMessage", It.IsAny<object[]>(), default), Times.Once);
     }
 
-    /*[Fact]
+    [Fact]
     public async Task ModifyMessageSeen_ShouldSendModifyMessageSeenToGroup()
     {
         var request = new MessageSeenRequest("user1");
@@ -141,7 +141,7 @@ public class ChatHubTests
         await _chatHub.ModifyMessageSeen(request);
 
         _clientProxyMock.Verify(c => c.SendCoreAsync("ModifyMessageSeen", It.IsAny<object[]>(), default), Times.Once);
-    }*/
+    }
 
     [Fact]
     public async Task DeleteMessage_ShouldSendDeleteMessageToGroup()
@@ -202,7 +202,7 @@ public class ChatHubTests
         _clientProxyMock.Verify(c => c.SendCoreAsync("ConnectedUser", It.IsAny<object[]>(), default), Times.Once);
     }
 
-    /*[Fact]
+    [Fact]
     public async Task OnRoomDelete_ShouldNotifyRoomDeletionAndRemoveFromGroup()
     {
         const string roomId1 = "room1";
@@ -224,5 +224,5 @@ public class ChatHubTests
         Assert.DoesNotContain(connectionId1, _connection.Keys);
 
         _clientProxyMock.Verify(c => c.SendCoreAsync("RoomDeleted", It.Is<object[]>(o => o.Contains(roomId1)), default), Times.Exactly(2));
-    }*/
+    }
 }
