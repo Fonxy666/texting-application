@@ -108,20 +108,4 @@ public static class PopulateDbAndAddRoles
 
         }
     }
-    
-    public static async Task CreateFriendsAndFriendRequestsForTestUsers(IApplicationBuilder app)
-    {
-        using var scope = app.ApplicationServices.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        var friendConnectionService = scope.ServiceProvider.GetRequiredService<IFriendConnectionService>();
-
-        var uiTestUser = await userManager.FindByNameAsync("Fonxy666");
-        
-        for (var i = 1; i <= 20; i++)
-        {
-            var userToSend = await userManager.FindByNameAsync($"TestUsername{i}");
-            var friendRequest = new FriendRequest(userToSend!.Id.ToString(), uiTestUser!.Id.ToString());
-            var friendRequestId = await friendConnectionService.SendFriendRequest(friendRequest);
-        }
-    }
 }

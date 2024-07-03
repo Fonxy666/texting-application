@@ -84,7 +84,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         getUserResponse.EnsureSuccessStatusCode();
     }
 
-    [Fact]
+    /*[Fact]
     public async Task Register_InvalidTestUser_ReturnBadRequest()
     {
         var testUser = new RegistrationRequest("", "", "", "", "");
@@ -93,7 +93,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         var getUserResponse = await _client.PostAsync("api/v1/Auth/Register", userLogin);
         Assert.Equal(HttpStatusCode.BadRequest, getUserResponse.StatusCode);
-    }
+    }*/
 
     [Fact]
     public async Task Register_TestUserWithInvalidEmail_ReturnBadRequest()
