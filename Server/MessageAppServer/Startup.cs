@@ -208,7 +208,7 @@ public class Startup(IConfiguration configuration)
             endpoints.MapControllers();
         });
         
-        PopulateDbAndAddRoles.AddRolesAndAdmin(app, configuration);
+        PopulateDbAndAddRoles.AddRolesAndAdmin(app, configuration).Wait();
         
         if (!env.IsEnvironment("Test")) return;
             
