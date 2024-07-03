@@ -34,21 +34,13 @@ public static class PopulateDbAndAddRoles
     {
         using var scope = app.ApplicationServices.CreateScope();
         var roomService = scope.ServiceProvider.GetRequiredService<IRoomService>();
-
-        try
+            
+        if (roomService.GetRoomById(new Guid("901d40c6-c95d-47ed-a21a-88cda341d0a9")).Result != null)
         {
-            var existingRoom = await roomService.GetRoomById(new Guid("901d40c6-c95d-47ed-a21a-88cda341d0a9"));
-            if (existingRoom != null)
-            {
-                return;
-            }
-
-            await roomService.RegisterRoomAsync("test", "test", new Guid("901d40c6-c95d-47ed-a21a-88cda341d0a9"));
+            return;
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error creating or checking room: {ex.Message}");
-        }
+        
+        await roomService.RegisterRoomAsync("test", "test", new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"));
     }
     
     private static async Task CreateAdminIfNotExistAsync(UserManager<ApplicationUser> userManager, IConfiguration configuration)
