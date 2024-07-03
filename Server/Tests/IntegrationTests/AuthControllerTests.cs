@@ -173,7 +173,6 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task ExamineVerifyToken_WithWrongToken_ReturnBadRequest()
     {
-        // Debug log for tracking test execution
         _testOutputHelper.WriteLine("Starting test: ExamineVerifyToken_WithWrongToken_ReturnBadRequest");
 
         var token = EmailSenderCodeGenerator.GenerateLongToken("test1@hotmail.com", "registration");
@@ -183,7 +182,6 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         var response = await _client.PostAsync("api/v1/Auth/ExamineVerifyToken", content);
 
-        // Debug log for response status
         _testOutputHelper.WriteLine($"Response status: {response.StatusCode}");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

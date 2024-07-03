@@ -23,6 +23,17 @@ public static class PopulateDbAndAddRoles
 
             if (!roleExists)
             {
+                Console.WriteLine("---------------------------------------");
+                Console.WriteLine("---------------------------------------");
+                Console.WriteLine("---------------------------------------");
+                Console.WriteLine("---------------------------------------");
+                Console.WriteLine("---------------------------------------");
+                Console.WriteLine(roleName);
+                Console.WriteLine("---------------------------------------");
+                Console.WriteLine("---------------------------------------");
+                Console.WriteLine("---------------------------------------");
+                Console.WriteLine("---------------------------------------");
+                Console.WriteLine("---------------------------------------");
                 await roleManager.CreateAsync(new IdentityRole<Guid>(roleName));
             }
         }
