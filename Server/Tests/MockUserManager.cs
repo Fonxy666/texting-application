@@ -17,7 +17,7 @@ internal static class MockUserManager
         userManagerMock.Setup(x => x.FindByNameAsync(It.IsAny<string>()))
             .ReturnsAsync(new ApplicationUser("example.url")
             {
-                Id = new Guid("901d40c6-c95d-47ed-a21a-88cda341d0a9"),
+                Id = new Guid("901d40c6-c95d-47ed-a21a-88cda341d0a8"),
                 UserName = "TestUser",
                 Email = "test@example.com"
             });

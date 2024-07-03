@@ -9,7 +9,7 @@ namespace Server.Database;
 
 public static class PopulateDbAndAddRoles
 {
-    public static async Task AddRolesAndAdmin(IApplicationBuilder app, IConfiguration configuration)
+    public static void AddRolesAndAdmin(IApplicationBuilder app, IConfiguration configuration)
     {
         using var scope = app.ApplicationServices.CreateScope();
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
@@ -19,15 +19,15 @@ public static class PopulateDbAndAddRoles
 
         foreach (var roleName in roleList)
         {
-            var roleExists = await roleManager.RoleExistsAsync(roleName);
+            var roleExists = roleManager.RoleExistsAsync(roleName).Result;
 
             if (!roleExists)
             {
-                await roleManager.CreateAsync(new IdentityRole<Guid>(roleName));
+                roleManager.CreateAsync(new IdentityRole<Guid>(roleName));
             }
         }
 
-        await CreateAdminIfNotExistAsync(userManager, configuration);
+        CreateAdminIfNotExistAsync(userManager, configuration).Wait();
     }
 
     public static async Task CreateTestRoom(IApplicationBuilder app)

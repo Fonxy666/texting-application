@@ -80,10 +80,9 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var cookies = TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com").Result;
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
         
-        const string userId = "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916";
         const string roomId = "901d40c6-c95d-47ed-a21a-88cda341d0a9";
 
-        var examineRoomCreatorResponse = await _client.GetAsync($"api/v1/Chat/ExamineIfTheUserIsTheCreator?userId={userId}&roomId={roomId}");
+        var examineRoomCreatorResponse = await _client.GetAsync($"api/v1/Chat/ExamineIfTheUserIsTheCreator?roomId={roomId}");
         examineRoomCreatorResponse.EnsureSuccessStatusCode();
     }
     
@@ -104,11 +103,9 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     {
         var cookies = TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com").Result;
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
-        
-        const string userId = "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916";
         const string roomId = "901d40c6-c95d-47ed-a21a-88cda341d0a8";
 
-        var examineRoomCreatorResponse = await _client.GetAsync($"api/v1/Chat/ExamineIfTheUserIsTheCreator?userId={userId}&roomId={roomId}");
+        var examineRoomCreatorResponse = await _client.GetAsync($"api/v1/Chat/ExamineIfTheUserIsTheCreator?roomId={roomId}");
         Assert.Equal(HttpStatusCode.NotFound, examineRoomCreatorResponse.StatusCode);
     }
     
