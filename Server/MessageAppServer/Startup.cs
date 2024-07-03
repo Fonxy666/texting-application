@@ -208,11 +208,11 @@ public class Startup(IConfiguration configuration)
             endpoints.MapControllers();
         });
         
-        PopulateDbAndAddRoles.AddRolesAndAdmin(app, configuration).Wait();
+        PopulateDbAndAddRoles.AddRolesAndAdminSync(app, configuration);
         
         if (!env.IsEnvironment("Test")) return;
             
-        PopulateDbAndAddRoles.CreateTestUsers(app, 5).Wait();
-        PopulateDbAndAddRoles.CreateTestRoom(app).Wait();
+        PopulateDbAndAddRoles.CreateTestUsersSync(app, 5);
+        PopulateDbAndAddRoles.CreateTestRoomSync(app);
     }
 }

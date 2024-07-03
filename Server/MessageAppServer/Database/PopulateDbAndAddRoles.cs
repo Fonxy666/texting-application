@@ -1,122 +1,161 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Server.Model;
-using Server.Model.Requests.User;
 using Server.Services.Chat.RoomService;
-using Server.Services.FriendConnection;
-using Server.Services.User;
 
 namespace Server.Database;
 
 public static class PopulateDbAndAddRoles
 {
-    public static async Task AddRolesAndAdmin(IApplicationBuilder app, IConfiguration configuration)
+    private static readonly object LockObject = new();
+
+    public static void AddRolesAndAdminSync(IApplicationBuilder app, IConfiguration configuration)
     {
-        using var scope = app.ApplicationServices.CreateScope();
-        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-
-        var roleList = new List<string> { "User", "Admin" };
-
-        foreach (var roleName in roleList)
+        lock (LockObject)
         {
-            var roleExists = await roleManager.RoleExistsAsync(roleName);
+            using var scope = app.ApplicationServices.CreateScope();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-            if (!roleExists)
+            var roleList = new List<string> { "User", "Admin" };
+
+            foreach (var roleName in roleList)
             {
-                Console.WriteLine("---------------------------------------");
-                Console.WriteLine("---------------------------------------");
-                Console.WriteLine("---------------------------------------");
-                Console.WriteLine("---------------------------------------");
-                Console.WriteLine("---------------------------------------");
-                Console.WriteLine(roleName);
-                Console.WriteLine("---------------------------------------");
-                Console.WriteLine("---------------------------------------");
-                Console.WriteLine("---------------------------------------");
-                Console.WriteLine("---------------------------------------");
-                Console.WriteLine("---------------------------------------");
-                await roleManager.CreateAsync(new IdentityRole<Guid>(roleName));
-            }
-        }
+                var roleExists = roleManager.RoleExistsAsync(roleName).Result;
 
-        await CreateAdminIfNotExistAsync(userManager, configuration);
-    }
-
-    public static async Task CreateTestRoom(IApplicationBuilder app)
-    {
-        using var scope = app.ApplicationServices.CreateScope();
-        var roomService = scope.ServiceProvider.GetRequiredService<IRoomService>();
-            
-        if (roomService.GetRoomById(new Guid("901d40c6-c95d-47ed-a21a-88cda341d0a9")).Result != null)
-        {
-            return;
-        }
-        
-        await roomService.RegisterRoomAsync("test", "test", new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"));
-    }
-    
-    private static async Task CreateAdminIfNotExistAsync(UserManager<ApplicationUser> userManager, IConfiguration configuration)
-    {
-        var adminEmail = configuration["AdminEmail"];
-
-        var adminInDb = await userManager.FindByEmailAsync(adminEmail!);
-        if (adminInDb == null)
-        {
-            var admin = new ApplicationUser("-")
-            {
-                UserName = configuration["AdminUserName"],
-                Email = adminEmail
-            };
-
-            var adminCreated = await userManager.CreateAsync(admin, configuration["AdminPassword"]!);
-
-            if (adminCreated.Succeeded)
-            {
-                await userManager.AddToRoleAsync(admin, "Admin");
-            }
-            else
-            {
-                Console.WriteLine($"Error creating admin user: {string.Join(", ", adminCreated.Errors)}");
-            }
-        }
-    }
-    
-    public static async Task CreateTestUsers(IApplicationBuilder app, int numberOfTestUsers)
-    {
-        using var scope = app.ApplicationServices.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        for (var i = 1; i <= numberOfTestUsers; i++)
-        {
-            var testEmail = $"test{i}@hotmail.com";
-            var testInDb = await userManager.FindByEmailAsync(testEmail);
-
-            if (testInDb != null) continue;
-            
-            var testUser = new ApplicationUser("-")
-            {
-                Id = i switch
+                if (!roleExists)
                 {
-                    1 => new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"),
-                    2 => new Guid("10f96e12-e245-420a-8bad-b61fb21c4b2d"),
-                    3 => new Guid("995f04da-d4d3-447c-9c69-fab370bca312"),
-                    _ => Guid.NewGuid()
-                },
-                
-                UserName = $"TestUsername{i}",
-                Email = testEmail,
-                TwoFactorEnabled = i != 3
-            };
+                    var roleResult = roleManager.CreateAsync(new IdentityRole<Guid>(roleName)).Result;
 
-            var testUserCreated = await userManager.CreateAsync(testUser, "testUserPassword123###");
+                    if (roleResult.Succeeded)
+                    {
+                        Console.WriteLine($"Successfully created role {roleName}.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Error creating role {roleName}: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+                    }
+                }
+            }
 
-            if (testUserCreated.Succeeded)
+            CreateAdminIfNotExistSync(userManager, configuration);
+        }
+    }
+
+    private static void CreateAdminIfNotExistSync(UserManager<ApplicationUser> userManager, IConfiguration configuration)
+    {
+        lock (LockObject)
+        {
+            var adminEmail = configuration["AdminEmail"];
+
+            var adminInDb = userManager.FindByEmailAsync(adminEmail!).Result;
+            if (adminInDb == null)
             {
-                await userManager.AddToRoleAsync(testUser, "User");
+                var admin = new ApplicationUser("-")
+                {
+                    UserName = configuration["AdminUserName"],
+                    Email = adminEmail
+                };
+
+                var adminCreated = userManager.CreateAsync(admin, configuration["AdminPassword"]!).Result;
+
+                if (adminCreated.Succeeded)
+                {
+                    var roleResult = userManager.AddToRoleAsync(admin, "Admin").Result;
+
+                    if (roleResult.Succeeded)
+                    {
+                        Console.WriteLine($"Successfully created admin user {admin.UserName} and added to Admin role.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Error adding admin user to role: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Error creating admin user: {string.Join(", ", adminCreated.Errors.Select(e => e.Description))}");
+                }
             }
             else
             {
-                Console.WriteLine($"Error creating test user: {string.Join(", ", testUserCreated.Errors)}");
+                Console.WriteLine("Admin user already exists.");
+            }
+        }
+    }
+
+    public static void CreateTestUsersSync(IApplicationBuilder app, int numberOfTestUsers)
+    {
+        lock (LockObject)
+        {
+            using var scope = app.ApplicationServices.CreateScope();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+            for (var i = 1; i <= numberOfTestUsers; i++)
+            {
+                var testEmail = $"test{i}@hotmail.com";
+                var testUsername = $"TestUsername{i}";
+
+                Console.WriteLine($"Creating test user {i}: {testUsername} ({testEmail})");
+
+                var testInDb = userManager.FindByEmailAsync(testEmail).Result;
+                var usernameInDb = userManager.FindByNameAsync(testUsername).Result;
+
+                if (testInDb != null || usernameInDb != null)
+                {
+                    Console.WriteLine($"User with email {testEmail} or username {testUsername} already exists.");
+                    continue;
+                }
+
+                var testUser = new ApplicationUser("-")
+                {
+                    Id = i switch
+                    {
+                        1 => new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"),
+                        2 => new Guid("10f96e12-e245-420a-8bad-b61fb21c4b2d"),
+                        3 => new Guid("995f04da-d4d3-447c-9c69-fab370bca312"),
+                        _ => Guid.NewGuid()
+                    },
+                    UserName = testUsername,
+                    Email = testEmail,
+                    TwoFactorEnabled = i != 3
+                };
+
+                var testUserCreated = userManager.CreateAsync(testUser, "testUserPassword123###").Result;
+
+                if (testUserCreated.Succeeded)
+                {
+                    var roleResult = userManager.AddToRoleAsync(testUser, "User").Result;
+
+                    if (roleResult.Succeeded)
+                    {
+                        Console.WriteLine($"Successfully created test user {testUsername}.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Error adding test user to role: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Error creating test user {testUsername}: {string.Join(", ", testUserCreated.Errors.Select(e => e.Description))}");
+                }
+            }
+        }
+    }
+
+    public static void CreateTestRoomSync(IApplicationBuilder app)
+    {
+        lock (LockObject)
+        {
+            using var scope = app.ApplicationServices.CreateScope();
+            var roomService = scope.ServiceProvider.GetRequiredService<IRoomService>();
+
+            if (roomService.GetRoomById(new Guid("901d40c6-c95d-47ed-a21a-88cda341d0a9")).Result != null)
+            {
+                return;
             }
 
+            roomService.RegisterRoomAsync("test", "test", new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916")).Wait();
         }
     }
 }
