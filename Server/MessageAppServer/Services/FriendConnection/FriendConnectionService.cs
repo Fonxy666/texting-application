@@ -64,7 +64,7 @@ public class FriendConnectionService(DatabaseContext context, IUserServices user
                 fr.ConnectionId, 
                 fr.Sender.UserName!,
                 fr.Sender.Id.ToString(),
-                fr.AcceptedTime,
+                fr.SentTime,
                 fr.Receiver.UserName!,
                 fr.Receiver.Id.ToString()
             ))

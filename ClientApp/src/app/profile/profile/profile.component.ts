@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
@@ -10,7 +9,6 @@ import { filter } from 'rxjs';
 import { FriendService } from '../../services/friend-service/friend.service';
 import { MediaService } from '../../services/media-service/media.service';
 import { UserService } from '../../services/user-service/user.service';
-import { ErrorHandlerService } from '../../services/error-handler-service/error-handler.service';
 
 @Component({
     selector: 'app-profile',
@@ -67,10 +65,10 @@ export class ProfileComponent implements OnInit {
             this.user.email = email;
         });
 
-        this.getAnnounceNumber();
-
         this.friendService.friendRequests$.subscribe(requests => {
-            this.announceNumber = requests.length;
+            this.announceNumber = requests.filter(request => {
+                return request.receiverId == this.userId;
+            }).length;
         });
     }
 
@@ -119,15 +117,6 @@ export class ProfileComponent implements OnInit {
             reader.onloadend = () => resolve(reader.result as string);
             reader.onerror = (error) => reject(error);
         });
-    }
-
-    getAnnounceNumber() {
-        this.userService.getFriendRequestCount()
-        .subscribe(
-            (response: any) => {
-                this.announceNumber = response;
-            }
-        );
     }
 }
 

@@ -45,7 +45,9 @@ export class NavBarComponent implements OnInit {
 
         if (this.loggedIn) {
             this.friendService.friendRequests$.subscribe(requests => {
-                this.announceNumber = requests.length;
+                this.announceNumber = requests.filter(request => {
+                    return request.receiverId == this.userId;
+                }).length;
             });
     
             this.mediaService.getAvatarImage(this.userId).subscribe(image =>
