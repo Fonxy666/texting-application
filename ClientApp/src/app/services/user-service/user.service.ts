@@ -17,7 +17,7 @@ export class UserService {
         private cookieService: CookieService
     ) {
         this.getUsername(this.cookieService.get("UserId")).subscribe(userName => {
-            this.userName = userName;
+            this.userName = userName.username;
         });
     }
 

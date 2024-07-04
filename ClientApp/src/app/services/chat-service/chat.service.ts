@@ -131,6 +131,8 @@ export class ChatService {
 
     public async joinRoom(user: string, room: string) {
         try {
+            console.log(user);
+            console.log(room);
             await this.connection.invoke("JoinRoom", { user, room });
         } catch (error) {
             console.error('Error joining room:', error);
@@ -197,7 +199,7 @@ export class ChatService {
 
         if (this.cookieService.get("Anonymous") === "True") {
             this.joinRoom("Anonymous", roomId)
-            .then(_ => {
+            .then(() => {
                 this.router.navigate([`/message-room/${roomId}`]);
                 sessionStorage.setItem("roomId", roomId);
                 sessionStorage.setItem("room", roomName);
@@ -209,8 +211,9 @@ export class ChatService {
                 console.log(err);
             })
         } else {
+            console.log(this.userService.userName);
             this.joinRoom(this.userService.userName, roomId)
-            .then(_ => {
+            .then(() => {
                 this.router.navigate([`/message-room/${roomId}`]);
                 sessionStorage.setItem("roomId", roomId);
                 sessionStorage.setItem("room", roomName);
