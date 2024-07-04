@@ -24,6 +24,7 @@
     "@popperjs/core": "^2.11.8",
     "@types/google-one-tap": "^1.2.6",
     "bootstrap": "^5.3.2",
+    "crypto-js": "^4.2.0",
     "lodash": "^4.17.21",
     "ng-angular-popup": "^0.5.2",
     "ngx-cookie-service": "^17.0.1",

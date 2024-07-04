@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
 import { RegistrationRequest } from '../model/auth-requests/RegistrationRequest';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { TokenValidatorRequest } from '../model/auth-requests/TokenValidatorRequest';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../services/auth-service/auth.service';
+import { CryptoService } from '../services/crypto-service/crypto.service';
 
 @Component({
   selector: 'app-registration',
@@ -14,10 +14,10 @@ import { AuthService } from '../services/auth-service/auth.service';
 
 export class RegistrationComponent {
     constructor(
-        private http: HttpClient,
         private router: Router,
         private messageService: MessageService,
-        private authService: AuthService
+        private authService: AuthService,
+        private cryptoService: CryptoService
     ) { }
 
     isLoading: boolean = false;
@@ -67,8 +67,17 @@ export class RegistrationComponent {
     }
 
     sendRegistration() {
+        this.isLoading = true;
         this.authService.registration(this.user)
-        .subscribe(() => {},
+        .subscribe(response => {
+            console.log(response);
+            this.cryptoService.generateKeyPair()
+                .then(keys => {
+                    localStorage.setItem('publicKey', keys.publicKey);
+                    localStorage.setItem('privateKey', keys.publicKey);
+                    console.log(keys);
+                })
+        },
         (error) => {
             this.isLoading = false;
             console.error("An error occurred:", error);
