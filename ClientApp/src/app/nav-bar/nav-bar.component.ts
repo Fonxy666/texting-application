@@ -23,11 +23,7 @@ export class NavBarComponent implements OnInit {
         private mediaService: MediaService,
         public chatService: ChatService,
         private cryptoService: CryptoService
-    ) {
-        this.cryptoService.generateKeyPair().then(tokens => {
-            console.log(tokens);
-        });
-    }
+    ) { }
 
     isDropstart: boolean = true;
     announceNumber: number = 0;
@@ -48,6 +44,8 @@ export class NavBarComponent implements OnInit {
 
         this.roomId = sessionStorage.getItem("roomId")!;
         this.roomName = sessionStorage.getItem("room")!;
+
+        console.log(this.cryptoService.setEncryptionKeyFromUserInput("haha"));
 
         if (this.loggedIn) {
             this.friendService.friendRequests$.subscribe(requests => {

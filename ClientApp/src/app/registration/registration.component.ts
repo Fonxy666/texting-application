@@ -71,12 +71,6 @@ export class RegistrationComponent {
         this.authService.registration(this.user)
         .subscribe(response => {
             console.log(response);
-            this.cryptoService.generateKeyPair()
-                .then(keys => {
-                    localStorage.setItem('publicKey', keys.publicKey);
-                    localStorage.setItem('privateKey', keys.publicKey);
-                    console.log(keys);
-                })
         },
         (error) => {
             this.isLoading = false;

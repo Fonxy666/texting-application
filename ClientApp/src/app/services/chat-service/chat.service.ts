@@ -197,7 +197,7 @@ export class ChatService {
 
         if (this.cookieService.get("Anonymous") === "True") {
             this.joinRoom("Anonymous", roomId)
-            .then(() => {
+            .then(_ => {
                 this.router.navigate([`/message-room/${roomId}`]);
                 sessionStorage.setItem("roomId", roomId);
                 sessionStorage.setItem("room", roomName);
@@ -210,7 +210,7 @@ export class ChatService {
             })
         } else {
             this.joinRoom(this.userService.userName, roomId)
-            .then(() => {
+            .then(_ => {
                 this.router.navigate([`/message-room/${roomId}`]);
                 sessionStorage.setItem("roomId", roomId);
                 sessionStorage.setItem("room", roomName);
