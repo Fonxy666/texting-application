@@ -6,6 +6,7 @@ import { FriendService } from '../services/friend-service/friend.service';
 import { MediaService } from '../services/media-service/media.service';
 import { ChatRoomInvite } from '../model/room-requests/ChatRoomInvite';
 import { ChatService } from '../services/chat-service/chat.service';
+import { CryptoService } from '../services/crypto-service/crypto.service';
 
 @Component({
     selector: 'app-nav-bar',
@@ -20,8 +21,13 @@ export class NavBarComponent implements OnInit {
         private http: HttpClient,
         public friendService: FriendService,
         private mediaService: MediaService,
-        public chatService: ChatService
-    ) {}
+        public chatService: ChatService,
+        private cryptoService: CryptoService
+    ) {
+        this.cryptoService.generateKeyPair().then(tokens => {
+            console.log(tokens);
+        });
+    }
 
     isDropstart: boolean = true;
     announceNumber: number = 0;
