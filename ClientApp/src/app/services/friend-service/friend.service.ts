@@ -249,6 +249,7 @@ export class FriendService {
         this.getPendingFriendRequests()
         .subscribe(
             (response: FriendRequestManage[]) => {
+                console.log(response);
                 if (!this.friendRequests[userId]) {
                     this.friendRequests[userId] = [];
                 }
