@@ -22,8 +22,9 @@ export class FriendService {
     public chatRoomInvites: { [userId: string]: ChatRoomInvite[] } = {};
     public onlineFriends$ = new BehaviorSubject<FriendRequestManage[]>([]);
     public onlineFriends: { [userId: string]: FriendRequestManage[] } = {};
-    public announceNumber: number = 0;
     public loggedIn: boolean = this.cookieService.check("UserId");
+    public announceNumber$ = new BehaviorSubject<number>(0);
+    public announceNumber: { [userId: string]: number } = {};
 
     constructor(
         private cookieService: CookieService,
@@ -179,7 +180,6 @@ export class FriendService {
 
     public async deleteFriendRequest(requestId: string, senderId: string, receiverId: string) {
         try {
-            console.log(requestId);
             await this.connection.invoke("DeleteFriendRequest", requestId, senderId, receiverId);
             this.updateFriendRequestsWithDeclinedRequest(requestId);
         } catch (error) {
