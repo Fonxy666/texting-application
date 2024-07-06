@@ -15,6 +15,7 @@ using Server.Services.Chat.RoomService;
 using Server.Services.Cookie;
 using Server.Services.EmailSender;
 using Server.Services.FriendConnection;
+using Server.Services.PrivateKey;
 using Server.Services.User;
 
 namespace Server;
@@ -24,6 +25,7 @@ public class Startup(IConfiguration configuration)
     public void ConfigureServices(IServiceCollection services)
     {
         var connection = configuration["ConnectionString"];
+        var connectionToPrivateKeys = configuration["ConnectionStringToPrivateKeyDatabase"];
         var issueSign = configuration["IssueSign"];
         var issueAudience = configuration["IssueAudience"];
 
@@ -73,11 +75,13 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IUserServices, UserServices>();
         services.AddScoped<ICookieService, CookieService>();
         services.AddScoped<IFriendConnectionService, FriendConnectionService>();
+        services.AddScoped<IPrivateKeyService, PrivateKeyService>();
         services.AddSingleton<IDictionary<string, UserRoomConnection>>(opt =>
             new Dictionary<string, UserRoomConnection>());
         services.AddTransient<IEmailSender, EmailSender>();
 
         services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connection));
+        services.AddDbContext<PrivateKeysDbContext>(options => options.UseSqlServer(connectionToPrivateKeys));
         
         services.AddAuthentication(o => {
                 o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

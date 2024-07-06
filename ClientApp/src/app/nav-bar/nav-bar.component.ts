@@ -45,7 +45,7 @@ export class NavBarComponent implements OnInit {
         this.roomId = sessionStorage.getItem("roomId")!;
         this.roomName = sessionStorage.getItem("room")!;
 
-        console.log(this.cryptoService.setEncryptionKeyFromUserInput("haha"));
+        console.log(this.cryptoService.setEncryptionKeyFromUserInput("hehe"));
 
         if (this.loggedIn) {
             this.friendService.friendRequests$.subscribe(requests => {

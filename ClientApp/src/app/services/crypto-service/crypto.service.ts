@@ -22,4 +22,23 @@ export class CryptoService {
         const plaintext = bytes.toString(CryptoJS.enc.Utf8);
         return plaintext;
     }
+
+    async generateKeyPair() {
+        const keyPair = await window.crypto.subtle.generateKey(
+        {
+            name: "RSA-OAEP",
+            modulusLength: 2048,
+            publicExponent: new Uint8Array([1, 0, 1]),
+            hash: "SHA-256",
+        },
+        true,
+        ["encrypt", "decrypt"]
+        );
+        return keyPair;
+    }
+
+    async exportPublicKey(key: CryptoKey) {
+        const exported = await window.crypto.subtle.exportKey("spki", key);
+        return exported;
+    }
 }

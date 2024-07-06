@@ -131,8 +131,6 @@ export class ChatService {
 
     public async joinRoom(user: string, room: string) {
         try {
-            console.log(user);
-            console.log(room);
             await this.connection.invoke("JoinRoom", { user, room });
         } catch (error) {
             console.error('Error joining room:', error);
@@ -211,7 +209,6 @@ export class ChatService {
                 console.log(err);
             })
         } else {
-            console.log(this.userService.userName);
             this.joinRoom(this.userService.userName, roomId)
             .then(() => {
                 this.router.navigate([`/message-room/${roomId}`]);
