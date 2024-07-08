@@ -4,12 +4,15 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Server.Model;
 using Server.Model.Requests.Auth;
 using Server.Model.Responses.Auth;
 using Server.Model.Responses.User;
 using Server.Services.Authentication;
 using Server.Services.EmailSender;
+using Server.Services.PrivateKey;
 using Server.Services.User;
 
 namespace Server.Controllers;
@@ -21,6 +24,8 @@ public class AuthController(
     IUserServices userServices,
     IEmailSender emailSender,
     ILogger<AuthController> logger,
+    UserManager<ApplicationUser> userManager,
+    IPrivateKeyService privateKeyService,
     IConfiguration configuration) : ControllerBase
 {
     [HttpPost("SendEmailVerificationToken")]
@@ -107,28 +112,35 @@ public class AuthController(
     }
     
     [HttpPost("Login")]
-    public async Task<ActionResult<AuthResponse>> Login([FromBody]LoginAuth request)
+    public async Task<ActionResult<LoginResponse>> Login([FromBody]LoginAuth request)
     {
         try
         {
-            var email = await authenticationService.GetEmailFromUserName(request.UserName);
-            if (email == null)
+            var existingUser = await userManager.FindByNameAsync(request.UserName);
+            if (existingUser == null)
             {
-                return BadRequest("invalid e-mail");
+                return BadRequest("Invalid credentials");
             }
             
-            var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(email!, request.Token, "login");
+            var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(existingUser.Email!, request.Token, "login");
         
             if (!result)
             {
                 return BadRequest(new AuthResponse(false, "Bad request"));
             }
 
-            EmailSenderCodeGenerator.RemoveVerificationCode(email!, "login");
+            EmailSenderCodeGenerator.RemoveVerificationCode(existingUser.Email!, "login");
+
+            var encryptedPrivateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser.Id);
 
             var loginResult = await authenticationService.LoginAsync(request.UserName, request.RememberMe);
 
-            return Ok(new AuthResponse(true, loginResult.Id));
+            if (!loginResult.Success)
+            {
+                return StatusCode(500);
+            }
+
+            return Ok(new LoginResponse(true, existingUser.PublicKey, encryptedPrivateKey));
         }
         catch (Exception e)
         {
@@ -176,6 +188,11 @@ public class AuthController(
                 if (splittedClaim[^1] == "emailaddress")
                 {
                     await authenticationService.LoginWithExternal(claim.Value);
+
+                    var existingUser = await userManager.FindByEmailAsync(claim.Value);
+                    var encryptedPrivateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser!.Id);
+                    
+                    return Ok(new LoginResponse(true, existingUser.PublicKey, encryptedPrivateKey));
                 }
             }
 
@@ -227,6 +244,11 @@ public class AuthController(
                 if (splittedClaim[^1] == "emailaddress")
                 {
                     await authenticationService.LoginWithExternal(claim.Value);
+                    
+                    var existingUser = await userManager.FindByEmailAsync(claim.Value);
+                    var encryptedPrivateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser!.Id);
+                    
+                    return Ok(new LoginResponse(true, existingUser.PublicKey, encryptedPrivateKey));
                 }
             }
 

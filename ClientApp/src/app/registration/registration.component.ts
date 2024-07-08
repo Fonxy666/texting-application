@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { TokenValidatorRequest } from '../model/auth-requests/TokenValidatorRequest';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../services/auth-service/auth.service';
-import { CryptoService } from '../services/crypto-service/crypto.service';
 
 @Component({
   selector: 'app-registration',
@@ -16,8 +15,7 @@ export class RegistrationComponent {
     constructor(
         private router: Router,
         private messageService: MessageService,
-        private authService: AuthService,
-        private cryptoService: CryptoService
+        private authService: AuthService
     ) { }
 
     isLoading: boolean = false;
@@ -32,6 +30,7 @@ export class RegistrationComponent {
         this.isLoading = true;
         this.authService.sendVerifyEmail({ Email: data.email })
         .subscribe((response: any) => {
+            console.log(data);
             if (response) {
                 this.user = data;
                 this.isLoading = false;

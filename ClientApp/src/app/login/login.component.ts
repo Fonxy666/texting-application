@@ -62,13 +62,13 @@ export class LoginComponent implements OnInit {
         return this.loginStarted;
     }
     
-    createTask(data: LoginRequest) {
+    createTask(form: LoginRequest) {
         this.isLoading = true;
-        this.authService.sendLoginToken(data)
+        this.authService.sendLoginToken(form)
         .subscribe((response: any) => {
             if (response.success) {
-                this.loginRequest.username = data.username;
-                this.loginRequest.rememberme = data.rememberme;
+                this.loginRequest.username = form.username;
+                this.loginRequest.rememberme = form.rememberme;
                 this.loginStarted = true;
                 this.isLoading = false;
             }
@@ -124,6 +124,7 @@ export class LoginComponent implements OnInit {
         this.authService.login(request)
         .subscribe((response: any) => {
             if (response.success) {
+                console.log(response);
                 this.loginStarted = false;
                 this.isLoading = false;
                 this.router.navigate(['/'], { queryParams: { loginSuccess: 'true' } });

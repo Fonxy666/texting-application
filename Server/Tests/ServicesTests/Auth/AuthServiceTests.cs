@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Server.Model;
+using Server.Model.Requests.Auth;
 using Server.Services.Authentication;
 using Server.Services.Cookie;
+using Server.Services.PrivateKey;
 using Xunit;
 using Xunit.Abstractions;
 using Assert = NUnit.Framework.Assert;
@@ -19,10 +22,13 @@ public class AuthServiceTests(ITestOutputHelper testOutputHelper)
         var userManagerMock = MockUserManager.Create();
         var tokenServiceMock = new Mock<ITokenService>();
         var cookieService = new Mock<ICookieService>();
+        var keyService = new Mock<IPrivateKeyService>();
 
-        var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object, cookieService.Object);
+        var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object, cookieService.Object, keyService.Object);
+        var regRequest = new RegistrationRequest("test@example.com", "TestUser", "password123!!!", "image", "123456789",
+            new JsonWebKey(), "");
 
-        var result = await authService.RegisterAsync("test@example.com", "TestUser", "password123", "User", "123456789", "image");
+        var result = await authService.RegisterAsync(regRequest, "User", regRequest.Image);
 
         Assert.That(result.Success, Is.True);
         Assert.That(result.Id, Is.EqualTo(""));
@@ -34,8 +40,9 @@ public class AuthServiceTests(ITestOutputHelper testOutputHelper)
         var userManagerMock = MockUserManager.Create();
         var tokenServiceMock = new Mock<ITokenService>();
         var cookieService = new Mock<ICookieService>();
+        var keyService = new Mock<IPrivateKeyService>();
 
-        var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object, cookieService.Object);
+        var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object, cookieService.Object, keyService.Object);
 
         var result = await authService.LoginAsync("TestUser", false);
 
@@ -47,8 +54,9 @@ public class AuthServiceTests(ITestOutputHelper testOutputHelper)
     {
         var tokenServiceMock = new Mock<ITokenService>();
         var cookieServiceMock = new Mock<ICookieService>();
+        var keyService = new Mock<IPrivateKeyService>();
 
-        var authService = new AuthService(_mockUserManager.Object, tokenServiceMock.Object, cookieServiceMock.Object);
+        var authService = new AuthService(_mockUserManager.Object, tokenServiceMock.Object, cookieServiceMock.Object, keyService.Object);
 
         var testEmail = "test@example.com";
         var testUser = new ApplicationUser("testImage")
@@ -128,6 +136,7 @@ public class AuthServiceTests(ITestOutputHelper testOutputHelper)
     {
         var tokenServiceMock = new Mock<ITokenService>();
         var cookieServiceMock = new Mock<ICookieService>();
-        return new AuthService(_mockUserManager.Object, tokenServiceMock.Object, cookieServiceMock.Object);
+        var keyService = new Mock<IPrivateKeyService>();
+        return new AuthService(_mockUserManager.Object, tokenServiceMock.Object, cookieServiceMock.Object, keyService.Object);
     }
 }

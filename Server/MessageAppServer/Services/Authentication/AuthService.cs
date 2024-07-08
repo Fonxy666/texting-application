@@ -89,11 +89,6 @@ public class AuthService(
         return new AuthResult(true, managedUser.Id.ToString(), "");
     }
 
-    public Task<string?> GetEmailFromUserName(string username)
-    {
-        return Task.FromResult(userManager.Users.FirstOrDefault(user => user.UserName == username)?.Email);
-    }
-
     public async Task<AuthResult> ExamineLoginCredentials(string username, string password)
     {
         var managedUser = await userManager.FindByNameAsync(username);
