@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using Server.Model;
 using Server.Services.Chat.RoomService;
 
@@ -56,6 +57,7 @@ public static class PopulateDbAndAddRoles
                     Email = adminEmail
                 };
 
+                admin.SetPublicKey(new JsonWebKey());
                 var adminCreated = userManager.CreateAsync(admin, configuration["AdminPassword"]!).Result;
 
                 if (adminCreated.Succeeded)

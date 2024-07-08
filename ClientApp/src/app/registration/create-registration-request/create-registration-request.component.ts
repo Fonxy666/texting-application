@@ -5,6 +5,7 @@ import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { DomSanitizer } from '@angular/platform-browser';
 import { passwordValidator, passwordMatchValidator } from '../../validators/ValidPasswordValidator';
 import { Router } from '@angular/router';
+import { CryptoService } from '../../services/crypto-service/crypto.service';
 
 @Component({
   selector: 'app-create-registration-request',
@@ -18,7 +19,13 @@ export class CreateRegistrationRequestComponent {
     @ViewChild('passwordToggleIcon') passwordToggleIcon!: ElementRef;
     @ViewChild('passwordRepeatToggleIcon') passwordRepeatToggleIcon!: ElementRef;
     
-    constructor(private fb: FormBuilder, private sanitizer: DomSanitizer, private router: Router, private renderer: Renderer2) { }
+    constructor(
+        private fb: FormBuilder,
+        private sanitizer: DomSanitizer,
+        private router: Router,
+        private renderer: Renderer2,
+        private cryptoService: CryptoService
+    ) { }
     
     registrationRequest!: FormGroup;
     profilePic: string = "";
@@ -70,13 +77,20 @@ export class CreateRegistrationRequestComponent {
     @Output()
     SendRegistrationRequest: EventEmitter<RegistrationRequest> = new EventEmitter<RegistrationRequest>();
 
-    onFormSubmit() {
+    async onFormSubmit() {
+        const keyPair = await this.cryptoService.generateKeyPair();
+        const { publicKeyJwk, privateKeyJwk } = await this.cryptoService.exportKeyPair(keyPair);
+        let userPassword = this.registrationRequest.get('password')?.value;
+        let encryptedPrivateKey = await this.cryptoService.encryptPrivateKey(privateKeyJwk, userPassword);
+
         const registrationRequest = new RegistrationRequest(
             this.registrationRequest.get('email')?.value,
             this.registrationRequest.get('username')?.value,
-            this.registrationRequest.get('password')?.value,
+            userPassword,
             this.profilePic,
-            this.registrationRequest.get('phoneNumber')?.value
+            this.registrationRequest.get('phoneNumber')?.value,
+            publicKeyJwk,
+            encryptedPrivateKey
         );
         this.SendRegistrationRequest.emit(registrationRequest);
     }

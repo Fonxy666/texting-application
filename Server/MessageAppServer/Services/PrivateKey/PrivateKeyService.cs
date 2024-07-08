@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Server.Database;
 
 namespace Server.Services.PrivateKey;
@@ -13,10 +14,19 @@ public class PrivateKeyService(PrivateKeysDbContext context) : IPrivateKeyServic
         return key!.EndToEndEncryptedPrivateKey;
     }
 
-    public async Task SaveKey(Model.PrivateKey key)
+    public async Task<bool> SaveKey(Model.PrivateKey key)
     {
-        await Context.Keys!.AddAsync(key);
-        await Context.SaveChangesAsync();
+        try
+        {
+            await Context.Keys!.AddAsync(key);
+            await Context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
     }
 
     public async Task DeleteKey(Guid userId)

@@ -1,32 +1,48 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Server.Model;
+using Server.Model.Requests.Auth;
 using Server.Model.Responses.Auth;
 using Server.Services.Cookie;
+using Server.Services.PrivateKey;
 
 namespace Server.Services.Authentication;
 
 public class AuthService(
     UserManager<ApplicationUser> userManager,
     ITokenService tokenService,
-    ICookieService cookieService) : IAuthService
+    ICookieService cookieService,
+    IPrivateKeyService keyService
+    ) : IAuthService
 {
-    public async Task<AuthResult> RegisterAsync(string email, string username, string password, string role, string phoneNumber, string image)
+    public async Task<AuthResult> RegisterAsync(RegistrationRequest request, string role, string imagePath)
     {
-        var user = new ApplicationUser(image)
+        var user = new ApplicationUser(imagePath)
         {
-            UserName = username,
-            Email = email,
-            PhoneNumber = phoneNumber,
+            UserName = request.Username,
+            Email = request.Email,
+            PhoneNumber = request.PhoneNumber,
             PhoneNumberConfirmed = false,
             EmailConfirmed = true,
             TwoFactorEnabled = true,
             LockoutEnabled = false
         };
         
-        await userManager.CreateAsync(user, password);
+        user.SetPublicKey(request.PublicKey);
+        
+        var createResult = await userManager.CreateAsync(user, request.Password);
+        var addToRoleAsync = await userManager.AddToRoleAsync(user, role);
 
-        await userManager.AddToRoleAsync(user, role);
-        return new AuthResult(true, "", "");
+        if (!createResult.Succeeded && !addToRoleAsync.Succeeded)
+        {
+            return new AuthResult(false, "", "");
+        }
+        
+        var savedUser = await userManager.Users.FirstOrDefaultAsync(u => u.UserName == request.Username);
+        var privateKey = new Model.PrivateKey(savedUser!.Id, request.EncryptedPrivateKey);
+        var result = await keyService.SaveKey(privateKey);
+
+        return !result ? new AuthResult(false, "", "") : new AuthResult(true, "", "");
     }
 
     public async Task<AuthResult> LoginAsync(string username, bool rememberMe)

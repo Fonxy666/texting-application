@@ -37,8 +37,29 @@ export class CryptoService {
         return keyPair;
     }
 
-    async exportPublicKey(key: CryptoKey) {
-        const exported = await window.crypto.subtle.exportKey("spki", key);
-        return exported;
+    async exportKey(key: CryptoKey) {
+        return window.crypto.subtle.exportKey("jwk", key);
+    }
+
+    async exportKeyPair(keyPair: { publicKey: CryptoKey; privateKey: CryptoKey; }) {
+        const publicKeyJwk = await this.exportKey(keyPair.publicKey);
+        const privateKeyJwk = await this.exportKey(keyPair.privateKey);
+        return { publicKeyJwk, privateKeyJwk };
+    }
+
+    async encryptPrivateKey(privateKeyJwk: JsonWebKey, password: string): Promise<string> {
+        const privateKeyString = JSON.stringify(privateKeyJwk);
+        const encryptionKey = this.setEncryptionKeyFromUserInput(password);
+        const encryptedPrivateKey = this.encryptMessage(privateKeyString, encryptionKey);
+
+        return encryptedPrivateKey;
+    }
+
+    async decryptPrivateKey(encryptedPrivateKey: string, password: string): Promise<JsonWebKey> {
+        const encryptionKey = this.setEncryptionKeyFromUserInput(password);
+        const decryptedPrivateKeyString = this.decryptMessage(encryptedPrivateKey, encryptionKey);
+        const privateKeyJwk = JSON.parse(decryptedPrivateKeyString);
+
+        return privateKeyJwk;
     }
 }

@@ -69,7 +69,7 @@ public class AuthController(
         try
         {
             var imagePath = userServices.SaveImageLocally(request.Username, request.Image);
-            var result = await authenticationService.RegisterAsync(request.Email, request.Username, request.Password, "User", request.PhoneNumber, imagePath);
+            var result = await authenticationService.RegisterAsync(request, "User", imagePath);
 
             return Ok(new AuthResponse(true, result.Id));
         }
