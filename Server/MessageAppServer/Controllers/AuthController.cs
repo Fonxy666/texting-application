@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Server.Model;
@@ -182,21 +183,29 @@ public class AuthController(
                 claim.Value
             });
 
+            ApplicationUser? existingUser = null; 
             foreach (var claim in claims)
             {
                 var splittedClaim = claim.Type.Split("/");
                 if (splittedClaim[^1] == "emailaddress")
                 {
                     await authenticationService.LoginWithExternal(claim.Value);
-
-                    var existingUser = await userManager.FindByEmailAsync(claim.Value);
-                    var encryptedPrivateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser!.Id);
-                    
-                    return Ok(new LoginResponse(true, existingUser.PublicKey, encryptedPrivateKey));
+                    existingUser = await userManager.FindByEmailAsync(claim.Value);
+                    break;
                 }
             }
 
-            return Redirect($"{configuration["FrontendUrlAndPort"]}?loginSuccess=true");
+            if (existingUser == null)
+            {
+                return BadRequest("There is no registered user with this account.");
+            }
+
+            var encryptedPrivateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser.Id);
+            
+            HttpContext.Session.SetString("publicKey", existingUser.PublicKey);
+            HttpContext.Session.SetString("encryptedPrivateKey", encryptedPrivateKey);
+            
+            return Redirect($"{configuration["FrontendUrlAndPort"]}?loginSuccess=true&externalLogin=true");
         }
         catch (Exception e)
         {
@@ -237,21 +246,29 @@ public class AuthController(
                 claim.Type,
                 claim.Value
             });
-        
+
+            ApplicationUser? existingUser = null; 
             foreach (var claim in claims)
             {
                 var splittedClaim = claim.Type.Split("/");
                 if (splittedClaim[^1] == "emailaddress")
                 {
                     await authenticationService.LoginWithExternal(claim.Value);
-                    
-                    var existingUser = await userManager.FindByEmailAsync(claim.Value);
-                    var encryptedPrivateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser!.Id);
-                    
-                    return Ok(new LoginResponse(true, existingUser.PublicKey, encryptedPrivateKey));
+                    existingUser = await userManager.FindByEmailAsync(claim.Value);
+                    break;
                 }
             }
 
+            if (existingUser == null)
+            {
+                return BadRequest("There is no registered user with this account.");
+            }
+
+            var encryptedPrivateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser.Id);
+            
+            HttpContext.Session.SetString("publicKey", existingUser.PublicKey);
+            HttpContext.Session.SetString("encryptedPrivateKey", encryptedPrivateKey);
+            
             return Redirect($"{configuration["FrontendUrlAndPort"]}?loginSuccess=true");
         }
         catch (Exception e)
@@ -259,6 +276,28 @@ public class AuthController(
             logger.LogError(e, "Error during google login.");
             return Redirect($"{configuration["FrontendUrlAndPort"]}?loginSuccess=false");
         }
+    }
+    
+    [HttpGet("GetPrivateAndPublicKeyFromSession"), Authorize(Roles = "User, Admin")]
+    public async Task<IActionResult> GetPrivateAndPublicKeyFromSession()
+    {
+        var publicKey = HttpContext.Session.GetString("publicKey");
+        var encryptedPrivateKey = HttpContext.Session.GetString("encryptedPrivateKey");
+        
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var existingUser = await userManager.FindByIdAsync(userId!);
+
+        if (existingUser!.PublicKey != publicKey)
+        {
+            return BadRequest("Not allowed.");
+        }
+        
+        if (string.IsNullOrEmpty(publicKey)|| string.IsNullOrEmpty(encryptedPrivateKey))
+        {
+            return NotFound("Email address not found in session.");
+        }
+
+        return Ok(new { publicKey, encryptedPrivateKey });
     }
     
     [HttpGet("Logout")]

@@ -83,6 +83,15 @@ public class Startup(IConfiguration configuration)
         services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connection));
         services.AddDbContext<PrivateKeysDbContext>(options => options.UseSqlServer(connectionToPrivateKeys));
         
+        services.AddDistributedMemoryCache();
+        
+        services.AddSession(options =>
+        {
+            options.IdleTimeout = TimeSpan.FromMinutes(30);
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+        });
+        
         services.AddAuthentication(o => {
                 o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -191,25 +200,21 @@ public class Startup(IConfiguration configuration)
         app.UseHttpsRedirection();
         app.UseRouting();
         
-        app.UseCors(builder =>
-        {
-            builder.WithOrigins("http://localhost:4200")
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
-        });
-        
         app.UseRefreshTokenMiddleware();
         app.UseJwtRefreshMiddleware();
         
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseSession();
 
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapHub<ChatHub>("/chat");
             endpoints.MapHub<FriendRequestHub>("/friend");
             endpoints.MapControllers();
+            endpoints.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Home}/{action=Index}/{id?}");
         });
         
         PopulateDbAndAddRoles.AddRolesAndAdminSync(app, configuration);
