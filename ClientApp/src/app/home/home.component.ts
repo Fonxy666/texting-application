@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
 import { MessageService } from 'primeng/api';
+import { AuthService } from '../services/auth-service/auth.service';
+import { keys } from 'lodash';
 
 @Component({
   selector: 'app-home',
@@ -12,7 +14,8 @@ import { MessageService } from 'primeng/api';
 export class HomeComponent implements OnInit {
     constructor(
         private cookieService: CookieService,
-        private messageService: MessageService
+        private messageService: MessageService,
+        private authService: AuthService
     ) { }
 
     starsImage: string = "./assets/images/4-out-of-5-stars.webp"
@@ -21,6 +24,10 @@ export class HomeComponent implements OnInit {
 
     ngOnInit() {
         this.animation = this.cookieService.get("Animation") != "False";
+
+        this.authService.getCryptoKeysFromBackend().subscribe(keys => {
+            console.log(keys);
+        });
 
         setTimeout(() => {
             const urlParams = new URLSearchParams(window.location.search);

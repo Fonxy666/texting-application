@@ -77,13 +77,13 @@ export class UserService {
         )
     }
 
-    changeEmail(form: ChangeEmailRequest) {
+    changeEmail(form: ChangeEmailRequest): Observable<any> {
         return this. errorHandler.handleErrors(
             this.http.patch(`/api/v1/User/ChangeEmail`, form, { withCredentials: true})
         )
     }
 
-    changeAvatar(image: string) {
+    changeAvatar(image: string): Observable<any> {
         return this. errorHandler.handleErrors(
             this.http.patch(`/api/v1/User/ChangeAvatar`, image, {
                 headers: {
