@@ -33,6 +33,9 @@ import { SupportPageComponent } from './support-page/support-page.component';
 import { AboutUsPageComponent } from './about-us-page/about-us-page.component';
 import { BackgroundImageComponent } from './background-image/background-image.component';
 import { ManageFriendRequestComponent } from './profile/profile/manage-friend-request/manage-friend-request.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MessageService } from 'primeng/api';
+import { UserKeyGuard } from './guards/user-key.guard';
 
 @NgModule({
   declarations: [
@@ -61,6 +64,7 @@ import { ManageFriendRequestComponent } from './profile/profile/manage-friend-re
     ManageFriendRequestComponent
   ],
   imports: [
+    MatDialogModule,
     BrowserModule,
     AppRoutingModule,
     FormsModule,
@@ -73,6 +77,8 @@ import { ManageFriendRequestComponent } from './profile/profile/manage-friend-re
   ],
   providers: [
     CookieService,
+    MessageService,
+    UserKeyGuard,
     provideAnimationsAsync()
   ],
   bootstrap: [AppComponent]

@@ -7,14 +7,15 @@ import { MessageService } from 'primeng/api';
 import { AuthService } from '../services/auth-service/auth.service';
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrl: '../../styles.css',
-  providers: [ MessageService ]
+    selector: 'app-login',
+    templateUrl: './login.component.html',
+    styleUrl: '../../styles.css',
+    providers: [ MessageService ]
 })
 
 export class LoginComponent implements OnInit {
     loadGoogleSigninLibrary: any;
+    
     constructor(
         private cookieService: CookieService,
         private router: Router,

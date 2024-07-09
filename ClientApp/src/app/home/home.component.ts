@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../services/auth-service/auth.service';
-import { keys } from 'lodash';
 
 @Component({
   selector: 'app-home',
