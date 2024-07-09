@@ -45,9 +45,10 @@ export class UserKeyGuard implements CanActivate {
                 pageName: 'Provide Token',
                 labelName: 'Enter Token:',
                 inputPlaceholder: 'Enter your token',
-                buttonContext: 'Submit'
+                buttonContext: 'Submit',
+                background: 'false'
             },
-            disableClose: true
+            disableClose: true,
         });
 
         dialogRef.afterClosed().subscribe(result => {
