@@ -1,17 +1,18 @@
 import { Component, EventEmitter, Inject, Input, OnInit, Optional, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
     selector: 'app-token-provide',
     templateUrl: './token-provide.component.html',
-    styleUrls: ['../../styles.css']
+    styleUrls: ['../../styles.css', './token-provide.component.css']
 })
 
 export class TokenProvideComponent implements OnInit {
     constructor(
         private fb: FormBuilder,
-        @Optional() @Inject(MAT_DIALOG_DATA) public data: any
+        @Optional() @Inject(MAT_DIALOG_DATA) public data: any,
+        @Optional() private dialogRef: MatDialogRef<TokenProvideComponent>
     ) { }
     
     token!: FormGroup;
@@ -44,10 +45,16 @@ export class TokenProvideComponent implements OnInit {
     onFormSubmit() {
         const token = this.token.get('token')?.value;
         this.SendToken.emit(token);
+        if (this.dialogRef) {
+            this.dialogRef.close(token);
+        }
     }
 
     handleBackClick() {
         this.cancelLogin.emit();
+        if (this.dialogRef) {
+            this.dialogRef.close();
+        }
     }
 
     needBackground(): boolean {

@@ -67,22 +67,6 @@ a {
     grid-row-gap: 0px;
 }
 
-.token-container-without-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: Cursive;
-    background: transparent;
-}
-
-.token-container-with-background {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: Cursive;
-}
-
 .card {
     background-color: rgba(63, 63, 63, 0.7);
 }

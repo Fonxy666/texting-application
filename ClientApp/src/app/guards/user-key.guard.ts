@@ -42,17 +42,22 @@ export class UserKeyGuard implements CanActivate {
     private openTokenProvideModal(): void {
         const dialogRef = this.dialog.open(TokenProvideComponent, {
             data: {
-                pageName: 'Provide Token',
-                labelName: 'Enter Token:',
+                pageName: 'You need to provide the key, what we will use for decrypt the messages, which is for your security.',
+                labelName: 'Don`t forget to remember to this key, because you need to give us this key after logins.',
                 inputPlaceholder: 'Enter your token',
                 buttonContext: 'Submit',
                 background: 'false'
             },
             disableClose: true,
+            panelClass: 'custom-dialog-container'
         });
-
+    
         dialogRef.afterClosed().subscribe(result => {
-            // Handle close events if required
+            if (result) {
+                console.log("UserKeyGuard: Token received", result);
+            } else {
+                console.log("UserKeyGuard: Dialog closed without token");
+            }
         });
     }
 }
