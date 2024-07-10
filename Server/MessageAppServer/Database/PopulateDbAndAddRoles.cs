@@ -157,7 +157,7 @@ public static class PopulateDbAndAddRoles
                 return;
             }
 
-            roomService.RegisterRoomAsync("test", "test", new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916")).Wait();
+            roomService.RegisterRoomAsync("test", "test", new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"), "").Wait();
         }
     }
 }

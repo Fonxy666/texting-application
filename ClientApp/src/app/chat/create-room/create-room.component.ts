@@ -5,6 +5,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { CreateRoomRequest } from '../../model/room-requests/CreateRoomRequest';
 import { MessageService } from 'primeng/api';
 import { ChatService } from '../../services/chat-service/chat.service';
+import { CryptoService } from '../../services/crypto-service/crypto.service';
 
 @Component({
   selector: 'app-create-room',
@@ -21,7 +22,8 @@ export class CreateRoomComponent implements OnInit {
         private router: Router,
         private renderer: Renderer2,
         public chatService: ChatService,
-        private messageService: MessageService
+        private messageService: MessageService,
+        private cryptoService: CryptoService
     ) { }
 
     myImage: string = "./assets/images/backgroundpng.png";
@@ -58,10 +60,13 @@ export class CreateRoomComponent implements OnInit {
         this.renderer.addClass(this.passwordInputToggle.nativeElement, iconClassToAdd);
     }
 
-    createForm() {
+    async createForm() {
+        const publicKey = this.cookieService.get("PublicKey");
+        const decryptedKey = this.cryptoService.encryptPrivateKey(await this.cryptoService.generateSymmetricJsonWebKey(), publicKey);
         return new CreateRoomRequest(
             this.createRoomForm.get('roomName')?.value,
-            this.createRoomForm.get('password')?.value
+            this.createRoomForm.get('password')?.value,
+            await decryptedKey
         )
     }
 
@@ -73,8 +78,8 @@ export class CreateRoomComponent implements OnInit {
         this.showPassword = !this.showPassword;
     }
 
-    callSendcreateRoomRequest() {
-        this.chatService.registerRoom(this.createForm()).subscribe(
+    async callSendcreateRoomRequest() {
+        this.chatService.registerRoom(await this.createForm()).subscribe(
             response => {
                 if (response.success) {
                     this.router.navigate(['join-room'], { queryParams: { createRoom: 'true' } });

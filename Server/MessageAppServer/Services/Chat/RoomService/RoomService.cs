@@ -27,7 +27,7 @@ public class RoomService(DatabaseContext context) : IRoomService
         return existingRoom;
     }
 
-    public async Task<RoomResponse> RegisterRoomAsync(string roomName, string password, Guid creatorId)
+    public async Task<RoomResponse> RegisterRoomAsync(string roomName, string password, Guid creatorId, string encryptedSymmetricKey)
     {
         var room = new Room(roomName, password, creatorId);
         
@@ -40,6 +40,8 @@ public class RoomService(DatabaseContext context) : IRoomService
                 room.SetRoomIdForTests("801d40c6-c95d-47ed-a21a-88cda341d0a9");
                 break;
         }
+        
+        room.AddNewSymmetricKey(creatorId, encryptedSymmetricKey);
         
         await Context.Rooms!.AddAsync(room);
         await Context.SaveChangesAsync();

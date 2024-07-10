@@ -62,4 +62,16 @@ export class CryptoService {
 
         return privateKeyJwk;
     }
+
+    async generateSymmetricJsonWebKey(): Promise<JsonWebKey> {
+        const randomBytes = CryptoJS.lib.WordArray.random(32);
+        const symmetricKey = CryptoJS.enc.Base64.stringify(randomBytes);
+    
+        const jwk: JsonWebKey = {
+            kty: 'oct',
+            k: symmetricKey,
+        };
+    
+        return jwk;
+    }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Server.Model.Chat;
 
 namespace Server.Model;
 
@@ -13,7 +14,9 @@ public class ApplicationUser : IdentityUser<Guid>
     public string PublicKey { get; set; }
     public ICollection<FriendConnection> SentFriendRequests { get; set; } = new List<FriendConnection>();
     public ICollection<FriendConnection> ReceivedFriendRequests { get; set; } = new List<FriendConnection>();
+    public ICollection<Room> CreatedRooms { get; set; } = new List<Room>();
     public ICollection<ApplicationUser> Friends { get; set; } = new List<ApplicationUser>();
+    public ICollection<EncryptedSymmetricKey> UsersSymmetricKeys { get; set; } = new List<EncryptedSymmetricKey>();
 
     public ApplicationUser(string? imageUrl = "-")
     {

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -9,9 +10,12 @@ public class Room
     [Key]
     public Guid RoomId { get; private set; }
     public Guid CreatorId { get; init; }
+    [ForeignKey("CreatorUser")]
+    public ApplicationUser CreatorUser { get; set; }
     public string RoomName { get; init; }
     public string Password { get; private set; }
     public ICollection<Message> Messages { get; set; } = new List<Message>();
+    public ICollection<EncryptedSymmetricKey> EncryptedSymmetricKeys { get; private set; } = new List<EncryptedSymmetricKey>();
     
     public Room() {}
     
@@ -50,5 +54,10 @@ public class Room
     public bool IsCreator(Guid userId)
     {
         return CreatorId == userId;
+    }
+
+    public void AddNewSymmetricKey(Guid userId, string key)
+    {
+        EncryptedSymmetricKeys.Add(new EncryptedSymmetricKey(userId, key, RoomId));
     }
 }
