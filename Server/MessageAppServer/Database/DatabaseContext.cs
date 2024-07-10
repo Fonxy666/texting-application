@@ -61,6 +61,6 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : Identi
             .HasOne<ApplicationUser>(k => k.User)
             .WithMany(u => u.UsersSymmetricKeys)
             .HasForeignKey(k => k.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -83,6 +83,12 @@ export class UserService {
         )
     }
 
+    getCryptoKey(): Observable<any> {
+        return this. errorHandler.handleErrors(
+            this.http.get(`/api/v1/CryptoKey/GetPrivateKey`, { withCredentials: true})
+        )
+    }
+
     changeAvatar(image: string): Observable<any> {
         return this. errorHandler.handleErrors(
             this.http.patch(`/api/v1/User/ChangeAvatar`, image, {

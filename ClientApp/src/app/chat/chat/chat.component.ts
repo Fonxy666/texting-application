@@ -17,6 +17,8 @@ import { DisplayService } from '../../services/display-service/display.service';
 import { MediaService } from '../../services/media-service/media.service';
 import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePasswordRequestForRoom';
 import { UserService } from '../../services/user-service/user.service';
+import { CryptoService } from '../../services/crypto-service/crypto.service';
+import { IndexedDBService } from '../../services/db-service/indexed-dbservice.service';
 
 @Component({
   selector: 'app-chat',
@@ -44,6 +46,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     isLoading: boolean = false;
     private subscriptions: Subscription = new Subscription();
     onlineFriends: FriendRequestManage[] | undefined;
+    userKey: string = "";
+    decryptedPrivateKey: string = "";
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
@@ -59,7 +63,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         public friendService: FriendService,
         public displayService: DisplayService,
         private mediaService: MediaService,
-        private userService: UserService
+        private userService: UserService,
+        private cryptoService: CryptoService,
+        private dbService: IndexedDBService
     ) { }
 
     messages: any[] = [];
@@ -71,7 +77,18 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.roomId = sessionStorage.getItem("roomId")!;
         this.roomName = sessionStorage.getItem("room")!;
 
+        this.dbService.getEncryptionKey(this.userId).then(key => {
+            this.userKey = key;
+        })
+
         this.chatService.setCurrentRoom(this.roomId);
+
+        this.cryptoService.getEncryptedPrivateKey().subscribe(encryptedKey => {
+            console.log(encryptedKey);
+            this.cryptoService.decryptPrivateKey(encryptedKey, this.userKey).then(result => {
+                console.log(result);
+            });
+        })
 
         if (this.roomId) {
             this.subscriptions.add(
@@ -457,6 +474,26 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                         detail: 'Password successfully updated.',
                         styleClass: 'ui-toast-message-success'
                     });
+                }
+            },
+            (error) => {
+                if (error.status === 400) {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Wrong password.'
+                    });
+                } else {
+                    console.error("An error occurred:", error);
+                }
+            });
+    }
+
+    getEncryptedPrivateKey() {
+            this.cryptoService.getEncryptedPrivateKey()
+            .subscribe((response: any) => {
+                if (response.success) {
+                    
                 }
             },
             (error) => {

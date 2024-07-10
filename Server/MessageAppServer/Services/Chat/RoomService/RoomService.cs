@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Server.Database;
+using Server.Model;
 using Server.Model.Chat;
 using Server.Model.Responses.Chat;
 
@@ -7,7 +9,7 @@ namespace Server.Services.Chat.RoomService;
 
 public class RoomService(DatabaseContext context) : IRoomService
 {
-    private DatabaseContext Context { get; init; } = context;
+    private DatabaseContext Context { get; } = context;
     public Task<bool> ExistingRoom(Guid id)
     {
         return Context.Rooms!.AnyAsync(room => room.RoomId == id);

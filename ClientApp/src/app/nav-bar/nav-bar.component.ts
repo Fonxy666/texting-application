@@ -7,6 +7,7 @@ import { MediaService } from '../services/media-service/media.service';
 import { ChatRoomInvite } from '../model/room-requests/ChatRoomInvite';
 import { ChatService } from '../services/chat-service/chat.service';
 import { IndexedDBService } from '../services/db-service/indexed-dbservice.service';
+import { CryptoService } from '../services/crypto-service/crypto.service';
 
 @Component({
     selector: 'app-nav-bar',
@@ -22,7 +23,8 @@ export class NavBarComponent implements OnInit {
         public friendService: FriendService,
         private mediaService: MediaService,
         public chatService: ChatService,
-        private dbService: IndexedDBService
+        private dbService: IndexedDBService,
+        private cryptoService: CryptoService
     ) { }
 
     isDropstart: boolean = true;
@@ -38,7 +40,7 @@ export class NavBarComponent implements OnInit {
 
     ngOnInit(): void {
         this.userId = this.cookieService.get("UserId");
-
+        
         this.isLoggedIn();
         this.checkScreenSize();
 

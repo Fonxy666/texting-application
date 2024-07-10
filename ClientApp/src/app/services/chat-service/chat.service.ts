@@ -14,6 +14,7 @@ import { HttpClient } from '@angular/common/http';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
 import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePasswordRequestForRoom';
+import { CryptoService } from '../crypto-service/crypto.service';
 
 @Injectable({
     providedIn: 'root'
@@ -35,7 +36,8 @@ export class ChatService {
         private userService: UserService,
         private friendService: FriendService,
         private http: HttpClient,
-        private errorHandler: ErrorHandlerService
+        private errorHandler: ErrorHandlerService,
+        private cryptoService: CryptoService
     ) {
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl('/chat')

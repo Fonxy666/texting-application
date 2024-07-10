@@ -10,7 +10,7 @@ public class Room
     [Key]
     public Guid RoomId { get; private set; }
     public Guid CreatorId { get; init; }
-    [ForeignKey("CreatorUser")]
+    [ForeignKey("CreatorId")]
     public ApplicationUser CreatorUser { get; set; }
     public string RoomName { get; init; }
     public string Password { get; private set; }
