@@ -12,4 +12,5 @@ public interface ICookieService
     public Task<bool> SetJwtToken(string accessToken, bool rememberMe);
     public void DeleteCookies();
     public void SetRememberMeCookie(bool rememberMe);
+    public void SetPublicKey(bool rememberMe, string publicKey);
 }

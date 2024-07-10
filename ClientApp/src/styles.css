@@ -3,7 +3,6 @@
     min-width: 100%;
     min-height: 100vh;
     overflow: hidden;
-    max-height: 100vh;
     @media (max-width: 1400px) {
         max-height: 100%;
     }

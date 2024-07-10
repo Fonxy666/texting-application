@@ -30,7 +30,6 @@ export class RegistrationComponent {
         this.isLoading = true;
         this.authService.sendVerifyEmail({ Email: data.email })
         .subscribe((response: any) => {
-            console.log(data);
             if (response) {
                 this.user = data;
                 this.isLoading = false;

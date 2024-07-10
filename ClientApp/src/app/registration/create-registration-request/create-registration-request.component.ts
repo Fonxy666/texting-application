@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup,  Validators } from '@angular/forms';
 import { RegistrationRequest } from '../../model/auth-requests/RegistrationRequest';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { DomSanitizer } from '@angular/platform-browser';
-import { passwordValidator, passwordMatchValidator } from '../../validators/ValidPasswordValidator';
+import { passwordValidator, passwordMatchValidator, decryptTokenValidator } from '../../validators/ValidPasswordValidator';
 import { Router } from '@angular/router';
 import { CryptoService } from '../../services/crypto-service/crypto.service';
 
@@ -40,7 +40,8 @@ export class CreateRegistrationRequestComponent {
             username: ['', Validators.required],
             password: ['', [Validators.required, passwordValidator]],
             passwordrepeat: ['', [Validators.required, passwordValidator]],
-            phoneNumber: ['', Validators.required]
+            phoneNumber: ['', Validators.required],
+            decryptToken: ['', [Validators.required, decryptTokenValidator]]
         }, {
             validators: passwordMatchValidator.bind(this)
         });
@@ -80,13 +81,13 @@ export class CreateRegistrationRequestComponent {
     async onFormSubmit() {
         const keyPair = await this.cryptoService.generateKeyPair();
         const { publicKeyJwk, privateKeyJwk } = await this.cryptoService.exportKeyPair(keyPair);
-        let userPassword = this.registrationRequest.get('password')?.value;
+        let userPassword = this.registrationRequest.get('decryptToken')?.value;
         let encryptedPrivateKey = await this.cryptoService.encryptPrivateKey(privateKeyJwk, userPassword);
 
         const registrationRequest = new RegistrationRequest(
             this.registrationRequest.get('email')?.value,
             this.registrationRequest.get('username')?.value,
-            userPassword,
+            this.registrationRequest.get('password')?.value,
             this.profilePic,
             this.registrationRequest.get('phoneNumber')?.value,
             publicKeyJwk,

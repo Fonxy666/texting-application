@@ -82,6 +82,28 @@
                     </div>
                 </div>
                 <div class="form-group mt-2">
+                    <label class="text-white text-size-16 mb-1" for="decryptToken">Token for chatroom messages</label>
+                    <div class="input-icon">
+                        <input class="input-class" formControlName="decryptToken" type="text" class="form-control" id="decryptToken" placeholder="123456" required name="decryptToken">
+                        <div class="encrypt-token-span">
+                            <span class="position-relative" data-toggle="tooltip" data-placement="right" title="Type in a 6 digit token, which we will be necessary for the chatrooms end-to-end encryption.">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-info-circle mx-2" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                    <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="error-messages-container">
+                        <div class="error-message">
+                            <div *ngIf="registrationRequest.get('decryptToken')?.invalid 
+                                && (registrationRequest.get('decryptToken')?.dirty || registrationRequest.get('decryptToken')?.touched)" class="text-danger error-message">
+                                <div *ngIf="registrationRequest.get('decryptToken')?.errors">Provide us 6 digit</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group mt-2">
                     <label class="text-white text-size-16 mb-1" for="phoneNumber">Telephone number</label>
                     <input class="input-class" formControlName="phoneNumber" type="email" class="form-control" id="phoneNumber" aria-describedby="emailHelp" placeholder="06-20-221-2222" required name="phoneNumber">
                     <div class="error-messages-container">

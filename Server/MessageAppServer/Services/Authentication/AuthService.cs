@@ -59,6 +59,7 @@ public class AuthService(
         }
 
         cookieService.SetRememberMeCookie(rememberMe);
+        cookieService.SetPublicKey(rememberMe, managedUser!.PublicKey);
         cookieService.SetUserId(managedUser!.Id, rememberMe);
         cookieService.SetAnimateAndAnonymous(rememberMe);
         await cookieService.SetJwtToken(accessToken, rememberMe);
@@ -82,6 +83,7 @@ public class AuthService(
         await userManager.UpdateAsync(managedUser);
 
         cookieService.SetRememberMeCookie(true);
+        cookieService.SetPublicKey(true, managedUser.PublicKey);
         cookieService.SetUserId(managedUser.Id, true);
         cookieService.SetAnimateAndAnonymous(true);
         await cookieService.SetJwtToken(accessToken, true);
