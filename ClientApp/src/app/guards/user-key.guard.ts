@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CanActivate } from '@angular/router';
+import { CanActivate, Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { IndexedDBService } from '../services/db-service/indexed-dbservice.service';
 import { TokenProvideComponent } from '../token-provide/token-provide.component';
@@ -16,7 +16,8 @@ export class UserKeyGuard implements CanActivate {
     constructor(
         private dbService: IndexedDBService,
         private cookieService: CookieService,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private router: Router,
     ) { }
     
     async canActivate(): Promise<boolean> {
@@ -54,7 +55,8 @@ export class UserKeyGuard implements CanActivate {
     
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
-                console.log("UserKeyGuard: Token received", result);
+                this.dbService.storeEncryptionKey(this.userId, result);
+                this.router.navigate(['/join-room']);
             } else {
                 console.log("UserKeyGuard: Dialog closed without token");
             }

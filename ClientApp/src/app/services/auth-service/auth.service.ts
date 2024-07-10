@@ -37,8 +37,4 @@ export class AuthService {
     registration(form: any): Observable<any> {
         return this.http.post(`/api/v1/Auth/Register`, form);
     }
-
-    getCryptoKeysFromBackend(): Observable<any> {
-        return this.http.get(`/api/v1/Auth/GetPrivateAndPublicKeyFromSession`, { withCredentials: true });
-    }
 }

@@ -6,7 +6,7 @@ import { FriendService } from '../services/friend-service/friend.service';
 import { MediaService } from '../services/media-service/media.service';
 import { ChatRoomInvite } from '../model/room-requests/ChatRoomInvite';
 import { ChatService } from '../services/chat-service/chat.service';
-import { CryptoService } from '../services/crypto-service/crypto.service';
+import { IndexedDBService } from '../services/db-service/indexed-dbservice.service';
 
 @Component({
     selector: 'app-nav-bar',
@@ -22,7 +22,7 @@ export class NavBarComponent implements OnInit {
         public friendService: FriendService,
         private mediaService: MediaService,
         public chatService: ChatService,
-        private cryptoService: CryptoService
+        private dbService: IndexedDBService
     ) { }
 
     isDropstart: boolean = true;
@@ -72,6 +72,7 @@ export class NavBarComponent implements OnInit {
         this.http.get(`/api/v1/Auth/Logout`, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {
+                this.dbService.clearEncryptionKey(this.userId);
                 this.loggedIn = false;
                 this.router.navigate(['/'], { queryParams: { logout: 'true' } });
             }

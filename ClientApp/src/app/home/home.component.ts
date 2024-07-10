@@ -13,8 +13,7 @@ import { AuthService } from '../services/auth-service/auth.service';
 export class HomeComponent implements OnInit {
     constructor(
         private cookieService: CookieService,
-        private messageService: MessageService,
-        private authService: AuthService
+        private messageService: MessageService
     ) { }
 
     starsImage: string = "./assets/images/4-out-of-5-stars.webp"
@@ -23,10 +22,6 @@ export class HomeComponent implements OnInit {
 
     ngOnInit() {
         this.animation = this.cookieService.get("Animation") != "False";
-
-        this.authService.getCryptoKeysFromBackend().subscribe(keys => {
-            console.log(keys);
-        });
 
         setTimeout(() => {
             const urlParams = new URLSearchParams(window.location.search);

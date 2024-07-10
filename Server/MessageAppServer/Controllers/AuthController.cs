@@ -254,28 +254,6 @@ public class AuthController(
         }
     }
     
-    [HttpGet("GetPrivateAndPublicKeyFromSession"), Authorize(Roles = "User, Admin")]
-    public async Task<IActionResult> GetPrivateAndPublicKeyFromSession()
-    {
-        var publicKey = HttpContext.Session.GetString("publicKey");
-        var encryptedPrivateKey = HttpContext.Session.GetString("encryptedPrivateKey");
-        
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var existingUser = await userManager.FindByIdAsync(userId!);
-
-        if (existingUser!.PublicKey != publicKey)
-        {
-            return BadRequest("Not allowed.");
-        }
-        
-        if (string.IsNullOrEmpty(publicKey)|| string.IsNullOrEmpty(encryptedPrivateKey))
-        {
-            return NotFound("Email address not found in session.");
-        }
-
-        return Ok(new { publicKey, encryptedPrivateKey });
-    }
-    
     [HttpGet("Logout")]
     public async Task<ActionResult<AuthResponse>> LogOut()
     {
