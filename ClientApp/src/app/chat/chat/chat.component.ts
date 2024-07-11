@@ -81,15 +81,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             this.userKey = key;
         })
 
-        this.chatService.setCurrentRoom(this.roomId);
-
-        this.cryptoService.getEncryptedPrivateKey().subscribe(encryptedKey => {
-            console.log(encryptedKey);
-            this.cryptoService.decryptPrivateKey(encryptedKey, this.userKey).then(result => {
-                console.log(result);
-            });
-        })
-
         if (this.roomId) {
             this.subscriptions.add(
               this.chatService.messagesInitialized$
@@ -474,26 +465,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                         detail: 'Password successfully updated.',
                         styleClass: 'ui-toast-message-success'
                     });
-                }
-            },
-            (error) => {
-                if (error.status === 400) {
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: 'Wrong password.'
-                    });
-                } else {
-                    console.error("An error occurred:", error);
-                }
-            });
-    }
-
-    getEncryptedPrivateKey() {
-            this.cryptoService.getEncryptedPrivateKey()
-            .subscribe((response: any) => {
-                if (response.success) {
-                    
                 }
             },
             (error) => {

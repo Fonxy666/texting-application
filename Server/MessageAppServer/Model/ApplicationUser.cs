@@ -38,9 +38,9 @@ public class ApplicationUser : IdentityUser<Guid>
         RefreshTokenExpires = time;
     }
 
-    public void SetPublicKey(JsonWebKey key)
+    public void SetPublicKey(string key)
     {
-        PublicKey = JsonConvert.SerializeObject(key);
+        PublicKey = key;
     }
     
     public JsonWebKey GetPublicKey()

@@ -39,7 +39,7 @@ public class AuthService(
         }
         
         var savedUser = await userManager.Users.FirstOrDefaultAsync(u => u.UserName == request.Username);
-        var privateKey = new Model.PrivateKey(savedUser!.Id, request.EncryptedPrivateKey);
+        var privateKey = new Model.PrivateKey(savedUser!.Id, request.EncryptedPrivateKey, request.Iv);
         var result = await keyService.SaveKey(privateKey);
 
         return !result ? new AuthResult(false, "", "") : new AuthResult(true, "", "");

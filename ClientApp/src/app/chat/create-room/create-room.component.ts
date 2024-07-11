@@ -62,11 +62,10 @@ export class CreateRoomComponent implements OnInit {
 
     async createForm() {
         const publicKey = this.cookieService.get("PublicKey");
-        const decryptedKey = this.cryptoService.encryptPrivateKey(await this.cryptoService.generateSymmetricJsonWebKey(), publicKey);
         return new CreateRoomRequest(
             this.createRoomForm.get('roomName')?.value,
             this.createRoomForm.get('password')?.value,
-            await decryptedKey
+            "await decryptedKey"
         )
     }
 

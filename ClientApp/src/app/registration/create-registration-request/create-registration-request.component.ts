@@ -79,21 +79,25 @@ export class CreateRegistrationRequestComponent {
     SendRegistrationRequest: EventEmitter<RegistrationRequest> = new EventEmitter<RegistrationRequest>();
 
     async onFormSubmit() {
-        const keyPair = await this.cryptoService.generateKeyPair();
-        const { publicKeyJwk, privateKeyJwk } = await this.cryptoService.exportKeyPair(keyPair);
-        let userPassword = this.registrationRequest.get('decryptToken')?.value;
-        let encryptedPrivateKey = await this.cryptoService.encryptPrivateKey(privateKeyJwk, userPassword);
-
-        const registrationRequest = new RegistrationRequest(
-            this.registrationRequest.get('email')?.value,
-            this.registrationRequest.get('username')?.value,
-            this.registrationRequest.get('password')?.value,
-            this.profilePic,
-            this.registrationRequest.get('phoneNumber')?.value,
-            publicKeyJwk,
-            encryptedPrivateKey
-        );
-        this.SendRegistrationRequest.emit(registrationRequest);
+        try {
+            const result = await this.cryptoService.generateKeyPair();
+            const encryptedKey = await this.cryptoService.encryptPrivateKey(result.privateKey, this.registrationRequest.get("decryptToken")!.value);
+            
+            const registrationRequest = new RegistrationRequest(
+                this.registrationRequest.get('email')?.value,
+                this.registrationRequest.get('username')?.value,
+                this.registrationRequest.get('password')?.value,
+                this.profilePic,
+                this.registrationRequest.get('phoneNumber')?.value,
+                result.publicKey,
+                encryptedKey.encryptedPrivateKey,
+                encryptedKey.iv
+            );
+    
+            this.SendRegistrationRequest.emit(registrationRequest);
+        } catch (error) {
+            console.error("Error during registration:", error);
+        }
     }
 
     toggleShowPassword() {

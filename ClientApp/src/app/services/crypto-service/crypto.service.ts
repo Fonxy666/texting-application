@@ -14,127 +14,121 @@ export class CryptoService {
         private http: HttpClient
     ) { }
 
-    setEncryptionKeyFromUserInput(key: string): string {
-        return CryptoJS.SHA256(key).toString(CryptoJS.enc.Hex).substring(0, 32);
-    }
-    
-    encryptMessage(message: string, key: string): string {
-        const ciphertext = CryptoJS.AES.encrypt(message, key).toString();
-        return ciphertext;
-    }
-    
-    decryptText(ciphertext: string, key: string): string | null {
-        try {
-            console.log(ciphertext);
-            console.log(key);
-            const parsedKey = CryptoJS.enc.Hex.parse(key);
-            const bytes = CryptoJS.AES.decrypt(ciphertext, parsedKey, {
-                mode: CryptoJS.mode.ECB,
-                padding: CryptoJS.pad.Pkcs7
-            });
-            const plaintext = bytes.toString(CryptoJS.enc.Utf8);
-    
-            if (!plaintext) {
-                throw new Error("Decryption returned empty plaintext");
-            }
-    
-            return plaintext;
-        } catch (error) {
-            console.error("Error in decryptText:", error);
-            return null;
-        }
-    }
-
     async generateKeyPair() {
         const keyPair = await window.crypto.subtle.generateKey(
-        {
-            name: "RSA-OAEP",
-            modulusLength: 2048,
-            publicExponent: new Uint8Array([1, 0, 1]),
-            hash: "SHA-256",
-        },
-        true,
-        ["encrypt", "decrypt"]
+            {
+                name: "RSA-OAEP",
+                modulusLength: 2048,
+                publicExponent: new Uint8Array([1, 0, 1]),
+                hash: "SHA-256"
+            },
+            true,
+            ["encrypt", "decrypt"]
         );
-        return keyPair;
-    }
-
-    async exportKey(key: CryptoKey) {
-        return window.crypto.subtle.exportKey("jwk", key);
-    }
-
-    async exportKeyPair(keyPair: { publicKey: CryptoKey; privateKey: CryptoKey; }) {
-        const publicKeyJwk = await this.exportKey(keyPair.publicKey);
-        const privateKeyJwk = await this.exportKey(keyPair.privateKey);
-        return { publicKeyJwk, privateKeyJwk };
-    }
-
-    async encryptPrivateKey(privateKeyJwk: JsonWebKey, password: string): Promise<string> {
-        const privateKeyString = JSON.stringify(privateKeyJwk);
-        const encryptionKey = this.setEncryptionKeyFromUserInput(password);
-        const encryptedPrivateKey = this.encryptMessage(privateKeyString, encryptionKey);
-
-        return encryptedPrivateKey;
-    }
-
-    async decryptPrivateKey(encryptedPrivateKey: string, password: string): Promise<any> {
-        try {
-            console.log(encryptedPrivateKey)
-            console.log(password);
-            const encryptionKey = this.setEncryptionKeyFromUserInput(password);
-    
-            const decryptedPrivateKeyString = this.decryptText(encryptedPrivateKey, encryptionKey);
-    
-            if (!decryptedPrivateKeyString) {
-                throw new Error("Decryption of private key failed");
-            }
-    
-            const decryptedPrivateKeyJwk: JsonWebKey = JSON.parse(decryptedPrivateKeyString);
-    
-            return decryptedPrivateKeyJwk;
-        } catch (error) {
-            console.error("Error in decryptPrivateKey:", error);
-            return null;
-        }
-    }
-
-    async generateSymmetricJsonWebKey(): Promise<JsonWebKey> {
-        const randomBytes = CryptoJS.lib.WordArray.random(32);
-        const symmetricKey = CryptoJS.enc.Base64.stringify(randomBytes);
-    
-        const jwk: JsonWebKey = {
-            kty: 'oct',
-            k: symmetricKey,
+      
+        const publicKey = await window.crypto.subtle.exportKey('spki', keyPair.publicKey);
+        const privateKey = await window.crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
+      
+        return {
+            publicKey: this.bufferToBase64(publicKey),
+            privateKey: this.bufferToBase64(privateKey)
         };
-    
-        return jwk;
     }
 
-    async distributeSymmetricKey(encryptedSymmetricKey: string, userPrivateKey: CryptoKey, newUserPublicKey: CryptoKey): Promise<string> {
-        const encryptedSymmetricKeyBuffer = Uint8Array.from(atob(encryptedSymmetricKey), c => c.charCodeAt(0));
-    
-        const decryptedSymmetricKeyBuffer = await crypto.subtle.decrypt(
-            {
-                name: "RSA-OAEP"
-            },
-            userPrivateKey,
-            encryptedSymmetricKeyBuffer
-        );
-    
-        const newEncryptedSymmetricKeyBuffer = await crypto.subtle.encrypt(
-            {
-                name: "RSA-OAEP"
-            },
-            newUserPublicKey,
-            decryptedSymmetricKeyBuffer
-        );
-    
-        return btoa(String.fromCharCode(...new Uint8Array(newEncryptedSymmetricKeyBuffer)));
+    private bufferToBase64(buffer: ArrayBuffer): string {
+        let binary = '';
+        const bytes = new Uint8Array(buffer);
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        return window.btoa(binary);
     }
 
-    getEncryptedPrivateKey(): Observable<any> {
-        return this.errorHandler.handleErrors(
-            this.http.get(`/api/v1/CryptoKey/GetPrivateKey`, { withCredentials: true })
-        )
+    async generateSymmetricKey() {
+        const key = await window.crypto.subtle.generateKey(
+            {
+                name: "AES-GCM",
+                length: 256
+            },
+            true,
+            ["encrypt", "decrypt"]
+        );
+      
+        const exportedKey = await window.crypto.subtle.exportKey('raw', key);
+        return this.bufferToBase64(exportedKey);
+    }
+
+    async encryptPrivateKey(privateKey: string, password: string) {
+        const key = await this.deriveKey(password);
+      
+        const iv = window.crypto.getRandomValues(new Uint8Array(12));
+        const encryptedData = await window.crypto.subtle.encrypt(
+            {
+                name: "AES-GCM",
+                iv: iv
+            },
+            key,
+            this.base64ToBuffer(privateKey)
+        );
+      
+        return {
+            iv: this.bufferToBase64(iv.buffer),
+            encryptedPrivateKey: this.bufferToBase64(encryptedData)
+        };
+    }
+
+    async deriveKey(password: string) {
+        const passwordKey = await window.crypto.subtle.importKey(
+            'raw',
+            new TextEncoder().encode(password),
+            'PBKDF2',
+            false,
+            ['deriveKey']
+        );
+      
+        return window.crypto.subtle.deriveKey(
+            {
+                name: 'PBKDF2',
+                salt: new Uint8Array(16),
+                iterations: 100000,
+                hash: 'SHA-256'
+            },
+            passwordKey,
+            {
+                name: 'AES-GCM',
+                length: 256
+            },
+            false,
+            ['encrypt', 'decrypt']
+        );
+    }
+
+    base64ToBuffer(base64: string): ArrayBuffer {
+        const binary = window.atob(base64);
+        const len = binary.length;
+        const buffer = new ArrayBuffer(len);
+        const bytes = new Uint8Array(buffer);
+
+        for (let i = 0; i < len; i++) {
+             bytes[i] = binary.charCodeAt(i);
+        }
+        return buffer;
+    }
+
+    async decryptPrivateKey(encryptedPrivateKey: string, password: string, ivBase64: string) {
+        const key = await this.deriveKey(password);
+        const iv = this.base64ToBuffer(ivBase64);
+      
+        const decryptedData = await window.crypto.subtle.decrypt(
+            {
+                name: "AES-GCM",
+                iv: new Uint8Array(iv)
+            },
+            key,
+            this.base64ToBuffer(encryptedPrivateKey)
+        );
+      
+        return this.bufferToBase64(decryptedData);
     }
 }

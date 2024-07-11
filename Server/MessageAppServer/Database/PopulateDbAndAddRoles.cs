@@ -57,7 +57,7 @@ public static class PopulateDbAndAddRoles
                     Email = adminEmail
                 };
 
-                admin.SetPublicKey(new JsonWebKey());
+                admin.SetPublicKey("");
                 var adminCreated = userManager.CreateAsync(admin, configuration["AdminPassword"]!).Result;
 
                 if (adminCreated.Succeeded)

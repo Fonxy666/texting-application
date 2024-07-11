@@ -5,7 +5,8 @@ export class RegistrationRequest {
         public password: string,
         public image: string,
         public phoneNumber: string,
-        public publicKey: JsonWebKey,
-        public encryptedPrivateKey: string
+        public publicKey: string,
+        public encryptedPrivateKey: string,
+        public iv: string
     ) { }
 }
