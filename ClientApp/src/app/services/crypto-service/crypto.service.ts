@@ -191,4 +191,45 @@ export class CryptoService {
             ['decrypt']
         );
     }
+
+    async encryptMessage(message: string, symmetricKey: CryptoKey): Promise<any> {
+        try {
+            const iv = window.crypto.getRandomValues(new Uint8Array(12));
+            const encryptedData = await window.crypto.subtle.encrypt(
+                {
+                    name: "AES-GCM",
+                    iv: iv
+                },
+                symmetricKey,
+                new TextEncoder().encode(message)
+            );
+    
+            return {
+                iv: this.bufferToBase64(iv.buffer),
+                encryptedMessage: this.bufferToBase64(encryptedData)
+            };
+        } catch (error) {
+            console.error('Error in encryptMessage:', error);
+            throw error;
+        }
+    }
+
+    async decryptMessage(encryptedMessage: string, symmetricKey: CryptoKey, ivBase64: string): Promise<string> {
+        try {
+            const iv = this.base64ToBuffer(ivBase64);
+            const decryptedData = await window.crypto.subtle.decrypt(
+                {
+                    name: "AES-GCM",
+                    iv: new Uint8Array(iv)
+                },
+                symmetricKey,
+                this.base64ToBuffer(encryptedMessage)
+            );
+    
+            return new TextDecoder().decode(decryptedData);
+        } catch (error) {
+            console.error('Error in decryptMessage:', error);
+            throw error;
+        }
+    }
 }
