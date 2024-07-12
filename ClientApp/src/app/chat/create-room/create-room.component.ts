@@ -6,6 +6,7 @@ import { CreateRoomRequest } from '../../model/room-requests/CreateRoomRequest';
 import { MessageService } from 'primeng/api';
 import { ChatService } from '../../services/chat-service/chat.service';
 import { CryptoService } from '../../services/crypto-service/crypto.service';
+import { IndexedDBService } from '../../services/db-service/indexed-dbservice.service';
 
 @Component({
   selector: 'app-create-room',
@@ -23,7 +24,8 @@ export class CreateRoomComponent implements OnInit {
         private renderer: Renderer2,
         public chatService: ChatService,
         private messageService: MessageService,
-        private cryptoService: CryptoService
+        private cryptoService: CryptoService,
+        private dbService: IndexedDBService
     ) { }
 
     myImage: string = "./assets/images/backgroundpng.png";
@@ -34,6 +36,7 @@ export class CreateRoomComponent implements OnInit {
     isSunActive: boolean = true;
     isMoonActive: boolean = false;
     showPassword: boolean = false;
+    publicKey: string = this.cookieService.get("PublicKey");
 
     ngOnInit(): void {
         this.animation = this.cookieService.get("Animation") == "True";
@@ -60,13 +63,23 @@ export class CreateRoomComponent implements OnInit {
         this.renderer.addClass(this.passwordInputToggle.nativeElement, iconClassToAdd);
     }
 
-    async createForm() {
-        const publicKey = this.cookieService.get("PublicKey");
-        return new CreateRoomRequest(
-            this.createRoomForm.get('roomName')?.value,
-            this.createRoomForm.get('password')?.value,
-            "await decryptedKey"
-        )
+    async createForm(): Promise<CreateRoomRequest> {
+        try {
+            const symmetricKey = await this.cryptoService.generateSymmetricKey();
+            const cryptoPublicKey = await this.cryptoService.importPublicKeyFromBase64(this.publicKey);
+            const encryptedSymmetricKey = await this.cryptoService.encryptSymmetricKey(symmetricKey, cryptoPublicKey);
+    
+            const createRoomRequest = new CreateRoomRequest(
+                this.createRoomForm.get('roomName')?.value,
+                this.createRoomForm.get('password')?.value,
+                this.cryptoService.bufferToBase64(encryptedSymmetricKey)
+            );
+    
+            return createRoomRequest;
+        } catch (error) {
+            console.error('Error creating form:', error);
+            throw error;
+        }
     }
 
     handleCancel() {

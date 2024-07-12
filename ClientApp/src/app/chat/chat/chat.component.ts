@@ -204,7 +204,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     sendMessage() {
-        var request = new MessageRequest(this.roomId, this.userId, this.inputMessage, this.cookieService.get("Anonymous") === "True");
+        let request = new MessageRequest(this.roomId, this.userId, this.inputMessage, this.cookieService.get("Anonymous") === "True");
         this.saveMessage(request)
             .then((messageId) => {
                 this.chatService.sendMessage(new MessageRequest(this.roomId, this.userId, this.inputMessage, this.cookieService.get("Anonymous") === "True", messageId));

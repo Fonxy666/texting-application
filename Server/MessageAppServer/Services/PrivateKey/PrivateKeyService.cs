@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Server.Database;
+using Server.Model.Requests;
 
 namespace Server.Services.PrivateKey;
 
@@ -8,10 +9,10 @@ public class PrivateKeyService(PrivateKeysDbContext context) : IPrivateKeyServic
 {
     private PrivateKeysDbContext Context { get; } = context;
     
-    public async Task<string> GetEncryptedKeyByUserIdAsync(Guid userId)
+    public async Task<PrivateKeyResponse> GetEncryptedKeyByUserIdAsync(Guid userId)
     {
         var key = await Context.Keys!.FirstOrDefaultAsync(k => k.UserId == userId);
-        return key!.EndToEndEncryptedPrivateKey;
+        return new PrivateKeyResponse(key!.EndToEndEncryptedPrivateKey, key.Iv);
     }
 
     public async Task<bool> SaveKey(Model.PrivateKey key)

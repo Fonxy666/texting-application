@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNetCore.Mvc;
+using Server.Model.Requests;
 using Server.Services.PrivateKey;
 
 namespace Server.Controllers;
@@ -12,17 +13,17 @@ public class CryptoKeyController(
     ILogger<ChatController> logger
     ) : ControllerBase
 {
-    [HttpGet("GetPrivateKey"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<string>> RegisterRoom()
+    [HttpGet("GetPrivateKeyAndIv"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<PrivateKeyResponse>> GetPrivateKeyAndIv()
     {
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userGuid = new Guid(userId!);
 
-            var encryptedPrivateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(userGuid);
+            var privateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(userGuid);
 
-            return Ok(new { key = encryptedPrivateKey });
+            return Ok(new PrivateKeyResponse(privateKey.EncryptedPrivateKey, privateKey.Iv));
         }
         catch (Exception e)
         {

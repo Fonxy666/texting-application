@@ -141,7 +141,7 @@ public class AuthController(
                 return StatusCode(500);
             }
 
-            return Ok(new LoginResponse(true, existingUser.PublicKey, encryptedPrivateKey));
+            return Ok(new LoginResponse(true, existingUser.PublicKey, encryptedPrivateKey.EncryptedPrivateKey));
         }
         catch (Exception e)
         {

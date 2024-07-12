@@ -11,20 +11,6 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
 {
     public async Task<string> JoinRoom(UserRoomConnection userConnection)
     {
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine(userConnection.User);
-        Console.WriteLine(userConnection.Room);
         await Groups.AddToGroupAsync(Context.ConnectionId, userConnection.Room!);
         connection[Context.ConnectionId] = userConnection;
         await Clients.Group(userConnection.Room!).SendAsync("ReceiveMessage", "Textinger bot", $"{userConnection.User} has joined the room!", DateTime.Now, null, null, null, userConnection.Room);
