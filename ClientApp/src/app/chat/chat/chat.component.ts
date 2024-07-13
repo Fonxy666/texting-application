@@ -1,7 +1,7 @@
 import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { ChatService } from '../../services/chat-service/chat.service';
 import { Router } from '@angular/router';
-import { forkJoin, Subscription } from 'rxjs';
+import { firstValueFrom, forkJoin, Subscription } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
 import { MessageRequest } from '../../model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
@@ -47,7 +47,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     private subscriptions: Subscription = new Subscription();
     onlineFriends: FriendRequestManage[] | undefined;
     userKey: string = "";
-    decryptedPrivateKey: string = "";
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
@@ -203,18 +202,45 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }
     };
 
-    sendMessage() {
-        let request = new MessageRequest(this.roomId, this.userId, this.inputMessage, this.cookieService.get("Anonymous") === "True");
+    async sendMessage() {
+        const userEncryptedData = await firstValueFrom(this.cryptoService.getUserPrivateKeyAndIv());
+
+        const encryptedRoomSymmetricKey = await firstValueFrom(this.cryptoService.getUserPrivateKeyForRoom(this.roomId));
+        const encryptedRoomSymmetricKeyToArrayBuffer = this.cryptoService.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
+
+        const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, this.userKey, userEncryptedData.iv);
+
+        const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
+
+        const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
+
+        const encryptedMessageData = await this.cryptoService.encryptMessage(this.inputMessage, decryptedRoomKey);
+            
+        let request = new MessageRequest(
+            this.roomId,
+            this.userId,
+            encryptedMessageData.encryptedMessage,
+            this.cookieService.get("Anonymous") === "True",
+            encryptedMessageData.iv
+        );
+
         this.saveMessage(request)
             .then((messageId) => {
-                this.chatService.sendMessage(new MessageRequest(this.roomId, this.userId, this.inputMessage, this.cookieService.get("Anonymous") === "True", messageId));
+                this.chatService.sendMessage(new MessageRequest(
+                    this.roomId,
+                    this.userId,
+                    this.inputMessage,
+                    this.cookieService.get("Anonymous") === "True",
+                    messageId,
+                    "stringEncryptedSymmetricKey"
+                ));
                 this.inputMessage = "";
             }).catch((err: any) => {
                 console.log(err);
             })
     };
 
-    saveMessage(request: MessageRequest): Promise<string> {
+    async saveMessage(request: MessageRequest): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             this.chatService.saveMessage(request)
                 .subscribe((res: any) => {
@@ -246,10 +272,21 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         })
     };
 
-    getMessages() {
+    async getMessages() {
         if (this.chatService.messages[this.roomId] === undefined) {
             return;
         }
+
+        const userEncryptedData = await firstValueFrom(this.cryptoService.getUserPrivateKeyAndIv());
+
+        const encryptedRoomSymmetricKey = await firstValueFrom(this.cryptoService.getUserPrivateKeyForRoom(this.roomId));
+        const encryptedRoomSymmetricKeyToArrayBuffer = this.cryptoService.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
+
+        const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, this.userKey, userEncryptedData.iv);
+
+        const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
+
+        const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
     
         this.chatService.getMessages(this.roomId)
             .subscribe((response: any) => {
@@ -257,21 +294,23 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     this.userService.getUsername(element.senderId)
                 );
     
-                forkJoin(userNames).subscribe((usernames: any) => {
-                    const fetchedMessages = response.map((element: any, index: number) => ({
+                forkJoin(userNames).subscribe(async (usernames: any) => {
+                    const fetchedMessages = response.map(async (element: any, index: number) => ({
                         messageId: element.messageId,
                         user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
                         userId: element.senderId,
-                        message: element.text,
+                        message: await this.cryptoService.decryptMessage(element.text, decryptedRoomKey, element.iv),
                         messageTime: element.sendTime,
                         seenList: element.seen
                     }));
-
+                
+                    const decryptedMessages = await Promise.all(fetchedMessages);
+                
                     const existingMessageIds = new Set(this.chatService.messages[this.roomId].map((msg: any) => msg.messageId));
-                    const uniqueMessages = fetchedMessages.filter((msg: any) => !existingMessageIds.has(msg.messageId));
-    
+                    const uniqueMessages = decryptedMessages.filter((msg: any) => !existingMessageIds.has(msg.messageId));
+                
                     this.chatService.messages[this.roomId] = [...uniqueMessages, ...this.chatService.messages[this.roomId]];
-    
+                
                     this.chatService.messages$.next(this.chatService.messages[this.roomId]);
                 });
             });

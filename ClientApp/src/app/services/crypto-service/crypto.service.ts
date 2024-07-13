@@ -134,12 +134,6 @@ export class CryptoService {
         return buffer;
     }
 
-    getEncryptionkeyAndIv(): Observable<any> {
-        return this.errorHandler.handleErrors(
-            this.http.get(`/api/v1/CryptoKey/GetPrivateKeyAndIv`, { withCredentials: true })
-        )
-    }
-
     async encryptSymmetricKey(symmetricKey: ArrayBuffer, publicKey: CryptoKey): Promise<ArrayBuffer> {
         const encryptedSymmetricKey = await window.crypto.subtle.encrypt(
             {
@@ -152,16 +146,24 @@ export class CryptoService {
         return encryptedSymmetricKey;
     }
     
-    async decryptSymmetricKey(encryptedSymmetricKey: ArrayBuffer, privateKey: CryptoKey): Promise<ArrayBuffer> {
-        const decryptedSymmetricKey = await window.crypto.subtle.decrypt(
+    async decryptSymmetricKey(encryptedSymmetricKey: ArrayBuffer, privateKey: CryptoKey): Promise<CryptoKey> {
+        const decryptedSymmetricKeyBuffer = await window.crypto.subtle.decrypt(
             {
                 name: 'RSA-OAEP'
             },
             privateKey,
             encryptedSymmetricKey
         );
+ 
+        const symmetricKey = await window.crypto.subtle.importKey(
+            'raw',
+            decryptedSymmetricKeyBuffer,
+            { name: 'AES-GCM' },
+            true,
+            ['encrypt', 'decrypt']
+        );
     
-        return decryptedSymmetricKey;
+        return symmetricKey;
     }
 
     async importPublicKeyFromBase64(base64PublicKey: string): Promise<CryptoKey> {
@@ -231,5 +233,17 @@ export class CryptoService {
             console.error('Error in decryptMessage:', error);
             throw error;
         }
+    }
+
+    getUserPrivateKeyAndIv(): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.get(`/api/v1/CryptoKey/GetPrivateKeyAndIv`, { withCredentials: true })
+        )
+    }
+
+    getUserPrivateKeyForRoom(roomId: string): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.get(`/api/v1/CryptoKey/GetPrivateUserKey?roomId=${roomId}`, { withCredentials: true })
+        )
     }
 }

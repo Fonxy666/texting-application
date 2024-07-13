@@ -16,7 +16,7 @@ public class ApplicationUser : IdentityUser<Guid>
     public ICollection<FriendConnection> ReceivedFriendRequests { get; set; } = new List<FriendConnection>();
     public ICollection<Room> CreatedRooms { get; set; } = new List<Room>();
     public ICollection<ApplicationUser> Friends { get; set; } = new List<ApplicationUser>();
-    public ICollection<EncryptedSymmetricKey> UsersSymmetricKeys { get; set; } = new List<EncryptedSymmetricKey>();
+    public ICollection<EncryptedSymmetricKey> UserSymmetricKeys { get; set; } = new List<EncryptedSymmetricKey>();
 
     public ApplicationUser(string? imageUrl = "-")
     {
@@ -41,10 +41,5 @@ public class ApplicationUser : IdentityUser<Guid>
     public void SetPublicKey(string key)
     {
         PublicKey = key;
-    }
-    
-    public JsonWebKey GetPublicKey()
-    {
-        return JsonConvert.DeserializeObject<JsonWebKey>(PublicKey)!;
     }
 }

@@ -59,7 +59,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : Identi
         
         modelBuilder.Entity<EncryptedSymmetricKey>()
             .HasOne<ApplicationUser>(k => k.User)
-            .WithMany(u => u.UsersSymmetricKeys)
+            .WithMany(u => u.UserSymmetricKeys)
             .HasForeignKey(k => k.UserId)
             .OnDelete(DeleteBehavior.Restrict);
     }
