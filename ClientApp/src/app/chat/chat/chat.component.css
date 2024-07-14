@@ -366,6 +366,7 @@ input::placeholder {
 }
 
 .dropstart {
+    display: flex;
     background:#9392c5 none repeat scroll 0 0;
     padding: 5px 10px 5px 10px;
 }

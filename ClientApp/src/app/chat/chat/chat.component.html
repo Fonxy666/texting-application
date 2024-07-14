@@ -149,7 +149,7 @@
                                 </div>
                                 <div *ngIf="message.userId != this.userId && message.user !== 'Textinger bot'" class="received_msg">
                                     <div class="received_withd_msg">
-                                        <p> {{message.message}} </p>
+                                        <p> {{message.message}}</p>
                                         <div class="message-data-container">
                                             <span class="time_date">{{this.displayService.displayUserName(message.user)}} | {{message.messageTime | date: 'medium'}}</span>
                                             <div class="seen-images-container">
@@ -189,7 +189,7 @@
                                                 <li><a class="dropdown-item" (click)="handleMessageModify(message.messageId, message.message)">Modify</a></li>
                                                 <li><a class="dropdown-item" (click)="handleMessageDelete(message.messageId)">Delete</a></li>
                                             </ul>
-                                            {{message.message}}
+                                            <div [innerHTML]="this.displayService.displayMessage(message.message)" style="white-space: nowrap;"></div>
                                         </div>
                                         <div *ngIf="message.message == 'Deleted message.'" class="dropstart">{{message.message}}</div>
                                         <div class="message-data-container">

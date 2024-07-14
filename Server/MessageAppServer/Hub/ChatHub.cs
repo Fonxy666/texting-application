@@ -20,10 +20,28 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
 
     public async Task SendMessage(MessageRequest request)
     {
+        Console.WriteLine("--------------------------------------");
+        Console.WriteLine("--------------------------------------");
+        Console.WriteLine("--------------------------------------");
+        Console.WriteLine("--------------------------------------");
+        Console.WriteLine("--------------------------------------");
+        Console.WriteLine(request.Iv);
+        Console.WriteLine("--------------------------------------");
+        Console.WriteLine("--------------------------------------");
+        Console.WriteLine("--------------------------------------");
+        Console.WriteLine("--------------------------------------");
+        Console.WriteLine("--------------------------------------");
         var userId = Context.User!.FindFirstValue(ClaimTypes.NameIdentifier);
         
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
         {
+            Console.WriteLine(userRoomConnection.User);
+            Console.WriteLine(request.Message);
+            Console.WriteLine(DateTime.Now);
+            Console.WriteLine(userId);
+            Console.WriteLine(request.MessageId);
+            Console.WriteLine(request.RoomId);
+            Console.WriteLine(request.Iv);
             await Clients.Group(userRoomConnection.Room!).SendAsync("ReceiveMessage",
                 userRoomConnection.User,
                 request.Message,
@@ -34,7 +52,9 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
                 {
                     userId!
                 },
-                request.RoomId);
+                request.RoomId,
+                request.Iv
+                );
         }
     }
     

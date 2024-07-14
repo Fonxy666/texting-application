@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { BehaviorSubject, Observable, Subject, catchError, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { MessageRequest } from '../../model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/user-credential-requests/ChangeMessageRequest';
@@ -14,8 +14,6 @@ import { HttpClient } from '@angular/common/http';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
 import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePasswordRequestForRoom';
-import { CryptoService } from '../crypto-service/crypto.service';
-
 @Injectable({
     providedIn: 'root'
 })
@@ -36,8 +34,7 @@ export class ChatService {
         private userService: UserService,
         private friendService: FriendService,
         private http: HttpClient,
-        private errorHandler: ErrorHandlerService,
-        private cryptoService: CryptoService
+        private errorHandler: ErrorHandlerService
     ) {
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl('/chat')
@@ -46,15 +43,19 @@ export class ChatService {
 
         this.initializeConnection();
 
-        this.connection.on("ReceiveMessage", (user: string, message: string, messageTime: string, userId: string, messageId: string, seenList: string[], roomId: string) => {
+        this.connection.on("ReceiveMessage", async (user: string, message: string, messageTime: string, userId: string, messageId: string, seenList: string[], roomId: string, iv: string) => {
             if (!this.messages[roomId]) {
                 this.messages[roomId] = [];
                 this.messagesInitialized$.next(roomId);
             }
             if (userId !== this.cookieService.get("UserId")) {
-                this.messages[roomId].push({ user, message, messageTime, userId, messageId, seenList });
+                console.log("elso")
+                console.log(this.currentRoom);
+                console.log(roomId);
+                this.messages[roomId].push({ user, message, messageTime, userId, messageId, seenList, iv });
             }
             if (this.currentRoom === roomId) {
+                console.log("masodik")
                 this.messages$.next([...this.messages[roomId]]);
             }
         });
@@ -71,8 +72,6 @@ export class ChatService {
             const updatedUsers = this.connectedUsers$.value.filter(user => user.userName !== username);
             this.connectedUsers$.next(updatedUsers);
         });
-
-        
 
         this.connection.on("RoomDeleted", (roomId: string) => {
             this.roomDeleted$.next(roomId);

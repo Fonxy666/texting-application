@@ -52,4 +52,17 @@ export class DisplayService {
             return name.slice(0, 8) + '...';
         }
     }
+
+    displayMessage(message: string) {
+        const maxLength = 35;
+        let result = '';
+
+        for (let i = 0; i < message.length; i += maxLength) {
+            result += message.slice(i, i + maxLength) + '<br>';
+        }
+
+        result = result.slice(0, -4);
+        
+        return result;
+    }
 }
