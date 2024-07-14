@@ -259,7 +259,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         return new Promise<string>((resolve, reject) => {
             this.chatService.saveMessage(request)
                 .subscribe((res: any) => {
-                    console.log(res);
                     this.chatService.messages[this.roomId].push({
                         roomId: res.message.roomId,
                         messageId: res.message.messageId,
