@@ -10,40 +10,19 @@ import { MatDialog } from '@angular/material/dialog';
   })
 
 export class UserKeyGuard implements CanActivate {
-    
+
     userId: string = this.cookieService.get("UserId");
 
     constructor(
         private dbService: IndexedDBService,
         private cookieService: CookieService,
         private dialog: MatDialog,
-        private router: Router,
-    ) {
-        this.initDB();
-    }
+        private router: Router
+    ) { }
 
-    private initDB(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open('myDatabase', 1);
-
-            request.onupgradeneeded = (event: any) => {
-                const db = event.target.result;
-                db.createObjectStore('keys', { keyPath: 'userId' });
-            };
-
-            request.onsuccess = (event: any) => {
-                this.dbService = event.target.result;
-                resolve();
-            };
-
-            request.onerror = (event: any) => {
-                reject(`IndexedDB initialization error: ${event.target.errorCode}`);
-            };
-        });
-    }
-    
     async canActivate(): Promise<boolean> {
         try {
+            await this.dbService.dbReady;
             const userKey = await this.dbService.getEncryptionKey(this.userId);
 
             if (userKey) {
