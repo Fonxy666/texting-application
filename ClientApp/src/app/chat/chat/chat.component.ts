@@ -79,7 +79,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.chatService.setCurrentRoom(this.roomId);
 
         this.dbService.getEncryptionKey(this.userId).then(key => {
-            this.userKey = key;
+            if (key !== null) {
+                this.userKey = key;
+            }
         })
 
         if (this.roomId) {

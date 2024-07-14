@@ -47,20 +47,20 @@ export class IndexedDBService {
         };
     }
 
-    getEncryptionKey(userId: string): Promise<string> {
+    getEncryptionKey(userId: string): Promise<string | null> {
         return new Promise((resolve, reject) => {
-        const transaction = this.db.transaction(['keys'], 'readonly');
-        const objectStore = transaction.objectStore('keys');
-        const request = objectStore.get(userId);
-
-        request.onsuccess = () => {
-            if (request.result) {
-                resolve(request.result.key);
-            } else {
-                reject('Encryption key not found');
-            }
-        };
-
+            const transaction = this.db.transaction(['keys'], 'readonly');
+            const objectStore = transaction.objectStore('keys');
+            const request = objectStore.get(userId);
+    
+            request.onsuccess = () => {
+                if (request.result) {
+                    resolve(request.result.key);
+                } else {
+                    resolve(null);
+                }
+            };
+    
             request.onerror = () => {
                 reject(`Error retrieving encryption key: ${request.error}`);
             };

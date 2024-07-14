@@ -49,13 +49,9 @@ export class ChatService {
                 this.messagesInitialized$.next(roomId);
             }
             if (userId !== this.cookieService.get("UserId")) {
-                console.log("elso")
-                console.log(this.currentRoom);
-                console.log(roomId);
                 this.messages[roomId].push({ user, message, messageTime, userId, messageId, seenList, iv });
             }
             if (this.currentRoom === roomId) {
-                console.log("masodik")
                 this.messages$.next([...this.messages[roomId]]);
             }
         });

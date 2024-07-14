@@ -20,17 +20,6 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
 
     public async Task SendMessage(MessageRequest request)
     {
-        Console.WriteLine("--------------------------------------");
-        Console.WriteLine("--------------------------------------");
-        Console.WriteLine("--------------------------------------");
-        Console.WriteLine("--------------------------------------");
-        Console.WriteLine("--------------------------------------");
-        Console.WriteLine(request.Iv);
-        Console.WriteLine("--------------------------------------");
-        Console.WriteLine("--------------------------------------");
-        Console.WriteLine("--------------------------------------");
-        Console.WriteLine("--------------------------------------");
-        Console.WriteLine("--------------------------------------");
         var userId = Context.User!.FindFirstValue(ClaimTypes.NameIdentifier);
         
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
