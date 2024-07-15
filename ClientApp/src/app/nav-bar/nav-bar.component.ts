@@ -23,8 +23,7 @@ export class NavBarComponent implements OnInit {
         public friendService: FriendService,
         private mediaService: MediaService,
         public chatService: ChatService,
-        private dbService: IndexedDBService,
-        private cryptoService: CryptoService
+        private dbService: IndexedDBService
     ) { }
 
     isDropstart: boolean = true;
@@ -39,13 +38,11 @@ export class NavBarComponent implements OnInit {
     loggedIn: boolean = false;
 
     ngOnInit(): void {
-        this.userId = this.cookieService.get("UserId");
         
         this.isLoggedIn();
         this.checkScreenSize();
-
-        this.roomId = sessionStorage.getItem("roomId")!;
-        this.roomName = sessionStorage.getItem("room")!;
+        
+        this.userId = this.cookieService.get("UserId");
 
         if (this.loggedIn) {
             this.friendService.friendRequests$.subscribe(requests => {
@@ -76,6 +73,7 @@ export class NavBarComponent implements OnInit {
             if (response.success) {
                 this.dbService.clearEncryptionKey(this.userId);
                 this.loggedIn = false;
+                sessionStorage.clear();
                 this.router.navigate(['/'], { queryParams: { logout: 'true' } });
             }
         }, 
