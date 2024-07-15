@@ -51,4 +51,9 @@ public class Message
     {
         Text = newText;
     }
+
+    public void ChangeMessageIv(string iv)
+    {
+        Iv = iv;
+    }
 }

@@ -50,6 +50,7 @@ public class MessageService(DatabaseContext context) : IMessageService
         var existingMessage = Context.Messages!.FirstOrDefault(message => message.MessageId == request.Id);
         
         existingMessage!.ChangeMessageText(request.Message);
+        existingMessage!.ChangeMessageIv(request.Iv);
 
         Context.Messages!.Update(existingMessage);
         await Context.SaveChangesAsync();

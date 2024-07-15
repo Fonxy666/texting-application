@@ -49,7 +49,11 @@ export class ChatService {
                 this.messagesInitialized$.next(roomId);
             }
             if (userId !== this.cookieService.get("UserId")) {
-                this.messages[roomId].push({ user, message, messageTime, userId, messageId, seenList, iv });
+                if (user === "Textinger bot") {
+                    this.messages[roomId].push({encrypted: false, messageData: { user, message, messageTime, userId, messageId, seenList, iv } });
+                } else {
+                    this.messages[roomId].push({encrypted: true, messageData: { user, message, messageTime, userId, messageId, seenList, iv } });
+                }
             }
             if (this.currentRoom === roomId) {
                 this.messages$.next([...this.messages[roomId]]);
