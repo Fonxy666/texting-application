@@ -38,19 +38,23 @@ export class IndexedDBService {
         });
     }
 
-    storeEncryptionKey(userId: string, encryptionKey: string) {
-        this.dbReady.then((db) => {
-            const transaction = db.transaction(['keys'], 'readwrite');
-            const objectStore = transaction.objectStore('keys');
-            const request = objectStore.put({ id: userId, key: encryptionKey });
-
-            request.onsuccess = () => {
-                console.log('Encryption key stored in IndexedDB');
-            };
-
-            request.onerror = (event) => {
-                console.error('Error storing encryption key:', request.error);
-            };
+    storeEncryptionKey(userId: string, encryptionKey: string): Promise<boolean> {
+        return this.dbReady.then((db) => {
+            return new Promise((resolve) => {
+                const transaction = db.transaction(['keys'], 'readwrite');
+                const objectStore = transaction.objectStore('keys');
+                const request = objectStore.put({ id: userId, key: encryptionKey });
+    
+                request.onsuccess = () => {
+                    console.log('Encryption key stored in IndexedDB');
+                    resolve(true);
+                };
+    
+                request.onerror = () => {
+                    console.error('Error storing encryption key:', request.error);
+                    resolve(false);
+                };
+            });
         });
     }
 

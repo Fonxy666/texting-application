@@ -2,7 +2,6 @@ import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/co
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { passwordValidator, passwordMatchValidator } from '../../../validators/ValidPasswordValidator';
 import { MessageService } from 'primeng/api';
-import { ErrorHandlerService } from '../../../services/error-handler-service/error-handler.service';
 import { ChangePasswordRequestForUser } from '../../../model/user-credential-requests/ChangePasswordRequestForUser';
 import { UserService } from '../../../services/user-service/user.service';
 
@@ -26,7 +25,6 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
     constructor(
         private fb: FormBuilder,
         private userService: UserService,
-        private errorHandler: ErrorHandlerService,
         private messageService: MessageService,
         private renderer: Renderer2
     ) { }

@@ -303,6 +303,14 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         const encryptedRoomSymmetricKey = await firstValueFrom(this.cryptoService.getUserPrivateKeyForRoom(this.roomId));
         const encryptedRoomSymmetricKeyToArrayBuffer = this.cryptoService.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
         const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, this.userKey, userEncryptedData.iv);
+        if (decryptedUserPrivateKey === null) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: "The provided user key is wrong. You can change the key under: 'your avatar -> profile -> Change User key' section."
+            });
+        }
+        
         const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
         const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
     

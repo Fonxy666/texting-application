@@ -36,6 +36,7 @@ import { ManageFriendRequestComponent } from './profile/profile/manage-friend-re
 import { MatDialogModule } from '@angular/material/dialog';
 import { MessageService } from 'primeng/api';
 import { UserKeyGuard } from './guards/user-key.guard';
+import { GenerateUserKeyChangeRequestComponent } from './profile/profile/generate-user-key-change-request/generate-user-key-change-request.component';
 
 @NgModule({
   declarations: [
@@ -61,7 +62,8 @@ import { UserKeyGuard } from './guards/user-key.guard';
     SupportPageComponent,
     AboutUsPageComponent,
     BackgroundImageComponent,
-    ManageFriendRequestComponent
+    ManageFriendRequestComponent,
+    GenerateUserKeyChangeRequestComponent
   ],
   imports: [
     MatDialogModule,
