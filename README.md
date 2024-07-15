@@ -5,9 +5,9 @@ Textinger is a full-stack ASP.NET core application designed to chat with your fr
 # Project Status
 ONGOING project!
 Feel free to fork the repository, and learn from it.
-All The "background images" below are videos, so it's animated.
 
 # Little overview 
+All The "background images" below are videos, so it's animated.
   Home page:
   ![Home page](https://github.com/Fonxy666/texting-application/blob/main/GithubImages/home_page_logout.jpg)
 
@@ -29,8 +29,11 @@ All The "background images" below are videos, so it's animated.
 - Register to the application.
 - You can configure your profile if you click on your avatar in the top right corner, than under the profile menu.
 - You can disable animation/appear as an anonym person if you click on your avatar in the top right corner, than under the settings menu.
+- (ONGOING) To join or create a room, you need to give the application a 6 digit token(encryption token) which will be used to decrypt the user's private token.
 - You can register a new room, or join to an existing one under the "Connect to a room" menu.
 - In the chat room, you can delete or modify your already sent messages if you click on the '3 dot' next to your message.
+- Users can send friend request to another existing users, and other users can accept or decline it.
+- User's can invite other user's to the chatroom, if they are friends.
 
 # The backend is built on the ASP.NET 8 framework, with the main goals of being/having:
 - Secure: for example: 2FA, refresh tokens
@@ -45,10 +48,13 @@ All The "background images" below are videos, so it's animated.
 - Easy to use: everything is easy and logical
 
 # Security
-The application implements secure practices such as JWT token, refresh token and hashed password storage, password confirmation, currently running dockerized MSSQL databases, and sensitive data is stored in the `secrets.json` file.
+- The application implements secure practices such as JWT token, refresh token and hashed password storage, password confirmation, currently running dockerized MSSQL databases, and sensitive data is stored in the `secrets.json` file.
+- New feature(ONGOING): I'm still implementing the end-to-end encryption, which means all the data sent by the frontend is encrypted, so the server/database won't see any sensitive data.
+- User's asymmetric key database: The application is using a 2. database, which is a KMS(Key Management Service) developed my myself. It's not really a KMS, but i'm only storing the user's private keys encrypted here.
 
 # Configuration
-On the frontend side, there is no sensitive data stored, so you don't need to specify anything by yourself.
+- On the frontend side, there is no sensitive data stored, so you don't need to specify anything by yourself.
+- update(ONGOING): the end-to-end encryption store a sensitive data in the frontend, but only which is necessary. 
 
 On the backend side, sensitive data is stored in the `secrets.json` file. To set up the application, create a `secrets.json` file in the user profile directory:
 - Windows: %APPDATA%\microsoft\UserSecrets<userSecretsId>\secrets.json
