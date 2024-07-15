@@ -27,6 +27,7 @@ All The "background images" below are videos, so it's animated.
 
 # About the Application
 - Register to the application.
+- After registration, you need to log in to the application with "Username-Password" combo, with Google or with Facebook.
 - You can configure your profile if you click on your avatar in the top right corner, than under the profile menu.
 - You can disable animation/appear as an anonym person if you click on your avatar in the top right corner, than under the settings menu.
 - (ONGOING) To join or create a room, you need to give the application a 6 digit token(encryption token) which will be used to decrypt the user's private token.
