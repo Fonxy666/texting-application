@@ -114,15 +114,12 @@ export class JoinRoomComponent implements OnInit {
             async response => {
                 if (response.success) {
                     const userId = this.cookieService.get("UserId");
+                    const roomHaveUsers = this.chatService.connectedUsers$.value;
+                    const usersInRoom = await this.chatService.getUsersInSpecificRoom(response.roomId);
                     const keyResponse = await firstValueFrom(
                         this.cryptoService.getUserPrivateKeyForRoom(response.roomId)
                             .pipe(
                                 catchError(() => {
-                                    this.messageService.add({
-                                        severity: 'error',
-                                        summary: 'Error',
-                                        detail: "You don't have the key to join to this room."
-                                    });
                                     return of(null);
                                   })
                             )
@@ -140,8 +137,17 @@ export class JoinRoomComponent implements OnInit {
                                     })
                             )
                     );
+  
                     if (userId && keyResponse && awaitedUserInputKey) {
                         this.chatService.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
+                    } else if (keyResponse == null && usersInRoom > 0) {
+                        console.log("get token");
+                    } else if (keyResponse == null && usersInRoom === 0) {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: 'There is no other user in the room. You need to waite for someone.'
+                        });
                     }
                 }
             },

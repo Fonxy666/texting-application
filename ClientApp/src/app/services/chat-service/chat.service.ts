@@ -130,6 +130,15 @@ export class ChatService {
         }
     }
 
+    public async getUsersInSpecificRoom(roomId: string): Promise<number> {
+        try {
+            return await this.connection.invoke("GetConnectedUsers", roomId);
+        } catch (error) {
+            console.error('Error getting users:', error);
+            return 0;
+        }
+    }
+
     public async joinRoom(user: string, room: string) {
         try {
             await this.connection.invoke("JoinRoom", { user, room });

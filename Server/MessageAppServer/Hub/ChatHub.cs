@@ -18,6 +18,11 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
         return Context.ConnectionId;
     }
 
+    public int GetConnectedUsers(string roomId)
+    {
+        return connection.Values.Where(user => user.Room == roomId).Select(connection => connection.User).Count();
+    }
+
     public async Task SendMessage(MessageRequest request)
     {
         var userId = Context.User!.FindFirstValue(ClaimTypes.NameIdentifier);
