@@ -13,8 +13,7 @@ namespace Server.Controllers;
 [Route("api/v1/[controller]")]
 public class ChatController(
     IRoomService roomService,
-    ILogger<ChatController> logger,
-    UserManager<ApplicationUser> userManager
+    ILogger<ChatController> logger
     ) : ControllerBase
 {
     [HttpPost("RegisterRoom"), Authorize(Roles = "User, Admin")]

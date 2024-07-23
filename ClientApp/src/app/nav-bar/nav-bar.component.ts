@@ -7,7 +7,6 @@ import { MediaService } from '../services/media-service/media.service';
 import { ChatRoomInvite } from '../model/room-requests/ChatRoomInvite';
 import { ChatService } from '../services/chat-service/chat.service';
 import { IndexedDBService } from '../services/db-service/indexed-dbservice.service';
-import { CryptoService } from '../services/crypto-service/crypto.service';
 
 @Component({
     selector: 'app-nav-bar',

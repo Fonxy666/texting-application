@@ -1,7 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+﻿using System.Runtime.InteropServices.JavaScript;
+using Microsoft.EntityFrameworkCore;
 using Server.Database;
-using Server.Model;
 using Server.Model.Chat;
 using Server.Model.Responses.Chat;
 
@@ -17,9 +16,7 @@ public class RoomService(DatabaseContext context) : IRoomService
 
     public async Task<Room?> GetRoomById(Guid roomId)
     {
-        var existingRoom = await Context.Rooms!.FirstOrDefaultAsync(room => room.RoomId == roomId);
-
-        return existingRoom;
+        return await Context.Rooms!.FirstOrDefaultAsync(room => room.RoomId == roomId);
     }
     
     public async Task<Room?> GetRoomByRoomName(string roomName)

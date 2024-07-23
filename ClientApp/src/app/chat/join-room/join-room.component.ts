@@ -5,6 +5,9 @@ import { CookieService } from 'ngx-cookie-service';
 import { ChatService } from '../../services/chat-service/chat.service';
 import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
 import { MessageService } from 'primeng/api';
+import { CryptoService } from '../../services/crypto-service/crypto.service';
+import { catchError, firstValueFrom, from, of } from 'rxjs';
+import { IndexedDBService } from '../../services/db-service/indexed-dbservice.service';
 
 @Component({
   selector: 'app-join-room',
@@ -23,7 +26,9 @@ export class JoinRoomComponent implements OnInit {
         private router: Router,
         private chatService: ChatService,
         private messageService: MessageService,
-        private renderer: Renderer2
+        private renderer: Renderer2,
+        private cryptoService: CryptoService,
+        private dbService: IndexedDBService
     ) { }
 
     backgroundVideo: string = "./assets/videos/white_black_video.mp4";
@@ -106,9 +111,38 @@ export class JoinRoomComponent implements OnInit {
 
     joinRoom() {
         this.chatService.joinToRoom(this.createForm()).subscribe(
-            response => {
+            async response => {
                 if (response.success) {
-                    this.chatService.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
+                    const userId = this.cookieService.get("UserId");
+                    const keyResponse = await firstValueFrom(
+                        this.cryptoService.getUserPrivateKeyForRoom(response.roomId)
+                            .pipe(
+                                catchError(() => {
+                                    this.messageService.add({
+                                        severity: 'error',
+                                        summary: 'Error',
+                                        detail: "You don't have the key to join to this room."
+                                    });
+                                    return of(null);
+                                  })
+                            )
+                    );
+                    const awaitedUserInputKey = await firstValueFrom(
+                        from(this.dbService.getEncryptionKey(userId))
+                            .pipe(
+                                catchError(() => {
+                                    this.messageService.add({
+                                        severity: 'error',
+                                        summary: 'Error',
+                                        detail: 'You did not provide us your token.'
+                                    });
+                                    return of(null);
+                                    })
+                            )
+                    );
+                    if (userId && keyResponse && awaitedUserInputKey) {
+                        this.chatService.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
+                    }
                 }
             },
             error => {
