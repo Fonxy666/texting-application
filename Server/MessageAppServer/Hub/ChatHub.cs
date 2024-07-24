@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Server.Model;
+using Server.Model.Requests.Chat;
 using Server.Model.Requests.Message;
+using Server.Model.Responses.Chat;
 
 namespace Server.Hub;
 
@@ -23,19 +25,29 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
         return connection.Values.Where(user => user.Room == roomId).Select(connection => connection.User).Count();
     }
 
+    public async Task KeyRequest(string roomId, string connectionId)
+    {
+        var userId = Context.User!.FindFirstValue(ClaimTypes.NameIdentifier);
+        var existingUser = await userManager.FindByIdAsync(userId!);
+        var userConnection = connection.Values
+            .Where(user => user.Room == roomId)
+            .Select(user => connection.FirstOrDefault(c => c.Value == user))
+            .FirstOrDefault();
+        
+        await Clients.Client(userConnection.Key).SendAsync("KeyRequest", new KeyRequestResponse(existingUser!.PublicKey, existingUser.Id, roomId, connectionId));
+    }
+
+    public async Task SendSymmetricKeyToRequestUser(string userId, string message, string connectionId)
+    {
+        await Clients.Client(connectionId).SendAsync("GetSymmetricKey", message);
+    }
+
     public async Task SendMessage(MessageRequest request)
     {
         var userId = Context.User!.FindFirstValue(ClaimTypes.NameIdentifier);
         
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
         {
-            Console.WriteLine(userRoomConnection.User);
-            Console.WriteLine(request.Message);
-            Console.WriteLine(DateTime.Now);
-            Console.WriteLine(userId);
-            Console.WriteLine(request.MessageId);
-            Console.WriteLine(request.RoomId);
-            Console.WriteLine(request.Iv);
             await Clients.Group(userRoomConnection.Room!).SendAsync("ReceiveMessage",
                 userRoomConnection.User,
                 request.Message,

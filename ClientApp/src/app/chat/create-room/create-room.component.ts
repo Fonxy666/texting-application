@@ -24,8 +24,7 @@ export class CreateRoomComponent implements OnInit {
         private renderer: Renderer2,
         public chatService: ChatService,
         private messageService: MessageService,
-        private cryptoService: CryptoService,
-        private dbService: IndexedDBService
+        private cryptoService: CryptoService
     ) { }
 
     myImage: string = "./assets/images/backgroundpng.png";

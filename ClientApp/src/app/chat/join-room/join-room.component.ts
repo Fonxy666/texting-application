@@ -114,7 +114,6 @@ export class JoinRoomComponent implements OnInit {
             async response => {
                 if (response.success) {
                     const userId = this.cookieService.get("UserId");
-                    const roomHaveUsers = this.chatService.connectedUsers$.value;
                     const usersInRoom = await this.chatService.getUsersInSpecificRoom(response.roomId);
                     const keyResponse = await firstValueFrom(
                         this.cryptoService.getUserPrivateKeyForRoom(response.roomId)
@@ -139,9 +138,9 @@ export class JoinRoomComponent implements OnInit {
                     );
   
                     if (userId && keyResponse && awaitedUserInputKey) {
-                        this.chatService.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
+                        await this.chatService.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
                     } else if (keyResponse == null && usersInRoom > 0) {
-                        console.log("get token");
+                        this.chatService.requestSymmetricRoomKey(response.roomId, this.chatService.connection.connectionId!);
                     } else if (keyResponse == null && usersInRoom === 0) {
                         this.messageService.add({
                             severity: 'error',

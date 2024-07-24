@@ -174,6 +174,10 @@ export class CryptoService {
         return symmetricKey;
     }
 
+    async exportCryptoKey(key: CryptoKey): Promise<ArrayBuffer> {
+        return window.crypto.subtle.exportKey('raw', key);
+      }
+
     async importPublicKeyFromBase64(base64PublicKey: string): Promise<CryptoKey> {
         const publicKeyBytes = this.base64ToBuffer(base64PublicKey);
         return await window.crypto.subtle.importKey(
