@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices.JavaScript;
 using Microsoft.EntityFrameworkCore;
 using Server.Database;
+using Server.Model;
 using Server.Model.Chat;
 using Server.Model.Responses.Chat;
 
@@ -17,6 +18,13 @@ public class RoomService(DatabaseContext context) : IRoomService
     public async Task<Room?> GetRoomById(Guid roomId)
     {
         return await Context.Rooms!.FirstOrDefaultAsync(room => room.RoomId == roomId);
+    }
+    
+    private async Task<Room?> GetRoomByIdWithKeys(Guid roomId)
+    {
+        return await Context.Rooms!
+            .Include(r => r.EncryptedSymmetricKeys)
+            .FirstOrDefaultAsync(room => room.RoomId == roomId);
     }
     
     public async Task<Room?> GetRoomByRoomName(string roomName)
@@ -65,5 +73,43 @@ public class RoomService(DatabaseContext context) : IRoomService
     {
         room.ChangePassword(newPassword);
         await Context.SaveChangesAsync();
+    }
+
+    public async Task<bool> AddNewUserKey(Guid roomId, Guid userId, string key)
+    {
+        var existingRoom = await GetRoomByIdWithKeys(roomId);
+        if (existingRoom == null)
+        {
+            return false;
+        }
+
+        var userKey = existingRoom.EncryptedSymmetricKeys.FirstOrDefault(k => k.UserId == userId);
+        if (userKey == null)
+        {
+            userKey = new EncryptedSymmetricKey
+            {
+                KeyId = Guid.NewGuid(),
+                RoomId = roomId,
+                UserId = userId,
+                EncryptedKey = key
+            };
+            existingRoom.EncryptedSymmetricKeys.Add(userKey);
+            Context.Entry(userKey).State = EntityState.Added;
+        }
+        else
+        {
+            Context.Entry(userKey).State = EntityState.Modified;
+        }
+
+        try
+        {
+            await Context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            Console.WriteLine($"Concurrency issue: {ex.Message}");
+            return false;
+        }
+        return true;
     }
 }

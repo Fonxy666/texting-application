@@ -1,6 +1,8 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Server.Database;
 using Server.Model;
 using Server.Model.Requests.Chat;
 using Server.Model.Requests.Message;
@@ -8,11 +10,31 @@ using Server.Model.Responses.Chat;
 
 namespace Server.Hub;
 
-public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserManager<ApplicationUser> userManager)
+public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserManager<ApplicationUser> userManager, DatabaseContext context)
     : Microsoft.AspNetCore.SignalR.Hub
 {
     public async Task<string> JoinRoom(UserRoomConnection userConnection)
     {
+        Console.WriteLine("------------------------------------------------------------");
+        Console.WriteLine("------------------------------------------------------------");
+        Console.WriteLine("------------------------------------------------------------");
+        Console.WriteLine("------------------------------------------------------------");
+        Console.WriteLine("------------------------------------------------------------");
+        Console.WriteLine("------------------------------------------------------------");
+        Console.WriteLine(userConnection.Room!);
+        var existingRoom = await context.Rooms!
+            .Include(r => r.EncryptedSymmetricKeys)
+            .FirstOrDefaultAsync(r => r.RoomId == new Guid(userConnection.Room!));
+        foreach (var existingRoomEncryptedSymmetricKey in existingRoom.EncryptedSymmetricKeys)
+        {
+            Console.WriteLine(existingRoomEncryptedSymmetricKey.EncryptedKey);
+        }
+        Console.WriteLine("------------------------------------------------------------");
+        Console.WriteLine("------------------------------------------------------------");
+        Console.WriteLine("------------------------------------------------------------");
+        Console.WriteLine("------------------------------------------------------------");
+        Console.WriteLine("------------------------------------------------------------");
+        Console.WriteLine("------------------------------------------------------------");
         await Groups.AddToGroupAsync(Context.ConnectionId, userConnection.Room!);
         connection[Context.ConnectionId] = userConnection;
         await Clients.Group(userConnection.Room!).SendAsync("ReceiveMessage", "Textinger bot", $"{userConnection.User} has joined the room!", DateTime.Now, null, null, null, userConnection.Room);
@@ -37,9 +59,9 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
         await Clients.Client(userConnection.Key).SendAsync("KeyRequest", new KeyRequestResponse(existingUser!.PublicKey, existingUser.Id, roomId, connectionId));
     }
 
-    public async Task SendSymmetricKeyToRequestUser(string userId, string message, string connectionId)
+    public async Task SendSymmetricKeyToRequestUser(string encryptedRoomKey, string connectionId, string roomId)
     {
-        await Clients.Client(connectionId).SendAsync("GetSymmetricKey", message);
+        await Clients.Client(connectionId).SendAsync("GetSymmetricKey", encryptedRoomKey, roomId);
     }
 
     public async Task SendMessage(MessageRequest request)

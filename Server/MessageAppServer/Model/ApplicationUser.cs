@@ -42,4 +42,9 @@ public class ApplicationUser : IdentityUser<Guid>
     {
         PublicKey = key;
     }
+
+    public void AddKey(EncryptedSymmetricKey key)
+    {
+        UserSymmetricKeys.Add(key);
+    }
 }

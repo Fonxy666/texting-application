@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { StoreRoomSymmetricKey } from '../../model/room-requests/StoreRoomSymmetricKey';
 
 @Injectable({
     providedIn: 'root'
@@ -256,6 +257,12 @@ export class CryptoService {
     getUserPrivateKeyForRoom(roomId: string): Observable<any> {
         return this.errorHandler.handleErrors(
             this.http.get(`/api/v1/CryptoKey/GetPrivateUserKey?roomId=${roomId}`, { withCredentials: true })
+        )
+    }
+
+    sendEncryptedRoomKey(data: StoreRoomSymmetricKey): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.post(`/api/v1/CryptoKey/SaveEncryptedRoomKey`, data, { withCredentials: true })
         )
     }
 }

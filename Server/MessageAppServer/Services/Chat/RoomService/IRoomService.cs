@@ -12,4 +12,5 @@ public interface IRoomService
     Task DeleteRoomAsync(Room room);
     Task<RoomNameTakenResponse> RoomNameTaken(string roomName);
     Task ChangePassword(Room room, string newPassword);
+    Task<bool> AddNewUserKey(Guid roomId, Guid userId, string key);
 }

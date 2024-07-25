@@ -16,6 +16,7 @@ import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
 import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePasswordRequestForRoom';
 import { CryptoService } from '../crypto-service/crypto.service';
 import { IndexedDBService } from '../db-service/indexed-dbservice.service';
+import { StoreRoomSymmetricKey } from '../../model/room-requests/StoreRoomSymmetricKey';
 @Injectable({
     providedIn: 'root'
 })
@@ -98,11 +99,13 @@ export class ChatService {
             const encryptRoomKeyForUser = await this.cryptoService.encryptSymmetricKey(keyToArrayBuffer, cryptoKeyUserPublicKey);
             const bufferToBase64 = this.cryptoService.bufferToBase64(encryptRoomKeyForUser);
 
-            await this.sendRoomSymmetricKey(bufferToBase64, userData.connectionId);
+            await this.sendRoomSymmetricKey(bufferToBase64, userData.connectionId, userData.roomId);
         })
 
-        this.connection.on("GetSymmetricKey", (encryptedKey: any) => {
-            console.log(encryptedKey);
+        this.connection.on("GetSymmetricKey", async (encryptedKey: string, roomId: string) => {
+            const data = new StoreRoomSymmetricKey(encryptedKey, roomId);
+            const response = await firstValueFrom(this.cryptoService.sendEncryptedRoomKey(data));
+            console.log(response);
         })
     }
 
@@ -179,9 +182,9 @@ export class ChatService {
         }
     }
 
-    public async sendRoomSymmetricKey(message: string, connectionId: string) {
+    public async sendRoomSymmetricKey(message: string, connectionId: string, roomId: string) {
         try {
-            await this.connection.invoke("SendSymmetricKeyToRequestUser", message, connectionId);
+            await this.connection.invoke("SendSymmetricKeyToRequestUser", message, connectionId, roomId);
         } catch (error) {
             console.error('Error get the symmetric key:', error);
         }
