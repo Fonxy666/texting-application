@@ -83,23 +83,10 @@ public class RoomService(DatabaseContext context) : IRoomService
             return false;
         }
 
-        var userKey = existingRoom.EncryptedSymmetricKeys.FirstOrDefault(k => k.UserId == userId);
-        if (userKey == null)
-        {
-            userKey = new EncryptedSymmetricKey
-            {
-                KeyId = Guid.NewGuid(),
-                RoomId = roomId,
-                UserId = userId,
-                EncryptedKey = key
-            };
-            existingRoom.EncryptedSymmetricKeys.Add(userKey);
-            Context.Entry(userKey).State = EntityState.Added;
-        }
-        else
-        {
-            Context.Entry(userKey).State = EntityState.Modified;
-        }
+        var userKey = new EncryptedSymmetricKey(userId, key, roomId);
+
+        existingRoom.EncryptedSymmetricKeys.Add(userKey);
+        Context.Entry(userKey).State = EntityState.Added;
 
         try
         {
