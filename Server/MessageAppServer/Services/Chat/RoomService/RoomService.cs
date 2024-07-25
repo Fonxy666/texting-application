@@ -88,15 +88,7 @@ public class RoomService(DatabaseContext context) : IRoomService
         existingRoom.EncryptedSymmetricKeys.Add(userKey);
         Context.Entry(userKey).State = EntityState.Added;
 
-        try
-        {
-            await Context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            Console.WriteLine($"Concurrency issue: {ex.Message}");
-            return false;
-        }
+        await Context.SaveChangesAsync();
         return true;
     }
 }
