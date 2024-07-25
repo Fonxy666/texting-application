@@ -34,7 +34,7 @@ namespace Tests.ServicesTests.Chat
         [Test]
         public async Task SendMessage_ValidMessage_ReturnsSuccessResponse()
         {
-            var request = new MessageRequest("a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "Hello, World!", false, null);
+            var request = new MessageRequest("a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "Hello, World!", false, "asd", Guid.NewGuid().ToString());
 
             var response = await _messageService.SendMessage(request, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
 
@@ -44,7 +44,7 @@ namespace Tests.ServicesTests.Chat
         [Test]
         public async Task EditMessage_WithNotTheCreator_ReturnFalse()
         {
-            var request = new MessageRequest("a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "Hello, World!", false, null);
+            var request = new MessageRequest("a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "Hello, World!", false, "asd", Guid.NewGuid().ToString());
 
             await _messageService.SendMessage(request, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
 
@@ -72,7 +72,7 @@ namespace Tests.ServicesTests.Chat
         {
             for (var i = 1; i <= 15; i++)
             {
-                await _dbContext.Messages.AddAsync(new Message(roomId, new Guid("a57f0d67-8670-4789-a580-3b4a3bd3bf9c"), $"Message{i}", false));
+                await _dbContext.Messages.AddAsync(new Message(roomId, new Guid("a57f0d67-8670-4789-a580-3b4a3bd3bf9c"), $"Message{i}", false, ""));
             }
 
             await _dbContext.SaveChangesAsync();

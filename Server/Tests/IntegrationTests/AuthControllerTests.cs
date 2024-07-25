@@ -77,7 +77,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
    [Fact]
     public async Task Register_TestUser_ReturnSuccessStatusCode()
     {
-        var testUser = new RegistrationRequest("unique@hotmail.com", "uniqueTestUsername", "TestUserPassword123666$$$", "01234567890", "", new JsonWebKey(), "");
+        var testUser = new RegistrationRequest("unique@hotmail.com", "uniqueTestUsername", "TestUserPassword123666$$$", "01234567890", "", "", "", "");
         var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
         var userLogin = new StringContent(jsonLoginRequest, Encoding.UTF8, "application/json");
 
@@ -88,7 +88,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Register_InvalidTestUser_ReturnBadRequest()
     {
-        var testUser = new RegistrationRequest("", "", "", "", "", new JsonWebKey(), "");
+        var testUser = new RegistrationRequest("", "", "", "", "", "", "", "");
         var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
         var userLogin = new StringContent(jsonLoginRequest, Encoding.UTF8, "application/json");
 
@@ -99,7 +99,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Register_TestUserWithInvalidEmail_ReturnBadRequest()
     {
-        var testUser = new RegistrationRequest("uniquaeotmail", "uniqueTestUsername123", "asdASD123%%%", "01234567890", "", new JsonWebKey(), "");
+        var testUser = new RegistrationRequest("uniquaeotmail", "uniqueTestUsername123", "asdASD123%%%", "01234567890", "", "", "", "");
         var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
         var userLogin = new StringContent(jsonLoginRequest, Encoding.UTF8, "application/json");
 
@@ -111,7 +111,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Register_TestUserWithInvalidPassword_ReturnBadRequest()
     {
-        var testUser = new RegistrationRequest("uniquaeotmail@hotmail.com", "uniqueTestUsername123", "asdASD123", "01234567890", "", new JsonWebKey(), "");
+        var testUser = new RegistrationRequest("uniquaeotmail@hotmail.com", "uniqueTestUsername123", "asdASD123", "01234567890", "", "", "", "");
         var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
         var userLogin = new StringContent(jsonLoginRequest, Encoding.UTF8, "application/json");
 

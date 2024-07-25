@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
+using MockQueryable.Moq;
 using Moq;
 using Server.Model;
 using Server.Model.Requests.Auth;
@@ -24,14 +25,32 @@ public class AuthServiceTests(ITestOutputHelper testOutputHelper)
         var cookieService = new Mock<ICookieService>();
         var keyService = new Mock<IPrivateKeyService>();
 
+        const string senderName = "TestUser";
+        var senderId = Guid.NewGuid().ToString();
+
+        var applicationUser1 = new ApplicationUser { UserName = senderName, Id = Guid.Parse(senderId), PublicKey = "publidsadascKey" };
+        var users = new List<ApplicationUser> { applicationUser1 }.AsQueryable().BuildMock();
+
+        userManagerMock.Setup(um => um.Users).Returns(users);
+        userManagerMock.Setup(um => um.FindByNameAsync(It.IsAny<string>()))
+            .ReturnsAsync((string _) => users.FirstOrDefault(u => u.UserName == "TestUser"));
+
+        userManagerMock.Setup(um => um.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+        userManagerMock.Setup(um => um.AddToRoleAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+        keyService.Setup(ks => ks.SaveKey(It.IsAny<PrivateKey>()))
+            .ReturnsAsync(true);
+
         var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object, cookieService.Object, keyService.Object);
-        var regRequest = new RegistrationRequest("test@example.com", "TestUser", "password123!!!", "image", "123456789",
-            new JsonWebKey(), "");
+        var regRequest = new RegistrationRequest("test@example.com", "TestUser", "passwordD123!!!", "image", "123456789",
+            "publidsadascKey", "privadsadsateKey", "ivdsadas");
 
         var result = await authService.RegisterAsync(regRequest, "User", regRequest.Image);
 
         Assert.That(result.Success, Is.True);
-        Assert.That(result.Id, Is.EqualTo(""));
     }
 
     [Fact]

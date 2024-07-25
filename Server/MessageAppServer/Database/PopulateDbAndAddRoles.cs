@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Cryptography;
+using System.Text;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Server.Model;
 using Server.Services.Chat.RoomService;
+using Server.Services.PrivateKey;
 
 namespace Server.Database;
 
@@ -54,7 +57,8 @@ public static class PopulateDbAndAddRoles
                 var admin = new ApplicationUser("-")
                 {
                     UserName = configuration["AdminUserName"],
-                    Email = adminEmail
+                    Email = adminEmail,
+                    PublicKey = "PublicTestKey"
                 };
 
                 admin.SetPublicKey("");
@@ -91,13 +95,14 @@ public static class PopulateDbAndAddRoles
         {
             using var scope = app.ApplicationServices.CreateScope();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var keyManager = scope.ServiceProvider.GetRequiredService<IPrivateKeyService>();
 
             for (var i = 1; i <= numberOfTestUsers; i++)
             {
                 var testEmail = $"test{i}@hotmail.com";
                 var testUsername = $"TestUsername{i}";
 
-                Console.WriteLine($"Creating test user {i}: {testUsername} ({testEmail})");
+                var keysForTestUser = GenerateAsymmetricKeys();
 
                 var testInDb = userManager.FindByEmailAsync(testEmail).Result;
                 var usernameInDb = userManager.FindByNameAsync(testUsername).Result;
@@ -119,8 +124,13 @@ public static class PopulateDbAndAddRoles
                     },
                     UserName = testUsername,
                     Email = testEmail,
-                    TwoFactorEnabled = i != 3
+                    TwoFactorEnabled = i != 3,
+                    PublicKey = keysForTestUser.PublicKey
                 };
+
+                var encryptedData = EncryptPrivateKey(keysForTestUser.PrivateKey, "123456");
+
+                keyManager.SaveKey(new PrivateKey(testUser.Id, encryptedData.EncryptedData.ToString()!, encryptedData.Iv.ToString()!));
 
                 var testUserCreated = userManager.CreateAsync(testUser, "testUserPassword123###").Result;
 
@@ -160,4 +170,83 @@ public static class PopulateDbAndAddRoles
             roomService.RegisterRoomAsync("test", "test", new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"), "").Wait();
         }
     }
+
+    private static AsymmetricKey GenerateAsymmetricKeys()
+    {
+        using var rsa = new RSACryptoServiceProvider(2048);
+        try
+        {
+            var publicKey = rsa.ToXmlString(false); // false to get the public key only
+            var privateKey = rsa.ToXmlString(true); // true to get both the public and private keys
+
+            return new AsymmetricKey(publicKey, privateKey);
+        }
+        finally
+        {
+            rsa.PersistKeyInCsp = false;
+        }
+    }
+    
+    private const int KeySize = 256 / 8;
+    private const int IvSize = 12;
+    private const int TagSize = 16;
+    private const int Iterations = 10000;
+
+    private static byte[] DeriveKey(string password, byte[] salt)
+    {
+        using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256);
+        return pbkdf2.GetBytes(KeySize);
+    }
+
+    private static (byte[] Iv, byte[] EncryptedData) EncryptPrivateKey(string privateKey, string password)
+    {
+        var salt = GenerateRandomBytes(KeySize);
+        var key = DeriveKey(password, salt);
+        var iv = GenerateRandomBytes(IvSize);
+
+        using var aesGcm = new AesGcm(key);
+        var plaintext = Encoding.UTF8.GetBytes(privateKey);
+        var ciphertext = new byte[plaintext.Length];
+        var tag = new byte[TagSize];
+
+        aesGcm.Encrypt(iv, plaintext, ciphertext, tag);
+
+        var encryptedData = new byte[salt.Length + iv.Length + tag.Length + ciphertext.Length];
+        Buffer.BlockCopy(salt, 0, encryptedData, 0, salt.Length);
+        Buffer.BlockCopy(iv, 0, encryptedData, salt.Length, iv.Length);
+        Buffer.BlockCopy(tag, 0, encryptedData, salt.Length + iv.Length, tag.Length);
+        Buffer.BlockCopy(ciphertext, 0, encryptedData, salt.Length + iv.Length + tag.Length, ciphertext.Length);
+
+        return (iv, encryptedData);
+    }
+
+    private static string DecryptPrivateKey(byte[] encryptedData, string password)
+    {
+        var salt = new byte[KeySize];
+        var iv = new byte[IvSize];
+        var tag = new byte[TagSize];
+        var ciphertext = new byte[encryptedData.Length - salt.Length - iv.Length - tag.Length];
+
+        Buffer.BlockCopy(encryptedData, 0, salt, 0, salt.Length);
+        Buffer.BlockCopy(encryptedData, salt.Length, iv, 0, iv.Length);
+        Buffer.BlockCopy(encryptedData, salt.Length + iv.Length, tag, 0, tag.Length);
+        Buffer.BlockCopy(encryptedData, salt.Length + iv.Length + tag.Length, ciphertext, 0, ciphertext.Length);
+
+        var key = DeriveKey(password, salt);
+
+        using var aesGcm = new AesGcm(key);
+        var decryptedData = new byte[ciphertext.Length];
+        aesGcm.Decrypt(iv, ciphertext, tag, decryptedData);
+        return Encoding.UTF8.GetString(decryptedData);
+    }
+
+    private static byte[] GenerateRandomBytes(int length)
+    {
+        var bytes = new byte[length];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(bytes);
+        return bytes;
+    }
 }
+
+public record AsymmetricKey(string PublicKey, string PrivateKey);

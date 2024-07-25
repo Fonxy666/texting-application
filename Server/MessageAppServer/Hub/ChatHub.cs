@@ -10,31 +10,11 @@ using Server.Model.Responses.Chat;
 
 namespace Server.Hub;
 
-public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserManager<ApplicationUser> userManager, DatabaseContext context)
+public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserManager<ApplicationUser> userManager)
     : Microsoft.AspNetCore.SignalR.Hub
 {
     public async Task<string> JoinRoom(UserRoomConnection userConnection)
     {
-        Console.WriteLine("------------------------------------------------------------");
-        Console.WriteLine("------------------------------------------------------------");
-        Console.WriteLine("------------------------------------------------------------");
-        Console.WriteLine("------------------------------------------------------------");
-        Console.WriteLine("------------------------------------------------------------");
-        Console.WriteLine("------------------------------------------------------------");
-        Console.WriteLine(userConnection.Room!);
-        var existingRoom = await context.Rooms!
-            .Include(r => r.EncryptedSymmetricKeys)
-            .FirstOrDefaultAsync(r => r.RoomId == new Guid(userConnection.Room!));
-        foreach (var existingRoomEncryptedSymmetricKey in existingRoom.EncryptedSymmetricKeys)
-        {
-            Console.WriteLine(existingRoomEncryptedSymmetricKey.EncryptedKey);
-        }
-        Console.WriteLine("------------------------------------------------------------");
-        Console.WriteLine("------------------------------------------------------------");
-        Console.WriteLine("------------------------------------------------------------");
-        Console.WriteLine("------------------------------------------------------------");
-        Console.WriteLine("------------------------------------------------------------");
-        Console.WriteLine("------------------------------------------------------------");
         await Groups.AddToGroupAsync(Context.ConnectionId, userConnection.Room!);
         connection[Context.ConnectionId] = userConnection;
         await Clients.Group(userConnection.Room!).SendAsync("ReceiveMessage", "Textinger bot", $"{userConnection.User} has joined the room!", DateTime.Now, null, null, null, userConnection.Room);

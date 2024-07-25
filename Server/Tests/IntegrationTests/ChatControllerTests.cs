@@ -18,7 +18,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 {
     private readonly AuthRequest _testUser1 = new ("TestUsername1", "testUserPassword123###");
     private readonly AuthRequest _testUser2 = new ("TestUsername3", "testUserPassword123###");
-    private readonly RoomRequest _testRoom = new ("TestRoom1", "TestRoomPassword");
+    private readonly RoomRequest _testRoom = new ("TestRoom1", "TestRoomPassword", "key");
     private readonly HttpClient _client;
     private readonly TestServer _testServer;
 
@@ -53,7 +53,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/RegisterRoom", contentRegister);
         roomRegistrationResponse.EnsureSuccessStatusCode();
 
-        var jsonRequest = JsonConvert.SerializeObject(new RoomRequest(_testRoom.RoomName, _testRoom.Password));
+        var jsonRequest = JsonConvert.SerializeObject(_testRoom with { EncryptedSymmetricRoomKey = "key" });
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
         var roomLoginResponse = await _client.PostAsync("api/v1/Chat/JoinRoom", content);
@@ -67,7 +67,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var cookies = TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com").Result;
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
         
-        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "test"));
+        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "test", "key"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/RegisterRoom", contentRegister);
@@ -127,7 +127,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var cookies = TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com").Result;
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
         
-        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("", ""));
+        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("", "", ""));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var roomRegistrationResponse = await _client.PostAsync("api/v1/Chat/RegisterRoom", contentRegister);
@@ -140,7 +140,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var cookies = TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com").Result;
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
         
-        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("", ""));
+        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("", "", ""));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var joinRoomResponse = await _client.PostAsync("api/v1/Chat/JoinRoom", contentRegister);
@@ -153,7 +153,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var cookies = TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com").Result;
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
         
-        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("wrongRoomName", "wrongRoomPassword"));
+        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("wrongRoomName", "wrongRoomPassword", "key"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var joinRoomResponse = await _client.PostAsync("api/v1/Chat/JoinRoom", contentRegister);
@@ -166,7 +166,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var cookies = TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com").Result;
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
         
-        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "asd"));
+        var jsonRequestRegister = JsonConvert.SerializeObject(new RoomRequest("test", "asd", "key"));
         var contentRegister = new StringContent(jsonRequestRegister, Encoding.UTF8, "application/json");
 
         var joinRoomResponse = await _client.PostAsync("api/v1/Chat/JoinRoom", contentRegister);

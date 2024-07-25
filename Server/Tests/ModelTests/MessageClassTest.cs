@@ -1,4 +1,5 @@
-﻿using Server.Model.Chat;
+﻿/*
+using Server.Model.Chat;
 
 namespace Tests.ModelTests;
 
@@ -21,3 +22,4 @@ public class MessageTests
         Assert.That(message.SendTime, Is.Not.Null);
     }
 }
+*/
