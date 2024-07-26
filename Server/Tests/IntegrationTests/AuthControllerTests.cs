@@ -74,10 +74,19 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         Assert.Equal(HttpStatusCode.BadRequest, authResponse.StatusCode);
     }
     
-   [Fact]
+    [Fact]
     public async Task Register_TestUser_ReturnSuccessStatusCode()
     {
-        var testUser = new RegistrationRequest("unique@hotmail.com", "uniqueTestUsername", "TestUserPassword123666$$$", "01234567890", "", "", "", "");
+        var testUser = new RegistrationRequest(
+            "unique@hotmail.com",
+            "uniqueTestUsername",
+            "TestUserPassword123666$$$",
+            "",
+            "06292222222",
+            "testPublicKey",
+            "testPrivateKey",
+            "testIv"
+        );
         var jsonLoginRequest = JsonConvert.SerializeObject(testUser);
         var userLogin = new StringContent(jsonLoginRequest, Encoding.UTF8, "application/json");
 

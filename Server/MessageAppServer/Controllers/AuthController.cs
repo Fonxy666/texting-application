@@ -70,7 +70,7 @@ public class AuthController(
     }
         
     [HttpPost("Register")]
-    public async Task<ActionResult<EmailUsernameResponse>> Register(RegistrationRequest request)
+    public async Task<ActionResult<EmailUsernameResponse>> Register([FromBody]RegistrationRequest request)
     {
         try
         {
