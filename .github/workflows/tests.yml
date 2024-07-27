@@ -14,6 +14,7 @@ jobs:
     env:
       IssueAudience: ${{ secrets.ISSUE_AUDIENCE }}
       ConnectionString: ${{ secrets.TEST_CONNECTION_STRING }}
+      ConnectionStringToPrivateKeyDatabase: ${{ secrets.TEST_CONNECTION_STRING_TO_PRIVATE_KEY_DATABASE }}
       IssueSign: ${{ secrets.ISSUE_SIGN }}
       AdminEmail: ${{ secrets.ADMIN_EMAIL }}
       AdminUserName: ${{ secrets.ADMIN_USERNAME }}
@@ -30,15 +31,25 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Start MSSQL Server Docker container
+    - name: Start MSSQL Server Docker container for main database
       run: |
-        docker run --name textinger_test_database -e ACCEPT_EULA=Y -e SA_PASSWORD='MyStrong(!)Password123' -p 1433:1433 -d mcr.microsoft.com/mssql/server:latest
+        docker run --name textinger_test_database -e ACCEPT_EULA=Y -e SA_PASSWORD='MyStrong(!)Password123' -p 1434:1433 -d mcr.microsoft.com/mssql/server:latest
         # Wait for SQL Server to come up
         sleep 15
         # Check logs to ensure the container is running correctly
         docker logs textinger_test_database
         # Create the database if it doesn't exist
         docker exec textinger_test_database /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'MyStrong(!)Password123' -Q "IF DB_ID('textinger_test_database') IS NULL CREATE DATABASE [textinger_test_database];"
+
+    - name: Start MSSQL Server Docker container for private key database
+      run: |
+        docker run --name textinger_private_key_database -e ACCEPT_EULA=Y -e SA_PASSWORD='MyStrong(!)Password123' -p 1436:1433 -d mcr.microsoft.com/mssql/server:latest
+        # Wait for SQL Server to come up
+        sleep 15
+        # Check logs to ensure the container is running correctly
+        docker logs textinger_private_key_database
+        # Create the database if it doesn't exist
+        docker exec textinger_private_key_database /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'MyStrong(!)Password123' -Q "IF DB_ID('textinger_private_key_database') IS NULL CREATE DATABASE [textinger_private_key_database];"
 
     - name: Install EF Core tools
       run: dotnet tool install --global dotnet-ef
