@@ -15,7 +15,6 @@ public static class TestLogin
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
 
         var authResponse = await client.PostAsync("api/v1/Auth/Login", authContent);
-        Console.WriteLine(authResponse);
         authResponse.EnsureSuccessStatusCode();
 
         var cookies = authResponse.Headers.GetValues("Set-Cookie");

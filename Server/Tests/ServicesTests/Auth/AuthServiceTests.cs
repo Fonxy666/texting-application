@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
 using Server.Model;
@@ -41,7 +40,7 @@ public class AuthServiceTests(ITestOutputHelper testOutputHelper)
         userManagerMock.Setup(um => um.AddToRoleAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
             .ReturnsAsync(IdentityResult.Success);
 
-        keyService.Setup(ks => ks.SaveKey(It.IsAny<PrivateKey>()))
+        keyService.Setup(ks => ks.SaveKey(It.IsAny<Server.Model.PrivateKey>()))
             .ReturnsAsync(true);
 
         var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object, cookieService.Object, keyService.Object);

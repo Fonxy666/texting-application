@@ -30,9 +30,18 @@ public class PrivateKeyService(PrivateKeysDbContext context) : IPrivateKeyServic
         }
     }
 
-    public async Task DeleteKey(Guid userId)
+    public async Task<bool> DeleteKey(Guid userId)
     {
-        await Context.Keys!.FirstOrDefaultAsync(k => k.UserId == userId);
-        await Context.SaveChangesAsync();
+        try
+        {
+            await Context.Keys!.FirstOrDefaultAsync(k => k.UserId == userId);
+            await Context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
     }
 }

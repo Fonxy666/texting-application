@@ -42,6 +42,18 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         _testServer = new TestServer(builder);
         _client = _testServer.CreateClient();
     }
+    
+    [Fact]
+    public async Task Login()
+    {
+        var token = EmailSenderCodeGenerator.GenerateShortToken("test1@hotmail.com", "login");
+        var login = new LoginAuth(_testUser.UserName, true, token);
+        var authJsonRequest = JsonConvert.SerializeObject(login);
+        var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
+
+        var authResponse = await _client.PostAsync("api/v1/Auth/Login", authContent);
+        authResponse.EnsureSuccessStatusCode();
+    }
 
     [Fact]
     public async Task Login_WithInvalidUser_ReturnBadRequestStatusCode()
