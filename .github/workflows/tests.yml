@@ -14,6 +14,7 @@ jobs:
     env:
       IssueAudience: ${{ secrets.ISSUE_AUDIENCE }}
       ConnectionString: ${{ secrets.TEST_CONNECTION_STRING }}
+      ConnectionStringToPrivateKeyDatabase: ${{ secrets.TEST_CONNECTION_STRING_TO_PRIVATE_KEY_DATABASE }}
       IssueSign: ${{ secrets.ISSUE_SIGN }}
       AdminEmail: ${{ secrets.ADMIN_EMAIL }}
       AdminUserName: ${{ secrets.ADMIN_USERNAME }}
@@ -30,11 +31,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Start MSSQL Server Docker container
+    - name: Start MSSQL Server Docker container for main database
       run: |
         docker run --name textinger_test_database -e ACCEPT_EULA=Y -e SA_PASSWORD='MyStrong(!)Password123' -p 1433:1433 -d mcr.microsoft.com/mssql/server:latest
         # Wait for SQL Server to come up
         sleep 15
+        # Install sqlcmd in the SQL Server container
+        docker exec textinger_test_database /bin/bash -c "apt-get update && apt-get install -y mssql-tools unixodbc-dev"
         # Check logs to ensure the container is running correctly
         docker logs textinger_test_database
         # Create the database if it doesn't exist
@@ -45,6 +48,8 @@ jobs:
         docker run --name textinger_private_key_database -e ACCEPT_EULA=Y -e SA_PASSWORD='MyStrong(!)Password123' -p 1434:1433 -d mcr.microsoft.com/mssql/server:latest
         # Wait for SQL Server to come up
         sleep 15
+        # Install sqlcmd in the SQL Server container
+        docker exec textinger_private_key_database /bin/bash -c "apt-get update && apt-get install -y mssql-tools unixodbc-dev"
         # Check logs to ensure the container is running correctly
         docker logs textinger_private_key_database
         # Create the database if it doesn't exist
@@ -74,11 +79,17 @@ jobs:
       working-directory: Server/Tests
       run: dotnet build --configuration Release --no-restore
 
-    - name: Create migrations
+    - name: Create migrations for main database
       run: dotnet ef migrations add InitialMigration --project Server/MessageAppServer --startup-project Server/MessageAppServer --output-dir Data/Migrations
 
-    - name: Update database
+    - name: Update main database
       run: dotnet ef database update --project Server/MessageAppServer --startup-project Server/MessageAppServer
+
+    - name: Create migrations for private key database
+      run: dotnet ef migrations add PrivateKeyMigration --context PrivateKeysDbContext --project Server/MessageAppServer --startup-project Server/MessageAppServer --output-dir Data/PrivateKeyMigrations
+
+    - name: Update private key database
+      run: dotnet ef database update --context PrivateKeysDbContext --project Server/MessageAppServer --startup-project Server/MessageAppServer
 
     - name: Test
       working-directory: Server/Tests
