@@ -59,13 +59,8 @@ public class CryptoKeyController(
             }
 
             var userKey = existingUser.UserSymmetricKeys.FirstOrDefault(key => key.RoomId == roomGuid);
-        
-            if (userKey == null)
-            {
-                return NotFound();
-            }
 
-            return Ok(new { encryptedKey = userKey.EncryptedKey });
+            return Ok(new { encryptedKey = userKey!.EncryptedKey });
         }
         catch (Exception e)
         {
