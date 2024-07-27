@@ -3,8 +3,9 @@ import { FormBuilder, FormGroup,  Validators } from '@angular/forms';
 import { RegistrationRequest } from '../../model/auth-requests/RegistrationRequest';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { DomSanitizer } from '@angular/platform-browser';
-import { passwordValidator, passwordMatchValidator } from '../../validators/ValidPasswordValidator';
+import { passwordValidator, passwordMatchValidator, decryptTokenValidator } from '../../validators/ValidPasswordValidator';
 import { Router } from '@angular/router';
+import { CryptoService } from '../../services/crypto-service/crypto.service';
 
 @Component({
   selector: 'app-create-registration-request',
@@ -18,7 +19,13 @@ export class CreateRegistrationRequestComponent {
     @ViewChild('passwordToggleIcon') passwordToggleIcon!: ElementRef;
     @ViewChild('passwordRepeatToggleIcon') passwordRepeatToggleIcon!: ElementRef;
     
-    constructor(private fb: FormBuilder, private sanitizer: DomSanitizer, private router: Router, private renderer: Renderer2) { }
+    constructor(
+        private fb: FormBuilder,
+        private sanitizer: DomSanitizer,
+        private router: Router,
+        private renderer: Renderer2,
+        private cryptoService: CryptoService
+    ) { }
     
     registrationRequest!: FormGroup;
     profilePic: string = "";
@@ -33,7 +40,8 @@ export class CreateRegistrationRequestComponent {
             username: ['', Validators.required],
             password: ['', [Validators.required, passwordValidator]],
             passwordrepeat: ['', [Validators.required, passwordValidator]],
-            phoneNumber: ['', Validators.required]
+            phoneNumber: ['', Validators.required],
+            decryptToken: ['', [Validators.required, decryptTokenValidator]]
         }, {
             validators: passwordMatchValidator.bind(this)
         });
@@ -70,15 +78,26 @@ export class CreateRegistrationRequestComponent {
     @Output()
     SendRegistrationRequest: EventEmitter<RegistrationRequest> = new EventEmitter<RegistrationRequest>();
 
-    onFormSubmit() {
-        const registrationRequest = new RegistrationRequest(
-            this.registrationRequest.get('email')?.value,
-            this.registrationRequest.get('username')?.value,
-            this.registrationRequest.get('password')?.value,
-            this.profilePic,
-            this.registrationRequest.get('phoneNumber')?.value
-        );
-        this.SendRegistrationRequest.emit(registrationRequest);
+    async onFormSubmit() {
+        try {
+            const result = await this.cryptoService.generateKeyPair();
+            const encryptedKey = await this.cryptoService.encryptPrivateKey(result.privateKey, this.registrationRequest.get("decryptToken")!.value);
+            
+            const registrationRequest = new RegistrationRequest(
+                this.registrationRequest.get('email')?.value,
+                this.registrationRequest.get('username')?.value,
+                this.registrationRequest.get('password')?.value,
+                this.profilePic,
+                this.registrationRequest.get('phoneNumber')?.value,
+                result.publicKey,
+                encryptedKey.encryptedPrivateKey,
+                encryptedKey.iv
+            );
+    
+            this.SendRegistrationRequest.emit(registrationRequest);
+        } catch (error) {
+            console.error("Error during registration:", error);
+        }
     }
 
     toggleShowPassword() {

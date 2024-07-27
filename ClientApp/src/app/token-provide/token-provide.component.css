@@ -1,0 +1,20 @@
+.token-container-without-background {
+    display: flex;
+    background: #2e2e2e;
+    align-items: center;
+    justify-content: center;
+    font-family: Cursive;
+    border-radius: 15px;
+}
+
+.token-container-with-background {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Cursive;
+}
+
+::ng-deep .custom-dialog-container .mat-mdc-dialog-surface {
+    border-radius: 20px !important;
+}

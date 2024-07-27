@@ -5,6 +5,9 @@ import { CookieService } from 'ngx-cookie-service';
 import { ChatService } from '../../services/chat-service/chat.service';
 import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
 import { MessageService } from 'primeng/api';
+import { CryptoService } from '../../services/crypto-service/crypto.service';
+import { catchError, firstValueFrom, from, of } from 'rxjs';
+import { IndexedDBService } from '../../services/db-service/indexed-dbservice.service';
 
 @Component({
   selector: 'app-join-room',
@@ -23,7 +26,9 @@ export class JoinRoomComponent implements OnInit {
         private router: Router,
         private chatService: ChatService,
         private messageService: MessageService,
-        private renderer: Renderer2
+        private renderer: Renderer2,
+        private cryptoService: CryptoService,
+        private dbService: IndexedDBService
     ) { }
 
     backgroundVideo: string = "./assets/videos/white_black_video.mp4";
@@ -106,9 +111,43 @@ export class JoinRoomComponent implements OnInit {
 
     joinRoom() {
         this.chatService.joinToRoom(this.createForm()).subscribe(
-            response => {
+            async response => {
                 if (response.success) {
-                    this.chatService.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
+                    const userId = this.cookieService.get("UserId");
+                    const usersInRoom = await this.chatService.getUsersInSpecificRoom(response.roomId);
+                    const keyResponse = await firstValueFrom(
+                        this.cryptoService.getUserPrivateKeyForRoom(response.roomId)
+                            .pipe(
+                                catchError(() => {
+                                    return of(null);
+                                  })
+                            )
+                    );
+                    const awaitedUserInputKey = await firstValueFrom(
+                        from(this.dbService.getEncryptionKey(userId))
+                            .pipe(
+                                catchError(() => {
+                                    this.messageService.add({
+                                        severity: 'error',
+                                        summary: 'Error',
+                                        detail: 'You did not provide us your token.'
+                                    });
+                                    return of(null);
+                                    })
+                            )
+                    );
+  
+                    if (userId && keyResponse && awaitedUserInputKey) {
+                        await this.chatService.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
+                    } else if (keyResponse == null && usersInRoom > 0) {
+                        this.chatService.requestSymmetricRoomKey(response.roomId, this.chatService.connection.connectionId!);
+                    } else if (keyResponse == null && usersInRoom === 0) {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: 'There is no other user in the room. You need to waite for someone.'
+                        });
+                    }
                 }
             },
             error => {

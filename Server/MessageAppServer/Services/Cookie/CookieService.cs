@@ -129,6 +129,7 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenServi
         Response.Cookies.Delete("RefreshToken", cookieOptions);
         Response.Cookies.Delete("RememberMe", cookieOptions);
         Response.Cookies.Delete("Anonymous", cookieOptions);
+        Response.Cookies.Delete("PublicKey", cookieOptions);
     }
 
     public void SetRememberMeCookie(bool rememberMe)
@@ -141,6 +142,19 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenServi
             IsEssential = true,
             Secure = true,
             Expires = rememberMe? DateTime.UtcNow.AddYears(2) : null
+        });
+    }
+
+    public void SetPublicKey(bool rememberMe, string publicKey)
+    {
+        Response.Cookies.Append("PublicKey", publicKey, new CookieOptions
+        {
+            Domain = Request.Host.Host,
+            HttpOnly = false,
+            SameSite = SameSiteMode.None,
+            IsEssential = true,
+            Secure = true,
+            Expires = rememberMe? DateTime.UtcNow.AddDays(7) : null
         });
     }
 }

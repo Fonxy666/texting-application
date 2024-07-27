@@ -17,7 +17,7 @@ export class UserService {
         private cookieService: CookieService
     ) {
         this.getUsername(this.cookieService.get("UserId")).subscribe(userName => {
-            this.userName = userName;
+            this.userName = userName.username;
         });
     }
 
@@ -77,13 +77,19 @@ export class UserService {
         )
     }
 
-    changeEmail(form: ChangeEmailRequest) {
+    changeEmail(form: ChangeEmailRequest): Observable<any> {
         return this. errorHandler.handleErrors(
             this.http.patch(`/api/v1/User/ChangeEmail`, form, { withCredentials: true})
         )
     }
 
-    changeAvatar(image: string) {
+    getCryptoKey(): Observable<any> {
+        return this. errorHandler.handleErrors(
+            this.http.get(`/api/v1/CryptoKey/GetPrivateKey`, { withCredentials: true})
+        )
+    }
+
+    changeAvatar(image: string): Observable<any> {
         return this. errorHandler.handleErrors(
             this.http.patch(`/api/v1/User/ChangeAvatar`, image, {
                 headers: {

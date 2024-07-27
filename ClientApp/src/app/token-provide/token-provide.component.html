@@ -1,6 +1,6 @@
-<section class="token-container">
+<section [ngClass]="{'token-container-with-background': needBackground(), 'token-container-without-background': !needBackground()}">
     <p-toast position="top-center"></p-toast>
-    <div class="token-card text-style">    
+    <div class="token-card text-style">
         <h1 class="mt-3 text-white text-style">
             {{ this.pageName }}
         </h1>
@@ -9,9 +9,11 @@
                 <label for="token">{{ this.labelName }}</label>
                 <input formControlName="token" type="email" class="form-control mt-2" id="token" aria-describedby="emailHelp" [placeholder]=this.inputPlaceholder required>
             </div>
-            <button type="submit" class="btn btn-color mt-3">{{ this.buttonContext }}</button>
+            <button type="submit" class="btn btn-color mt-3 haha">{{ this.buttonContext }}</button>
             <button type="button" class="btn btn-color mt-3 mx-2" (click)="handleBackClick()">Back</button>
         </form>
     </div>
 </section>
-<app-background-image [backgroundVideoSrc]="'./assets/videos/white_video.mp4'"></app-background-image>
+<ng-container *ngIf="needBackground()">
+    <app-background-image [backgroundVideoSrc]="'./assets/videos/white_video.mp4'"></app-background-image>
+</ng-container>

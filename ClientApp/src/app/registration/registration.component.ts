@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { RegistrationRequest } from '../model/auth-requests/RegistrationRequest';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { TokenValidatorRequest } from '../model/auth-requests/TokenValidatorRequest';
 import { MessageService } from 'primeng/api';
@@ -14,7 +13,6 @@ import { AuthService } from '../services/auth-service/auth.service';
 
 export class RegistrationComponent {
     constructor(
-        private http: HttpClient,
         private router: Router,
         private messageService: MessageService,
         private authService: AuthService
@@ -67,8 +65,11 @@ export class RegistrationComponent {
     }
 
     sendRegistration() {
+        this.isLoading = true;
         this.authService.registration(this.user)
-        .subscribe(() => {},
+        .subscribe(response => {
+            console.log(response);
+        },
         (error) => {
             this.isLoading = false;
             console.error("An error occurred:", error);

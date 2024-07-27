@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Server.Model;
 using Server.Model.Requests.Chat;
 using Server.Model.Responses.Chat;
@@ -12,8 +13,7 @@ namespace Server.Controllers;
 [Route("api/v1/[controller]")]
 public class ChatController(
     IRoomService roomService,
-    ILogger<ChatController> logger,
-    UserManager<ApplicationUser> userManager
+    ILogger<ChatController> logger
     ) : ControllerBase
 {
     [HttpPost("RegisterRoom"), Authorize(Roles = "User, Admin")]
@@ -33,7 +33,7 @@ public class ChatController(
                 return BadRequest(new { error = "This room's name already taken." });
             }
             
-            var result = await roomService.RegisterRoomAsync(request.RoomName, request.Password, new Guid(userId!));
+            var result = await roomService.RegisterRoomAsync(request.RoomName, request.Password, new Guid(userId!), request.EncryptedSymmetricRoomKey);
 
             return Ok(result);
         }

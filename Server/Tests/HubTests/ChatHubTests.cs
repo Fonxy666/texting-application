@@ -89,7 +89,7 @@ public class ChatHubTests
         var cookies = await TestLogin.Login_With_Test_User(new AuthRequest("TestUsername1", "testUserPassword123###"), _client, "test1@hotmail.com");
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
         
-        var request = new MessageRequest("room1", "test message", false, null);
+        var request = new MessageRequest("room1", "testmessage", false, "asd",null);
         const string connectionId = "test-connection-id";
         var userRoomConnection = new UserRoomConnection("testUser", "testRoom");
 
@@ -114,7 +114,7 @@ public class ChatHubTests
     [Fact]
     public async Task ModifyMessage_ShouldSendModifyMessageToGroup()
     {
-        var request = new EditMessageRequest(new Guid("901d40c6-c95d-47ed-a21a-88cda341d0a9"), "Updated message");
+        var request = new EditMessageRequest(new Guid("901d40c6-c95d-47ed-a21a-88cda341d0a9"), "Updated message", null);
         const string connectionId = "test-connection-id";
         var userRoomConnection = new UserRoomConnection("testUser", "testRoom");
 

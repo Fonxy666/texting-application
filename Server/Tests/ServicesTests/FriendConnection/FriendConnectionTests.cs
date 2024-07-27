@@ -57,18 +57,21 @@ public class FriendConnectionServiceTests
         var user1 = new ApplicationUser
         {
             Id = new Guid(user1Id),
-            UserName = "TestUsername1"
+            UserName = "TestUsername1",
+            PublicKey = "PublicTestKey1"
         };
         var user2 = new ApplicationUser
         {
             Id = new Guid(user2Id),
-            UserName = "TestUsername2"
+            UserName = "TestUsername2",
+            PublicKey = "PublicTestKey2"
 
         };
         var user3 = new ApplicationUser
         {
             Id = new Guid(user3Id),
-            UserName = "TestUsername3"
+            UserName = "TestUsername3",
+            PublicKey = "PublicTestKey3"
 
         };
         context.Users.Add(user1);
@@ -109,6 +112,7 @@ public class FriendConnectionServiceTests
         var user = new ApplicationUser
         {
             Id = new Guid(userId),
+            PublicKey = "PublicTestKey",
             ReceivedFriendRequests = new List<Server.Model.FriendConnection>
             {
                 new(),
@@ -136,18 +140,21 @@ public class FriendConnectionServiceTests
         var user1 = new ApplicationUser
         {
             Id = new Guid(user1Id),
-            UserName = "TestUsername1"
+            UserName = "TestUsername1",
+            PublicKey = "PublicTestKey1",
         };
         var user2 = new ApplicationUser
         {
             Id = new Guid(user2Id),
-            UserName = "TestUsername2"
+            UserName = "TestUsername2",
+            PublicKey = "PublicTestKey2",
 
         };
         var user3 = new ApplicationUser
         {
             Id = new Guid(user3Id),
-            UserName = "TestUsername3"
+            UserName = "TestUsername3",
+            PublicKey = "PublicTestKey3",
 
         };
         context.Users.Add(user1);
@@ -190,18 +197,21 @@ public class FriendConnectionServiceTests
         var user1 = new ApplicationUser
         {
             Id = new Guid(user1Id),
-            UserName = "TestUsername1"
+            UserName = "TestUsername1",
+            PublicKey = "PublicTestKey1"
         };
         var user2 = new ApplicationUser
         {
             Id = new Guid(user2Id),
-            UserName = "TestUsername2"
+            UserName = "TestUsername2",
+            PublicKey = "PublicTestKey2"
 
         };
         var user3 = new ApplicationUser
         {
             Id = new Guid(user3Id),
-            UserName = "TestUsername3"
+            UserName = "TestUsername3",
+            PublicKey = "PublicTestKey3"
 
         };
         context.Users.Add(user1);
@@ -234,18 +244,21 @@ public class FriendConnectionServiceTests
         var user1 = new ApplicationUser
         {
             Id = new Guid(user1Id),
-            UserName = "TestUsername1"
+            UserName = "TestUsername1",
+            PublicKey = "PublicTestKey1"
         };
         var user2 = new ApplicationUser
         {
             Id = new Guid(user2Id),
-            UserName = "TestUsername2"
+            UserName = "TestUsername2",
+            PublicKey = "PublicTestKey2"
 
         };
         var user3 = new ApplicationUser
         {
             Id = new Guid(user3Id),
-            UserName = "TestUsername3"
+            UserName = "TestUsername3",
+            PublicKey = "PublicTestKey3"
 
         };
         context.Users.Add(user1);
@@ -288,6 +301,7 @@ public class FriendConnectionServiceTests
         {
             Id = new Guid(user1Id),
             UserName = "TestUsername1",
+            PublicKey = "PublicTestKey1",
             SentFriendRequests = new List<Server.Model.FriendConnection>
             {
                 new()
@@ -302,6 +316,7 @@ public class FriendConnectionServiceTests
         {
             Id = new Guid(user2Id),
             UserName = "TestUsername2",
+            PublicKey = "PublicTestKey2"
         };
         
         context.Users.AddRange(user1, user2);
@@ -331,12 +346,14 @@ public class FriendConnectionServiceTests
         var user1 = new ApplicationUser
         {
             Id = new Guid(user1Id),
-            UserName = "TestUsername1"
+            UserName = "TestUsername1",
+            PublicKey = "PublicTestKey1",
         };
         var user2 = new ApplicationUser
         {
             Id = new Guid(user2Id),
             UserName = "TestUsername2",
+            PublicKey = "PublicTestKey2",
             ReceivedFriendRequests = new List<Server.Model.FriendConnection>
             {
                 new()
@@ -374,18 +391,21 @@ public class FriendConnectionServiceTests
         var user1 = new ApplicationUser
         {
             Id = new Guid(user1Id),
-            UserName = "TestUsername1"
+            UserName = "TestUsername1",
+            PublicKey = "PublicTestKey1"
         };
         var user2 = new ApplicationUser
         {
             Id = new Guid(user2Id),
-            UserName = "TestUsername2"
+            UserName = "TestUsername2",
+            PublicKey = "PublicTestKey2"
 
         };
         var user3 = new ApplicationUser
         {
             Id = new Guid(user3Id),
-            UserName = "TestUsername3"
+            UserName = "TestUsername3",
+            PublicKey = "PublicTestKey3",
 
         };
         context.Users.Add(user1);

@@ -25,3 +25,13 @@ export function passwordMatchValidator(control: AbstractControl): ValidationErro
 
     return null;
 }
+
+export function decryptTokenValidator(control: AbstractControl): ValidationErrors | null {
+    const token = control.value;
+
+    if (token && /^\d{6}$/.test(token)) {
+        return null;
+    } else {
+        return { invalidToken: true };
+    }
+}

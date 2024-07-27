@@ -25,8 +25,8 @@ public class MessageService(DatabaseContext context) : IMessageService
         var roomIdToGuid = new Guid(request.RoomId);
         var userIdToGuid = new Guid(userId);
         var message = request.MessageId != null ? 
-            new Message(roomIdToGuid, userIdToGuid, request.Message, new Guid(request.MessageId), request.AsAnonymous) : 
-            new Message(roomIdToGuid, userIdToGuid, request.Message, request.AsAnonymous);
+            new Message(roomIdToGuid, userIdToGuid, request.Message, new Guid(request.MessageId), request.AsAnonymous, request.Iv) : 
+            new Message(roomIdToGuid, userIdToGuid, request.Message, request.AsAnonymous, request.Iv);
         
         await Context.Messages!.AddAsync(message);
         await Context.SaveChangesAsync();
@@ -50,6 +50,7 @@ public class MessageService(DatabaseContext context) : IMessageService
         var existingMessage = Context.Messages!.FirstOrDefault(message => message.MessageId == request.Id);
         
         existingMessage!.ChangeMessageText(request.Message);
+        existingMessage!.ChangeMessageIv(request.Iv);
 
         Context.Messages!.Update(existingMessage);
         await Context.SaveChangesAsync();

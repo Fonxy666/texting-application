@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { BehaviorSubject, Observable, Subject, catchError, throwError } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, Observable, Subject } from 'rxjs';
 import { MessageRequest } from '../../model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/user-credential-requests/ChangeMessageRequest';
@@ -14,7 +14,9 @@ import { HttpClient } from '@angular/common/http';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
 import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePasswordRequestForRoom';
-
+import { CryptoService } from '../crypto-service/crypto.service';
+import { IndexedDBService } from '../db-service/indexed-dbservice.service';
+import { StoreRoomSymmetricKey } from '../../model/room-requests/StoreRoomSymmetricKey';
 @Injectable({
     providedIn: 'root'
 })
@@ -35,7 +37,9 @@ export class ChatService {
         private userService: UserService,
         private friendService: FriendService,
         private http: HttpClient,
-        private errorHandler: ErrorHandlerService
+        private errorHandler: ErrorHandlerService,
+        private cryptoService: CryptoService,
+        private dbService: IndexedDBService
     ) {
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl('/chat')
@@ -44,13 +48,17 @@ export class ChatService {
 
         this.initializeConnection();
 
-        this.connection.on("ReceiveMessage", (user: string, message: string, messageTime: string, userId: string, messageId: string, seenList: string[], roomId: string) => {
+        this.connection.on("ReceiveMessage", async (user: string, message: string, messageTime: string, userId: string, messageId: string, seenList: string[], roomId: string, iv: string) => {
             if (!this.messages[roomId]) {
                 this.messages[roomId] = [];
                 this.messagesInitialized$.next(roomId);
             }
             if (userId !== this.cookieService.get("UserId")) {
-                this.messages[roomId].push({ user, message, messageTime, userId, messageId, seenList });
+                if (user === "Textinger bot") {
+                    this.messages[roomId].push({encrypted: false, messageData: { user, message, messageTime, userId, messageId, seenList, iv } });
+                } else {
+                    this.messages[roomId].push({encrypted: true, messageData: { user, message, messageTime, userId, messageId, seenList, iv } });
+                }
             }
             if (this.currentRoom === roomId) {
                 this.messages$.next([...this.messages[roomId]]);
@@ -70,8 +78,6 @@ export class ChatService {
             this.connectedUsers$.next(updatedUsers);
         });
 
-        
-
         this.connection.on("RoomDeleted", (roomId: string) => {
             this.roomDeleted$.next(roomId);
             delete this.messages[roomId];
@@ -79,6 +85,28 @@ export class ChatService {
                 this.messages$.next([]);
             }
         });
+
+        this.connection.on("KeyRequest", async (userData: any) => {
+            const userEncryptionInput = await this.dbService.getEncryptionKey(this.cookieService.get("UserId"));
+            const cryptoKeyUserPublicKey = await this.cryptoService.importPublicKeyFromBase64(userData.publicKey);
+            const userEncryptedData = await firstValueFrom(this.cryptoService.getUserPrivateKeyAndIv());
+            const encryptedRoomSymmetricKey = await firstValueFrom(this.cryptoService.getUserPrivateKeyForRoom(userData.roomId));
+            const encryptedRoomSymmetricKeyToArrayBuffer = this.cryptoService.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
+            const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, userEncryptionInput!, userEncryptedData.iv);
+            const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
+            const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
+            const keyToArrayBuffer = await this.cryptoService.exportCryptoKey(decryptedRoomKey);
+            const encryptRoomKeyForUser = await this.cryptoService.encryptSymmetricKey(keyToArrayBuffer, cryptoKeyUserPublicKey);
+            const bufferToBase64 = this.cryptoService.bufferToBase64(encryptRoomKeyForUser);
+
+            await this.sendRoomSymmetricKey(bufferToBase64, userData.connectionId, userData.roomId);
+        })
+
+        this.connection.on("GetSymmetricKey", async (encryptedKey: string, roomId: string) => {
+            const data = new StoreRoomSymmetricKey(encryptedKey, roomId);
+            const response = await firstValueFrom(this.cryptoService.sendEncryptedRoomKey(data));
+            console.log(response);
+        })
     }
 
     public setCurrentRoom(roomId: string) {
@@ -129,11 +157,36 @@ export class ChatService {
         }
     }
 
+    public async getUsersInSpecificRoom(roomId: string): Promise<number> {
+        try {
+            return await this.connection.invoke("GetConnectedUsers", roomId);
+        } catch (error) {
+            console.error('Error getting users:', error);
+            return 0;
+        }
+    }
+
     public async joinRoom(user: string, room: string) {
         try {
             await this.connection.invoke("JoinRoom", { user, room });
         } catch (error) {
             console.error('Error joining room:', error);
+        }
+    }
+
+    public async requestSymmetricRoomKey(roomId: string, connectionId: string) {
+        try {
+            await this.connection.invoke("KeyRequest", roomId, connectionId);
+        } catch (error) {
+            console.error('Error get the symmetric key:', error);
+        }
+    }
+
+    public async sendRoomSymmetricKey(message: string, connectionId: string, roomId: string) {
+        try {
+            await this.connection.invoke("SendSymmetricKeyToRequestUser", message, connectionId, roomId);
+        } catch (error) {
+            console.error('Error get the symmetric key:', error);
         }
     }
 

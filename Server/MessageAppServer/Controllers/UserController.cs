@@ -163,7 +163,7 @@ public class UserController(
                 var imageBytes = await System.IO.File.ReadAllBytesAsync(imagePath);
                 var contentType = userServices.GetContentType(imagePath);
                 
-                Response.Headers.Add("Cache-Control", "max-age=3600, public");
+                Response.Headers.Add("Cache-Control", "max-age=1, public");
 
                 result = File(imageBytes, contentType);
             }

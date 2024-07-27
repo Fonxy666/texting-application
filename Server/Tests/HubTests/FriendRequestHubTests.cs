@@ -22,7 +22,6 @@ public class FriendRequestHubTests
 
     public FriendRequestHubTests()
     {
-        // Initialize mocks
         _clientsMock = new Mock<IHubCallerClients>();
         _clientProxyMock = new Mock<ISingleClientProxy>();
         _contextMock = new Mock<HubCallerContext>();
@@ -31,7 +30,6 @@ public class FriendRequestHubTests
         var store = new Mock<IUserStore<ApplicationUser>>();
         _userManagerMock = new Mock<UserManager<ApplicationUser>>(store.Object, null, null, null, null, null, null, null, null);
 
-        // Initialize the hub with mocked dependencies
         _friendRequestHub = new FriendRequestHub(_userManagerMock.Object, _friendConnectionMock.Object)
         {
             Clients = _clientsMock.Object,
@@ -160,7 +158,6 @@ public class FriendRequestHubTests
         testConnections.TryAdd(receiverId.ToString(), "receiverConnectionId");
         FriendRequestHub.Connections = testConnections;
 
-        // Mock setup for clients and client proxies
         _clientsMock.Setup(c => c.Client(It.IsAny<string>())).Returns(_clientProxyMock.Object);
 
         await _friendRequestHub.DeleteFriendRequest(requestId, senderId.ToString(), receiverId.ToString());

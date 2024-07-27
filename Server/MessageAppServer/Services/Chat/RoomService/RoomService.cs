@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Runtime.InteropServices.JavaScript;
+using Microsoft.EntityFrameworkCore;
 using Server.Database;
+using Server.Model;
 using Server.Model.Chat;
 using Server.Model.Responses.Chat;
 
@@ -7,7 +9,7 @@ namespace Server.Services.Chat.RoomService;
 
 public class RoomService(DatabaseContext context) : IRoomService
 {
-    private DatabaseContext Context { get; init; } = context;
+    private DatabaseContext Context { get; } = context;
     public Task<bool> ExistingRoom(Guid id)
     {
         return Context.Rooms!.AnyAsync(room => room.RoomId == id);
@@ -15,9 +17,14 @@ public class RoomService(DatabaseContext context) : IRoomService
 
     public async Task<Room?> GetRoomById(Guid roomId)
     {
-        var existingRoom = await Context.Rooms!.FirstOrDefaultAsync(room => room.RoomId == roomId);
-
-        return existingRoom;
+        return await Context.Rooms!.FirstOrDefaultAsync(room => room.RoomId == roomId);
+    }
+    
+    private async Task<Room?> GetRoomByIdWithKeys(Guid roomId)
+    {
+        return await Context.Rooms!
+            .Include(r => r.EncryptedSymmetricKeys)
+            .FirstOrDefaultAsync(room => room.RoomId == roomId);
     }
     
     public async Task<Room?> GetRoomByRoomName(string roomName)
@@ -27,7 +34,7 @@ public class RoomService(DatabaseContext context) : IRoomService
         return existingRoom;
     }
 
-    public async Task<RoomResponse> RegisterRoomAsync(string roomName, string password, Guid creatorId)
+    public async Task<RoomResponse> RegisterRoomAsync(string roomName, string password, Guid creatorId, string encryptedSymmetricKey)
     {
         var room = new Room(roomName, password, creatorId);
         
@@ -40,6 +47,8 @@ public class RoomService(DatabaseContext context) : IRoomService
                 room.SetRoomIdForTests("801d40c6-c95d-47ed-a21a-88cda341d0a9");
                 break;
         }
+        
+        room.AddNewSymmetricKey(creatorId, encryptedSymmetricKey);
         
         await Context.Rooms!.AddAsync(room);
         await Context.SaveChangesAsync();
@@ -64,5 +73,22 @@ public class RoomService(DatabaseContext context) : IRoomService
     {
         room.ChangePassword(newPassword);
         await Context.SaveChangesAsync();
+    }
+
+    public async Task<bool> AddNewUserKey(Guid roomId, Guid userId, string key)
+    {
+        var existingRoom = await GetRoomByIdWithKeys(roomId);
+        if (existingRoom == null)
+        {
+            return false;
+        }
+
+        var userKey = new EncryptedSymmetricKey(userId, key, roomId);
+
+        existingRoom.EncryptedSymmetricKeys.Add(userKey);
+        Context.Entry(userKey).State = EntityState.Added;
+
+        await Context.SaveChangesAsync();
+        return true;
     }
 }

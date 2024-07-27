@@ -16,20 +16,23 @@ import { SupportPageComponent } from './support-page/support-page.component';
 import { GenerateEmailChangeRequestComponent } from './profile/profile/generate-email-change-request/generate-email-change-request.component';
 import { GenerateAvatarChangeRequestComponent } from './profile/profile/generate-avatar-change-request/generate-avatar-change-request.component';
 import { GeneratePasswordChangeRequestComponent } from './profile/profile/generate-password-change-request/generate-password-change-request.component';
-import { AuthGuard } from './auth.guard';
 import { ManageFriendRequestComponent } from './profile/profile/manage-friend-request/manage-friend-request.component';
+import { GenerateUserKeyChangeRequestComponent } from './profile/profile/generate-user-key-change-request/generate-user-key-change-request.component';
+import { AuthGuard } from './guards/auth.guard';
+import { UserKeyGuard } from './guards/user-key.guard';
 
 const routes: Routes = [
     { path: '', component: HomeComponent, title: 'Home' },
     { path: 'login', component: LoginComponent, title: 'Login' },
     { path: 'registration', component: RegistrationComponent, title: 'Registration' },
-    { path: 'join-room', component: JoinRoomComponent, title: 'Join room', canActivate: [AuthGuard] },
-    { path: 'message-room/:id', component: ChatComponent, title: 'Chat', canActivate: [AuthGuard] },
+    { path: 'join-room', component: JoinRoomComponent, title: 'Join room', canActivate: [AuthGuard, UserKeyGuard] },
+    { path: 'message-room/:id', component: ChatComponent, title: 'Chat', canActivate: [AuthGuard, UserKeyGuard] },
     { path: 'profile/profile', component: ProfileComponent, title: 'Profile', canActivate: [AuthGuard], children: [
         { path: 'emailchange', component: GenerateEmailChangeRequestComponent },
         { path: 'avatarchange', component: GenerateAvatarChangeRequestComponent },
         { path: 'passwordchange', component: GeneratePasswordChangeRequestComponent },
-        { path: 'friendrequest', component: ManageFriendRequestComponent }
+        { path: 'friendrequest', component: ManageFriendRequestComponent },
+        { path: 'userkey', component: GenerateUserKeyChangeRequestComponent }
     ]},
     { path: 'profile/settings', component: SettingsComponent, title: 'Settings', canActivate: [AuthGuard] },
     { path: 'create-room', component: CreateRoomComponent, title: 'Create room', canActivate: [AuthGuard] },

@@ -1,8 +1,12 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Server.Database;
 using Server.Model;
+using Server.Model.Requests.Chat;
 using Server.Model.Requests.Message;
+using Server.Model.Responses.Chat;
 
 namespace Server.Hub;
 
@@ -16,6 +20,28 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
         await Clients.Group(userConnection.Room!).SendAsync("ReceiveMessage", "Textinger bot", $"{userConnection.User} has joined the room!", DateTime.Now, null, null, null, userConnection.Room);
         await SendConnectedUser(userConnection.Room!);
         return Context.ConnectionId;
+    }
+
+    public int GetConnectedUsers(string roomId)
+    {
+        return connection.Values.Where(user => user.Room == roomId).Select(connection => connection.User).Count();
+    }
+
+    public async Task KeyRequest(string roomId, string connectionId)
+    {
+        var userId = Context.User!.FindFirstValue(ClaimTypes.NameIdentifier);
+        var existingUser = await userManager.FindByIdAsync(userId!);
+        var userConnection = connection.Values
+            .Where(user => user.Room == roomId)
+            .Select(user => connection.FirstOrDefault(c => c.Value == user))
+            .FirstOrDefault();
+        
+        await Clients.Client(userConnection.Key).SendAsync("KeyRequest", new KeyRequestResponse(existingUser!.PublicKey, existingUser.Id, roomId, connectionId));
+    }
+
+    public async Task SendSymmetricKeyToRequestUser(string encryptedRoomKey, string connectionId, string roomId)
+    {
+        await Clients.Client(connectionId).SendAsync("GetSymmetricKey", encryptedRoomKey, roomId);
     }
 
     public async Task SendMessage(MessageRequest request)
@@ -34,7 +60,9 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
                 {
                     userId!
                 },
-                request.RoomId);
+                request.RoomId,
+                request.Iv
+                );
         }
     }
     

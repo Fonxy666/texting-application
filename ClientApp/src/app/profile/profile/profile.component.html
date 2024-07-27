@@ -60,6 +60,16 @@
                             </div>
                         </button>
                     </div>
+                    <div class="col">
+                        <button 
+                            type="button" 
+                            class="btn text-style-20-px" 
+                            [ngClass]="{'active': isActive('/profile/profile/userkey')}" 
+                            (click)="handleButtonClick('/profile/profile/userkey')" 
+                            [attr.aria-pressed]="isActive('/profile/profile/userkey') ? 'true' : 'false'">
+                            Change User Key
+                        </button>
+                    </div>
                 </div>
             </div>
             <router-outlet/>

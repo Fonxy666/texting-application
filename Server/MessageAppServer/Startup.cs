@@ -15,6 +15,7 @@ using Server.Services.Chat.RoomService;
 using Server.Services.Cookie;
 using Server.Services.EmailSender;
 using Server.Services.FriendConnection;
+using Server.Services.PrivateKey;
 using Server.Services.User;
 
 namespace Server;
@@ -24,6 +25,7 @@ public class Startup(IConfiguration configuration)
     public void ConfigureServices(IServiceCollection services)
     {
         var connection = configuration["ConnectionString"];
+        var connectionToPrivateKeys = configuration["ConnectionStringToPrivateKeyDatabase"];
         var issueSign = configuration["IssueSign"];
         var issueAudience = configuration["IssueAudience"];
 
@@ -73,11 +75,22 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IUserServices, UserServices>();
         services.AddScoped<ICookieService, CookieService>();
         services.AddScoped<IFriendConnectionService, FriendConnectionService>();
+        services.AddScoped<IPrivateKeyService, PrivateKeyService>();
         services.AddSingleton<IDictionary<string, UserRoomConnection>>(opt =>
             new Dictionary<string, UserRoomConnection>());
         services.AddTransient<IEmailSender, EmailSender>();
 
         services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connection));
+        services.AddDbContext<PrivateKeysDbContext>(options => options.UseSqlServer(connectionToPrivateKeys));
+        
+        services.AddDistributedMemoryCache();
+        
+        services.AddSession(options =>
+        {
+            options.IdleTimeout = TimeSpan.FromMinutes(30);
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+        });
         
         services.AddAuthentication(o => {
                 o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -187,25 +200,21 @@ public class Startup(IConfiguration configuration)
         app.UseHttpsRedirection();
         app.UseRouting();
         
-        app.UseCors(builder =>
-        {
-            builder.WithOrigins("http://localhost:4200")
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
-        });
-        
         app.UseRefreshTokenMiddleware();
         app.UseJwtRefreshMiddleware();
         
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseSession();
 
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapHub<ChatHub>("/chat");
             endpoints.MapHub<FriendRequestHub>("/friend");
             endpoints.MapControllers();
+            endpoints.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Home}/{action=Index}/{id?}");
         });
         
         PopulateDbAndAddRoles.AddRolesAndAdminSync(app, configuration);

@@ -11,6 +11,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : Identi
     public DbSet<Room>? Rooms { get; set; }
     public DbSet<Message>? Messages { get; set; }
     public DbSet<FriendConnection>? FriendConnections { get; set; }
+    public DbSet<EncryptedSymmetricKey>? EncryptedSymmetricKeys { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,11 +33,34 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : Identi
             .HasMany(au => au.Friends)
             .WithMany()
             .UsingEntity(j => j.ToTable("UserFriends"));
+        
+        modelBuilder.Entity<ApplicationUser>()
+            .HasMany(au => au.CreatedRooms)
+            .WithOne(r => r.CreatorUser)
+            .HasForeignKey(r => r.CreatorId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Room>()
+            .HasOne(r => r.CreatorUser)
+            .WithMany(au => au.CreatedRooms)
+            .HasForeignKey(r => r.CreatorId);
 
         modelBuilder.Entity<Message>()
             .HasOne(m => m.Room)
             .WithMany(r => r.Messages)
             .HasForeignKey(m => m.RoomId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<EncryptedSymmetricKey>()
+            .HasOne<Room>(k => k.Room)
+            .WithMany(r => r.EncryptedSymmetricKeys)
+            .HasForeignKey(k => k.RoomId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<EncryptedSymmetricKey>()
+            .HasOne<ApplicationUser>(k => k.User)
+            .WithMany(u => u.UserSymmetricKeys)
+            .HasForeignKey(k => k.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

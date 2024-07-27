@@ -1,3 +1,3 @@
 export class LoginAuthTokenRequest {
-    constructor(public UserName: string, public Password: string, public RememberMe: boolean, public Token: String) { }
+    constructor(public userName: string, public password: string, public rememberMe: boolean, public token: String) { }
 }

@@ -61,7 +61,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
         
-        var messageRequest = new MessageRequest("901d40c6-c95d-47ed-a21a-88cda341d0a9", "test", false, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
+        var messageRequest = new MessageRequest("901d40c6-c95d-47ed-a21a-88cda341d0a9", "test", false, "testIv", "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
         var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
         var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
 
@@ -78,7 +78,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
         
-        var messageRequest = new MessageRequest(Guid.NewGuid().ToString(), "test", false, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c");
+        var messageRequest = new MessageRequest(Guid.NewGuid().ToString(), "test", false, "a57f0d67-8670-4789-a580-3b4a3bd3bf9c", "");
         var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
         var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
 
@@ -107,7 +107,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
         
-        var messageChangeRequest = new EditMessageRequest(new Guid("a57f0d67-8670-4789-a580-3b4a3bd3bf9c"), "TestChange");
+        var messageChangeRequest = new EditMessageRequest(new Guid("a57f0d67-8670-4789-a580-3b4a3bd3bf9c"), "TestChange", "testIv");
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 
@@ -121,7 +121,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var cookies1 = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
         _client.DefaultRequestHeaders.Add("Cookie", cookies1);
         
-        var messageRequest = new MessageRequest("901d40c6-c95d-47ed-a21a-88cda341d0a9", "test", false, "a57f0d67-8670-4789-a580-4b4a3bd3bf9c");
+        var messageRequest = new MessageRequest("901d40c6-c95d-47ed-a21a-88cda341d0a9", "test", false, "testIv", "a57f0d67-8670-4789-a580-4b4a3bd3bf9c");
         var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
         var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
 
@@ -131,7 +131,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var cookies2 = await TestLogin.Login_With_Test_User(_testUser3, _client, "test3@hotmail.com");
         _client.DefaultRequestHeaders.Add("Cookie", cookies2);
         
-        var messageChangeRequest = new EditMessageRequest(new Guid("a57f0d67-8670-4789-a580-4b4a3bd3bf9c"), "TestChange");
+        var messageChangeRequest = new EditMessageRequest(new Guid("a57f0d67-8670-4789-a580-4b4a3bd3bf9c"), "TestChange", "testIv");
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 
@@ -167,7 +167,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
         
-        var messageChangeRequest = new EditMessageRequest(Guid.NewGuid(), "TestChange");
+        var messageChangeRequest = new EditMessageRequest(Guid.NewGuid(), "TestChange", "testIv");
         var jsonMessageChangeRequest = JsonConvert.SerializeObject(messageChangeRequest);
         var messageChange = new StringContent(jsonMessageChangeRequest, Encoding.UTF8, "application/json");
 
@@ -237,7 +237,7 @@ public class MessageControllerTests : IClassFixture<WebApplicationFactory<Startu
         _client.DefaultRequestHeaders.Add("Cookie", cookies1);
         const string messageId = "c57f0d67-8670-4789-a580-3b4a3bd3bf9c";
         
-        var messageRequest = new MessageRequest("901d40c6-c95d-47ed-a21a-88cda341d0a9", "test", false, messageId);
+        var messageRequest = new MessageRequest("901d40c6-c95d-47ed-a21a-88cda341d0a9", "test", false, "iv", messageId);
         var jsonRequestMessageSend = JsonConvert.SerializeObject(messageRequest);
         var contentSend = new StringContent(jsonRequestMessageSend, Encoding.UTF8, "application/json");
 

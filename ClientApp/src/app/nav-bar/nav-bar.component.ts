@@ -6,6 +6,7 @@ import { FriendService } from '../services/friend-service/friend.service';
 import { MediaService } from '../services/media-service/media.service';
 import { ChatRoomInvite } from '../model/room-requests/ChatRoomInvite';
 import { ChatService } from '../services/chat-service/chat.service';
+import { IndexedDBService } from '../services/db-service/indexed-dbservice.service';
 
 @Component({
     selector: 'app-nav-bar',
@@ -20,8 +21,9 @@ export class NavBarComponent implements OnInit {
         private http: HttpClient,
         public friendService: FriendService,
         private mediaService: MediaService,
-        public chatService: ChatService
-    ) {}
+        public chatService: ChatService,
+        private dbService: IndexedDBService
+    ) { }
 
     isDropstart: boolean = true;
     announceNumber: number = 0;
@@ -35,13 +37,11 @@ export class NavBarComponent implements OnInit {
     loggedIn: boolean = false;
 
     ngOnInit(): void {
-        this.userId = this.cookieService.get("UserId");
-
+        
         this.isLoggedIn();
         this.checkScreenSize();
-
-        this.roomId = sessionStorage.getItem("roomId")!;
-        this.roomName = sessionStorage.getItem("room")!;
+        
+        this.userId = this.cookieService.get("UserId");
 
         if (this.loggedIn) {
             this.friendService.friendRequests$.subscribe(requests => {
@@ -70,7 +70,9 @@ export class NavBarComponent implements OnInit {
         this.http.get(`/api/v1/Auth/Logout`, { withCredentials: true })
         .subscribe((response: any) => {
             if (response.success) {
+                this.dbService.clearEncryptionKey(this.userId);
                 this.loggedIn = false;
+                sessionStorage.clear();
                 this.router.navigate(['/'], { queryParams: { logout: 'true' } });
             }
         }, 
