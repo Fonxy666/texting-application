@@ -33,7 +33,7 @@ jobs:
 
     - name: Start MSSQL Server Docker container for Main database
       run: |
-        docker run --name textinger_test_database -e ACCEPT_EULA=Y -e SA_PASSWORD='MyStrong(!)Password123' -p 1433:1433 -d mcr.microsoft.com/mssql/server:latest
+        docker run --name textinger_test_database -e ACCEPT_EULA=Y -e SA_PASSWORD='MyStrong(!)Password123' -p 1433:1433 -d mcr.microsoft.com/mssql/server
         # Wait for SQL Server to come up
         sleep 15
         # Check logs to ensure the container is running correctly
@@ -43,7 +43,7 @@ jobs:
 
     - name: Start MSSQL Server Docker container for Key database
       run: |
-        docker run --name textinger_test_database -e ACCEPT_EULA=Y -e SA_PASSWORD='MyStrong(!)Password123' -p 1434:1433 -d mcr.microsoft.com/mssql/server:latest
+        docker run --name textinger_test_database -e ACCEPT_EULA=Y -e SA_PASSWORD='MyStrong(!)Password123' -p 1434:1433 -d mcr.microsoft.com/mssql/server
         # Wait for SQL Server to come up
         sleep 15
         # Check logs to ensure the container is running correctly
