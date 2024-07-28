@@ -36,6 +36,10 @@ jobs:
         docker run --name textinger_test_database -e ACCEPT_EULA=Y -e SA_PASSWORD='MyStrong(!)Password123' -p 1433:1433 -d mcr.microsoft.com/mssql/server
         # Wait for SQL Server to come up
         sleep 15
+        # Install mssql-tools package
+        docker exec textinger_test_database /bin/bash -c "apt-get update && apt-get install -y mssql-tools unixodbc-dev"
+        docker exec textinger_test_database /bin/bash -c "echo 'export PATH=$PATH:/opt/mssql-tools/bin' >> ~/.bashrc"
+        docker exec textinger_test_database /bin/bash -c "source ~/.bashrc"
         # Check logs to ensure the container is running correctly
         docker logs textinger_test_database
         # Create the database if it doesn't exist
@@ -43,13 +47,18 @@ jobs:
 
     - name: Start MSSQL Server Docker container for Key database
       run: |
-        docker run --name textinger_test_database -e ACCEPT_EULA=Y -e SA_PASSWORD='MyStrong(!)Password123' -p 1434:1433 -d mcr.microsoft.com/mssql/server
+        docker run --name textinger_private_key_test_database -e ACCEPT_EULA=Y -e SA_PASSWORD='MyStrong(!)Password123' -p 1434:1433 -d mcr.microsoft.com/mssql/server
         # Wait for SQL Server to come up
         sleep 15
+        # Install mssql-tools package
+        docker exec textinger_private_key_test_database /bin/bash -c "apt-get update && apt-get install -y mssql-tools unixodbc-dev"
+        docker exec textinger_private_key_test_database /bin/bash -c "echo 'export PATH=$PATH:/opt/mssql-tools/bin' >> ~/.bashrc"
+        docker exec textinger_private_key_test_database /bin/bash -c "source ~/.bashrc"
         # Check logs to ensure the container is running correctly
-        docker logs textinger_test_database
+        docker logs textinger_private_key_test_database
         # Create the database if it doesn't exist
         docker exec textinger_private_key_test_database /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'MyStrong(!)Password123' -Q "IF DB_ID('textinger_private_key_test_database') IS NULL CREATE DATABASE [textinger_private_key_test_database];"
+        
         
     - name: Install EF Core tools
       run: dotnet tool install --global dotnet-ef
