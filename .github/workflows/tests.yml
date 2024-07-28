@@ -84,11 +84,17 @@ jobs:
       working-directory: Server/Tests
       run: dotnet build --configuration Release --no-restore
 
-    - name: Create migrations
-      run: dotnet ef migrations add InitialMigration --project Server/MessageAppServer --startup-project Server/MessageAppServer --output-dir Data/Migrations
+    - name: Create migrations for DatabaseContext
+      run: dotnet ef migrations add InitialDatabaseContext --context DatabaseContext --project Server/MessageAppServer --startup-project Server/MessageAppServer --output-dir Data/Migrations/DatabaseContext
 
-    - name: Update database
-      run: dotnet ef database update --project Server/MessageAppServer --startup-project Server/MessageAppServer
+    - name: Update database for DatabaseContext
+      run: dotnet ef database update --context DatabaseContext --project Server/MessageAppServer --startup-project Server/MessageAppServer
+
+    - name: Create migrations for PrivateKeyDbContext
+      run: dotnet ef migrations add InitialKeyDbContext --context PrivateKeysDbContext --project Server/MessageAppServer --startup-project Server/MessageAppServer --output-dir Data/Migrations/PrivateKeysDbContext
+
+    - name: Update database for PrivateKeyDbContext
+      run: dotnet ef database update --context PrivateKeysDbContext --project Server/MessageAppServer --startup-project Server/MessageAppServer
 
     - name: Test
       working-directory: Server/Tests
