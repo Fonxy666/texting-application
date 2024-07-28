@@ -37,9 +37,9 @@ jobs:
         # Wait for SQL Server to come up
         sleep 15
         # Install mssql-tools package
-        docker exec textinger_test_database /bin/bash -c "apt-get update && apt-get install -y mssql-tools unixodbc-dev"
-        docker exec textinger_test_database /bin/bash -c "echo 'export PATH=$PATH:/opt/mssql-tools/bin' >> ~/.bashrc"
-        docker exec textinger_test_database /bin/bash -c "source ~/.bashrc"
+        docker exec -u 0 textinger_test_database /bin/bash -c "apt-get update && apt-get install -y mssql-tools unixodbc-dev"
+        docker exec -u 0 textinger_test_database /bin/bash -c "echo 'export PATH=$PATH:/opt/mssql-tools/bin' >> ~/.bashrc"
+        docker exec -u 0 textinger_test_database /bin/bash -c "source ~/.bashrc"
         # Check logs to ensure the container is running correctly
         docker logs textinger_test_database
         # Create the database if it doesn't exist
@@ -51,9 +51,9 @@ jobs:
         # Wait for SQL Server to come up
         sleep 15
         # Install mssql-tools package
-        docker exec textinger_private_key_test_database /bin/bash -c "apt-get update && apt-get install -y mssql-tools unixodbc-dev"
-        docker exec textinger_private_key_test_database /bin/bash -c "echo 'export PATH=$PATH:/opt/mssql-tools/bin' >> ~/.bashrc"
-        docker exec textinger_private_key_test_database /bin/bash -c "source ~/.bashrc"
+        docker exec -u 0 textinger_private_key_test_database /bin/bash -c "apt-get update && apt-get install -y mssql-tools unixodbc-dev"
+        docker exec -u 0 textinger_private_key_test_database /bin/bash -c "echo 'export PATH=$PATH:/opt/mssql-tools/bin' >> ~/.bashrc"
+        docker exec -u 0 textinger_private_key_test_database /bin/bash -c "source ~/.bashrc"
         # Check logs to ensure the container is running correctly
         docker logs textinger_private_key_test_database
         # Create the database if it doesn't exist
