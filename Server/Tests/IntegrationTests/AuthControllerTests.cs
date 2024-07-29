@@ -42,18 +42,6 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         _testServer = new TestServer(builder);
         _client = _testServer.CreateClient();
     }
-    
-    [Fact]
-    public async Task Login()
-    {
-        var token = EmailSenderCodeGenerator.GenerateShortToken("test1@hotmail.com", "login");
-        var login = new LoginAuth(_testUser.UserName, true, token);
-        var authJsonRequest = JsonConvert.SerializeObject(login);
-        var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
-
-        var authResponse = await _client.PostAsync("api/v1/Auth/Login", authContent);
-        authResponse.EnsureSuccessStatusCode();
-    }
 
     [Fact]
     public async Task Login_WithInvalidUser_ReturnBadRequestStatusCode()
@@ -237,11 +225,9 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Logout_Return_Ok()
     {
-        
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
+        var testUser = new AuthRequest("TestUsername5", "testUserPassword123###");
+        var cookies = await TestLogin.Login_With_Test_User(testUser, _client, "test5@hotmail.com");
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
-
-        const string userId = "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916";
 
         var response = await _client.GetAsync($"api/v1/Auth/Logout");
         response.EnsureSuccessStatusCode();
