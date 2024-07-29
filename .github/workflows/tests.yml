@@ -59,7 +59,7 @@ jobs:
         docker exec textinger_private_key_test_database /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'MyStrong(!)Password123' -Q "IF DB_ID('textinger_private_key_test_database') IS NULL CREATE DATABASE [textinger_private_key_test_database];"
         
     - name: Install EF Core tools
-      run: dotnet tool install --global dotnet-ef
+      run: dotnet tool install --global dotnet-ef --version 8.0.1
 
     - name: Install jq
       run: sudo apt-get update && sudo apt-get install -y jq
