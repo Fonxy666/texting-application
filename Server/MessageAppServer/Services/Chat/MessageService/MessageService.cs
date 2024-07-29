@@ -6,9 +6,9 @@ using Server.Model.Responses.Message;
 
 namespace Server.Services.Chat.MessageService;
 
-public class MessageService(DatabaseContext context) : IMessageService
+public class MessageService(MainDatabaseContext context) : IMessageService
 {
-    private DatabaseContext Context { get; } = context;
+    private MainDatabaseContext Context { get; } = context;
     public async Task<bool> UserIsTheSender(Guid userId, Guid messageId)
     {
         var message = await Context.Messages!.FirstOrDefaultAsync(m => m.MessageId == messageId);

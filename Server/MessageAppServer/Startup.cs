@@ -80,7 +80,7 @@ public class Startup(IConfiguration configuration)
             new Dictionary<string, UserRoomConnection>());
         services.AddTransient<IEmailSender, EmailSender>();
 
-        services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connection));
+        services.AddDbContext<MainDatabaseContext>(options => options.UseSqlServer(connection));
         services.AddDbContext<PrivateKeysDbContext>(options => options.UseSqlServer(connectionToPrivateKeys));
         
         services.AddDistributedMemoryCache();
@@ -178,7 +178,7 @@ public class Startup(IConfiguration configuration)
             options.Lockout.AllowedForNewUsers = true;
         })
         .AddRoles<IdentityRole<Guid>>()
-        .AddEntityFrameworkStores<DatabaseContext>()
+        .AddEntityFrameworkStores<MainDatabaseContext>()
         .AddDefaultTokenProviders();
         
         services.AddAuthorization(options =>

@@ -9,17 +9,17 @@ namespace Tests.ServicesTests.Chat
     [TestFixture]
     public class MessageServiceTests
     {
-        private DatabaseContext _dbContext;
+        private MainDatabaseContext _dbContext;
         private MessageService _messageService;
 
         [SetUp]
         public void Setup()
         {
-            var options = new DbContextOptionsBuilder<DatabaseContext>()
+            var options = new DbContextOptionsBuilder<MainDatabaseContext>()
                 .UseInMemoryDatabase(databaseName: "InMemoryDatabase")
                 .Options;
 
-            _dbContext = new DatabaseContext(options);
+            _dbContext = new MainDatabaseContext(options);
 
             _messageService = new MessageService(_dbContext);
         }

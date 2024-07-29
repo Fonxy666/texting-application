@@ -20,7 +20,7 @@ namespace Server.Controllers;
 public class UserController(
     UserManager<ApplicationUser> userManager,
     IAuthService authenticationService,
-    DatabaseContext repository,
+    MainDatabaseContext repository,
     IUserServices userServices,
     ILogger<UserController> logger,
     IEmailSender emailSender,

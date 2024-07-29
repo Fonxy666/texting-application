@@ -7,9 +7,9 @@ using Server.Services.User;
 
 namespace Server.Services.FriendConnection;
 
-public class FriendConnectionService(DatabaseContext context, IUserServices userServices) : IFriendConnectionService
+public class FriendConnectionService(MainDatabaseContext context, IUserServices userServices) : IFriendConnectionService
 {
-    private DatabaseContext Context { get; } = context;
+    private MainDatabaseContext Context { get; } = context;
 
     public async Task<Model.FriendConnection> GetFriendRequestByIdAsync(string requestId)
     {

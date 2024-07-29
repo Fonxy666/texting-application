@@ -6,7 +6,7 @@ using Server.Model.Chat;
 
 namespace Server.Database;
 
-public class DatabaseContext(DbContextOptions<DatabaseContext> options) : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
+public class MainDatabaseContext(DbContextOptions<MainDatabaseContext> options) : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
 {
     public DbSet<Room>? Rooms { get; set; }
     public DbSet<Message>? Messages { get; set; }

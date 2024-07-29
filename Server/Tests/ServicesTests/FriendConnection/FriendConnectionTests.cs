@@ -10,13 +10,13 @@ namespace Tests.ServicesTests.FriendConnection;
 
 public class FriendConnectionServiceTests
 {
-    private DbContextOptions<DatabaseContext> options;
+    private DbContextOptions<MainDatabaseContext> options;
     private Mock<IUserServices> _mockUserServices;
 
     [SetUp]
     public void Setup()
     {
-        options = new DbContextOptionsBuilder<DatabaseContext>()
+        options = new DbContextOptionsBuilder<MainDatabaseContext>()
             .UseInMemoryDatabase(databaseName: "Test_Database")
             .Options;
         
@@ -26,7 +26,7 @@ public class FriendConnectionServiceTests
     [Test]
     public async Task GetFriendRequestByIdAsync_ValidRequestId_ReturnsFriendConnection()
     {
-        await using var context = new DatabaseContext(options);
+        await using var context = new MainDatabaseContext(options);
         var requestGuid = Guid.NewGuid();
         var friendConnection = new Server.Model.FriendConnection
         {
@@ -50,7 +50,7 @@ public class FriendConnectionServiceTests
     [Test]
     public async Task GetPendingReceivedFriendRequests_ReturnsPendingRequests()
     {
-        await using var context = new DatabaseContext(options);
+        await using var context = new MainDatabaseContext(options);
         var user1Id = Guid.NewGuid().ToString();
         var user2Id = Guid.NewGuid().ToString();
         var user3Id = Guid.NewGuid().ToString();
@@ -107,7 +107,7 @@ public class FriendConnectionServiceTests
     [Test]
     public async Task GetPendingRequestCount_ReturnsCount()
     {
-        await using var context = new DatabaseContext(options);
+        await using var context = new MainDatabaseContext(options);
         var userId = Guid.NewGuid().ToString();
         var user = new ApplicationUser
         {
@@ -133,7 +133,7 @@ public class FriendConnectionServiceTests
     [Test]
     public async Task GetPendingSentFriendRequests_ReturnsPendingRequests()
     {
-        await using var context = new DatabaseContext(options);
+        await using var context = new MainDatabaseContext(options);
         var user1Id = Guid.NewGuid().ToString();
         var user2Id = Guid.NewGuid().ToString();
         var user3Id = Guid.NewGuid().ToString();
@@ -190,7 +190,7 @@ public class FriendConnectionServiceTests
     [Test]
     public async Task AlreadySentFriendRequest_ReturnsPendingRequests()
     {
-        await using var context = new DatabaseContext(options);
+        await using var context = new MainDatabaseContext(options);
         var user1Id = Guid.NewGuid().ToString();
         var user2Id = Guid.NewGuid().ToString();
         var user3Id = Guid.NewGuid().ToString();
@@ -237,7 +237,7 @@ public class FriendConnectionServiceTests
     [Test]
     public async Task AcceptFriendRequest_ReturnsTrue()
     {
-        await using var context = new DatabaseContext(options);
+        await using var context = new MainDatabaseContext(options);
         var user1Id = Guid.NewGuid().ToString();
         var user2Id = Guid.NewGuid().ToString();
         var user3Id = Guid.NewGuid().ToString();
@@ -292,7 +292,7 @@ public class FriendConnectionServiceTests
     [Test]
     public async Task DeleteSentFriendRequest_ReturnsTrue()
     {
-        await using var context = new DatabaseContext(options);
+        await using var context = new MainDatabaseContext(options);
         var user1Id = Guid.NewGuid().ToString();
         var user2Id = Guid.NewGuid().ToString();
         var requestGuid = Guid.NewGuid();
@@ -338,7 +338,7 @@ public class FriendConnectionServiceTests
     [Test]
     public async Task DeclineReceivedFriendRequest_ReturnsTrue()
     {
-        await using var context = new DatabaseContext(options);
+        await using var context = new MainDatabaseContext(options);
         var user1Id = Guid.NewGuid().ToString();
         var user2Id = Guid.NewGuid().ToString();
         var requestGuid = Guid.NewGuid();
@@ -384,7 +384,7 @@ public class FriendConnectionServiceTests
     [Test]
     public async Task DeleteFriend_ReturnsTrue()
     {
-        await using var context = new DatabaseContext(options);
+        await using var context = new MainDatabaseContext(options);
         var user1Id = Guid.NewGuid().ToString();
         var user2Id = Guid.NewGuid().ToString();
         var user3Id = Guid.NewGuid().ToString();

@@ -7,7 +7,7 @@ using Server.Model.Responses.User;
 
 namespace Server.Services.User;
 
-public class UserServices(UserManager<ApplicationUser> userManager, IConfiguration configuration, DatabaseContext context) : IUserServices
+public class UserServices(UserManager<ApplicationUser> userManager, IConfiguration configuration, MainDatabaseContext context) : IUserServices
 {
     public Task<bool> ExistingUser(string id)
     {

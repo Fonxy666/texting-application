@@ -16,16 +16,16 @@ public class UserServiceTests
     private readonly Mock<IConfiguration> _mockConfiguration;
     private readonly UserServices _userServices;
     private readonly Mock<UserManager<ApplicationUser>> _mockUserManager = MockUserManager.Create();
-    private DbContextOptions<DatabaseContext> options;
+    private DbContextOptions<MainDatabaseContext> options;
 
     public UserServiceTests()
     {
-        options = new DbContextOptionsBuilder<DatabaseContext>()
+        options = new DbContextOptionsBuilder<MainDatabaseContext>()
             .UseInMemoryDatabase(databaseName: "Test_Database")
             .Options;
         
         _mockConfiguration = new Mock<IConfiguration>();
-        _userServices = new UserServices(_mockUserManager.Object, _mockConfiguration.Object, new DatabaseContext(options));
+        _userServices = new UserServices(_mockUserManager.Object, _mockConfiguration.Object, new MainDatabaseContext(options));
     }
 
     [Fact]

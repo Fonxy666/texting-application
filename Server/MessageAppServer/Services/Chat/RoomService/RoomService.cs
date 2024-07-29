@@ -7,9 +7,9 @@ using Server.Model.Responses.Chat;
 
 namespace Server.Services.Chat.RoomService;
 
-public class RoomService(DatabaseContext context) : IRoomService
+public class RoomService(MainDatabaseContext context) : IRoomService
 {
-    private DatabaseContext Context { get; } = context;
+    private MainDatabaseContext Context { get; } = context;
     public Task<bool> ExistingRoom(Guid id)
     {
         return Context.Rooms!.AnyAsync(room => room.RoomId == id);
