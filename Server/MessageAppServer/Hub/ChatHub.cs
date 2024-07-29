@@ -41,17 +41,6 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
 
     public async Task SendSymmetricKeyToRequestUser(string encryptedRoomKey, string connectionId, string roomId, string roomName)
     {
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("BEJOTT");
-        Console.WriteLine(connectionId);
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
-        Console.WriteLine("-----------------------------------------------");
         await Clients.Client(connectionId).SendAsync("GetSymmetricKey", encryptedRoomKey, roomId, roomName);
     }
 

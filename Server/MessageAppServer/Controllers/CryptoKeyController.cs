@@ -85,12 +85,56 @@ public class CryptoKeyController(
                 return BadRequest("Something unusual happened.");
             }
             
-            return Ok(data.EncryptedKey);
+            return Ok(new {data.EncryptedKey});
         }
         catch (Exception e)
         {
             logger.LogError(e, "Error saving the key.");
             return StatusCode(500);
+        }
+    }
+    
+    [HttpGet("GetPublicKey"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> GetPublicKey([FromQuery]string userName)
+    {
+        try
+        {
+            var existingUser = await userManager.FindByNameAsync(userName);
+            if (existingUser == null)
+            {
+                return BadRequest($"There is no user with this Username: {userManager}");
+            }
+
+            return Ok(new {existingUser.PublicKey});
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error getting public key for {userName}.");
+            return StatusCode(500, new { message = $"An error occurred while trying to get public key for user {userName}." });
+        }
+    }
+    
+    [HttpGet("ExamineIfUserHaveSymmetricKeyForRoom"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult> ExamineIfUserHaveSymmetricKeyForRoom([FromQuery]string userName, string roomId)
+    {
+        try
+        {
+            var roomGuid = new Guid(roomId);
+            var existingUser = await userManager.Users
+                .Include(u => u.UserSymmetricKeys)
+                .FirstOrDefaultAsync(u => u.UserName == userName && u.UserSymmetricKeys.Any(k => k.RoomId == roomGuid));
+            
+            if (existingUser == null)
+            {
+                return BadRequest($"There is no key or user with this Username: {userName}");
+            }
+
+            return Ok(true);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error getting public key for {userName}.");
+            return StatusCode(500, new { message = $"An error occurred while trying to get public key for user {userName}." });
         }
     }
 }

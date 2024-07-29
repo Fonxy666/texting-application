@@ -111,12 +111,21 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
         }
     }
 
-    public async Task SendChatRoomInvite(string roomId, string roomName, string receiverName, string senderId, string senderName)
+    public async Task SendChatRoomInvite(string roomId, string roomName, string receiverName, string senderId, string senderName, string? roomKey)
     {
-        var receiverId = userManager.FindByNameAsync(receiverName).Result.Id.ToString();
+        var receiverId = userManager.FindByNameAsync(receiverName).Result!.Id.ToString();
+        
         if (Connections.TryGetValue(receiverId, out var connectionId))
         {
-            await Clients.Client(connectionId).SendAsync("ReceiveChatRoomInvite", roomId, roomName, receiverId, senderId, senderName);
+            if (roomKey != null)
+            {
+                Console.WriteLine("fasza");
+                await Clients.Client(connectionId).SendAsync("ReceiveChatRoomInvite", roomId, roomName, receiverId, senderId, senderName, roomKey);
+            }
+            else
+            {
+                await Clients.Client(connectionId).SendAsync("ReceiveChatRoomInvite", roomId, roomName, receiverId, senderId, senderName);
+            }
         }
     }
 }

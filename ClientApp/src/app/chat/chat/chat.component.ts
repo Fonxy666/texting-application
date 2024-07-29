@@ -569,20 +569,55 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }
     };
 
-    handleInviteToRoom(receiverName: string) {
+    async handleInviteToRoom(receiverName: string) {
         let userName = "";
         this.connectedUsers.forEach(user => {
             if (user.userId == this.userId) {
                 userName = user.userName
             }
         })
-        this.friendService.sendChatRoomInvite(
-            sessionStorage.getItem("roomId")!,
-            sessionStorage.getItem("room")!,
-            receiverName,
-            this.userId!,
-            userName
-        )
+
+        await firstValueFrom(this.cryptoService.userHaveKeyForRoom(receiverName, sessionStorage.getItem("roomId")!))
+        .then(() => {
+            this.friendService.sendChatRoomInvite(
+                sessionStorage.getItem("roomId")!,
+                sessionStorage.getItem("room")!,
+                receiverName,
+                this.userId!,
+                userName
+            )
+        })
+            .catch(async err => {
+                if (err.error !== `There is no key or user with this Username: ${receiverName}`) {
+                    return;
+                }
+
+                const receiverObject = await firstValueFrom(this.cryptoService.getPublicKey(receiverName));
+                const receiverPublicKey = receiverObject.publicKey;
+
+                const userEncryptionInput = await this.dbService.getEncryptionKey(this.cookieService.get("UserId"));
+                const cryptoKeyUserPublicKey = await this.cryptoService.importPublicKeyFromBase64(receiverPublicKey);
+                const userEncryptedData = await firstValueFrom(this.cryptoService.getUserPrivateKeyAndIv());
+                const encryptedRoomSymmetricKey = await firstValueFrom(this.cryptoService.getUserPrivateKeyForRoom(sessionStorage.getItem("roomId")!));
+                const encryptedRoomSymmetricKeyToArrayBuffer = this.cryptoService.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
+                const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, userEncryptionInput!, userEncryptedData.iv);
+                const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
+                const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
+                const keyToArrayBuffer = await this.cryptoService.exportCryptoKey(decryptedRoomKey);
+                const encryptRoomKeyForUser = await this.cryptoService.encryptSymmetricKey(keyToArrayBuffer, cryptoKeyUserPublicKey);
+                const bufferToBase64 = this.cryptoService.bufferToBase64(encryptRoomKeyForUser);
+
+                this.friendService.sendChatRoomInvite(
+                    sessionStorage.getItem("roomId")!,
+                    sessionStorage.getItem("room")!,
+                    receiverName,
+                    this.userId!,
+                    userName,
+                    bufferToBase64
+                )
+            });
+
+
         this.messageService.add({
             severity: 'success',
             summary: 'Success',

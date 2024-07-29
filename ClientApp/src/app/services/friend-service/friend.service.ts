@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, Observable } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { FriendRequestManage } from '../../model/friend-requests/FriendRequestManage';
 import { FriendRequestManageWithReceiverId } from '../../model/friend-requests/FriendRequestManageWithReceiverId';
@@ -8,6 +8,8 @@ import { isEqual } from 'lodash';
 import { HttpClient } from '@angular/common/http';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { ChatRoomInvite } from '../../model/room-requests/ChatRoomInvite';
+import { CryptoService } from '../crypto-service/crypto.service';
+import { StoreRoomSymmetricKey } from '../../model/room-requests/StoreRoomSymmetricKey';
 
 @Injectable({
     providedIn: 'root'
@@ -29,7 +31,8 @@ export class FriendService {
     constructor(
         private cookieService: CookieService,
         private http: HttpClient,
-        private errorHandler: ErrorHandlerService
+        private errorHandler: ErrorHandlerService,
+        private cryptoService: CryptoService
     ) {
         this.connection = new signalR.HubConnectionBuilder()
         .withUrl('/friend', { accessTokenFactory: () => this.cookieService.get('UserId') })
@@ -58,8 +61,17 @@ export class FriendService {
             this.deleteFromFriends(requestId);
         });
 
-        this.connection.on("ReceiveChatRoomInvite", (roomId: string, roomName: string, receiverId: string, senderId: string, senderName: string) => {
-            this.updateChatInvites(roomId, roomName, receiverId, senderId, senderName);
+        this.connection.on("ReceiveChatRoomInvite", async (roomId: string, roomName: string, receiverId: string, senderId: string, senderName: string, roomKey?: string) => {
+            if (roomKey !== undefined) {
+                const request = new StoreRoomSymmetricKey(roomKey!, roomId);
+
+                this.cryptoService.sendEncryptedRoomKey(request)
+                    .subscribe(() => {
+                        this.updateChatInvites(roomId, roomName, receiverId, senderId, senderName);
+                    }) 
+            } else {
+                this.updateChatInvites(roomId, roomName, receiverId, senderId, senderName);
+            }
         });
 
         this.connection.on("ReceiveOnlineFriends", (onlineFriends: FriendRequestManage[]) => {
@@ -208,20 +220,24 @@ export class FriendService {
         this.friends$.next(this.friends[userId]);
     }
 
-    public async sendChatRoomInvite(roomId: string, roomName: string, receiverName: string, senderId: string, senderName: string) {
+    public async sendChatRoomInvite(roomId: string, roomName: string, receiverName: string, senderId: string, senderName: string, roomKey?: string) {
         try {
-            await this.connection.invoke("SendChatRoomInvite", roomId, roomName, receiverName, senderId, senderName);
+            if (roomKey !== undefined) {
+                await this.connection.invoke("SendChatRoomInvite", roomId, roomName, receiverName, senderId, senderName, roomKey);
+            } else {
+                await this.connection.invoke("SendChatRoomInvite", roomId, roomName, receiverName, senderId, senderName, null);
+            }
         } catch (error) {
             console.error('Error declining friend request via SignalR:', error);
         }
     }
 
-    private updateChatInvites(roomId: string, roomName: string, receiverId: string, senderId: string, senderName: string) {
+    private updateChatInvites(roomId: string, roomName: string, receiverId: string, senderId: string, senderName: string, roomKey?: string) {
         if (!this.chatRoomInvites[receiverId]) {
             this.chatRoomInvites[receiverId] = [];
         }
         
-        this.chatRoomInvites[receiverId].push(new ChatRoomInvite(senderId, roomId, roomName, senderName));
+        roomKey !== null? this.chatRoomInvites[receiverId].push(new ChatRoomInvite(senderId, roomId, roomName, senderName, roomKey)) : this.chatRoomInvites[receiverId].push(new ChatRoomInvite(senderId, roomId, roomName, senderName))
         
         this.chatRoomInvites$.next(this.chatRoomInvites[receiverId]);
     }
