@@ -83,13 +83,13 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Create migrations for MainDatabaseContext
-      run: dotnet ef migrations add InitialMainDatabaseContext --context MainDatabaseContext --project Server/MessageAppServer --startup-project Server/MessageAppServer --output-dir Data/Migrations/MainDatabaseContext
+      run: dotnet ef migrations add InitialMainDatabaseContext --context MainDatabaseContext --project Server/MessageAppServer --startup-project Server/MessageAppServer --output-dir Data/Migrations/MainDb
 
     - name: Update database for MainMainDatabaseContext
       run: dotnet ef database update --context MainDatabaseContext --project Server/MessageAppServer --startup-project Server/MessageAppServer --verbose
 
     - name: Create migrations for PrivateKeyDbContext
-      run: dotnet ef migrations add InitialKeyDbContext --context PrivateKeysDbContext --project Server/MessageAppServer --startup-project Server/MessageAppServer --output-dir Data/Migrations/PrivateKeysDbContext
+      run: dotnet ef migrations add InitialKeyDbContext --context PrivateKeysDbContext --project Server/MessageAppServer --startup-project Server/MessageAppServer --output-dir Data/Migrations/KeyDb
 
     - name: Update database for PrivateKeyDbContext
       run: dotnet ef database update --context PrivateKeysDbContext --project Server/MessageAppServer --startup-project Server/MessageAppServer --verbose
