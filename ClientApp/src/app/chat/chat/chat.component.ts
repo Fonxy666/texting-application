@@ -85,15 +85,15 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         })
 
         if (this.roomId) {
-            this.subscriptions.add(
-              this.chatService.messagesInitialized$
-                .pipe(
-                  filter((initializedRoomId) => initializedRoomId === this.roomId),
-                  take(1)
-                )
-                .subscribe(() => {
-                  this.getMessages();
-                })
+                this.subscriptions.add(
+                this.chatService.messagesInitialized$
+                    .pipe(
+                        filter((initializedRoomId) => initializedRoomId === this.roomId),
+                        take(1)
+                    )
+                    .subscribe(() => {
+                        this.getMessages();
+                    })
             );
         } else {
             console.error('No roomId found in session storage.');

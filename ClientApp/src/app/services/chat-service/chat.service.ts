@@ -257,6 +257,7 @@ export class ChatService {
                 sessionStorage.setItem("user", "Anonymous");
                 if (senderId) {
                     this.friendService.handleChatInviteClick(roomId, senderId);
+                    window.location.reload();
                 }
             }).catch((err) => {
                 console.log(err);
@@ -270,6 +271,7 @@ export class ChatService {
                 sessionStorage.setItem("user", this.userService.userName);
                 if (senderId) {
                     this.friendService.handleChatInviteClick(roomId, senderId);
+                    window.location.reload();
                 }
             }).catch((err) => {
                 console.log(err);
