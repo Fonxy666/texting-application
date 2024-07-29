@@ -82,11 +82,11 @@ jobs:
       working-directory: Server/MessageAppServer
       run: dotnet build --configuration Release --no-restore
 
-    - name: Create migrations for DatabaseContext
-      run: dotnet ef migrations add InitialDatabaseContext --context DatabaseContext --project Server/MessageAppServer --startup-project Server/MessageAppServer --output-dir Data/Migrations/DatabaseContext
+    - name: Create migrations for MainDatabaseContext
+      run: dotnet ef migrations add InitialMainDatabaseContext --context MainDatabaseContext --project Server/MessageAppServer --startup-project Server/MessageAppServer --output-dir Data/Migrations/MainDatabaseContext
 
-    - name: Update database for DatabaseContext
-      run: dotnet ef database update --context DatabaseContext --project Server/MessageAppServer --startup-project Server/MessageAppServer --verbose
+    - name: Update database for MainMainDatabaseContext
+      run: dotnet ef database update --context MainDatabaseContext --project Server/MessageAppServer --startup-project Server/MessageAppServer --verbose
 
     - name: Create migrations for PrivateKeyDbContext
       run: dotnet ef migrations add InitialKeyDbContext --context PrivateKeysDbContext --project Server/MessageAppServer --startup-project Server/MessageAppServer --output-dir Data/Migrations/PrivateKeysDbContext
