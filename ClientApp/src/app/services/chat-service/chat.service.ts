@@ -99,13 +99,13 @@ export class ChatService {
             const encryptRoomKeyForUser = await this.cryptoService.encryptSymmetricKey(keyToArrayBuffer, cryptoKeyUserPublicKey);
             const bufferToBase64 = this.cryptoService.bufferToBase64(encryptRoomKeyForUser);
 
-            await this.sendRoomSymmetricKey(bufferToBase64, userData.connectionId, userData.roomId);
+            await this.sendRoomSymmetricKey(bufferToBase64, userData.connectionId, userData.roomId, userData.roomName);
         })
 
-        this.connection.on("GetSymmetricKey", async (encryptedKey: string, roomId: string) => {
+        this.connection.on("GetSymmetricKey", async (encryptedKey: string, roomId: string, roomName: string) => {
+            this.setRoomCredentialsAndNavigate(roomName, roomId);
             const data = new StoreRoomSymmetricKey(encryptedKey, roomId);
-            const response = await firstValueFrom(this.cryptoService.sendEncryptedRoomKey(data));
-            console.log(response);
+            await firstValueFrom(this.cryptoService.sendEncryptedRoomKey(data));
         })
     }
 
@@ -174,17 +174,17 @@ export class ChatService {
         }
     }
 
-    public async requestSymmetricRoomKey(roomId: string, connectionId: string) {
+    public async requestSymmetricRoomKey(roomId: string, connectionId: string, roomName: string) {
         try {
-            await this.connection.invoke("KeyRequest", roomId, connectionId);
+            await this.connection.invoke("KeyRequest", roomId, connectionId, roomName);
         } catch (error) {
             console.error('Error get the symmetric key:', error);
         }
     }
 
-    public async sendRoomSymmetricKey(message: string, connectionId: string, roomId: string) {
+    public async sendRoomSymmetricKey(key: string, connectionId: string, roomId: string, roomName: string) {
         try {
-            await this.connection.invoke("SendSymmetricKeyToRequestUser", message, connectionId, roomId);
+            await this.connection.invoke("SendSymmetricKeyToRequestUser", key, connectionId, roomId, roomName);
         } catch (error) {
             console.error('Error get the symmetric key:', error);
         }

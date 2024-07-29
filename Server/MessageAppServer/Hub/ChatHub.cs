@@ -27,7 +27,7 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
         return connection.Values.Where(user => user.Room == roomId).Select(connection => connection.User).Count();
     }
 
-    public async Task KeyRequest(string roomId, string connectionId)
+    public async Task KeyRequest(string roomId, string connectionId, string roomName)
     {
         var userId = Context.User!.FindFirstValue(ClaimTypes.NameIdentifier);
         var existingUser = await userManager.FindByIdAsync(userId!);
@@ -36,12 +36,23 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
             .Select(user => connection.FirstOrDefault(c => c.Value == user))
             .FirstOrDefault();
         
-        await Clients.Client(userConnection.Key).SendAsync("KeyRequest", new KeyRequestResponse(existingUser!.PublicKey, existingUser.Id, roomId, connectionId));
+        await Clients.Client(userConnection.Key).SendAsync("KeyRequest", new KeyRequestResponse(existingUser!.PublicKey, existingUser.Id, roomId, connectionId, roomName));
     }
 
-    public async Task SendSymmetricKeyToRequestUser(string encryptedRoomKey, string connectionId, string roomId)
+    public async Task SendSymmetricKeyToRequestUser(string encryptedRoomKey, string connectionId, string roomId, string roomName)
     {
-        await Clients.Client(connectionId).SendAsync("GetSymmetricKey", encryptedRoomKey, roomId);
+        Console.WriteLine("-----------------------------------------------");
+        Console.WriteLine("-----------------------------------------------");
+        Console.WriteLine("-----------------------------------------------");
+        Console.WriteLine("-----------------------------------------------");
+        Console.WriteLine("-----------------------------------------------");
+        Console.WriteLine("BEJOTT");
+        Console.WriteLine(connectionId);
+        Console.WriteLine("-----------------------------------------------");
+        Console.WriteLine("-----------------------------------------------");
+        Console.WriteLine("-----------------------------------------------");
+        Console.WriteLine("-----------------------------------------------");
+        await Clients.Client(connectionId).SendAsync("GetSymmetricKey", encryptedRoomKey, roomId, roomName);
     }
 
     public async Task SendMessage(MessageRequest request)

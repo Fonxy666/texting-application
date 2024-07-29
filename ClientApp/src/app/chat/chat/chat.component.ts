@@ -493,9 +493,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             if (result) {
                 this.userIsTheCreator = true;
             }
-        },
-        (error) => {
-            console.log(error);
         });
     }
 
