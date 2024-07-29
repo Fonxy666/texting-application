@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { StoreRoomSymmetricKey } from '../../model/room-requests/StoreRoomSymmetricKey';
 
 @Injectable({
@@ -246,6 +246,38 @@ export class CryptoService {
             console.error('Error in decryptMessage:', error);
             throw error;
         }
+    }
+
+    async decryptRoomKeyWithUserKey(userPublicKey: string, encryptionInput: string, roomId: string): Promise<string> {
+        const cryptoKeyUserPublicKey = await this.importPublicKeyFromBase64(userPublicKey);
+        const userEncryptedData = await firstValueFrom(this.getUserPrivateKeyAndIv());
+        const encryptedRoomSymmetricKey = await firstValueFrom(this.getUserPrivateKeyForRoom(roomId));
+        const encryptedRoomSymmetricKeyToArrayBuffer = this.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
+        const decryptedUserPrivateKey = await this.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, encryptionInput, userEncryptedData.iv);
+        const decryptedUserCryptoPrivateKey = await this.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
+        const decryptedRoomKey = await this.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
+        const keyToArrayBuffer = await this.exportCryptoKey(decryptedRoomKey);
+        const encryptRoomKeyForUser = await this.encryptSymmetricKey(keyToArrayBuffer, cryptoKeyUserPublicKey);
+        return this.bufferToBase64(encryptRoomKeyForUser);
+    }
+
+    async decryptSymmetricKeyWrapper(roomId: string, userKey: string): Promise<CryptoKey> {
+        const userEncryptedData = await firstValueFrom(this.getUserPrivateKeyAndIv());
+        const encryptedRoomSymmetricKey = await firstValueFrom(this.getUserPrivateKeyForRoom(roomId));
+        const encryptedRoomSymmetricKeyToArrayBuffer = this.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
+        const decryptedUserPrivateKey = await this.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, userKey, userEncryptedData.iv);
+        const decryptedUserCryptoPrivateKey = await this.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
+        return await this.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
+    }
+
+    async encryptMessageWrapper(roomId: string, userKey: string, inputMessage: string): Promise<any> {
+        const userEncryptedData = await firstValueFrom(this.getUserPrivateKeyAndIv());
+        const encryptedRoomSymmetricKey = await firstValueFrom(this.getUserPrivateKeyForRoom(roomId));
+        const encryptedRoomSymmetricKeyToArrayBuffer = this.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
+        const decryptedUserPrivateKey = await this.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, userKey, userEncryptedData.iv);
+        const decryptedUserCryptoPrivateKey = await this.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
+        const decryptedRoomKey = await this.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
+        return await this.encryptMessage(inputMessage, decryptedRoomKey);
     }
 
     getUserPrivateKeyAndIv(): Observable<any> {
