@@ -100,7 +100,12 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }
 
         this.chatService.messages$.subscribe(async data => {
-            const decryptedRoomKey = await this.cryptoService.decryptSymmetricKeyWrapper(this.roomId, this.userKey);
+            const userEncryptedData = await firstValueFrom(this.cryptoService.getUserPrivateKeyAndIv());
+            const encryptedRoomSymmetricKey = await firstValueFrom(this.cryptoService.getUserPrivateKeyForRoom(this.roomId));
+            const encryptedRoomSymmetricKeyToArrayBuffer = this.cryptoService.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
+            const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, this.userKey, userEncryptedData.iv);
+            const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
+            const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
 
             const decryptedMessages = await Promise.all(data.map(async innerData => {
                 if (innerData.encrypted) {
@@ -132,7 +137,12 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         });
 
         this.chatService.connection.on("ModifyMessage", async (messageId: string, messageText: string) => {
-            const decryptedRoomKey = await this.cryptoService.decryptSymmetricKeyWrapper(this.roomId, this.userKey);
+            const userEncryptedData = await firstValueFrom(this.cryptoService.getUserPrivateKeyAndIv());
+            const encryptedRoomSymmetricKey = await firstValueFrom(this.cryptoService.getUserPrivateKeyForRoom(this.roomId));
+            const encryptedRoomSymmetricKeyToArrayBuffer = this.cryptoService.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
+            const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, this.userKey, userEncryptedData.iv);
+            const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
+            const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
 
             this.messages.forEach(async (data) => {
                 if (data.messageData.messageId == messageId && data.encrypted) {
@@ -222,8 +232,15 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }
     };
 
-    async sendMessage() {            
-        const encryptedMessageData = await this.cryptoService.encryptMessageWrapper(this.roomId, this.userKey, this.inputMessage);
+    async sendMessage() {
+        const userEncryptedData = await firstValueFrom(this.cryptoService.getUserPrivateKeyAndIv());
+        const encryptedRoomSymmetricKey = await firstValueFrom(this.cryptoService.getUserPrivateKeyForRoom(this.roomId));
+        const encryptedRoomSymmetricKeyToArrayBuffer = this.cryptoService.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
+        const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, this.userKey, userEncryptedData.iv);
+        const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
+        const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
+        const encryptedMessageData = await this.cryptoService.encryptMessage(this.inputMessage, decryptedRoomKey);
+            
         let request = new MessageRequest(
             this.roomId,
             encryptedMessageData.encryptedMessage,
@@ -281,8 +298,22 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         if (this.chatService.messages[this.roomId] === undefined) {
             return;
         }
+
+        const userEncryptedData = await firstValueFrom(this.cryptoService.getUserPrivateKeyAndIv());
+        const encryptedRoomSymmetricKey = await firstValueFrom(this.cryptoService.getUserPrivateKeyForRoom(this.roomId));
+        const encryptedRoomSymmetricKeyToArrayBuffer = this.cryptoService.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
+        const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, this.userKey, userEncryptedData.iv);
+        if (decryptedUserPrivateKey === null) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: "The provided user key is wrong. You can change the key under: 'your avatar -> profile -> Change User key' section."
+            });
+        }
+        
+        const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
+        const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
     
-        const decryptedRoomKey = await this.cryptoService.decryptSymmetricKeyWrapper(this.roomId, this.userKey);
         this.chatService.getMessages(this.roomId)
             .subscribe((response: any) => {
                 const userNames = response.map((element: any) =>
@@ -334,7 +365,13 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     async sendMessageModifyHttpRequest(request: ChangeMessageRequest) {
-        const encryptedData = await this.cryptoService.encryptMessageWrapper(this.roomId, this.userKey, this.inputMessage);
+        const userEncryptedData = await firstValueFrom(this.cryptoService.getUserPrivateKeyAndIv());
+        const encryptedRoomSymmetricKey = await firstValueFrom(this.cryptoService.getUserPrivateKeyForRoom(this.roomId));
+        const encryptedRoomSymmetricKeyToArrayBuffer = this.cryptoService.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
+        const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, this.userKey, userEncryptedData.iv);
+        const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
+        const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
+        const encryptedData = await this.cryptoService.encryptMessage(this.inputMessage, decryptedRoomKey);
 
         request.message = encryptedData.encryptedMessage;
         request.iv = encryptedData.iv;
@@ -557,9 +594,18 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
                 const receiverObject = await firstValueFrom(this.cryptoService.getPublicKey(receiverName));
                 const receiverPublicKey = receiverObject.publicKey;
-                const userEncryptionInput = await this.dbService.getEncryptionKey(this.cookieService.get("UserId"));
 
-                const userRoomKey = await this.cryptoService.decryptRoomKeyWithUserKey(receiverPublicKey, userEncryptionInput!, sessionStorage.getItem("roomId")!);
+                const userEncryptionInput = await this.dbService.getEncryptionKey(this.cookieService.get("UserId"));
+                const cryptoKeyUserPublicKey = await this.cryptoService.importPublicKeyFromBase64(receiverPublicKey);
+                const userEncryptedData = await firstValueFrom(this.cryptoService.getUserPrivateKeyAndIv());
+                const encryptedRoomSymmetricKey = await firstValueFrom(this.cryptoService.getUserPrivateKeyForRoom(sessionStorage.getItem("roomId")!));
+                const encryptedRoomSymmetricKeyToArrayBuffer = this.cryptoService.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
+                const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, userEncryptionInput!, userEncryptedData.iv);
+                const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
+                const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
+                const keyToArrayBuffer = await this.cryptoService.exportCryptoKey(decryptedRoomKey);
+                const encryptRoomKeyForUser = await this.cryptoService.encryptSymmetricKey(keyToArrayBuffer, cryptoKeyUserPublicKey);
+                const bufferToBase64 = this.cryptoService.bufferToBase64(encryptRoomKeyForUser);
 
                 this.friendService.sendChatRoomInvite(
                     sessionStorage.getItem("roomId")!,
@@ -567,7 +613,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     receiverName,
                     this.userId!,
                     userName,
-                    userRoomKey
+                    bufferToBase64
                 )
             });
 
