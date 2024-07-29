@@ -7,11 +7,13 @@ import { MediaService } from '../services/media-service/media.service';
 import { ChatRoomInvite } from '../model/room-requests/ChatRoomInvite';
 import { ChatService } from '../services/chat-service/chat.service';
 import { IndexedDBService } from '../services/db-service/indexed-dbservice.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
     selector: 'app-nav-bar',
     templateUrl: './nav-bar.component.html',
-    styleUrls: ['./nav-bar.component.css', '../../styles.css']
+    styleUrls: ['./nav-bar.component.css', '../../styles.css'],
+    providers: [ MessageService ]
 })
 
 export class NavBarComponent implements OnInit {
@@ -22,7 +24,8 @@ export class NavBarComponent implements OnInit {
         public friendService: FriendService,
         private mediaService: MediaService,
         public chatService: ChatService,
-        private dbService: IndexedDBService
+        private dbService: IndexedDBService,
+        private messageService: MessageService
     ) { }
 
     isDropstart: boolean = true;
@@ -96,5 +99,17 @@ export class NavBarComponent implements OnInit {
 
     isCurrentRoute(routerLink: string): boolean {
         return this.router.url === routerLink;
+    }
+
+    examineIfUserIsInARoom(roomName: string, roomId: string, senderId: string) {
+        if (this.chatService.userInRoom()) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'First you need to leave the actual room.'
+            });
+        }
+
+        this.chatService.setRoomCredentialsAndNavigate(roomName, roomId, senderId);
     }
 }

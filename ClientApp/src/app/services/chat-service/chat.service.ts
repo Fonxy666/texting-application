@@ -245,7 +245,7 @@ export class ChatService {
 
     public setRoomCredentialsAndNavigate(roomName: any, roomId: string, senderId?: string) {
         if (this.userInRoom()) {
-            this.leaveChat();
+            return;
         };
 
         if (this.cookieService.get("Anonymous") === "True") {
@@ -258,9 +258,6 @@ export class ChatService {
                 if (senderId) {
                     this.friendService.handleChatInviteClick(roomId, senderId);
                 }
-                setTimeout(() => {
-                   window.location.reload() 
-                }, 1000);
             }).catch((err) => {
                 console.log(err);
             })
@@ -274,9 +271,6 @@ export class ChatService {
                 if (senderId) {
                     this.friendService.handleChatInviteClick(roomId, senderId);
                 }
-                setTimeout(() => {
-                    window.location.reload() 
-                 }, 1000);
             }).catch((err) => {
                 console.log(err);
             })
@@ -289,7 +283,7 @@ export class ChatService {
         sessionStorage.removeItem("roomId");
     }
 
-    private userInRoom():boolean {
+    public userInRoom():boolean {
         if (sessionStorage.getItem("room") && sessionStorage.getItem("user") && sessionStorage.getItem("roomId")) {
             return true;
         }

@@ -138,6 +138,13 @@ export class JoinRoomComponent implements OnInit {
                     );
   
                     if (userId && keyResponse && awaitedUserInputKey) {
+                        if (this.chatService.userInRoom()) {
+                            this.messageService.add({
+                                severity: 'error',
+                                summary: 'Error',
+                                detail: 'First you need to leave the actual room.'
+                            });
+                        }
                         this.chatService.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
                     } else if (keyResponse == null && usersInRoom > 0) {
                         this.chatService.requestSymmetricRoomKey(response.roomId, this.chatService.connection.connectionId!, response.roomName);
