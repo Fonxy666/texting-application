@@ -35,31 +35,36 @@ jobs:
       run: |
         docker run --name textinger_test_database -e ACCEPT_EULA=Y -e SA_PASSWORD='MyStrong(!)Password123' -p 1433:1433 -d mcr.microsoft.com/mssql/server
         # Wait for SQL Server to come up
-        sleep 15
-        # Install mssql-tools package
-        docker exec -u 0 textinger_test_database /bin/bash -c "apt-get update && apt-get install -y mssql-tools unixodbc-dev"
-        docker exec -u 0 textinger_test_database /bin/bash -c "echo 'export PATH=$PATH:/opt/mssql-tools/bin' >> ~/.bashrc"
-        docker exec -u 0 textinger_test_database /bin/bash -c "source ~/.bashrc"
-        # Check logs to ensure the container is running correctly
-        docker logs textinger_test_database
+        for i in {1..30}; do
+          if docker exec textinger_test_database /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'MyStrong(!)Password123' -Q "SELECT 1" &>/dev/null; then
+            echo "SQL Server is up!"
+            break
+          fi
+          echo "Waiting for SQL Server to be ready..."
+          sleep 2
+        done
         # Create the database if it doesn't exist
         docker exec textinger_test_database /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'MyStrong(!)Password123' -Q "IF DB_ID('textinger_test_database') IS NULL CREATE DATABASE [textinger_test_database];"
+    
     - name: Start MSSQL Server Docker container for Key database
       run: |
         docker run --name textinger_private_key_test_database -e ACCEPT_EULA=Y -e SA_PASSWORD='MyStrong(!)Password123' -p 1434:1433 -d mcr.microsoft.com/mssql/server
         # Wait for SQL Server to come up
-        sleep 15
-        # Install mssql-tools package
-        docker exec -u 0 textinger_private_key_test_database /bin/bash -c "apt-get update && apt-get install -y mssql-tools unixodbc-dev"
-        docker exec -u 0 textinger_private_key_test_database /bin/bash -c "echo 'export PATH=$PATH:/opt/mssql-tools/bin' >> ~/.bashrc"
-        docker exec -u 0 textinger_private_key_test_database /bin/bash -c "source ~/.bashrc"
-        # Check logs to ensure the container is running correctly
-        docker logs textinger_private_key_test_database
+        for i in {1..30}; do
+          if docker exec textinger_private_key_test_database /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'MyStrong(!)Password123' -Q "SELECT 1" &>/dev/null; then
+            echo "SQL Server is up!"
+            break
+          fi
+          echo "Waiting for SQL Server to be ready..."
+          sleep 2
+        done
         # Create the database if it doesn't exist
         docker exec textinger_private_key_test_database /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'MyStrong(!)Password123' -Q "IF DB_ID('textinger_private_key_test_database') IS NULL CREATE DATABASE [textinger_private_key_test_database];"
-        
+    
     - name: Install EF Core tools
       run: dotnet tool install --global dotnet-ef --version 8.0.1
+    - name: Ensure dotnet-ef is in PATH
+      run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
     - name: Install jq
       run: sudo apt-get update && sudo apt-get install -y jq
@@ -85,7 +90,7 @@ jobs:
     - name: Create migrations for MainDatabaseContext
       run: dotnet ef migrations add InitialMainDatabaseContext --context MainDatabaseContext --project Server/MessageAppServer --startup-project Server/MessageAppServer --output-dir Data/Migrations/MainDatabaseContext
 
-    - name: Update database for MainMainDatabaseContext
+    - name: Update database for MainDatabaseContext
       run: dotnet ef database update --context MainDatabaseContext --project Server/MessageAppServer --startup-project Server/MessageAppServer --verbose
 
     - name: Create migrations for PrivateKeyDbContext
