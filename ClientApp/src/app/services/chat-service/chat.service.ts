@@ -251,28 +251,32 @@ export class ChatService {
         if (this.cookieService.get("Anonymous") === "True") {
             this.joinRoom("Anonymous", roomId)
             .then(() => {
-                this.router.navigate([`/message-room/${roomId}`]);
                 sessionStorage.setItem("roomId", roomId);
                 sessionStorage.setItem("room", roomName);
                 sessionStorage.setItem("user", "Anonymous");
+                this.router.navigate([`/message-room/${roomId}`]);
                 if (senderId) {
                     this.friendService.handleChatInviteClick(roomId, senderId);
-                    window.location.reload();
                 }
+                setTimeout(() => {
+                   window.location.reload() 
+                }, 1000);
             }).catch((err) => {
                 console.log(err);
             })
         } else {
             this.joinRoom(this.userService.userName, roomId)
             .then(() => {
-                this.router.navigate([`/message-room/${roomId}`]);
                 sessionStorage.setItem("roomId", roomId);
                 sessionStorage.setItem("room", roomName);
                 sessionStorage.setItem("user", this.userService.userName);
+                this.router.navigate([`/message-room/${roomId}`]);
                 if (senderId) {
                     this.friendService.handleChatInviteClick(roomId, senderId);
-                    window.location.reload();
                 }
+                setTimeout(() => {
+                    window.location.reload() 
+                 }, 1000);
             }).catch((err) => {
                 console.log(err);
             })
