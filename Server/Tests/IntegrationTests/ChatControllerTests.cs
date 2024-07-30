@@ -110,7 +110,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
     
     [Fact]
-    public async Task ExamineUserIsTheCreator_WithValidButNotCreatorId_ReturnBadRequest()
+    public async Task ExamineUserIsTheCreator_WithValidButNotCreatorId_ReturnOkWithFalse()
     {
         var cookies = TestLogin.Login_With_Test_User(_testUser2, _client, "test3@hotmail.com").Result;
         _client.DefaultRequestHeaders.Add("Cookie", cookies);
@@ -118,7 +118,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         const string roomId = "901d40c6-c95d-47ed-a21a-88cda341d0a9";
 
         var examineRoomCreatorResponse = await _client.GetAsync($"api/v1/Chat/ExamineIfTheUserIsTheCreator?roomId={roomId}");
-        Assert.Equal(HttpStatusCode.BadRequest, examineRoomCreatorResponse.StatusCode);
+        examineRoomCreatorResponse.EnsureSuccessStatusCode();
     }
     
     [Fact]

@@ -60,7 +60,7 @@ public class ChatController(
             
             if (!existingRoom.IsCreator(userGuid))
             {
-                return BadRequest(false);
+                return Ok(false);
             }
 
             return Ok(true);

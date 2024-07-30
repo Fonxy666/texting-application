@@ -265,4 +265,16 @@ export class CryptoService {
             this.http.post(`/api/v1/CryptoKey/SaveEncryptedRoomKey`, data, { withCredentials: true })
         )
     }
+
+    getPublicKey(userName: string): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.get(`/api/v1/CryptoKey/GetPublicKey?userName=${userName}`, { withCredentials: true })
+        )
+    }
+
+    userHaveKeyForRoom(userName: string, roomId: string): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.get(`/api/v1/CryptoKey/ExamineIfUserHaveSymmetricKeyForRoom?userName=${userName}&roomId=${roomId}`, { withCredentials: true })
+        )
+    }
 }

@@ -60,8 +60,6 @@ export class ManageFriendRequestComponent implements OnInit {
                 });
             });
         });
-
-        console.log(this.friendRequests);
     }
 
     OnFormSubmit() {

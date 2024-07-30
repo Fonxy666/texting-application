@@ -1,9 +1,8 @@
 <div>
     <form [formGroup]="changeUserKeyRequest" (ngSubmit)="OnFormSubmit()">
         <div class="mb-3 text-style-15-px input-container">
-            <label for="inputuserKey" class="form-label">New e-mail address</label>
-            <input formControlName="newKey" type="email" class="form-control" id="inputuserKey" aria-describedby="emailHelp">
-            <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+            <label for="inputuserKey" class="form-label">New key for chat rooms</label>
+            <input formControlName="newKey" type="email" class="form-control" id="inputuserKey" aria-describedby="emailHelp" placeholder="123456">
             <div class="error-messages-container">
                 <div class="text-style-15-px" *ngIf="changeUserKeyRequest.get('newKey')?.invalid && (changeUserKeyRequest.get('newKey')?.dirty || changeUserKeyRequest.get('newKey')?.touched)" class="text-danger">
                     <div *ngIf="changeUserKeyRequest.get('newKey')?.errors?.['required']">Key is required</div>

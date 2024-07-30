@@ -97,4 +97,44 @@ public class PrivateKeyTests
         var savePrivateKeyResponse = await _client.PostAsync("api/v1/CryptoKey/SaveEncryptedRoomKey", contentSend);
         Assert.Equal(HttpStatusCode.BadRequest, savePrivateKeyResponse.StatusCode);
     }
+    
+    [Fact]
+    public async Task GetPublicKey_WithValidName_ReturnSuccess()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var getPublicKeyResponse = await _client.GetAsync("api/v1/CryptoKey/GetPublicKey?userName=TestUsername1");
+        getPublicKeyResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task GetPublicKey_WithNotExistingName_ReturnBadRequest()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var getPublicKeyResponse = await _client.GetAsync("api/v1/CryptoKey/GetPublicKey?userName=TestUser1");
+        Assert.Equal(HttpStatusCode.BadRequest, getPublicKeyResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task ExamineIfUserHaveSymmetricRoomKey_WithValidCredentials_ReturnsSuccess()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var getKeyResponse = await _client.GetAsync("api/v1/CryptoKey/ExamineIfUserHaveSymmetricKeyForRoom?userName=TestUsername1&roomId=901d40c6-c95d-47ed-a21a-88cda341d0a9");
+        getKeyResponse.EnsureSuccessStatusCode();
+    }
+    
+    [Fact]
+    public async Task ExamineIfUserHaveSymmetricRoomKey_WithInvalidCredentials_ReturnsBadRequest()
+    {
+        var cookies = await TestLogin.Login_With_Test_User(_testUser1, _client, "test1@hotmail.com");
+        _client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+        var getKeyResponse = await _client.GetAsync("api/v1/CryptoKey/ExamineIfUserHaveSymmetricKeyForRoom?userName=TestUsername6&roomId=901d40c6-c95d-47ed-a21a-88cda341d0a9");
+        Assert.Equal(HttpStatusCode.BadRequest, getKeyResponse.StatusCode);
+    }
 }
