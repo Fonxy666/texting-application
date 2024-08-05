@@ -70,7 +70,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     messages: any[] = [];
     avatars: { [userId: string]: string } = {};
     changePasswordRequest!: FormGroup;
-
+    
     ngOnInit(): void {
         this.userId = this.cookieService.get("UserId");
         this.roomId = sessionStorage.getItem("roomId")!;
@@ -109,9 +109,13 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
             const decryptedMessages = await Promise.all(data.map(async innerData => {
                 if (innerData.encrypted) {
-                    innerData.messageData.message = await this.cryptoService.decryptMessage(innerData.messageData.message, decryptedRoomKey, innerData.messageData.iv);
-                    innerData.encrypted = false;
-                    return innerData;
+                    try {
+                        innerData.messageData.message = await this.cryptoService.decryptMessage(innerData.messageData.message, decryptedRoomKey, innerData.messageData.iv);
+                        innerData.encrypted = false;
+                        return innerData;
+                    } catch (error) {
+                        console.log("Failed to decrypt message:", innerData, error);
+                    }
                 } else {
                     return innerData;
                 }
@@ -119,20 +123,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
             this.messages = decryptedMessages;
 
-            this.messages.forEach(message => {
+            this.messages.forEach(() => {
                 this.mediaService.getAvatarImage(this.userId).subscribe((image) => {
                     this.avatars[this.userId] = image;
                 });
-                
-                setTimeout(() => {
-                    if (message.messageData.userId == undefined) {
-                        const currentIndex = this.messages.indexOf(message);
-
-                        if (currentIndex > -1) {
-                            this.messages.splice(currentIndex, 1);
-                        }
-                    }
-                }, 5000);
             })
         });
 
@@ -146,7 +140,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
             this.messages.forEach(async (data) => {
                 if (data.messageData.messageId == messageId && data.encrypted) {
-                    console.log(data.messageData.iv);
                     data.messageData.message = await this.cryptoService.decryptMessage(messageText, decryptedRoomKey, data.messageData.iv);
                 }
             })
@@ -204,7 +197,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
         this.friendService.onlineFriends$.subscribe(friends => {
             this.onlineFriends = friends;
-        })
+        });
     };
 
     ngAfterViewChecked(): void {
@@ -319,7 +312,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 const userNames = response.map((element: any) =>
                     this.userService.getUsername(element.senderId)
                 );
-    
                 forkJoin(userNames).subscribe(async (usernames: any) => {
                     const fetchedMessages = response.map(async (element: any, index: number) => ({
                         encrypted: false,

@@ -54,12 +54,15 @@ export class ChatService {
                 this.messagesInitialized$.next(roomId);
             }
             if (userId !== this.cookieService.get("UserId")) {
+                const messageObj = { encrypted: user !== "Textinger bot", messageData: { user, message, messageTime, userId, messageId, seenList, iv } };
+                this.messages[roomId].push(messageObj);
+        
                 if (user === "Textinger bot") {
-                    this.messages[roomId].push({encrypted: false, messageData: { user, message, messageTime, userId, messageId, seenList, iv } });
-                } else {
-                    this.messages[roomId].push({encrypted: true, messageData: { user, message, messageTime, userId, messageId, seenList, iv } });
+                    setTimeout(() => {
+                        this.removeBotMessage(roomId, messageId);
+                    }, 5000);
                 }
-            }
+              }
             if (this.currentRoom === roomId) {
                 this.messages$.next([...this.messages[roomId]]);
             }
@@ -108,6 +111,15 @@ export class ChatService {
             await firstValueFrom(this.cryptoService.sendEncryptedRoomKey(data));
         })
     }
+
+    private removeBotMessage(roomId: string, messageId: string) {
+        if (this.messages[roomId]) {
+            this.messages[roomId] = this.messages[roomId].filter(msg => msg.messageData.messageId !== messageId);
+            if (this.currentRoom === roomId) {
+                this.messages$.next([...this.messages[roomId]]);
+            }
+        }
+      }
 
     public setCurrentRoom(roomId: string) {
         this.currentRoom = roomId;
