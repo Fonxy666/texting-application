@@ -70,7 +70,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     messages: any[] = [];
     avatars: { [userId: string]: string } = {};
     changePasswordRequest!: FormGroup;
-
+    
     ngOnInit(): void {
         this.userId = this.cookieService.get("UserId");
         this.roomId = sessionStorage.getItem("roomId")!;
@@ -120,19 +120,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             this.messages = decryptedMessages;
 
             this.messages.forEach(message => {
+                console.log(message);
                 this.mediaService.getAvatarImage(this.userId).subscribe((image) => {
                     this.avatars[this.userId] = image;
                 });
-                
-                setTimeout(() => {
-                    if (message.messageData.userId == undefined) {
-                        const currentIndex = this.messages.indexOf(message);
-
-                        if (currentIndex > -1) {
-                            this.messages.splice(currentIndex, 1);
-                        }
-                    }
-                }, 5000);
             })
         });
 
@@ -204,7 +195,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
         this.friendService.onlineFriends$.subscribe(friends => {
             this.onlineFriends = friends;
-        })
+        });
     };
 
     ngAfterViewChecked(): void {
