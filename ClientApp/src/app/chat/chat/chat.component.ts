@@ -590,7 +590,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
                 const receiverObject = await firstValueFrom(this.cryptoService.getPublicKey(receiverName));
                 const receiverPublicKey = receiverObject.publicKey;
-
                 const userEncryptionInput = await this.dbService.getEncryptionKey(this.cookieService.get("UserId"));
                 const cryptoKeyUserPublicKey = await this.cryptoService.importPublicKeyFromBase64(receiverPublicKey);
                 const userEncryptedData = await firstValueFrom(this.cryptoService.getUserPrivateKeyAndIv());
@@ -621,11 +620,23 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         });
     }
 
-    onFileSelected(event: Event): void {
+    async onFileSelected(event: Event) {
+        const userEncryptedData = await firstValueFrom(this.cryptoService.getUserPrivateKeyAndIv());
+        const encryptedRoomSymmetricKey = await firstValueFrom(this.cryptoService.getUserPrivateKeyForRoom(sessionStorage.getItem("roomId")!));
+        const encryptedRoomSymmetricKeyToArrayBuffer = this.cryptoService.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
+        const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, this.userKey, userEncryptedData.iv);
+        const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
+        const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
+
         const input = event.target as HTMLInputElement;
         if (input.files && input.files.length > 0) {
             const file = input.files[0];
             console.log('Selected file:', file);
+            const haha = await this.cryptoService.encryptFile(file, decryptedRoomKey);
+            console.log(haha);
+            const decryptedhaha = await this.cryptoService.decryptFile(haha, decryptedRoomKey);
+            console.log(decryptedhaha);
         }
+        
     }
 }
