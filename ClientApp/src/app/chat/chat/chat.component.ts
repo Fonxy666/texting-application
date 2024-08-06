@@ -620,4 +620,12 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             detail: `Room invite successfully sent to ${receiverName}.`, styleClass: 'ui-toast-message-success'
         });
     }
+
+    onFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        if (input.files && input.files.length > 0) {
+            const file = input.files[0];
+            console.log('Selected file:', file);
+        }
+    }
 }

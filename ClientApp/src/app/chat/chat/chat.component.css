@@ -253,15 +253,16 @@ input::placeholder {
 }
 
 .input_msg_write input {
-    background: rgba(0, 0, 0, 0) none repeat scroll 0 0;
-    border: medium none;
+    background: rgba(255, 255, 255, 0) none repeat scroll 0 0;
+    padding-left: 10px;
+    border-radius: 15px;
     font-size: 15px;
     min-height: 48px;
     width: 100%;
 }
 
 .type_msg {
-    border-top: 1px solid #c4c4c4;
+    margin-top: 10px;
     position: relative;
 }
 
@@ -277,6 +278,24 @@ input::placeholder {
     right: 7px;
     top: 7px;
     width: 33px;
+}
+
+.msg_img_send_btn {
+    background: #000000 none repeat scroll 0 0;
+    border: medium none;
+    border-radius: 50%;
+    color: #fff;
+    cursor: pointer;
+    font-size: 17px;
+    height: 33px;
+    position: absolute;
+    right: 47px;
+    top: 7px;
+    width: 33px;
+}
+
+.msg_input {
+    padding-right: 100px;
 }
 
 .dropdown-menu {
@@ -380,4 +399,12 @@ input::placeholder {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.message-mod-class {
+    display: flex;
+}
+
+.msg-modification {
+    margin: auto 0;
 }

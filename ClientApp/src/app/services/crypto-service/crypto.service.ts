@@ -248,6 +248,43 @@ export class CryptoService {
         }
     }
 
+    async encryptFile(file: Blob, symmetricKey: CryptoKey): Promise<Blob> {
+        const arrayBuffer = await file.arrayBuffer();
+        const iv = window.crypto.getRandomValues(new Uint8Array(12));
+        
+        const encryptedData = await window.crypto.subtle.encrypt(
+            {
+                name: "AES-GCM",
+                iv: iv
+            },
+            symmetricKey,
+            arrayBuffer
+        );
+
+        const combined = new Uint8Array(iv.byteLength + encryptedData.byteLength);
+        combined.set(iv, 0);
+        combined.set(new Uint8Array(encryptedData), iv.byteLength);
+
+        return new Blob([combined], { type: file.type });
+    }
+
+    async decryptFile(encryptedFile: Blob, symmetricKey: CryptoKey): Promise<Blob> {
+        const arrayBuffer = await encryptedFile.arrayBuffer();
+        const iv = new Uint8Array(arrayBuffer.slice(0, 12));
+        const encryptedData = arrayBuffer.slice(12);
+
+        const decryptedData = await window.crypto.subtle.decrypt(
+            {
+                name: "AES-GCM",
+                iv: iv
+            },
+            symmetricKey,
+            encryptedData
+        );
+
+        return new Blob([decryptedData], { type: encryptedFile.type });
+    }
+
     getUserPrivateKeyAndIv(): Observable<any> {
         return this.errorHandler.handleErrors(
             this.http.get(`/api/v1/CryptoKey/GetPrivateKeyAndIv`, { withCredentials: true })

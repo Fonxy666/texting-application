@@ -223,11 +223,20 @@
                             </div>
                         </ng-container>
                     </div>
-                    <div *ngIf="this.messageModifyBool"><button type="button" class="btn-close" aria-label="Close" (click)="this.handleCloseMessageModify()"></button>Message modification </div>
+                    <div *ngIf="this.messageModifyBool" class="text-white message-mod-class mx-2">
+                        <button type="button" class="btn-close" aria-label="Close" (click)="this.handleCloseMessageModify()"></button>
+                        <div class="px-2 text-white msg-modification">Message modification</div>
+                    </div>
                     <div class="type_msg">
                         <div class="input_msg_write">
-                            <input class="text-white" #messageInput (keydown.enter)="this.messageModifyBool? sendMessageModifyHttpRequest(this.messageModifyRequest) : sendMessage()" [(ngModel)]="inputMessage" type="text" placeholder="Type a message" />
-                            <button (click)="this.messageModifyBool? sendMessageModifyHttpRequest(this.messageModifyRequest) : sendMessage()" class="msg_send_btn" type="button"> <i class="fa fa-paper-plane-o" aria-hidden="true"></i> </button>
+                            <input class="text-white msg_input" #messageInput (keydown.enter)="this.messageModifyBool? sendMessageModifyHttpRequest(this.messageModifyRequest) : sendMessage()" [(ngModel)]="inputMessage" type="text" placeholder="Aa" />
+                            <input type="file" #fileInput style="display: none;" (change)="onFileSelected($event)" />
+                            <button (click)="fileInput.click()" class="msg_img_send_btn" type="button"> 
+                                <i class="fa fa-picture-o" aria-hidden="true"></i> 
+                            </button>
+                            <button (click)="this.messageModifyBool? sendMessageModifyHttpRequest(this.messageModifyRequest) : sendMessage()" class="msg_send_btn" type="button">
+                                <i class="fa fa-paper-plane-o" aria-hidden="true"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
