@@ -247,6 +247,7 @@ export class ChatService {
     public async leaveChat() {
         try {
             this.removeSessionStates()
+            console.log(this.currentRoom);
             this.messages[this.currentRoom!] = [];
             await this.connection.stop();
             console.log('Chat-SignalR connection stopped.');
