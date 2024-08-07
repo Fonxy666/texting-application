@@ -14,7 +14,7 @@ public class Room
     public ApplicationUser CreatorUser { get; set; }
     public string RoomName { get; init; }
     public string Password { get; private set; }
-    public ICollection<Message> Messages { get; set; } = new List<Message>();
+    public ICollection<ItemBase> Messages { get; set; } = new List<ItemBase>();
     public ICollection<EncryptedSymmetricKey> EncryptedSymmetricKeys { get; private set; } = new List<EncryptedSymmetricKey>();
     
     public Room() {}

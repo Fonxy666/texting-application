@@ -17,6 +17,7 @@ import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePa
 import { CryptoService } from '../crypto-service/crypto.service';
 import { IndexedDBService } from '../db-service/indexed-dbservice.service';
 import { StoreRoomSymmetricKey } from '../../model/room-requests/StoreRoomSymmetricKey';
+import { ImageRequest } from '../../model/message-requests/ImageRequest';
 @Injectable({
     providedIn: 'root'
 })
@@ -319,6 +320,12 @@ export class ChatService {
     saveMessage(form: MessageRequest): Observable<any> {
         return this.errorHandler.handleErrors(
             this.http.post(`api/v1/Message/SendMessage`, form, { withCredentials: true})
+        )
+    }
+
+    saveImage(form: ImageRequest): Observable<any> {
+        return this.errorHandler.handleErrors(
+            this.http.post(`api/v1/Message/SendImage`, form, { withCredentials: true})
         )
     }
 

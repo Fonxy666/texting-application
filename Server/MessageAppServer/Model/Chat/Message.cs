@@ -1,59 +1,31 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Globalization;
 
 namespace Server.Model.Chat;
 
-public class Message
+public class Message : ItemBase
 {
     [Key]
-    public Guid MessageId { get; private set; }
-    public Guid RoomId { get; init; }
-    [ForeignKey("RoomId")]
-    public Room Room { get; set; }
-    public Guid SenderId { get; init; }
-    public string Text { get; private set; }
-    public string SendTime { get; init; } = DateTime.Now.ToString(CultureInfo.InvariantCulture);
-    public bool SentAsAnonymous { get; init; }
-    public string Iv { get; set; }
-    public List<Guid> Seen { get; set; }
-    
+    public new Guid ItemId { get; set; }
+    public string Text { get; set; }
+
     public Message() { }
 
     public Message(Guid roomId, Guid senderId, string text, bool sentAsAnonymous, string iv)
+        : base(roomId, senderId, sentAsAnonymous, iv)
     {
-        MessageId = Guid.NewGuid(); 
-        RoomId = roomId;
-        SenderId = senderId;
+        ItemId = Guid.NewGuid();
         Text = text;
-        SentAsAnonymous = sentAsAnonymous;
-        Iv = iv;
-        Seen = new List<Guid> { SenderId };
     }
     
     public Message(Guid roomId, Guid senderId, string text, Guid messageId, bool sentAsAnonymous, string iv)
+        : base(roomId, senderId, messageId, sentAsAnonymous, iv)
     {
-        MessageId = messageId;
-        RoomId = roomId;
-        SenderId = senderId;
+        ItemId = messageId;
         Text = text;
-        SentAsAnonymous = sentAsAnonymous;
-        Iv = iv;
-        Seen = new List<Guid> { SenderId };
     }
-
-    public void AddUserToSeen(Guid userId)
-    {
-        Seen.Add(userId);
-    }
-
+    
     public void ChangeMessageText(string newText)
     {
         Text = newText;
-    }
-
-    public void ChangeMessageIv(string iv)
-    {
-        Iv = iv;
     }
 }

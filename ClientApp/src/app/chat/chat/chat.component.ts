@@ -19,6 +19,8 @@ import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePa
 import { UserService } from '../../services/user-service/user.service';
 import { CryptoService } from '../../services/crypto-service/crypto.service';
 import { IndexedDBService } from '../../services/db-service/indexed-dbservice.service';
+import { Message } from 'ng-angular-popup';
+import { ImageRequest } from '../../model/message-requests/ImageRequest';
 
 @Component({
   selector: 'app-chat',
@@ -313,6 +315,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     
         this.chatService.getMessages(this.roomId)
             .subscribe((response: any) => {
+                console.log(response);
                 const userNames = response.map((element: any) =>
                     this.userService.getUsername(element.senderId)
                 );
@@ -323,7 +326,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                             messageId: element.messageId,
                             user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
                             userId: element.senderId,
-                            message: await this.cryptoService.decryptMessage(element.text, decryptedRoomKey, element.iv),
+                            message: element.$type === "Server.Model.Chat.Message, MessageAppServer" ?
+                            await this.cryptoService.decryptMessage(element.text, decryptedRoomKey, element.iv)
+                            :
+                            "image inc",
                             messageTime: element.sendTime,
                             seenList: element.seen
                         }
@@ -632,11 +638,36 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         if (input.files && input.files.length > 0) {
             const file = input.files[0];
             console.log('Selected file:', file);
-            const haha = await this.cryptoService.encryptFile(file, decryptedRoomKey);
-            console.log(haha);
-            const decryptedhaha = await this.cryptoService.decryptFile(haha, decryptedRoomKey);
-            console.log(decryptedhaha);
+            const encryptedData = await this.cryptoService.encryptFile(file, decryptedRoomKey);
+            console.log(encryptedData.encryptedImage);
+            const ivToString = this.cryptoService.bufferToBase64(encryptedData.iv);
+            console.log(typeof(ivToString));
+
+            const blobToBase64 = (blob: Blob): Promise<string> => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        resolve(reader.result as string);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            };
+
+            await blobToBase64(encryptedData.encryptedImage).then(baseImage => {
+                const base64Image = baseImage.replace(/^data:image\/(png|jpeg);base64,/, '');
+    
+                const request = new ImageRequest(
+                    sessionStorage.getItem("roomId")!,
+                    base64Image,
+                    this.cookieService.get("Anonymous") === "True",
+                    ivToString
+                );
+                this.chatService.saveImage(request)
+                    .subscribe(savingResult => {
+                        console.log(savingResult);
+                    });
+            });
         }
-        
     }
 }

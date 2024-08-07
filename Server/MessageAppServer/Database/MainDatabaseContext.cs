@@ -9,13 +9,18 @@ namespace Server.Database;
 public class MainDatabaseContext(DbContextOptions<MainDatabaseContext> options) : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
 {
     public DbSet<Room>? Rooms { get; set; }
-    public DbSet<Message>? Messages { get; set; }
+    public DbSet<ItemBase>? Messages { get; set; }
     public DbSet<FriendConnection>? FriendConnections { get; set; }
     public DbSet<EncryptedSymmetricKey>? EncryptedSymmetricKeys { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        
+        modelBuilder.Entity<ItemBase>()
+            .HasDiscriminator<string>("ItemType")
+            .HasValue<Message>("Message")
+            .HasValue<Image>("Image");
 
         modelBuilder.Entity<FriendConnection>()
             .HasOne(fc => fc.Sender)
@@ -39,17 +44,17 @@ public class MainDatabaseContext(DbContextOptions<MainDatabaseContext> options) 
             .WithOne(r => r.CreatorUser)
             .HasForeignKey(r => r.CreatorId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<Room>()
+            .HasMany(r => r.Messages)
+            .WithOne(r => r.Room)
+            .HasForeignKey(i => i.RoomId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Room>()
             .HasOne(r => r.CreatorUser)
             .WithMany(au => au.CreatedRooms)
             .HasForeignKey(r => r.CreatorId);
-
-        modelBuilder.Entity<Message>()
-            .HasOne(m => m.Room)
-            .WithMany(r => r.Messages)
-            .HasForeignKey(m => m.RoomId)
-            .OnDelete(DeleteBehavior.Cascade);
         
         modelBuilder.Entity<EncryptedSymmetricKey>()
             .HasOne<Room>(k => k.Room)

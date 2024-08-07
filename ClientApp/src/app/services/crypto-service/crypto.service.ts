@@ -248,7 +248,7 @@ export class CryptoService {
         }
     }
 
-    async encryptFile(file: Blob, symmetricKey: CryptoKey): Promise<Blob> {
+    async encryptFile(file: Blob, symmetricKey: CryptoKey): Promise<any> {
         const arrayBuffer = await file.arrayBuffer();
         const iv = window.crypto.getRandomValues(new Uint8Array(12));
         
@@ -265,18 +265,21 @@ export class CryptoService {
         combined.set(iv, 0);
         combined.set(new Uint8Array(encryptedData), iv.byteLength);
 
-        return new Blob([combined], { type: file.type });
+        return {
+            iv: iv,
+            encryptedImage: new Blob([combined], { type: file.type })
+        };
     }
 
-    async decryptFile(encryptedFile: Blob, symmetricKey: CryptoKey): Promise<Blob> {
+    async decryptFile(encryptedFile: Blob, symmetricKey: CryptoKey, iv: string): Promise<Blob> {
         const arrayBuffer = await encryptedFile.arrayBuffer();
-        const iv = new Uint8Array(arrayBuffer.slice(0, 12));
         const encryptedData = arrayBuffer.slice(12);
+        const transmittedIv = this.base64ToBuffer(iv);
 
         const decryptedData = await window.crypto.subtle.decrypt(
             {
                 name: "AES-GCM",
-                iv: iv
+                iv: transmittedIv
             },
             symmetricKey,
             encryptedData

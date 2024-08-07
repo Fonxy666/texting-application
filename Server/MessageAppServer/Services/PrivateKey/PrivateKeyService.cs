@@ -11,7 +11,7 @@ public class PrivateKeyService(PrivateKeysDbContext context) : IPrivateKeyServic
     
     public async Task<PrivateKeyResponse> GetEncryptedKeyByUserIdAsync(Guid userId)
     {
-        var key = await Context.Keys!.FirstOrDefaultAsync(k => k.UserId == userId);
+        var key = await Context.Keys!.FirstAsync(k => k.UserId == userId);
         return new PrivateKeyResponse(key!.EndToEndEncryptedPrivateKey, key.Iv);
     }
 

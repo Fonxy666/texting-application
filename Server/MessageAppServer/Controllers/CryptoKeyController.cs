@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.Model;
+using Server.Model.Chat;
 using Server.Model.Requests;
 using Server.Model.Requests.EncryptKey;
 using Server.Services.Chat.RoomService;

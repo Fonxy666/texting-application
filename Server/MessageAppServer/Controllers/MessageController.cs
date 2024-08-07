@@ -67,6 +67,36 @@ public class MessageController(
         }
     }
     
+    [HttpPost("SendImage"), Authorize(Roles = "User, Admin")]
+    public async Task<ActionResult<MessageResponse>> SendImage([FromBody]ImageRequest request)
+    {
+        Console.WriteLine(request.Message);
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var roomIdToGuid = new Guid(request.RoomId);
+            if (!roomService.ExistingRoom(roomIdToGuid).Result)
+            {
+                return NotFound($"There is no room with this id: {request.RoomId}");
+            }
+
+            var result = await messageService.SendImage(request, userId!);
+
+            return Ok(result);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Error sending message for room: {request.RoomId}");
+            return StatusCode(500);
+        }
+    }
+    
     [HttpPatch("EditMessage"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<MessageResponse>> EditMessage([FromBody]EditMessageRequest request)
     {

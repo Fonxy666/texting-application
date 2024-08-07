@@ -31,7 +31,13 @@ public class Startup(IConfiguration configuration)
 
         services.AddHttpContextAccessor();
         services.AddControllers(options =>
-            options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
+            {
+                options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+            })
+            .AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Auto;
+            });
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>

@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Moq;
 using Server.Database;
 using Server.Model.Chat;
 using Server.Model.Requests.Message;
@@ -11,17 +13,19 @@ namespace Tests.ServicesTests.Chat
     {
         private MainDatabaseContext _dbContext;
         private MessageService _messageService;
+        private Mock<IConfiguration> _configurationMock;
 
         [SetUp]
         public void Setup()
         {
+            _configurationMock = new Mock<IConfiguration>();
             var options = new DbContextOptionsBuilder<MainDatabaseContext>()
                 .UseInMemoryDatabase(databaseName: "InMemoryDatabase")
                 .Options;
 
             _dbContext = new MainDatabaseContext(options);
 
-            _messageService = new MessageService(_dbContext);
+            _messageService = new MessageService(_dbContext, _configurationMock.Object);
         }
 
         [TearDown]
@@ -50,7 +54,7 @@ namespace Tests.ServicesTests.Chat
 
             var message = await _messageService.GetLast10Messages(new Guid("a57f0d67-8670-4789-a580-3b4a3bd3bf9c"));
 
-            var messageId = message.ToList()[0].MessageId;
+            var messageId = message.ToList()[0].ItemId;
             var result = await _messageService.UserIsTheSender(new Guid("a57f0d67-8670-4789-a580-3b4a3bd3bf9d"), messageId);
 
             Assert.IsFalse(result);
