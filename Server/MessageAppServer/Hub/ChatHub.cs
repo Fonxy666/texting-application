@@ -61,7 +61,8 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
                     userId!
                 },
                 request.RoomId,
-                request.Iv
+                request.Iv,
+                request.Type
                 );
         }
     }

@@ -72,6 +72,7 @@ public class Startup(IConfiguration configuration)
         services.AddSignalR(options =>
         {
             options.EnableDetailedErrors = true;
+            options.MaximumReceiveMessageSize = 50 * 1024 * 1024;
         });
 
         services.AddScoped<ITokenService, TokenService>();

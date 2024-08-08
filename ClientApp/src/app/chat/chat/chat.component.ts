@@ -1,8 +1,8 @@
-import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { ChatService } from '../../services/chat-service/chat.service';
 import { Router } from '@angular/router';
 import { firstValueFrom, forkJoin, Subscription } from 'rxjs';
-import { filter, take } from 'rxjs/operators';
+import { filter, take, tap } from 'rxjs/operators';
 import { MessageRequest } from '../../model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../../model/user-credential-requests/ChangeMessageRequest';
@@ -19,15 +19,14 @@ import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePa
 import { UserService } from '../../services/user-service/user.service';
 import { CryptoService } from '../../services/crypto-service/crypto.service';
 import { IndexedDBService } from '../../services/db-service/indexed-dbservice.service';
-import { Message } from 'ng-angular-popup';
 import { ImageRequest } from '../../model/message-requests/ImageRequest';
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css', '../../../styles.css'],
-  changeDetection: ChangeDetectionStrategy.Default,
-  providers: [ MessageService ]
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [ MessageService, ChatService ]
 })
 
 export class ChatComponent implements OnInit, AfterViewChecked {
@@ -66,7 +65,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         private mediaService: MediaService,
         private userService: UserService,
         private cryptoService: CryptoService,
-        private dbService: IndexedDBService
+        private dbService: IndexedDBService,
+        private cdr: ChangeDetectorRef
     ) { }
 
     messages: any[] = [];
@@ -86,22 +86,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             }
         })
 
-        if (this.roomId) {
-                this.subscriptions.add(
-                this.chatService.messagesInitialized$
-                    .pipe(
-                        filter((initializedRoomId) => initializedRoomId === this.roomId),
-                        take(1)
-                    )
-                    .subscribe(() => {
-                        this.getMessages();
-                    })
-            );
-        } else {
-            console.error('No roomId found in session storage.');
-        }
-
         this.chatService.messages$.subscribe(async data => {
+            console.log(data);
             if (data.length < 1) {
                 return;
             }
@@ -116,8 +102,16 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             const decryptedMessages = await Promise.all(data.map(async innerData => {
                 if (innerData.encrypted) {
                     try {
-                        innerData.messageData.message = await this.cryptoService.decryptMessage(innerData.messageData.message, decryptedRoomKey, innerData.messageData.iv);
+                        innerData.messageData.message = innerData.messageData.type === "Message" ?
+                            await this.cryptoService.decryptMessage(innerData.messageData.message, decryptedRoomKey, innerData.messageData.iv)
+                            :
+                            await this.cryptoService.decryptFile(
+                                this.cryptoService.base64ToBlob(`data:image/png;base64,${innerData.messageData.message}`),
+                                decryptedRoomKey,
+                                innerData.messageData.iv
+                            ),
                         innerData.encrypted = false;
+                        this.cdr.detectChanges();
                         return innerData;
                     } catch (error) {
                         console.log("Failed to decrypt message:", innerData, error);
@@ -126,15 +120,31 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     return innerData;
                 }
             }));
-
+            
             this.messages = decryptedMessages;
-
+            
             this.messages.forEach(() => {
                 this.mediaService.getAvatarImage(this.userId).subscribe((image) => {
                     this.avatars[this.userId] = image;
                 });
             })
+            this.cdr.detectChanges();
         });
+
+        if (this.roomId) {
+            this.subscriptions.add(
+                this.chatService.messagesInitialized$
+                .pipe(
+                    filter((initializedRoomId) => initializedRoomId === this.roomId),
+                    take(1)
+                )
+                .subscribe(() => {
+                    this.getMessages();
+                })
+            );
+        } else {
+            console.error('No roomId found in session storage.');
+        }
 
         this.chatService.connection.on("ModifyMessage", async (messageId: string, messageText: string) => {
             const userEncryptedData = await firstValueFrom(this.cryptoService.getUserPrivateKeyAndIv());
@@ -190,7 +200,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             }
         });
 
-        this.getMessages();
         this.userIsTheCreatorMethod();
 
         this.changePasswordRequest = this.fb.group({
@@ -244,7 +253,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             this.roomId,
             encryptedMessageData.encryptedMessage,
             this.cookieService.get("Anonymous") === "True",
-            encryptedMessageData.iv
+            encryptedMessageData.iv,
+            "Message"
         );
 
         this.saveMessage(request)
@@ -261,11 +271,13 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         return new Promise<string>((resolve, reject) => {
             this.chatService.saveMessage(request)
                 .subscribe((res: any) => {
+                    console.log(res);
                     this.chatService.messages[this.roomId].push({
                         encrypted: true,
                         messageData: {
+                            type: "Message",
                             roomId: res.message.roomId,
-                            messageId: res.message.messageId,
+                            messageId: res.message.itemId,
                             userId: res.message.senderId,
                             message: res.message.text,
                             messageTime: res.message.sendTime,
@@ -274,7 +286,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                         }
                     });
 
-                    resolve(res.message.messageId);
+                    resolve(res.message.itemId);
                 },
                 (error) => {
                     reject(error);
@@ -315,7 +327,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     
         this.chatService.getMessages(this.roomId)
             .subscribe((response: any) => {
-                console.log(response);
                 const userNames = response.map((element: any) =>
                     this.userService.getUsername(element.senderId)
                 );
@@ -323,13 +334,18 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     const fetchedMessages = response.map(async (element: any, index: number) => ({
                         encrypted: false,
                         messageData: {
+                            type: element.$type === "Server.Model.Chat.Message, MessageAppServer" ? "Message" : "Image",
                             messageId: element.messageId,
                             user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
                             userId: element.senderId,
                             message: element.$type === "Server.Model.Chat.Message, MessageAppServer" ?
                             await this.cryptoService.decryptMessage(element.text, decryptedRoomKey, element.iv)
                             :
-                            "image inc",
+                            await this.cryptoService.decryptFile(
+                                this.cryptoService.base64ToBlob(`data:image/png;base64,${element.imagePath}`),
+                                decryptedRoomKey,
+                                element.iv
+                            ),
                             messageTime: element.sendTime,
                             seenList: element.seen
                         }
@@ -343,6 +359,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     this.chatService.messages[this.roomId] = [...uniqueMessages, ...this.chatService.messages[this.roomId]];
                 
                     this.chatService.messages$.next(this.chatService.messages[this.roomId]);
+                    this.cdr.detectChanges();
                 });
             });
     };
@@ -633,7 +650,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, this.userKey, userEncryptedData.iv);
         const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
         const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
-
+    
         const input = event.target as HTMLInputElement;
         if (input.files && input.files.length > 0) {
             const file = input.files[0];
@@ -642,7 +659,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             console.log(encryptedData.encryptedImage);
             const ivToString = this.cryptoService.bufferToBase64(encryptedData.iv);
             console.log(typeof(ivToString));
-
+    
             const blobToBase64 = (blob: Blob): Promise<string> => {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
@@ -653,21 +670,60 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     reader.readAsDataURL(blob);
                 });
             };
-
-            await blobToBase64(encryptedData.encryptedImage).then(baseImage => {
-                const base64Image = baseImage.replace(/^data:image\/(png|jpeg);base64,/, '');
     
-                const request = new ImageRequest(
-                    sessionStorage.getItem("roomId")!,
-                    base64Image,
-                    this.cookieService.get("Anonymous") === "True",
-                    ivToString
-                );
-                this.chatService.saveImage(request)
-                    .subscribe(savingResult => {
-                        console.log(savingResult);
-                    });
-            });
+            const base64Image = await blobToBase64(encryptedData.encryptedImage);
+            const imageBase64 = base64Image.replace(/^data:image\/(png|jpeg);base64,/, '');
+    
+            const request = new ImageRequest(
+                sessionStorage.getItem("roomId")!,
+                imageBase64,
+                this.cookieService.get("Anonymous") === "True",
+                ivToString
+            );
+    
+            this.saveImage(request)
+                .then(savingResult => {
+                    console.log(savingResult);
+                    const imageRequest = new MessageRequest(
+                        request.roomId,
+                        request.message,
+                        request.asAnonymous,
+                        request.iv,
+                        "Image"
+                    )
+                    this.chatService.sendMessage(imageRequest);
+                });
         }
+    }
+
+    async saveImage(request: ImageRequest): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            this.chatService.saveImage(request)
+                .subscribe((res: any) => {
+                    console.log(res);
+                    this.chatService.messages[this.roomId].push({
+                        encrypted: true,
+                        messageData: {
+                            type: "Image",
+                            roomId: res.message.roomId,
+                            messageId: res.message.itemId,
+                            userId: res.message.senderId,
+                            message: res.message.imagePath,
+                            messageTime: res.message.sendTime,
+                            seenList: res.message.seen,
+                            iv: res.message.iv
+                        }
+                    });
+
+                    resolve(res.message.itemId);
+                },
+                (error) => {
+                    reject(error);
+                });
+        });
+    };
+
+    blobToUrl(blob: Blob) {
+        return URL.createObjectURL(blob);
     }
 }

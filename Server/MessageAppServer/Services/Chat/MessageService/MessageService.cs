@@ -50,6 +50,7 @@ public class MessageService(MainDatabaseContext context, IConfiguration configur
         await Context.Messages!.AddAsync(image);
         await Context.SaveChangesAsync();
 
+        image.ImagePath = GetImageAsBase64(image.ItemId.ToString(), image.RoomId.ToString());
         return new SaveImageResponse(true, image, null);
     }
     
@@ -94,57 +95,81 @@ public class MessageService(MainDatabaseContext context, IConfiguration configur
     }
 
     public async Task<IEnumerable<ItemBase>> GetLast10Messages(Guid roomId)
-{
-    var messages = await Context.Messages!
-        .Where(message => message.RoomId == roomId)
-        .OrderByDescending(message => message.SendTime)
-        .Take(10)
-        .OrderBy(message => message.SendTime)
-        .ToListAsync();
-
-    var returningList = new List<ItemBase>();
-    
-    foreach (var itemBase in messages)
     {
-        switch (itemBase)
+        var messages = await Context.Messages!
+            .Where(message => message.RoomId == roomId)
+            .OrderByDescending(message => message.SendTime)
+            .Take(10)
+            .OrderBy(message => message.SendTime)
+            .ToListAsync();
+
+        var returningList = new List<ItemBase>();
+        
+        foreach (var itemBase in messages)
         {
-            case Image image:
+            switch (itemBase)
             {
-                var newImage = new Image
+                case Image image:
                 {
-                    ItemId = itemBase.ItemId,
-                    Iv = image.Iv,
-                    RoomId = image.RoomId,
-                    Seen = image.Seen,
-                    SenderId = image.SenderId,
-                    SendTime = image.SendTime,
-                    SentAsAnonymous = image.SentAsAnonymous,
-                    ImagePath = image.ImagePath
-                };
-                returningList.Add(newImage);
-                break;
-            }
-            case Message message:
-            {
-                var newMessage = new Message
+                    var newImage = new Image
+                    {
+                        ItemId = itemBase.ItemId,
+                        Iv = image.Iv,
+                        RoomId = image.RoomId,
+                        Seen = image.Seen,
+                        SenderId = image.SenderId,
+                        SendTime = image.SendTime,
+                        SentAsAnonymous = image.SentAsAnonymous,
+                        ImagePath = GetImageAsBase64(itemBase.ItemId.ToString(), image.RoomId.ToString())
+                    };
+                    returningList.Add(newImage);
+                    break;
+                }
+                case Message message:
                 {
-                    ItemId = itemBase.ItemId,
-                    Iv = message.Iv,
-                    RoomId = message.RoomId,
-                    Seen = message.Seen,
-                    SenderId = message.SenderId,
-                    SendTime = message.SendTime,
-                    SentAsAnonymous = message.SentAsAnonymous,
-                    Text = message.Text
-                };
-                returningList.Add(newMessage);
-                break;
+                    var newMessage = new Message
+                    {
+                        ItemId = itemBase.ItemId,
+                        Iv = message.Iv,
+                        RoomId = message.RoomId,
+                        Seen = message.Seen,
+                        SenderId = message.SenderId,
+                        SendTime = message.SendTime,
+                        SentAsAnonymous = message.SentAsAnonymous,
+                        Text = message.Text
+                    };
+                    returningList.Add(newMessage);
+                    break;
+                }
             }
         }
-    }
 
-    return returningList;
-}
+        return returningList;
+    }
+    
+    public string GetImageAsBase64(string imageId, string roomId)
+    {
+        var folderPath = configuration["ImageFolderPath"] ?? Path.Combine(Directory.GetCurrentDirectory(), $"RoomImages/{roomId}");
+        var imageName = imageId + ".png";
+        var imagePath = Path.Combine(folderPath, imageName);
+
+        if (!File.Exists(imagePath))
+        {
+            Console.WriteLine($"Image not found: {imagePath}");
+            return string.Empty;
+        }
+
+        try
+        {
+            byte[] imageBytes = File.ReadAllBytes(imagePath);
+            return Convert.ToBase64String(imageBytes);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error reading image from file system: {ex.Message}");
+            return string.Empty;
+        }
+    }
     
     public async Task<MessageResponse> EditMessage(EditMessageRequest request)
     {

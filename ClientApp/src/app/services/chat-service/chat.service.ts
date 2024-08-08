@@ -49,13 +49,13 @@ export class ChatService {
 
         this.initializeConnection();
 
-        this.connection.on("ReceiveMessage", async (user: string, message: string, messageTime: string, userId: string, messageId: string, seenList: string[], roomId: string, iv: string) => {
+        this.connection.on("ReceiveMessage", async (user: string, message: string, messageTime: string, userId: string, messageId: string, seenList: string[], roomId: string, iv: string, type: string) => {
             if (!this.messages[roomId]) {
                 this.messages[roomId] = [];
                 this.messagesInitialized$.next(roomId);
             }
             if (userId !== this.cookieService.get("UserId")) {
-                const messageObj = { encrypted: user !== "Textinger bot", messageData: { user, message, messageTime, userId, messageId, seenList, iv } };
+                const messageObj = { encrypted: user !== "Textinger bot", messageData: { user, message, messageTime, userId, messageId, seenList, iv, type } };
                 this.messages[roomId].push(messageObj);
         
                 if (user === "Textinger bot") {
@@ -63,7 +63,7 @@ export class ChatService {
                         this.removeBotMessage(roomId, messageId);
                     }, 5000);
                 }
-              }
+            }
             if (this.currentRoom === roomId) {
                 this.messages$.next([...this.messages[roomId]]);
             }

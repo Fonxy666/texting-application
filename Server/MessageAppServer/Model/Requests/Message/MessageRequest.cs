@@ -7,4 +7,5 @@ public record MessageRequest(
     [Required(ErrorMessage = "Message cannot be null.")]string Message,
     [Required(ErrorMessage = "'AsAnonym' bool cannot be null.")]bool AsAnonymous,
     [Required(ErrorMessage = "Iv cannot be null.")]string Iv,
+    [Required]string Type,
     string? MessageId);

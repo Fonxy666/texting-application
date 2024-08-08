@@ -148,6 +148,9 @@
                                     <img class="user_image" [src]="avatars[data.messageData.userId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
                                 </div>
                                 <div *ngIf="data.messageData.userId != this.userId && data.messageData.user !== 'Textinger bot'" class="received_msg">
+                                    <div *ngIf="data.messageData.type === 'Image'">
+                                        <img [src]="blobToUrl(data.messageData.message)" />
+                                    </div>
                                     <div class="received_withd_msg">
                                         <p> {{data.messageData.message}}</p>
                                         <div class="message-data-container">
@@ -191,6 +194,9 @@
                                             </ul>
                                             <div [innerHTML]="this.displayService.displayMessage(data.messageData.message)" style="white-space: nowrap;"></div>
                                         </div>
+                                        <div *ngIf="data.messageData.type === 'Image'">
+                                            <img [src]="blobToUrl(data.messageData.message)" />
+                                        </div>
                                         <div *ngIf="data.messageData.message == 'Deleted message.'" class="dropstart">{{data.messageData.message}}</div>
                                         <div class="message-data-container">
                                             <span class="time_date">Myself | {{data.messageData.messageTime | date: 'medium'}}</span>
@@ -202,7 +208,7 @@
                                                             <img *ngIf="this.examineIfNextMessageNotContainsUserId(userId, i) && userId != this.userId" class="seen-image" [src]="avatars[userId] || this.loadAvatarsFromMessages(userId)">
                                                             <ng-container *ngIf="2 > this.imageCount">
                                                                 <ng-container *ngIf="this.imageCount >= 2">
-                                                                    +{{this.data.messageData.seenList.length - 2}}                                                                    
+                                                                    +{{this.data.messageData.seenList.length - 2}}
                                                                 </ng-container>
                                                             </ng-container>
                                                         </ng-container>

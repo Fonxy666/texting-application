@@ -288,6 +288,21 @@ export class CryptoService {
         return new Blob([decryptedData], { type: encryptedFile.type });
     }
 
+    base64ToBlob(base64String: string): Blob {
+        const base64 = base64String.split(',')[1];
+        
+        const binaryString = atob(base64);
+        
+        const arrayBuffer = new ArrayBuffer(binaryString.length);
+        const uint8Array = new Uint8Array(arrayBuffer);
+        
+        for (let i = 0; i < binaryString.length; i++) {
+            uint8Array[i] = binaryString.charCodeAt(i);
+        }
+        
+        return new Blob([arrayBuffer], { type: "image/png" });
+    }
+
     getUserPrivateKeyAndIv(): Observable<any> {
         return this.errorHandler.handleErrors(
             this.http.get(`/api/v1/CryptoKey/GetPrivateKeyAndIv`, { withCredentials: true })
