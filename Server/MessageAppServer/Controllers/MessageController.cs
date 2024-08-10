@@ -136,6 +136,20 @@ public class MessageController(
     {
         try
         {
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine(request.MessageId);
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);

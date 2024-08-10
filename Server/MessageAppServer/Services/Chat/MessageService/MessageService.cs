@@ -32,18 +32,6 @@ public class MessageService(MainDatabaseContext context, IConfiguration configur
         await Context.Messages!.AddAsync(message);
         await Context.SaveChangesAsync();
 
-        Console.WriteLine("-----------------------------------");
-        Console.WriteLine("-----------------------------------");
-        Console.WriteLine("-----------------------------------");
-        Console.WriteLine("-----------------------------------");
-        Console.WriteLine("-----------------------------------");
-        Console.WriteLine("-----------------------------------");
-        Console.WriteLine(message.ItemId);
-        Console.WriteLine("-----------------------------------");
-        Console.WriteLine("-----------------------------------");
-        Console.WriteLine("-----------------------------------");
-        Console.WriteLine("-----------------------------------");
-        Console.WriteLine("-----------------------------------");
         return new SaveMessageResponse(true, message, null);
     }
 

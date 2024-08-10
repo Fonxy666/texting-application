@@ -87,6 +87,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         })
 
         this.chatService.messages$.subscribe(async data => {
+            console.log(data);
             if (data.length < 1) {
                 return;
             }
@@ -483,7 +484,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     @HostListener('window:focus', ['$event'])
     onFocus(): void {
-        this.messages.forEach((message) => {
+        this.chatService.messages[this.roomId].forEach((message) => {
             const anonym = this.cookieService.get("Anonymous") == "True";
             if (!message.messageData.seenList) {
                 return;
@@ -689,13 +690,14 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             );
     
             this.saveImage(request)
-                .then(() => {
+                .then((id) => {
                     const imageRequest = new MessageRequest(
                         request.roomId,
                         request.message,
                         request.asAnonymous,
                         request.iv,
-                        "Image"
+                        "Image",
+                        id
                     )
                     this.chatService.sendMessage(imageRequest);
                 });
