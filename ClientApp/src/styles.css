@@ -222,3 +222,21 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     min-height: 30px;
     text-align: center;
 }
+
+::-webkit-scrollbar {
+    width: 15px;
+}
+  
+::-webkit-scrollbar-track {
+    background: #383838;
+}
+  
+::-webkit-scrollbar-thumb {
+    background-color: #929292;
+    border-radius: 10px;
+    border: 3px solid #383838;
+}
+  
+::-webkit-scrollbar-thumb:hover {
+    background: #cfcfcf
+}

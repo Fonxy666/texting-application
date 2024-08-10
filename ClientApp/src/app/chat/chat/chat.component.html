@@ -150,8 +150,28 @@
                                 <div *ngIf="data.messageData.userId != this.userId && data.messageData.user !== 'Textinger bot'" class="received_msg">
                                     <div *ngIf="data.messageData.type === 'Image'">
                                         <img [src]="blobToUrl(data.messageData.message)" />
+                                        <div class="seen-images-container">
+                                            <ng-container *ngIf="data.messageData.seenList != null && data.messageData.seenList.length > 3 && data.messageData.message != 'Deleted message.'">
+                                                {{this.resetImageCount()}}
+                                                <div *ngFor="let userId of data.messageData.seenList" class="seen-image-container">
+                                                    <ng-container *ngIf="2 > this.imageCount">                                                            
+                                                        <img *ngIf="this.examineIfNextMessageNotContainsUserId(userId, i) && userId != this.userId" class="seen-image" [src]="avatars[userId] || this.loadAvatarsFromMessages(userId)">
+                                                        <ng-container *ngIf="2 > this.imageCount">
+                                                            <ng-container *ngIf="this.imageCount >= 2">
+                                                                +{{this.data.messageData.seenList.length - 2}}
+                                                            </ng-container>
+                                                        </ng-container>
+                                                    </ng-container>
+                                                </div>
+                                            </ng-container>
+                                            <ng-container *ngIf="data.messageData.seenList != null && 3 >= data.messageData.seenList.length && data.messageData.message != 'Deleted message.'">
+                                                <div *ngFor="let userIdInSeenList of data.messageData.seenList" class="seen-image-container">
+                                                    <img *ngIf="userIdInSeenList != this.userId && this.examineIfNextMessageNotContainsUserId(userIdInSeenList, i)" class="seen-image" [src]="avatars[userIdInSeenList] || this.loadAvatarsFromMessages(userIdInSeenList)">
+                                                </div>
+                                            </ng-container>
+                                        </div>
                                     </div>
-                                    <div class="received_withd_msg">
+                                    <div *ngIf="data.messageData.type !== 'Image'" class="received_withd_msg">
                                         <p> {{data.messageData.message}}</p>
                                         <div class="message-data-container">
                                             <span class="time_date">{{this.displayService.displayUserName(data.messageData.user)}} | {{data.messageData.messageTime | date: 'medium'}}</span>
@@ -196,9 +216,29 @@
                                         </div>
                                         <div *ngIf="data.messageData.type === 'Image'">
                                             <img [src]="blobToUrl(data.messageData.message)" />
+                                            <div class="seen-images-container">
+                                                <ng-container *ngIf="data.messageData.seenList != null && data.messageData.seenList.length > 3 && data.messageData.message != 'Deleted message.'">
+                                                    {{this.resetImageCount()}}
+                                                    <div *ngFor="let userId of data.messageData.seenList" class="seen-image-container">
+                                                        <ng-container *ngIf="2 > this.imageCount">                                                            
+                                                            <img *ngIf="this.examineIfNextMessageNotContainsUserId(userId, i) && userId != this.userId" class="seen-image" [src]="avatars[userId] || this.loadAvatarsFromMessages(userId)">
+                                                            <ng-container *ngIf="2 > this.imageCount">
+                                                                <ng-container *ngIf="this.imageCount >= 2">
+                                                                    +{{this.data.messageData.seenList.length - 2}}
+                                                                </ng-container>
+                                                            </ng-container>
+                                                        </ng-container>
+                                                    </div>
+                                                </ng-container>
+                                                <ng-container *ngIf="data.messageData.seenList != null && 3 >= data.messageData.seenList.length && data.messageData.message != 'Deleted message.'">
+                                                    <div *ngFor="let userIdInSeenList of data.messageData.seenList" class="seen-image-container">
+                                                        <img *ngIf="userIdInSeenList != this.userId && this.examineIfNextMessageNotContainsUserId(userIdInSeenList, i)" class="seen-image" [src]="avatars[userIdInSeenList] || this.loadAvatarsFromMessages(userIdInSeenList)">
+                                                    </div>
+                                                </ng-container>
+                                            </div>
                                         </div>
                                         <div *ngIf="data.messageData.message == 'Deleted message.'" class="dropstart">{{data.messageData.message}}</div>
-                                        <div class="message-data-container">
+                                        <div *ngIf="data.messageData.type !== 'Image'" class="message-data-container">
                                             <span class="time_date">Myself | {{data.messageData.messageTime | date: 'medium'}}</span>
                                             <div class="seen-images-container">
                                                 <ng-container *ngIf="data.messageData.seenList != null && data.messageData.seenList.length > 3 && data.messageData.message != 'Deleted message.'">
