@@ -71,7 +71,7 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, UserMan
     {
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
         {
-            await Clients.Group(userRoomConnection.Room!).SendAsync("ModifyMessage", request.Id, request.Message);
+            await Clients.Group(userRoomConnection.Room!).SendAsync("ModifyMessage", request.Id, request.Message, request.Iv);
         }
     }
     

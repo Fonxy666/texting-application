@@ -149,7 +149,12 @@
                                 </div>
                                 <div *ngIf="data.messageData.userId != this.userId && data.messageData.user !== 'Textinger bot'" class="received_msg">
                                     <div *ngIf="data.messageData.type === 'Image'">
-                                        <img [src]="blobToUrl(data.messageData.message)" />
+                                        <div *ngIf="data.messageData.message !== 'Deleted message.'">
+                                            <img [src]="blobToUrl(data.messageData.message)" />
+                                        </div>
+                                        <div>
+                                            {{data.messageData.message}}
+                                        </div>
                                         <div class="seen-images-container">
                                             <ng-container *ngIf="data.messageData.seenList != null && data.messageData.seenList.length > 3 && data.messageData.message != 'Deleted message.'">
                                                 {{this.resetImageCount()}}
@@ -209,7 +214,7 @@
                                                 </svg>
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-dark dropdown-container">
-                                                <li><a class="dropdown-item" (click)="handleMessageModify(data.messageData.messageId, data.messageData.message)">Modify</a></li>
+                                                <li *ngIf="data.messageData.type !== 'Image'" ><a class="dropdown-item" (click)="handleMessageModify(data.messageData.messageId, data.messageData.message)">Modify</a></li>
                                                 <li><a class="dropdown-item" (click)="handleMessageDelete(data.messageData.messageId)">Delete</a></li>
                                             </ul>
                                             <div [innerHTML]="this.displayService.displayMessage(data.messageData.message)" style="white-space: nowrap;"></div>

@@ -146,7 +146,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             console.error('No roomId found in session storage.');
         }
 
-        this.chatService.connection.on("ModifyMessage", async (messageId: string, messageText: string) => {
+        this.chatService.connection.on("ModifyMessage", async (messageId: string, messageText: string, iv: string) => {
             const userEncryptedData = await firstValueFrom(this.cryptoService.getUserPrivateKeyAndIv());
             const encryptedRoomSymmetricKey = await firstValueFrom(this.cryptoService.getUserPrivateKeyForRoom(sessionStorage.getItem("roomId")!));
             const encryptedRoomSymmetricKeyToArrayBuffer = this.cryptoService.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
@@ -154,15 +154,17 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
             const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
 
-            this.messages.forEach(async (data) => {
-                if (data.messageData.messageId == messageId && data.encrypted) {
-                    data.messageData.message = await this.cryptoService.decryptMessage(messageText, decryptedRoomKey, data.messageData.iv);
+            this.chatService.messages[this.roomId].forEach(async (data) => {
+                if (data.messageData.messageId == messageId) {
+                    data.encrypted = false;
+                    data.messageData.message = await this.cryptoService.decryptMessage(messageText, decryptedRoomKey, iv);
+                    this.cdr.detectChanges();
                 }
             })
         });
 
         this.chatService.connection.on("ModifyMessageSeen", (userIdFromSignalR: string) => {
-            this.messages.forEach((message) => {
+            this.chatService.messages[this.roomId].forEach((message) => {
                 if (!message.messageData.seenList) {
                     return;
                 } else if (!message.messageData.seenList.includes(userIdFromSignalR)) {
@@ -175,9 +177,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         });
 
         this.chatService.connection.on("DeleteMessage", (messageId: string) => {
-            this.messages.forEach((data: any) => {
+            this.chatService.messages[this.roomId].forEach((data: any) => {
                 if (data.messageData.messageId == messageId) {
                     data.messageData.message = "Deleted message.";
+                    this.cdr.detectChanges();
                 }
             });
         });
@@ -278,7 +281,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         return new Promise<string>((resolve, reject) => {
             this.chatService.saveMessage(request)
                 .subscribe((res: any) => {
-                    console.log(res);
                     this.chatService.messages[this.roomId].push({
                         encrypted: true,
                         messageData: {
@@ -338,7 +340,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     this.userService.getUsername(element.senderId)
             );
             forkJoin(userNames).subscribe(async (usernames: any) => {
-                console.log(response);
                 const fetchedMessages = response.map(async (element: any, index: number) => ({
                     encrypted: false,
                     messageData: {
@@ -412,6 +413,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                         this.chatService.modifyMessage(request);
                         this.inputMessage = "";
                         this.messageModifyBool = false;
+                        this.cdr.detectChanges();
                     }
                 })
             },
@@ -436,7 +438,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     sendMessageSeenModifyHttpRequest(request: ChangeMessageSeenRequest) {
         this.chatService.editMessageSeen(request)
         .subscribe(() => {
-            this.chatService.messages[this.roomId].forEach((message: any) => {
+            this.messages.forEach((message: any) => {
                 if (message.messageId == request.userId) {
                     this.inputMessage = "";
                     this.messageModifyBool = false;
@@ -460,7 +462,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     handleMessageDelete(messageId: any) {
         this.chatService.messageDelete(messageId)
         .subscribe(() => {
-            this.chatService.messages[this.roomId].forEach((message: any) => {
+            this.messages.forEach((message: any) => {
                 if (message.messageData.messageId == messageId) {
                     this.chatService.deleteMessage(messageId);
                 }
@@ -687,8 +689,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             );
     
             this.saveImage(request)
-                .then(savingResult => {
-                    console.log(savingResult);
+                .then(() => {
                     const imageRequest = new MessageRequest(
                         request.roomId,
                         request.message,
@@ -705,7 +706,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         return new Promise<string>((resolve, reject) => {
             this.chatService.saveImage(request)
                 .subscribe((res: any) => {
-                    console.log(res);
                     this.chatService.messages[this.roomId].push({
                         encrypted: true,
                         messageData: {
