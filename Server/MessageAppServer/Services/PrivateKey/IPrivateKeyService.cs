@@ -1,6 +1,6 @@
-﻿using Server.Model.Requests;
+﻿using AuthenticationServer.Model.Responses.User;
 
-namespace Server.Services.PrivateKey;
+namespace AuthenticationServer.Services.PrivateKey;
 
 public interface IPrivateKeyService
 {

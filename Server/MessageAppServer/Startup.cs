@@ -5,20 +5,18 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Server.Database;
-using Server.Hub;
-using Server.Middlewares;
-using Server.Model;
-using Server.Services.Authentication;
-using Server.Services.Chat.MessageService;
-using Server.Services.Chat.RoomService;
-using Server.Services.Cookie;
-using Server.Services.EmailSender;
-using Server.Services.FriendConnection;
-using Server.Services.PrivateKey;
-using Server.Services.User;
+using AuthenticationServer.Database;
+using AuthenticationServer.Hub;
+using AuthenticationServer.Middlewares;
+using AuthenticationServer.Model;
+using AuthenticationServer.Services.Authentication;
+using AuthenticationServer.Services.Cookie;
+using AuthenticationServer.Services.EmailSender;
+using AuthenticationServer.Services.FriendConnection;
+using AuthenticationServer.Services.PrivateKey;
+using AuthenticationServer.Services.User;
 
-namespace Server;
+namespace AuthenticationServer;
 
 public class Startup(IConfiguration configuration)
 {
@@ -70,14 +68,10 @@ public class Startup(IConfiguration configuration)
 
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IRoomService, RoomService>();
-        services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IUserServices, UserServices>();
         services.AddScoped<ICookieService, CookieService>();
         services.AddScoped<IFriendConnectionService, FriendConnectionService>();
         services.AddScoped<IPrivateKeyService, PrivateKeyService>();
-        services.AddSingleton<IDictionary<string, UserRoomConnection>>(opt =>
-            new Dictionary<string, UserRoomConnection>());
         services.AddTransient<IEmailSender, EmailSender>();
 
         services.AddDbContext<MainDatabaseContext>(options => options.UseSqlServer(connection));
@@ -209,12 +203,8 @@ public class Startup(IConfiguration configuration)
 
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapHub<ChatHub>("/chat");
             endpoints.MapHub<FriendRequestHub>("/friend");
             endpoints.MapControllers();
-            endpoints.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
         });
         
         PopulateDbAndAddRoles.AddRolesAndAdminSync(app, configuration);

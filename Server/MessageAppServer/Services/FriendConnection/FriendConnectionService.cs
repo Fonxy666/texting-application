@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Server.Database;
-using Server.Model;
-using Server.Model.Requests.User;
-using Server.Model.Responses.User;
-using Server.Services.User;
+using AuthenticationServer.Database;
+using AuthenticationServer.Model;
+using AuthenticationServer.Model.Requests.User;
+using AuthenticationServer.Model.Responses.User;
+using AuthenticationServer.Services.User;
 
-namespace Server.Services.FriendConnection;
+namespace AuthenticationServer.Services.FriendConnection;
 
 public class FriendConnectionService(MainDatabaseContext context, IUserServices userServices) : IFriendConnectionService
 {

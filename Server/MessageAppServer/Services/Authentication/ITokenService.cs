@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Server.Model;
+using AuthenticationServer.Model;
 
-namespace Server.Services.Authentication;
+namespace AuthenticationServer.Services.Authentication;
 
 public interface ITokenService
 {

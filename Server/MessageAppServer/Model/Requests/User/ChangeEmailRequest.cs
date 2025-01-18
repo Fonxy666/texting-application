@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Server.Model.Requests.User;
+namespace AuthenticationServer.Model.Requests.User;
 
 public record ChangeEmailRequest(
     [Required(ErrorMessage = "Old e-mail cannot be null.")]

@@ -1,7 +1,7 @@
-﻿using Server.Model;
-using Server.Model.Responses.User;
+﻿using AuthenticationServer.Model;
+using AuthenticationServer.Model.Responses.User;
 
-namespace Server.Services.User;
+namespace AuthenticationServer.Services.User;
 
 public interface IUserServices
 {

@@ -1,6 +1,6 @@
-﻿using Server.Model;
+﻿using AuthenticationServer.Model;
 
-namespace Server.Services.Cookie;
+namespace AuthenticationServer.Services.Cookie;
 
 public interface ICookieService
 {

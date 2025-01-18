@@ -1,7 +1,7 @@
-﻿using Server.Model;
-using Server.Services.Authentication;
+﻿using AuthenticationServer.Model;
+using AuthenticationServer.Services.Authentication;
 
-namespace Server.Services.Cookie;
+namespace AuthenticationServer.Services.Cookie;
 
 public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenService tokenService) : ICookieService
 {

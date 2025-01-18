@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Server.Model;
-using Server.Model.Responses.User;
-using Server.Services.FriendConnection;
+using AuthenticationServer.Model;
+using AuthenticationServer.Model.Responses.User;
+using AuthenticationServer.Services.FriendConnection;
 
-namespace Server.Hub;
+namespace AuthenticationServer.Hub;
 
 public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendConnectionService friendConnectionService) : Microsoft.AspNetCore.SignalR.Hub
 {

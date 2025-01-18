@@ -7,16 +7,16 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Server.Model;
-using Server.Model.Requests.Auth;
-using Server.Model.Responses.Auth;
-using Server.Model.Responses.User;
-using Server.Services.Authentication;
-using Server.Services.EmailSender;
-using Server.Services.PrivateKey;
-using Server.Services.User;
+using AuthenticationServer.Model;
+using AuthenticationServer.Model.Requests.Auth;
+using AuthenticationServer.Model.Responses.Auth;
+using AuthenticationServer.Model.Responses.User;
+using AuthenticationServer.Services.Authentication;
+using AuthenticationServer.Services.EmailSender;
+using AuthenticationServer.Services.PrivateKey;
+using AuthenticationServer.Services.User;
 
-namespace Server.Controllers;
+namespace AuthenticationServer.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]

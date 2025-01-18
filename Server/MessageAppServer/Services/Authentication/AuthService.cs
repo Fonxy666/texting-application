@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Server.Model;
-using Server.Model.Requests.Auth;
-using Server.Model.Responses.Auth;
-using Server.Services.Cookie;
-using Server.Services.PrivateKey;
+using AuthenticationServer.Model;
+using AuthenticationServer.Model.Requests.Auth;
+using AuthenticationServer.Model.Responses.Auth;
+using AuthenticationServer.Services.Cookie;
+using AuthenticationServer.Services.PrivateKey;
 
-namespace Server.Services.Authentication;
+namespace AuthenticationServer.Services.Authentication;
 
 public class AuthService(
     UserManager<ApplicationUser> userManager,

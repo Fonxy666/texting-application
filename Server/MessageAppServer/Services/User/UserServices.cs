@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
-using Server.Database;
-using Server.Model;
-using Server.Model.Responses.User;
+using AuthenticationServer.Database;
+using AuthenticationServer.Model;
+using AuthenticationServer.Model.Responses.User;
 
-namespace Server.Services.User;
+namespace AuthenticationServer.Services.User;
 
 public class UserServices(UserManager<ApplicationUser> userManager, IConfiguration configuration, MainDatabaseContext context) : IUserServices
 {

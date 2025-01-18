@@ -2,11 +2,11 @@
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
-using Server.Model;
-using Server.Services.Chat.RoomService;
-using Server.Services.PrivateKey;
+using AuthenticationServer.Model;
+using AuthenticationServer.Services.Chat.RoomService;
+using AuthenticationServer.Services.PrivateKey;
 
-namespace Server.Database;
+namespace AuthenticationServer.Database;
 
 public static class PopulateDbAndAddRoles
 {

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Server.Model.Requests.Auth;
+namespace AuthenticationServer.Model.Requests.Auth;
 
 public record LoginAuth(
     [Required(ErrorMessage = "Username cannot be null.")]string UserName,

@@ -3,19 +3,19 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Server.Model;
-using Server.Model.Requests;
-using Server.Model.Requests.EncryptKey;
-using Server.Services.Chat.RoomService;
-using Server.Services.PrivateKey;
+using AuthenticationServer.Model;
+using AuthenticationServer.Model.Requests.EncryptKey;
+using AuthenticationServer.Model.Responses.User;
+using AuthenticationServer.Services.Chat.RoomService;
+using AuthenticationServer.Services.PrivateKey;
 
-namespace Server.Controllers;
+namespace AuthenticationServer.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
 public class CryptoKeyController(
     IPrivateKeyService privateKeyService,
-    ILogger<ChatController> logger,
+    ILogger<CryptoKeyController> logger,
     UserManager<ApplicationUser> userManager,
     IRoomService roomService
     ) : ControllerBase

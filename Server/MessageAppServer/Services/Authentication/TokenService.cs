@@ -5,9 +5,9 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
-using Server.Model;
+using AuthenticationServer.Model;
 
-namespace Server.Services.Authentication;
+namespace AuthenticationServer.Services.Authentication;
 
 public class TokenService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor) : ITokenService
 {

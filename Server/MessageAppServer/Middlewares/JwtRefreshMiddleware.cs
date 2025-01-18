@@ -1,11 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
-using Server.Model;
-using Server.Services.Authentication;
-using Server.Services.Cookie;
+using AuthenticationServer.Model;
+using AuthenticationServer.Services.Authentication;
+using AuthenticationServer.Services.Cookie;
 
-namespace Server.Middlewares;
+namespace AuthenticationServer.Middlewares;
 
 public class JwtRefreshMiddleware(RequestDelegate next)
 {

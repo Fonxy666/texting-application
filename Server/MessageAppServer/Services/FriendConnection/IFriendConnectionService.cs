@@ -1,7 +1,7 @@
-﻿using Server.Model.Requests.User;
-using Server.Model.Responses.User;
+﻿using AuthenticationServer.Model.Requests.User;
+using AuthenticationServer.Model.Responses.User;
 
-namespace Server.Services.FriendConnection;
+namespace AuthenticationServer.Services.FriendConnection;
 
 public interface IFriendConnectionService
 {

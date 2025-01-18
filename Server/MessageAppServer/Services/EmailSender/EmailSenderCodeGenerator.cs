@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Server.Services.EmailSender;
+namespace AuthenticationServer.Services.EmailSender;
 
 public static class EmailSenderCodeGenerator
 {

@@ -1,0 +1,3 @@
+﻿namespace MessagesServer.Model.Responses.Chat;
+
+public record KeyRequestResponse(string PublicKey, Guid UserId, string RoomId, string ConnectionId, string RoomName);

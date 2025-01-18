@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Server.Model;
-using Server.Services.Authentication;
-using Server.Services.Cookie;
+using AuthenticationServer.Model;
+using AuthenticationServer.Services.Authentication;
+using AuthenticationServer.Services.Cookie;
 
-namespace Server.Middlewares;
+namespace AuthenticationServer.Middlewares;
 
 public class RefreshTokenMiddleware(RequestDelegate next)
 {

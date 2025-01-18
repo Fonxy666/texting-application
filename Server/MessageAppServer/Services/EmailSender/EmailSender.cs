@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Mail;
 
-namespace Server.Services.EmailSender;
+namespace AuthenticationServer.Services.EmailSender;
 
 public class EmailSender(IConfiguration configuration) : IEmailSender
 {

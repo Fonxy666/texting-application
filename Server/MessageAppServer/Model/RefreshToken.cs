@@ -1,4 +1,4 @@
-﻿namespace Server.Model;
+﻿namespace AuthenticationServer.Model;
 
 public class RefreshToken
 {

@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Server.Database;
-using Server.Model.Requests;
+using AuthenticationServer.Database;
+using AuthenticationServer.Model.Responses.User;
 
-namespace Server.Services.PrivateKey;
+namespace AuthenticationServer.Services.PrivateKey;
 
 public class PrivateKeyService(PrivateKeysDbContext context) : IPrivateKeyService
 {

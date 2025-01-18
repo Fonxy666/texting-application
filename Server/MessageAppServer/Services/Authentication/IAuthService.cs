@@ -1,7 +1,7 @@
-﻿using Server.Model.Requests.Auth;
-using Server.Model.Responses.Auth;
+﻿using AuthenticationServer.Model.Requests.Auth;
+using AuthenticationServer.Model.Responses.Auth;
 
-namespace Server.Services.Authentication;
+namespace AuthenticationServer.Services.Authentication;
 
 public interface IAuthService
 {

@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
-using Server.Model.Chat;
+using AuthenticationServer.Model.Chat;
 
-namespace Server.Model;
+namespace AuthenticationServer.Model;
 
 public class ApplicationUser : IdentityUser<Guid>
 {

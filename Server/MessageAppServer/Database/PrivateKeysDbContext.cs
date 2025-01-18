@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Server.Model;
+using AuthenticationServer.Model;
 
-namespace Server.Database;
+namespace AuthenticationServer.Database;
 
 public class PrivateKeysDbContext : DbContext
 {

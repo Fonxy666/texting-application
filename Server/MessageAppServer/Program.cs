@@ -1,4 +1,4 @@
-using Server;
+using AuthenticationServer;
 
 CreateHostBuilder(args).Build().Run();
 return;

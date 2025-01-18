@@ -3,17 +3,17 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Server.Database;
-using Server.Model;
-using Server.Model.Requests.User;
-using Server.Model.Responses.Auth;
-using Server.Model.Responses.User;
-using Server.Services.Authentication;
-using Server.Services.EmailSender;
-using Server.Services.FriendConnection;
-using Server.Services.User;
+using AuthenticationServer.Database;
+using AuthenticationServer.Model;
+using AuthenticationServer.Model.Requests.User;
+using AuthenticationServer.Model.Responses.Auth;
+using AuthenticationServer.Model.Responses.User;
+using AuthenticationServer.Services.Authentication;
+using AuthenticationServer.Services.EmailSender;
+using AuthenticationServer.Services.FriendConnection;
+using AuthenticationServer.Services.User;
 
-namespace Server.Controllers;
+namespace AuthenticationServer.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]

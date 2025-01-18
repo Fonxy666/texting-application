@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Server.Services.Cookie;
+using AuthenticationServer.Services.Cookie;
 
-namespace Server.Controllers;
+namespace AuthenticationServer.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
