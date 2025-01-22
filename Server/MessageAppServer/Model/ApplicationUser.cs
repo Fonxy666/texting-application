@@ -1,7 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
-using AuthenticationServer.Model.Chat;
 
 namespace AuthenticationServer.Model;
 
@@ -12,11 +9,11 @@ public class ApplicationUser : IdentityUser<Guid>
     public DateTime? RefreshTokenCreated { get; private set; }
     public DateTime? RefreshTokenExpires { get; private set; }
     public string PublicKey { get; set; }
-    public ICollection<FriendConnection> SentFriendRequests { get; set; } = new List<FriendConnection>();
-    public ICollection<FriendConnection> ReceivedFriendRequests { get; set; } = new List<FriendConnection>();
-    public ICollection<Room> CreatedRooms { get; set; } = new List<Room>();
-    public ICollection<ApplicationUser> Friends { get; set; } = new List<ApplicationUser>();
-    public ICollection<EncryptedSymmetricKey> UserSymmetricKeys { get; set; } = new List<EncryptedSymmetricKey>();
+    public ICollection<FriendConnection> SentFriendRequests { get; private set; } = new List<FriendConnection>();
+    public ICollection<FriendConnection> ReceivedFriendRequests { get; private set; } = new List<FriendConnection>();
+    public ICollection<Guid> CreatedRoomIds { get; private set; } = new List<Guid>();
+    public ICollection<ApplicationUser> Friends { get; private set; } = new List<ApplicationUser>();
+    public ICollection<Guid> UserSymmetricKeyIds { get; private set; } = new List<Guid>();
 
     public ApplicationUser(string? imageUrl = "-")
     {
@@ -43,8 +40,8 @@ public class ApplicationUser : IdentityUser<Guid>
         PublicKey = key;
     }
 
-    public void AddKey(EncryptedSymmetricKey key)
+    public void AddKey(Guid keyId)
     {
-        UserSymmetricKeys.Add(key);
+        UserSymmetricKeyIds.Add(keyId);
     }
 }

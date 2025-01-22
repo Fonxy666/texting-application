@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 
-namespace MessagesServer.Model.Chat;
+namespace MessagesServer.Model;
 
 public class Message
 {

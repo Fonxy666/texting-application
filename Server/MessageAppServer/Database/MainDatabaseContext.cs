@@ -2,14 +2,12 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using AuthenticationServer.Model;
-using AuthenticationServer.Model.Chat;
 
 namespace AuthenticationServer.Database;
 
 public class MainDatabaseContext(DbContextOptions<MainDatabaseContext> options) : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
 {
     public DbSet<FriendConnection>? FriendConnections { get; set; }
-    public DbSet<EncryptedSymmetricKey>? EncryptedSymmetricKeys { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,11 +35,5 @@ public class MainDatabaseContext(DbContextOptions<MainDatabaseContext> options) 
             .WithOne(r => r.CreatorUser)
             .HasForeignKey(r => r.CreatorId)
             .OnDelete(DeleteBehavior.Cascade);
-        
-        modelBuilder.Entity<EncryptedSymmetricKey>()
-            .HasOne<ApplicationUser>(k => k.User)
-            .WithMany(u => u.UserSymmetricKeys)
-            .HasForeignKey(k => k.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }
