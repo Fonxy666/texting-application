@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using AuthenticationServer.Database;
 using AuthenticationServer.Model.Responses.User;
 
