@@ -2,23 +2,22 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using MessagesServer.Model;
-using MessagesServer.Model.Chat;
 
 namespace MessagesServer.Database;
 
-public class MainDatabaseContext(DbContextOptions<MainDatabaseContext> options) : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
+public class MainDatabaseContext : DbContext
 {
     public DbSet<Room>? Rooms { get; set; }
     public DbSet<Message>? Messages { get; set; }
 
+    public MainDatabaseContext(DbContextOptions<MainDatabaseContext> options)
+        : base(options)
+    {
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        modelBuilder.Entity<Room>()
-            .HasOne(r => r.CreatorUser)
-            .WithMany(au => au.CreatedRooms)
-            .HasForeignKey(r => r.CreatorId);
 
         modelBuilder.Entity<Message>()
             .HasOne(m => m.Room)
