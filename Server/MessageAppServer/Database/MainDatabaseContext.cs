@@ -29,11 +29,5 @@ public class MainDatabaseContext(DbContextOptions<MainDatabaseContext> options) 
             .HasMany(au => au.Friends)
             .WithMany()
             .UsingEntity(j => j.ToTable("UserFriends"));
-        
-        modelBuilder.Entity<ApplicationUser>()
-            .HasMany(au => au.CreatedRooms)
-            .WithOne(r => r.CreatorUser)
-            .HasForeignKey(r => r.CreatorId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

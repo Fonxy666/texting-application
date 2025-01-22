@@ -165,8 +165,8 @@ public class Startup(IConfiguration configuration)
         app.UseHttpsRedirection();
         app.UseRouting();
         
-        app.UseRefreshTokenMiddleware();
-        app.UseJwtRefreshMiddleware();
+        /* app.UseRefreshTokenMiddleware();
+        app.UseJwtRefreshMiddleware(); */
         
         app.UseAuthentication();
         app.UseAuthorization();
