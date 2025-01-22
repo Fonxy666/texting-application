@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using AuthenticationServer.Database;
 using AuthenticationServer.Hub;
-using AuthenticationServer.Middlewares;
 using AuthenticationServer.Model;
 using AuthenticationServer.Services.Authentication;
 using AuthenticationServer.Services.Cookie;

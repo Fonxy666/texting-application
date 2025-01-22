@@ -1,5 +1,4 @@
-﻿using Microsoft.OpenApi.Models;
-using MessagesServer.Database;
+﻿using MessagesServer.Database;
 using MessagesServer.Hub;
 using MessagesServer.Model;
 using MessagesServer.Services.Chat.MessageService;

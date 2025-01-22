@@ -1,4 +1,4 @@
-﻿using MessagesServer.Model.Chat;
+﻿using MessagesServer.Model;
 using MessagesServer.Model.Requests.Message;
 using MessagesServer.Model.Responses.Message;
 

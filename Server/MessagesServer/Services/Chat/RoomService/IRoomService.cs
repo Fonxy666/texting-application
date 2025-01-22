@@ -1,4 +1,4 @@
-﻿using MessagesServer.Model.Chat;
+﻿using MessagesServer.Model;
 using MessagesServer.Model.Responses.Chat;
 
 namespace MessagesServer.Services.Chat.RoomService;
