@@ -13,6 +13,7 @@ using AuthenticationServer.Services.EmailSender;
 using AuthenticationServer.Services.FriendConnection;
 using AuthenticationServer.Services.PrivateKey;
 using AuthenticationServer.Services.User;
+using AuthenticationServer.gRPC;
 
 namespace AuthenticationServer;
 
@@ -43,6 +44,7 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IFriendConnectionService, FriendConnectionService>();
         services.AddScoped<IPrivateKeyService, PrivateKeyService>();
         services.AddTransient<IEmailSender, EmailSender>();
+        services.AddGrpc();
 
         services.AddDbContext<MainDatabaseContext>(options => options.UseSqlServer(connection));
         services.AddDbContext<PrivateKeysDbContext>(options => options.UseSqlServer(connectionToPrivateKeys));
@@ -175,8 +177,10 @@ public class Startup(IConfiguration configuration)
         {
             endpoints.MapHub<FriendRequestHub>("/friend");
             endpoints.MapControllers();
+            endpoints.MapGrpcService<GrpcServer>();
         });
-        
+
+
         PopulateDbAndAddRoles.AddRolesAndAdminSync(app, configuration);
         
         if (!env.IsEnvironment("Test")) return;

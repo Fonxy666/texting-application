@@ -1,11 +1,12 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MessagesServer.Model.Chat;
+using MessagesServer.Model;
 using MessagesServer.Model.Requests.Message;
 using MessagesServer.Model.Responses.Message;
 using MessagesServer.Services.Chat.MessageService;
 using MessagesServer.Services.Chat.RoomService;
+using Grpc.Net.Client;
 
 namespace MessagesServer.Controllers;
 
@@ -16,6 +17,16 @@ public class MessageController(
     ILogger<MessageController> logger
     ) : ControllerBase
 {
+    private async Task<bool> ValidateJwtTokenAsync(string token)
+    {
+        // Make sure to point to the correct AuthService address
+        using var channel = GrpcChannel.ForAddress("http://localhost:50051");
+        var client = new AuthService.AuthServiceClient(channel);
+        var request = new JwtTokenRequest { Token = token };
+        var response = await client.ValidateJwtTokenAsync(request);
+        return response.IsValid;
+    }
+
     [HttpGet("GetMessages/{roomId}"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<IQueryable<Message>>> GetMessages(string roomId)
     {

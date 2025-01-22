@@ -1,9 +1,6 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MessagesServer.Model;
 using MessagesServer.Model.Requests.Chat;
 using MessagesServer.Model.Responses.Chat;
 using MessagesServer.Services.Chat.RoomService;
