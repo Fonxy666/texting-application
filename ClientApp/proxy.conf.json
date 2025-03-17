@@ -6,26 +6,26 @@
         "logLevel": "debug"
     },
     "/api/v1/Messages": {
-        "target": "https://localhost:7102/",
+        "target": "https://localhost:7100/",
         "secure": false,
         "changeOrigin": true,
         "logLevel": "debug"
     },
     "/api/v1/Media": {
-        "target": "https://localhost:7101/",
+        "target": "https://localhost:7100/",
         "secure": false,
         "changeOrigin": true,
         "logLevel": "debug"
     },
     "/chat": {
-        "target": "https://localhost:7102/",
+        "target": "https://localhost:7100/",
         "secure": false,
         "changeOrigin": true,
         "logLevel": "debug",
         "ws": true
     },
     "/friend": {
-        "target": "https://localhost:7102/",
+        "target": "https://localhost:7100/",
         "secure": false,
         "changeOrigin": true,
         "logLevel": "debug",
