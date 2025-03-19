@@ -13,6 +13,8 @@ using AuthenticationService.Services.EmailSender;
 using AuthenticationService.Services.FriendConnection;
 using AuthenticationService.Services.PrivateKey;
 using AuthenticationService.Services.User;
+using VaultSharp;
+using VaultSharp.V1.AuthMethods.Token;
 
 namespace AuthenticationService;
 
@@ -24,6 +26,12 @@ public class Startup(IConfiguration configuration)
         var connectionToPrivateKeys = configuration["ConnectionStringToPrivateKeyDatabase"];
         var issueSign = configuration["IssueSign"];
         var issueAudience = configuration["IssueAudience"];
+        var vaultAddress = configuration["VaultAddress"];
+        var vaultToken = configuration["VaultDevRootToken"];
+
+        var authMethod = new TokenAuthMethodInfo(vaultToken);
+        var vaultClientSettings = new VaultClientSettings(vaultAddress, authMethod);
+        var vaultClient = new VaultClient(vaultClientSettings);
 
         services.AddHttpContextAccessor();
         services.AddControllers(options =>
@@ -44,9 +52,9 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IPrivateKeyService, PrivateKeyService>();
         services.AddTransient<IEmailSender, EmailSender>();
         services.AddGrpc();
+        services.AddSingleton<IVaultClient>(vaultClient);
 
         services.AddDbContext<MainDatabaseContext>(options => options.UseNpgsql(connection));
-        services.AddDbContext<PrivateKeysDbContext>(options => options.UseNpgsql(connectionToPrivateKeys));
 
         services.AddDistributedMemoryCache();
 
@@ -179,7 +187,7 @@ public class Startup(IConfiguration configuration)
         });
 
 
-        //PopulateDbAndAddRoles.AddRolesAndAdminSync(app, configuration);
+        PopulateDbAndAddRoles.AddRolesAndAdminSync(app, configuration);
 
         if (!env.IsEnvironment("Test")) return;
 

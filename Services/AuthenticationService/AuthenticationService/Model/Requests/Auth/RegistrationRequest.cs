@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.IdentityModel.Tokens;
 
 namespace AuthenticationService.Model.Requests.Auth;
 

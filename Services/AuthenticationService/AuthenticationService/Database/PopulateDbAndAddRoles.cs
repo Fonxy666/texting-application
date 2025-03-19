@@ -39,7 +39,7 @@ public static class PopulateDbAndAddRoles
                 }
             }
 
-            CreateAdminIfNotExistSync(userManager, configuration);
+            //CreateAdminIfNotExistSync(userManager, configuration);
         }
     }
 
@@ -86,8 +86,9 @@ public static class PopulateDbAndAddRoles
             }
         }
     }
+}
 
-    public static void CreateTestUsersSync(IApplicationBuilder app, int numberOfTestUsers)
+    /* public static void CreateTestUsersSync(IApplicationBuilder app, int numberOfTestUsers)
     {
         lock (LockObject)
         {
@@ -211,4 +212,4 @@ public static class PopulateDbAndAddRoles
     }
 }
 
-public record AsymmetricKey(string PublicKey, string PrivateKey);
+public record AsymmetricKey(string PublicKey, string PrivateKey); */

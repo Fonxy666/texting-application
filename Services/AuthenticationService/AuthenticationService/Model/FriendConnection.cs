@@ -6,17 +6,22 @@ namespace AuthenticationService.Model;
 public class FriendConnection
 {
     [Key]
-    public Guid ConnectionId { get; init; }
+    public Guid ConnectionId { get; init; } = Guid.NewGuid();
+
     public Guid SenderId { get; init; }
     [ForeignKey("SenderId")]
-    public ApplicationUser Sender { get; set; }
+    public ApplicationUser? Sender { get; set; }
+
     public Guid ReceiverId { get; init; }
     [ForeignKey("ReceiverId")]
-    public ApplicationUser Receiver { get; set; }
+    public ApplicationUser? Receiver { get; set; }
+
     public FriendStatus Status { get; private set; } = FriendStatus.Pending;
-    public DateTime SentTime { get; private set; } = DateTime.Now;
+
+    public DateTime SentTime { get; private set; } = DateTime.UtcNow;
+
     public DateTime? AcceptedTime { get; private set; }
-    
+
     public FriendConnection() { }
 
     public FriendConnection(Guid senderId, Guid receiverId)

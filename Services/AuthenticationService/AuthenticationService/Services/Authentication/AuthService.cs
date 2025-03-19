@@ -29,8 +29,9 @@ public class AuthService(
         };
         
         user.SetPublicKey(request.PublicKey);
-        
+
         var createResult = await userManager.CreateAsync(user, request.Password);
+
         var addToRoleAsync = await userManager.AddToRoleAsync(user, role);
 
         if (!createResult.Succeeded && !addToRoleAsync.Succeeded)
@@ -50,6 +51,7 @@ public class AuthService(
         var managedUser = await userManager.FindByNameAsync(username);
         
         var roles = await userManager.GetRolesAsync(managedUser!);
+        
         var accessToken = tokenService.CreateJwtToken(managedUser!, roles[0], rememberMe);
         
         if (rememberMe)

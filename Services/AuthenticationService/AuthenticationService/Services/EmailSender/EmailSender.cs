@@ -5,7 +5,7 @@ namespace AuthenticationService.Services.EmailSender;
 
 public class EmailSender(IConfiguration configuration) : IEmailSender
 {
-    public Func<ISmtpClientWrapper> SmtpClientFactory { get; set; } = () => new SmtpClientWrapper(new SmtpClient("smtp-mail.gmail.com", 587)
+    public Func<ISmtpClientWrapper> SmtpClientFactory { get; set; } = () => new SmtpClientWrapper(new SmtpClient("smtp.gmail.com", 587)
     {
         EnableSsl = true
     });
@@ -13,7 +13,7 @@ public class EmailSender(IConfiguration configuration) : IEmailSender
     public async Task SendEmailAsync(string email, string subject, string message)
     {
         var mail = configuration["DeveloperEmail"];
-        var pw = configuration["DeveloperPassword"];
+        var pw = configuration["DeveloperAppPassword"];
 
         var client = SmtpClientFactory();
         client.Credentials = new NetworkCredential(mail, pw);
@@ -24,7 +24,7 @@ public class EmailSender(IConfiguration configuration) : IEmailSender
     public async Task SendEmailWithLinkAsync(string email, string subject, string resetId)
     {
         var mail = configuration["DeveloperEmail"];
-        var pw = configuration["DeveloperPassword"];
+        var pw = configuration["DeveloperAppPassword"];
 
         var client = SmtpClientFactory();
         client.Credentials = new NetworkCredential(mail, pw);

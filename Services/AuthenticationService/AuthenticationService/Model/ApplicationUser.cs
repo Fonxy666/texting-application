@@ -9,11 +9,12 @@ public class ApplicationUser : IdentityUser<Guid>
     public DateTime? RefreshTokenCreated { get; private set; }
     public DateTime? RefreshTokenExpires { get; private set; }
     public string PublicKey { get; set; }
-    public ICollection<FriendConnection> SentFriendRequests { get; private set; } = new List<FriendConnection>();
-    public ICollection<FriendConnection> ReceivedFriendRequests { get; private set; } = new List<FriendConnection>();
-    public ICollection<Guid> CreatedRoomIds { get; private set; } = new List<Guid>();
-    public ICollection<ApplicationUser> Friends { get; private set; } = new List<ApplicationUser>();
-    public ICollection<Guid> UserSymmetricKeyIds { get; private set; } = new List<Guid>();
+
+    public List<FriendConnection> SentFriendRequests { get; private set; } = new();
+    public List<FriendConnection> ReceivedFriendRequests { get; private set; } = new();
+    public List<Guid> CreatedRoomIds { get; private set; } = new();
+    public List<ApplicationUser> Friends { get; private set; } = new();
+    public List<Guid> UserSymmetricKeyIds { get; private set; } = new();
 
     public ApplicationUser(string? imageUrl = "-")
     {

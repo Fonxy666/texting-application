@@ -132,6 +132,17 @@ public class AuthController(
             EmailSenderCodeGenerator.RemoveVerificationCode(existingUser.Email!, "login");
 
             var encryptedPrivateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser.Id);
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine(encryptedPrivateKey);
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("---------------------------------");
 
             var loginResult = await authenticationService.LoginAsync(request.UserName, request.RememberMe);
 
