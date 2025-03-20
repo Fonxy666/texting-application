@@ -34,7 +34,7 @@ public class AuthService(
 
         var addToRoleAsync = await userManager.AddToRoleAsync(user, role);
 
-        if (!createResult.Succeeded && !addToRoleAsync.Succeeded)
+        if (!createResult.Succeeded || !addToRoleAsync.Succeeded)
         {
             return new AuthResult(false, "", "");
         }
@@ -53,7 +53,7 @@ public class AuthService(
         var roles = await userManager.GetRolesAsync(managedUser!);
         
         var accessToken = tokenService.CreateJwtToken(managedUser!, roles[0], rememberMe);
-        
+
         if (rememberMe)
         {
             cookieService.SetRefreshToken(managedUser!);

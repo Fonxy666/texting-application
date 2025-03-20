@@ -131,7 +131,7 @@ public class AuthController(
 
             EmailSenderCodeGenerator.RemoveVerificationCode(existingUser.Email!, "login");
 
-            var encryptedPrivateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser.Id);
+            /* var encryptedPrivateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser.Id);
             Console.WriteLine("---------------------------------");
             Console.WriteLine("---------------------------------");
             Console.WriteLine("---------------------------------");
@@ -144,14 +144,19 @@ public class AuthController(
             Console.WriteLine("---------------------------------");
             Console.WriteLine("---------------------------------");
 
+            */
             var loginResult = await authenticationService.LoginAsync(request.UserName, request.RememberMe);
 
             if (!loginResult.Success)
             {
                 return StatusCode(500);
             }
+            /*
+            
 
             return Ok(new LoginResponse(true, existingUser.PublicKey, encryptedPrivateKey.EncryptedPrivateKey));
+            */
+            return Ok(new LoginResponse(true, existingUser.PublicKey, "encryptedPrivateKey.EncryptedPrivateKey"));
         }
         catch (Exception e)
         {
