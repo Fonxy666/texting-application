@@ -1,8 +1,5 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using AuthenticationService.Model;
-using AuthenticationService.Services.PrivateKey;
 
 namespace AuthenticationService.Database;
 

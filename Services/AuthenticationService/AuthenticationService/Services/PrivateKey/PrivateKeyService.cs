@@ -24,7 +24,7 @@ public class PrivateKeyService : IPrivateKeyService
         try
         {
             Secret<SecretData> secret = await _vaultClient.V1.Secrets.KeyValue.V2.ReadSecretAsync(
-                path: $"{SecretPath}/{userId}",
+                path: $"private-keys/{userId}",
                 mountPoint: "secret"
             );
 
@@ -52,8 +52,9 @@ public class PrivateKeyService : IPrivateKeyService
         };
 
             var secret = await _vaultClient.V1.Secrets.KeyValue.V2.WriteSecretAsync(
-                path: $"{SecretPath}/{userId}",
-                data: secretData
+                path: $"private-keys/{userId}",
+                data: secretData,
+                mountPoint: "secret"
             );
 
             return true;

@@ -26,8 +26,8 @@ public class Startup(IConfiguration configuration)
         var connectionToPrivateKeys = configuration["ConnectionStringToPrivateKeyDatabase"];
         var issueSign = configuration["IssueSign"];
         var issueAudience = configuration["IssueAudience"];
-        var vaultAddress = configuration["VaultAddress"];
-        var vaultToken = configuration["VaultDevRootToken"];
+        var vaultAddress = configuration["HashiCorpAddress"];
+        var vaultToken = configuration["HashiCorpToken"];
 
         var authMethod = new TokenAuthMethodInfo(vaultToken);
         var vaultClientSettings = new VaultClientSettings(vaultAddress, authMethod);

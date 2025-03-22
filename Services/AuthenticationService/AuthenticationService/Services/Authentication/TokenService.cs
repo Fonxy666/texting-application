@@ -12,8 +12,6 @@ namespace AuthenticationService.Services.Authentication;
 public class TokenService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor) : ITokenService
 {
     public const int ExpirationHours = 2;
-    private HttpRequest Request => httpContextAccessor.HttpContext?.Request ?? throw new InvalidOperationException("HttpContext or Request is null");
-    private HttpResponse Response => httpContextAccessor.HttpContext?.Response ?? throw new InvalidOperationException("HttpContext or Response is null");
         
     public string CreateJwtToken(IdentityUser<Guid> user, string? role, bool rememberMe)
     {

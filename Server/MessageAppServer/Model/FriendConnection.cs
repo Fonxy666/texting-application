@@ -14,7 +14,7 @@ public class FriendConnection
     [ForeignKey("ReceiverId")]
     public ApplicationUser Receiver { get; set; }
     public FriendStatus Status { get; private set; } = FriendStatus.Pending;
-    public DateTime SentTime { get; private set; } = DateTime.Now;
+    public DateTime SentTime { get; private set; } = DateTime.UtcNow;
     public DateTime? AcceptedTime { get; private set; }
     
     public FriendConnection() { }
@@ -25,18 +25,18 @@ public class FriendConnection
         SenderId = senderId;
         ReceiverId = receiverId;
         Status = FriendStatus.Pending;
-        SentTime = DateTime.Now;
+        SentTime = DateTime.UtcNow;
         AcceptedTime = null;
     }
 
     public void SetStatusToAccepted()
     {
         Status = FriendStatus.Accepted;
-        AcceptedTime = DateTime.Now;
+        AcceptedTime = DateTime.UtcNow;
     }
 
     public void ResetSentTime()
     {
-        SentTime = DateTime.Now;
+        SentTime = DateTime.UtcNow;
     }
 }
