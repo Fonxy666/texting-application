@@ -1,38 +1,52 @@
-﻿using VaultSharp;
-using VaultSharp.V1.AuthMethods.Token;
-using VaultSharp.V1.Commons;
-using AuthenticationService.Model.Responses.User;
+﻿using AuthenticationService.Model.Responses.User;
+using System.Text;
+using System.Text.Json;
 
-namespace AuthenticationService.Services.PrivateKey;
+namespace AuthenticationService.Services.PrivateKeyService;
 
 public class PrivateKeyService : IPrivateKeyService
 {
+    private readonly HttpClient _httpClient = new HttpClient();
     private readonly string _vaultToken;
-    private readonly IVaultClient _vaultClient;
-    private const string SecretPath = "secret/private-keys";
+    private readonly string _vaultAddress;
 
     public PrivateKeyService(IConfiguration configuration)
     {
         _vaultToken = configuration["HashiCorpToken"] ?? throw new Exception("Vault token missing!");
-
-        var authMethod = new TokenAuthMethodInfo(_vaultToken);
-        _vaultClient = new VaultClient(new VaultClientSettings("http://localhost:8200", authMethod));
+        _vaultAddress = configuration["HashiCorpAddress"] ?? throw new Exception("Vault address missing!");
     }
 
     public async Task<PrivateKeyResponse> GetEncryptedKeyByUserIdAsync(Guid userId)
     {
         try
         {
-            Secret<SecretData> secret = await _vaultClient.V1.Secrets.KeyValue.V2.ReadSecretAsync(
-                path: $"private-keys/{userId}",
-                mountPoint: "secret"
-            );
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{_vaultAddress}/v1/kv/data/private_keys/{userId}");
+            request.Headers.Add("X-Vault-Token", _vaultToken);
 
-            var data = secret.Data.Data;
-            return new PrivateKeyResponse(
-                data["encryptedKey"].ToString(),
-                data["iv"].ToString()
-            );
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+
+            var vaultResponse = JsonSerializer.Deserialize<JsonElement>(jsonResponse);
+
+            var privateKey = vaultResponse
+                .GetProperty("data")
+                .GetProperty("data")
+                .GetProperty("private_key");
+
+            var endToEndEncryptedPrivateKey = privateKey.GetProperty("EndToEndEncryptedPrivateKey").GetString();
+            var iv = privateKey.GetProperty("Iv").GetString();
+
+            if (endToEndEncryptedPrivateKey != null && iv != null)
+            {
+                return new PrivateKeyResponse(endToEndEncryptedPrivateKey, iv);
+            }
+            else
+            {
+                Console.WriteLine("Key not found in the Vault response.");
+                return null;
+            }
         }
         catch (Exception e)
         {
@@ -41,27 +55,39 @@ public class PrivateKeyService : IPrivateKeyService
         }
     }
 
-    public async Task<bool> SaveKey(Model.PrivateKey key, Guid userId)
+    public async Task<bool> SaveKeyAsync(Model.PrivateKey key, Guid userId)
     {
         try
         {
-            var secretData = new Dictionary<string, object>
-        {
-            { "encryptedKey", key.EndToEndEncryptedPrivateKey },
-            { "iv", key.Iv }
-        };
+            var payload = new
+            {
+                data = new
+                {
+                    private_key = key,
+                    metadata = new
+                    {
+                        created_by = "admin",
+                        created_at = DateTime.UtcNow.ToString("o")
+                    }
+                }
+            };
 
-            var secret = await _vaultClient.V1.Secrets.KeyValue.V2.WriteSecretAsync(
-                path: $"private-keys/{userId}",
-                data: secretData,
-                mountPoint: "secret"
-            );
+            var jsonPayload = JsonSerializer.Serialize(payload);
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"{_vaultAddress}/v1/kv/data/private_keys/{userId}")
+            {
+                Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json")
+            };
+
+            request.Headers.Add("X-Vault-Token", _vaultToken);
+
+            using var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
 
             return true;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.WriteLine($"Error saving key: {e.Message}");
+            Console.WriteLine($"[Vault] Failed to save key: {ex.Message}");
             return false;
         }
     }
@@ -70,11 +96,6 @@ public class PrivateKeyService : IPrivateKeyService
     {
         try
         {
-            await _vaultClient.V1.Secrets.KeyValue.V2.DeleteSecretAsync(
-                path: $"{SecretPath}/{userId}",
-                mountPoint: "secret"
-            );
-
             return true;
         }
         catch (Exception e)

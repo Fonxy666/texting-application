@@ -4,7 +4,7 @@ using AuthenticationService.Model;
 using AuthenticationService.Model.Requests.Auth;
 using AuthenticationService.Model.Responses.Auth;
 using AuthenticationService.Services.Cookie;
-using AuthenticationService.Services.PrivateKey;
+using AuthenticationService.Services.PrivateKeyService;
 
 namespace AuthenticationService.Services.Authentication;
 
@@ -41,7 +41,7 @@ public class AuthService(
         
         var savedUser = await userManager.Users.FirstOrDefaultAsync(u => u.UserName == request.Username);
         var privateKey = new Model.PrivateKey(request.EncryptedPrivateKey, request.Iv);
-        var result = await keyService.SaveKey(privateKey, savedUser!.Id);
+        var result = await keyService.SaveKeyAsync(privateKey, savedUser!.Id);
 
         return !result ? new AuthResult(false, "", "") : new AuthResult(true, "", "");
     }

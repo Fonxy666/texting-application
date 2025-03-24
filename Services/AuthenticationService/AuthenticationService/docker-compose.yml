@@ -1,0 +1,15 @@
+version: '3.7'
+services:
+  vault:
+    image: hashicorp/vault:latest
+    container_name: private_key_vault
+    ports:
+      - "8200:8200"
+    restart: always
+    volumes:
+      - ./Vault_Data/Logs:/vault/logs
+      - ./Vault_Data/File:/vault/file
+      - ./Vault_Data/Config:/vault/config
+    cap_add:
+      - IPC_LOCK
+    entrypoint: vault server -config=/vault/config/vault.json

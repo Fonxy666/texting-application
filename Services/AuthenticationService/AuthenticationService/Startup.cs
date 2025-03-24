@@ -11,10 +11,10 @@ using AuthenticationService.Services.Authentication;
 using AuthenticationService.Services.Cookie;
 using AuthenticationService.Services.EmailSender;
 using AuthenticationService.Services.FriendConnection;
-using AuthenticationService.Services.PrivateKey;
 using AuthenticationService.Services.User;
 using VaultSharp;
 using VaultSharp.V1.AuthMethods.Token;
+using AuthenticationService.Services.PrivateKeyService;
 
 namespace AuthenticationService;
 
@@ -185,7 +185,6 @@ public class Startup(IConfiguration configuration)
             endpoints.MapHub<FriendRequestHub>("/friend");
             endpoints.MapControllers();
         });
-
 
         PopulateDbAndAddRoles.AddRolesAndAdminSync(app, configuration);
 

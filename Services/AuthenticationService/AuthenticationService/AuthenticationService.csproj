@@ -51,4 +51,10 @@
 		</Content>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Vault_Data\Config\" />
+	  <Folder Include="Vault_Data\File\" />
+	  <Folder Include="Vault_Data\Logs\" />
+	</ItemGroup>
+
 </Project>

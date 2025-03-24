@@ -1,10 +1,11 @@
-﻿using AuthenticationService.Model.Responses.User;
+﻿using AuthenticationService.Model;
+using AuthenticationService.Model.Responses.User;
 
-namespace AuthenticationService.Services.PrivateKey;
+namespace AuthenticationService.Services.PrivateKeyService;
 
 public interface IPrivateKeyService
 {
     Task<PrivateKeyResponse> GetEncryptedKeyByUserIdAsync(Guid userId);
-    Task<bool> SaveKey(Model.PrivateKey key, Guid userId);
+    Task<bool> SaveKeyAsync(PrivateKey key, Guid userId);
     Task<bool> DeleteKey(Guid userId);
 }
