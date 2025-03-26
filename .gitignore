@@ -477,6 +477,7 @@ $RECYCLE.BIN/
 *.lnk
 
 **/.idea/
-/Services/AuthenticationService/AuthenticationService/vault-cluster-vault-2025-03-23T17_37_22.196Z.json
-/Services/AuthenticationService/AuthenticationService/.env
-/Services/AuthenticationService/AuthenticationService/pgdata
+/Services/UserService/UserService/vault_cluster_keys.json
+/Services/UserService/UserService/.env
+/Services/UserService/UserService/pgdata
+/Services/UserService/UserService/Vault_Data
