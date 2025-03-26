@@ -188,6 +188,6 @@ public class Startup(IConfiguration configuration)
 
         if (!env.IsEnvironment("Test")) return;
 
-        //PopulateDbAndAddRoles.CreateTestUsersSync(app, 5);
+        PopulateDbAndAddRoles.CreateTestUsersSync(app, 5);
     }
 }

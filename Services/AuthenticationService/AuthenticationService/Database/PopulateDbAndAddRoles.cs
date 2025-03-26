@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using AuthenticationService.Model;
+using System.Security.Cryptography;
+using System.Text;
+using AuthenticationService.Services.PrivateKeyService;
 
 namespace AuthenticationService.Database;
 
@@ -36,7 +39,7 @@ public static class PopulateDbAndAddRoles
                 }
             }
 
-            //CreateAdminIfNotExistSync(userManager, configuration);
+            CreateAdminIfNotExistSync(userManager, configuration);
         }
     }
 
@@ -83,9 +86,8 @@ public static class PopulateDbAndAddRoles
             }
         }
     }
-}
 
-    /* public static void CreateTestUsersSync(IApplicationBuilder app, int numberOfTestUsers)
+    public static void CreateTestUsersSync(IApplicationBuilder app, int numberOfTestUsers)
     {
         lock (LockObject)
         {
@@ -126,7 +128,7 @@ public static class PopulateDbAndAddRoles
 
                 var encryptedData = EncryptPrivateKey(keysForTestUser.PrivateKey, "123456");
 
-                keyManager.SaveKey(new PrivateKey(encryptedData.EncryptedData.ToString()!, encryptedData.Iv.ToString()!), testUser.Id);
+                keyManager.SaveKeyAsync(new PrivateKey(encryptedData.EncryptedData.ToString()!, encryptedData.Iv.ToString()!), testUser.Id);
 
                 var testUserCreated = userManager.CreateAsync(testUser, "testUserPassword123###").Result;
 
@@ -209,4 +211,4 @@ public static class PopulateDbAndAddRoles
     }
 }
 
-public record AsymmetricKey(string PublicKey, string PrivateKey); */
+public record AsymmetricKey(string PublicKey, string PrivateKey);
