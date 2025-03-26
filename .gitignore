@@ -478,3 +478,5 @@ $RECYCLE.BIN/
 
 **/.idea/
 /Services/AuthenticationService/AuthenticationService/vault-cluster-vault-2025-03-23T17_37_22.196Z.json
+/Services/AuthenticationService/AuthenticationService/.env
+/Services/AuthenticationService/AuthenticationService/pgdata
