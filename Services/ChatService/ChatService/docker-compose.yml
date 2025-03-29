@@ -1,0 +1,17 @@
+version: '3.7'
+services:
+
+  postgres:
+    image: postgres:latest
+    container_name: chat_db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${ADMIN_PASSWORD}
+      POSTGRES_DB: auth_db
+    ports:
+      - "5433:5433"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    restart: always
