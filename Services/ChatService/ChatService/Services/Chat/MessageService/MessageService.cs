@@ -45,7 +45,7 @@ public class MessageService(ChatContext context) : IMessageService
         return messages.AsQueryable();
     }
     
-    public async Task<MessageResponse> EditMessage(EditMessageRequest request)
+    public async Task<ChatMessageResponse> EditMessage(EditMessageRequest request)
     {
         var existingMessage = Context.Messages!.FirstOrDefault(message => message.MessageId == request.Id);
         
@@ -55,10 +55,10 @@ public class MessageService(ChatContext context) : IMessageService
         Context.Messages!.Update(existingMessage);
         await Context.SaveChangesAsync();
 
-        return new MessageResponse(true, "", null);
+        return new ChatMessageResponse(true, "", null);
     }
 
-    public async Task<MessageResponse> EditMessageSeen(EditMessageSeenRequest request, Guid userId)
+    public async Task<ChatMessageResponse> EditMessageSeen(EditMessageSeenRequest request, Guid userId)
     {
         var existingMessage = Context.Messages!.FirstOrDefault(message => message.MessageId == new Guid(request.MessageId));
         
@@ -67,16 +67,16 @@ public class MessageService(ChatContext context) : IMessageService
         Context.Messages!.Update(existingMessage);
         await Context.SaveChangesAsync();
 
-        return new MessageResponse(true, "", null);
+        return new ChatMessageResponse(true, "", null);
     }
 
-    public async Task<MessageResponse> DeleteMessage(Guid id)
+    public async Task<ChatMessageResponse> DeleteMessage(Guid id)
     {
         var existingMessage = Context.Messages!.FirstOrDefault(message => message.MessageId == id);
         
         Context.Messages!.Remove(existingMessage!);
         await Context.SaveChangesAsync();
 
-        return new MessageResponse(true, id.ToString(), null);
+        return new ChatMessageResponse(true, id.ToString(), null);
     }
 }

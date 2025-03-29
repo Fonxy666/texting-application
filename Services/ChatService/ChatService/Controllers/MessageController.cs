@@ -1,11 +1,10 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Grpc.Net.Client;
 using ChatService.Model.Requests.Message;
 using ChatService.Services.Chat.RoomService;
-using ChatService.Model.Responses.Message;
 using ChatService.Model;
+using ChatService.Model.Responses.Message;
 
 namespace ChatService.Controllers;
 
@@ -145,7 +144,7 @@ public class MessageController(
             
             await messageService.DeleteMessage(idToGuid);
 
-            return Ok(new MessageResponse(true, "", null));
+            return Ok(new ChatMessageResponse(true, "", null));
         }
         catch (Exception e)
         {

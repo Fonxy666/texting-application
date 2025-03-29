@@ -8,7 +8,7 @@ public interface IMessageService
     Task<bool> MessageExisting(Guid id);
     Task<SaveMessageResponse> SendMessage(MessageRequest request, string userId);
     Task<IQueryable<Message>> GetLast10Messages(Guid roomId);
-    Task<MessageResponse> EditMessage(EditMessageRequest request);
-    Task<MessageResponse> EditMessageSeen(EditMessageSeenRequest request, Guid userId);
-    Task<MessageResponse> DeleteMessage(Guid roomId);
+    Task<ChatMessageResponse> EditMessage(EditMessageRequest request);
+    Task<ChatMessageResponse> EditMessageSeen(EditMessageSeenRequest request, Guid userId);
+    Task<ChatMessageResponse> DeleteMessage(Guid roomId);
 }

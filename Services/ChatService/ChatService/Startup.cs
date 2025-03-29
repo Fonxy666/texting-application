@@ -39,6 +39,17 @@ public class Startup(IConfiguration configuration)
             options.Cookie.HttpOnly = true;
             options.Cookie.IsEssential = true;
         });
+
+        services.AddGrpcClient<UserAuthenticationService.UserAuthenticationServiceClient>(options =>
+        {
+            options.Address = new Uri("https://localhost:7100");
+        });
+
+        var serviceProvider = services.BuildServiceProvider();
+        var authClient = serviceProvider.GetRequiredService<UserAuthenticationService.UserAuthenticationServiceClient>();
+
+        // Make a request to the gRPC server (this is synchronous for testing, you could also make it async)
+        MakeGrpcRequest(authClient).Wait();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IConfiguration configuration)
@@ -62,5 +73,14 @@ public class Startup(IConfiguration configuration)
         });
 
         if (!env.IsEnvironment("Test")) return;
+    }
+
+    private async Task MakeGrpcRequest(UserAuthenticationService.UserAuthenticationServiceClient authClient)
+    {
+        var request = new Empty();  // The Empty message as per your proto definition
+        var response = await authClient.GetMessageAsync(request);
+
+        // For testing purposes, log the response message from the server
+        Console.WriteLine($"Message from server: {response.Message}");
     }
 }

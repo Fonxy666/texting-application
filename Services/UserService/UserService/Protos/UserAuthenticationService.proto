@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+service UserAuthenticationService {
+    rpc GetMessage (Empty) returns (MessageResponse);
+}
+
+message Empty {}
+
+message MessageResponse {
+    string message = 1;
+}

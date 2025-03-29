@@ -15,6 +15,7 @@ using UserService.Services.User;
 using VaultSharp;
 using VaultSharp.V1.AuthMethods.Token;
 using UserService.Services.PrivateKeyFolder;
+using UserService.Services.gRPCServices;
 
 namespace UserService;
 
@@ -181,6 +182,7 @@ public class Startup(IConfiguration configuration)
         {
             endpoints.MapHub<FriendRequestHub>("/friend");
             endpoints.MapControllers();
+            endpoints.MapGrpcService<Services.gRPCServices.AuthenticationService>();
         });
 
         PopulateDbAndAddRoles.AddRolesAndAdminSync(app, configuration);
