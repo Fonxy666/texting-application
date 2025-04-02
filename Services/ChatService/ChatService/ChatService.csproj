@@ -44,4 +44,10 @@
 	<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Reference Include="JwtRefreshTokenLibrary">
+	    <HintPath>..\..\..\JwtRefreshTokenLibrary\JwtRefreshTokenLibrary\bin\Release\net8.0\JwtRefreshTokenLibrary.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
 </Project>
