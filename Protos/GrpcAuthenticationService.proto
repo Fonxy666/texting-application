@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+service GrpcAuthService {
+    rpc NewJwtToken (GrpcNewJwtRequest) returns (JwtResponse);
+}
+
+message GrpcNewJwtRequest {
+    string userId = 1;
+    bool remember = 2;
+}
+
+message JwtResponse {
+    string jwtToken = 1;
+}

@@ -172,8 +172,8 @@ public class Startup(IConfiguration configuration)
         app.UseHttpsRedirection();
         app.UseRouting();
 
-        app.UseRefreshTokenMiddleware();
-        app.UseJwtRefreshMiddleware();
+        /* app.UseRefreshTokenMiddleware();
+        app.UseJwtRefreshMiddleware(); */
 
         app.UseAuthentication();
         app.UseAuthorization();
@@ -184,6 +184,7 @@ public class Startup(IConfiguration configuration)
             endpoints.MapHub<FriendRequestHub>("/friend");
             endpoints.MapControllers();
             endpoints.MapGrpcService<ProtoUserService>();
+            endpoints.MapGrpcService<ProtoAuthService>();
         });
 
         PopulateDbAndAddRoles.AddRolesAndAdminSync(app, configuration);

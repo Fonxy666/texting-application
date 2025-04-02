@@ -4,6 +4,7 @@ using ChatService.Middlewares;
 using ChatService.Model;
 using ChatService.Services.Chat.MessageService;
 using ChatService.Services.Chat.RoomService;
+using Grpc.Net.Client;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChatService;
@@ -13,6 +14,7 @@ public class Startup(IConfiguration configuration)
     public void ConfigureServices(IServiceCollection services)
     {
         var connection = configuration["ConnectionString"];
+        var grpcUri = new Uri("https://localhost:7100");
 
         services.AddHttpContextAccessor();
         services.AddControllers(options =>
@@ -43,7 +45,12 @@ public class Startup(IConfiguration configuration)
 
         services.AddGrpcClient<GrpcUserService.GrpcUserServiceClient>(options =>
         {
-            options.Address = new Uri("https://localhost:7100");
+            options.Address = grpcUri;
+        });
+
+        services.AddGrpcClient<GrpcAuthService.GrpcAuthServiceClient>(options =>
+        {
+            options.Address = grpcUri;
         });
     }
 
@@ -59,7 +66,7 @@ public class Startup(IConfiguration configuration)
         app.UseHttpsRedirection();
         app.UseRouting();
 
-        app.UseAuthTokenMiddleware();
+        // app.UseAuthTokenMiddleware();
 
         app.UseSession();
 

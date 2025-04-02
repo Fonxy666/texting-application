@@ -1,15 +1,32 @@
-﻿using System.Security.Claims;
+﻿using Grpc.Net.Client;
 using JwtRefreshMiddlewareLibrary;
 
 namespace ChatService.Middlewares;
 
 public class AuthTokenMiddleware(RequestDelegate next, GrpcUserService.GrpcUserServiceClient grpcClient, JwtRefreshTokenMiddleware jwtMiddleware)
 {
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context, Uri grpcUri)
     {
+        var userId = context.Request.Cookies["UserId"];
+        var rememberMe = context.Request.Cookies["RememberMe"] == "True";
+
+        if (userId == null || rememberMe == false)
+        {
+            return;
+        }
+
         if (jwtMiddleware.ExamineCookies(context))
         {
-            // need new jwt token
+            var newToken = await GetNewJwtToken(grpcUri, userId, rememberMe);
+            context.Response.Cookies.Append("Authorization", newToken, new CookieOptions
+            {
+                Domain = context.Request.Host.Host,
+                HttpOnly = true,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                Secure = true,
+                Expires = rememberMe ? DateTimeOffset.UtcNow.AddHours(2) : null
+            });
         }
 
         if (jwtMiddleware.TokenExpired(context))
@@ -17,16 +34,32 @@ public class AuthTokenMiddleware(RequestDelegate next, GrpcUserService.GrpcUserS
             // need new refresh token
         }
 
-        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null)
-        {
-            return;
-        }
-
         var userIdResponse = await grpcClient.UserExistingAsync(new UserIdRequest { Guid = userId });
         Console.WriteLine($"User exists: {userIdResponse.Success}");
 
         await next(context);
+    }
+
+    private async Task<string> GetNewJwtToken(Uri grpcUri, string userId, bool rememberMe)
+    {
+        using var channel = GrpcChannel.ForAddress(grpcUri);
+        var client = new GrpcAuthService.GrpcAuthServiceClient(channel);
+
+        var request = new GrpcNewJwtRequest
+        {
+            UserId = userId,
+            Remember = rememberMe
+        };
+
+        try
+        {
+            var response = await client.NewJwtTokenAsync(request);
+            return response.JwtToken;
+        }
+        catch (Exception ex)
+        {
+            return $"gRPC Error: {ex.Message}";
+        }
     }
 }
 
