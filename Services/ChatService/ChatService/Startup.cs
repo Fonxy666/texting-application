@@ -1,5 +1,6 @@
 ﻿using ChatService.Database;
 using ChatService.Hub;
+using ChatService.Middlewares;
 using ChatService.Model;
 using ChatService.Services.Chat.MessageService;
 using ChatService.Services.Chat.RoomService;
@@ -44,12 +45,6 @@ public class Startup(IConfiguration configuration)
         {
             options.Address = new Uri("https://localhost:7100");
         });
-
-        var serviceProvider = services.BuildServiceProvider();
-        var userClient = serviceProvider.GetRequiredService<GrpcUserService.GrpcUserServiceClient>();
-
-        // Make a request to the gRPC server (this is synchronous for testing, you could also make it async)
-        MakeGrpcRequest(userClient).Wait();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IConfiguration configuration)
@@ -64,6 +59,8 @@ public class Startup(IConfiguration configuration)
         app.UseHttpsRedirection();
         app.UseRouting();
 
+        app.UseAuthTokenMiddleware();
+
         app.UseSession();
 
         app.UseEndpoints(endpoints =>
@@ -73,13 +70,5 @@ public class Startup(IConfiguration configuration)
         });
 
         if (!env.IsEnvironment("Test")) return;
-    }
-
-    private async Task MakeGrpcRequest(GrpcUserService.GrpcUserServiceClient authClient)
-    {
-        var userIdRequest = new GuidRequest { Guid = "3171cd1b-0c5a-4a4f-b3f7-90d1d2e8cf65" };
-        var userIdResponse = await authClient.UserExistingAsync(userIdRequest);
-
-        Console.WriteLine($"User exists: {userIdResponse.Success}");
     }
 }

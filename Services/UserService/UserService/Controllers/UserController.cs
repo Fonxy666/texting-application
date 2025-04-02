@@ -33,7 +33,6 @@ public class UserController(
     {
         try
         {
-
             var existingUser = await userManager.FindByIdAsync(userId);
             if (existingUser == null)
             {

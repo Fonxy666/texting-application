@@ -1,10 +1,10 @@
 syntax = "proto3";
 
 service GrpcUserService {
-    rpc UserExisting (GuidRequest) returns (UserExistingResponse);
+    rpc UserExisting (UserIdRequest) returns (UserExistingResponse);
 }
 
-message GuidRequest {
+message UserIdRequest {
     string guid = 1;
 }
 

@@ -16,6 +16,7 @@ using VaultSharp;
 using VaultSharp.V1.AuthMethods.Token;
 using UserService.Services.PrivateKeyFolder;
 using UserService.Services.gRPCServices;
+using UserService.Middlewares;
 
 namespace UserService;
 
@@ -171,8 +172,8 @@ public class Startup(IConfiguration configuration)
         app.UseHttpsRedirection();
         app.UseRouting();
 
-        /* app.UseRefreshTokenMiddleware();
-        app.UseJwtRefreshMiddleware(); */
+        app.UseRefreshTokenMiddleware();
+        app.UseJwtRefreshMiddleware();
 
         app.UseAuthentication();
         app.UseAuthorization();
