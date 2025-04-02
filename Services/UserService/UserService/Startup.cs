@@ -182,7 +182,7 @@ public class Startup(IConfiguration configuration)
         {
             endpoints.MapHub<FriendRequestHub>("/friend");
             endpoints.MapControllers();
-            endpoints.MapGrpcService<Services.gRPCServices.AuthenticationService>();
+            endpoints.MapGrpcService<ProtoUserService>();
         });
 
         PopulateDbAndAddRoles.AddRolesAndAdminSync(app, configuration);

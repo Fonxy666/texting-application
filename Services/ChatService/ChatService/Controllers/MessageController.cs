@@ -38,7 +38,7 @@ public class MessageController(
     }
     
     [HttpPost("SendMessage"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<MessageResponse>> SendMessage([FromBody]MessageRequest request)
+    public async Task<ActionResult<ChatMessageResponse>> SendMessage([FromBody]MessageRequest request)
     {
         try
         {
@@ -67,7 +67,7 @@ public class MessageController(
     }
     
     [HttpPatch("EditMessage"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<MessageResponse>> EditMessage([FromBody]EditMessageRequest request)
+    public async Task<ActionResult<ChatMessageResponse>> EditMessage([FromBody]EditMessageRequest request)
     {
         try
         {
@@ -101,7 +101,7 @@ public class MessageController(
     }
     
     [HttpPatch("EditMessageSeen"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<MessageResponse>> ModifyMessageSeen([FromBody]EditMessageSeenRequest request)
+    public async Task<ActionResult<ChatMessageResponse>> ModifyMessageSeen([FromBody]EditMessageSeenRequest request)
     {
         try
         {
@@ -125,7 +125,7 @@ public class MessageController(
     }
     
     [HttpDelete("DeleteMessage"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<MessageResponse>> DeleteMessage([FromQuery]string id)
+    public async Task<ActionResult<ChatMessageResponse>> DeleteMessage([FromQuery]string id)
     {
         try
         {

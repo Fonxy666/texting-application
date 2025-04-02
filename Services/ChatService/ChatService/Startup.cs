@@ -40,16 +40,16 @@ public class Startup(IConfiguration configuration)
             options.Cookie.IsEssential = true;
         });
 
-        services.AddGrpcClient<UserAuthenticationService.UserAuthenticationServiceClient>(options =>
+        services.AddGrpcClient<GrpcUserService.GrpcUserServiceClient>(options =>
         {
             options.Address = new Uri("https://localhost:7100");
         });
 
         var serviceProvider = services.BuildServiceProvider();
-        var authClient = serviceProvider.GetRequiredService<UserAuthenticationService.UserAuthenticationServiceClient>();
+        var userClient = serviceProvider.GetRequiredService<GrpcUserService.GrpcUserServiceClient>();
 
         // Make a request to the gRPC server (this is synchronous for testing, you could also make it async)
-        MakeGrpcRequest(authClient).Wait();
+        MakeGrpcRequest(userClient).Wait();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IConfiguration configuration)
@@ -75,12 +75,11 @@ public class Startup(IConfiguration configuration)
         if (!env.IsEnvironment("Test")) return;
     }
 
-    private async Task MakeGrpcRequest(UserAuthenticationService.UserAuthenticationServiceClient authClient)
+    private async Task MakeGrpcRequest(GrpcUserService.GrpcUserServiceClient authClient)
     {
-        var request = new Empty();  // The Empty message as per your proto definition
-        var response = await authClient.GetMessageAsync(request);
+        var userIdRequest = new GuidRequest { Guid = "3171cd1b-0c5a-4a4f-b3f7-90d1d2e8cf65" };
+        var userIdResponse = await authClient.UserExistingAsync(userIdRequest);
 
-        // For testing purposes, log the response message from the server
-        Console.WriteLine($"Message from server: {response.Message}");
+        Console.WriteLine($"User exists: {userIdResponse.Success}");
     }
 }

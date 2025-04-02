@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+service GrpcUserService {
+    rpc UserExisting (GuidRequest) returns (UserExistingResponse);
+}
+
+message GuidRequest {
+    string guid = 1;
+}
+
+message UserExistingResponse {
+    bool success = 1;
+}
