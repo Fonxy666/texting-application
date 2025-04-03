@@ -4,13 +4,15 @@ using Microsoft.AspNetCore.Mvc;
 using ChatService.Model.Requests.Chat;
 using ChatService.Services.Chat.RoomService;
 using ChatService.Model.Responses.Chat;
+using ChatService.Services.Chat.GrpcService;
 
 namespace ChatService.Controllers;
 
 [Route("api/v1/[controller]")]
 public class ChatController(
     IRoomService roomService,
-    ILogger<ChatController> logger
+    ILogger<ChatController> logger,
+    IUserGrpcService userGrpcService
     ) : ControllerBase
 {
     [HttpPost("RegisterRoom"), Authorize(Roles = "User, Admin")]
@@ -18,12 +20,16 @@ public class ChatController(
     {
         try
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return BadRequest(new { error = "Cannot get user id from credentials." });
+            }
+            var existingUser = await userGrpcService.UserExisting(userId);
             if (!ModelState.IsValid)
             {
                 return BadRequest(new { error = "New room credentials not valid." });
             }
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (roomService.RoomNameTaken(request.RoomName).Result.Result)
             {

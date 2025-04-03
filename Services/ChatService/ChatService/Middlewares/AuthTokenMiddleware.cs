@@ -5,8 +5,9 @@ namespace ChatService.Middlewares;
 
 public class AuthTokenMiddleware(RequestDelegate next, GrpcUserService.GrpcUserServiceClient grpcClient, JwtRefreshTokenMiddleware jwtMiddleware)
 {
-    public async Task InvokeAsync(HttpContext context, Uri grpcUri)
+    public async Task InvokeAsync(HttpContext context)
     {
+        var grpcUri = new Uri("https://localhost:7100");
         var userId = context.Request.Cookies["UserId"];
         var rememberMe = context.Request.Cookies["RememberMe"] == "True";
 
@@ -34,7 +35,7 @@ public class AuthTokenMiddleware(RequestDelegate next, GrpcUserService.GrpcUserS
             // need new refresh token
         }
 
-        var userIdResponse = await grpcClient.UserExistingAsync(new UserIdRequest { Guid = userId });
+        var userIdResponse = await grpcClient.UserExistingAsync(new UserIdRequest { Id = userId });
         Console.WriteLine($"User exists: {userIdResponse.Success}");
 
         await next(context);

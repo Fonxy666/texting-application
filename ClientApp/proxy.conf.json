@@ -12,7 +12,13 @@
         "logLevel": "debug"
     },
     "/api/v1/Messages": {
-        "target": "https://localhost:7100/",
+        "target": "https://localhost:7101/",
+        "secure": false,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    },
+    "/api/v1/Chat": {
+        "target": "https://localhost:7101/",
         "secure": false,
         "changeOrigin": true,
         "logLevel": "debug"
@@ -24,7 +30,7 @@
         "logLevel": "debug"
     },
     "/chat": {
-        "target": "https://localhost:7100/",
+        "target": "https://localhost:7101/",
         "secure": false,
         "changeOrigin": true,
         "logLevel": "debug",

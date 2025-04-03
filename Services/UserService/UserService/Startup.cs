@@ -17,6 +17,7 @@ using VaultSharp.V1.AuthMethods.Token;
 using UserService.Services.PrivateKeyFolder;
 using UserService.Services.gRPCServices;
 using UserService.Middlewares;
+using JwtRefreshMiddlewareLibrary;
 
 namespace UserService;
 
@@ -45,6 +46,7 @@ public class Startup(IConfiguration configuration)
             options.EnableDetailedErrors = true;
         });
 
+        services.AddSingleton<JwtRefreshTokenMiddleware>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserServices, UserServices>();
@@ -124,13 +126,13 @@ public class Startup(IConfiguration configuration)
                     OnTokenValidated = context =>
                     {
                         var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
-                        logger.LogInformation("Token validation successful for user: {username}", context.Principal.Identity?.Name);
+                        logger.LogInformation($"Token validation successful for user: {context.Principal.Identity?.Name}.", context.Principal.Identity?.Name);
                         return Task.CompletedTask;
                     },
                     OnAuthenticationFailed = context =>
                     {
                         var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
-                        logger.LogError("Authentication failed: {exception}", context.Exception.Message);
+                        logger.LogError($"Authentication failed: {context.Exception.Message}", context.Exception.Message);
                         return Task.CompletedTask;
                     }
                 };
@@ -172,8 +174,8 @@ public class Startup(IConfiguration configuration)
         app.UseHttpsRedirection();
         app.UseRouting();
 
-        /* app.UseRefreshTokenMiddleware();
-        app.UseJwtRefreshMiddleware(); */
+        app.UseRefreshTokenMiddleware();
+        app.UseJwtRefreshMiddleware();
 
         app.UseAuthentication();
         app.UseAuthorization();
@@ -183,8 +185,8 @@ public class Startup(IConfiguration configuration)
         {
             endpoints.MapHub<FriendRequestHub>("/friend");
             endpoints.MapControllers();
-            endpoints.MapGrpcService<ProtoUserService>();
-            endpoints.MapGrpcService<ProtoAuthService>();
+            endpoints.MapGrpcService<UserGrpcService>();
+            endpoints.MapGrpcService<AuthGrpcService>();
         });
 
         PopulateDbAndAddRoles.AddRolesAndAdminSync(app, configuration);

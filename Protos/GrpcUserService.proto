@@ -5,7 +5,7 @@ service GrpcUserService {
 }
 
 message UserIdRequest {
-    string guid = 1;
+    string id = 1;
 }
 
 message UserExistingResponse {

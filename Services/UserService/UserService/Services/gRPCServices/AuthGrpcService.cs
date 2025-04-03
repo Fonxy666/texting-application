@@ -5,7 +5,7 @@ using UserService.Services.Authentication;
 
 namespace UserService.Services.gRPCServices;
 
-public class ProtoAuthService(UserManager<ApplicationUser> userManager, ITokenService tokenService) : GrpcAuthService.GrpcAuthServiceBase
+public class AuthGrpcService(UserManager<ApplicationUser> userManager, ITokenService tokenService) : GrpcAuthService.GrpcAuthServiceBase
 {
     public override async Task<JwtResponse> NewJwtToken(GrpcNewJwtRequest request, ServerCallContext context)
     {
