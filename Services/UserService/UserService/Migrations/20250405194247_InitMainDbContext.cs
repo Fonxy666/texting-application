@@ -5,10 +5,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace AuthenticationService.Migrations
+namespace UserService.Migrations
 {
     /// <inheritdoc />
-    public partial class InitMainDb : Migration
+    public partial class InitMainDbContext : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -38,7 +38,6 @@ namespace AuthenticationService.Migrations
                     RefreshTokenExpires = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     PublicKey = table.Column<string>(type: "text", nullable: false),
                     CreatedRoomIds = table.Column<List<Guid>>(type: "uuid[]", nullable: false),
-                    UserSymmetricKeyIds = table.Column<List<Guid>>(type: "uuid[]", nullable: false),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -166,6 +165,26 @@ namespace AuthenticationService.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "EncryptedSymmetricKeys",
+                columns: table => new
+                {
+                    KeyId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RoomId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EncryptedKey = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EncryptedSymmetricKeys", x => x.KeyId);
+                    table.ForeignKey(
+                        name: "FK_EncryptedSymmetricKeys_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "FriendConnections",
                 columns: table => new
                 {
@@ -255,6 +274,11 @@ namespace AuthenticationService.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_EncryptedSymmetricKeys_UserId",
+                table: "EncryptedSymmetricKeys",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_FriendConnections_ReceiverId",
                 table: "FriendConnections",
                 column: "ReceiverId");
@@ -287,6 +311,9 @@ namespace AuthenticationService.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "EncryptedSymmetricKeys");
 
             migrationBuilder.DropTable(
                 name: "FriendConnections");

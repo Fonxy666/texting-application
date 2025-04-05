@@ -1,13 +1,15 @@
-﻿using Grpc.Net.Client;
+﻿using Azure;
+using ChatService.Model.Requests.EncryptKey;
+using Grpc.Net.Client;
 
 namespace ChatService.Services.Chat.GrpcService;
 
 public class UserGrpcService : IUserGrpcService
 {
-    public async Task<UserExistingResponse> UserExisting(string userId)
+    private readonly Uri _grpcUri = new Uri("https://localhost:7100");
+    public async Task<BoolResponseWithMessage> UserExisting(string userId)
     {
-        var grpcUri = new Uri("https://localhost:7100");
-        using var channel = GrpcChannel.ForAddress(grpcUri);
+        using var channel = GrpcChannel.ForAddress(_grpcUri);
         var client = new GrpcUserService.GrpcUserServiceClient(channel);
 
         var request = new UserIdRequest {  Id = userId };
@@ -15,12 +17,36 @@ public class UserGrpcService : IUserGrpcService
         try
         {
             var response = await client.UserExistingAsync(request);
-            return new UserExistingResponse { Success = response.Success };
+            return new BoolResponseWithMessage { Success = response.Success };
         }
         catch (Exception ex)
         {
             Console.WriteLine($"gRPC Error: {ex.Message}");
-            return new UserExistingResponse { Success = false };
+            return new BoolResponseWithMessage { Success = false };
+        }
+    }
+
+    public async Task<BoolResponseWithMessage> SendEncryptedRoomIdForUser(StoreRoomKeyRequest incomingRequest)
+    {
+        using var channel = GrpcChannel.ForAddress(_grpcUri);
+        var client = new GrpcUserService.GrpcUserServiceClient(channel);
+
+        var request = new EncryptedRoomIdWithUserId
+        {
+            UserId = incomingRequest.UserId.ToString(),
+            RoomKey = incomingRequest.EncryptedKey,
+            RoomId = incomingRequest.RoomId.ToString()
+        };
+
+        try
+        {
+            var response = await client.SendEncryptedRoomIdForUserAsync(request);
+            return new BoolResponseWithMessage { Success = response.Success };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"gRPC Error: {ex.Message}");
+            return new BoolResponseWithMessage { Success = false };
         }
     }
 }

@@ -1,13 +1,21 @@
 syntax = "proto3";
 
 service GrpcUserService {
-    rpc UserExisting (UserIdRequest) returns (UserExistingResponse);
+    rpc UserExisting (UserIdRequest) returns (BoolResponseWithMessage);
+    rpc SendEncryptedRoomIdForUser (EncryptedRoomIdWithUserId) returns (BoolResponseWithMessage);
 }
 
 message UserIdRequest {
     string id = 1;
 }
 
-message UserExistingResponse {
+message BoolResponseWithMessage {
     bool success = 1;
+    string message = 2;
+}
+
+message EncryptedRoomIdWithUserId {
+    string userId = 1;
+    string roomId = 2;
+    string roomKey = 3;
 }

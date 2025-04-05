@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ChatService.Migrations
 {
     [DbContext(typeof(ChatContext))]
-    [Migration("20250329120928_InitChatContext")]
-    partial class InitChatContext
+    [Migration("20250405184324_InitChatDbContext")]
+    partial class InitChatDbContext
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,29 +25,6 @@ namespace ChatService.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("ChatService.Model.EncryptedSymmetricKey", b =>
-                {
-                    b.Property<Guid>("KeyId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("EncryptedKey")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("RoomId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("KeyId");
-
-                    b.HasIndex("RoomId");
-
-                    b.ToTable("EncryptedSymmetricKey");
-                });
 
             modelBuilder.Entity("ChatService.Model.Message", b =>
                 {
@@ -109,17 +86,6 @@ namespace ChatService.Migrations
                     b.ToTable("Rooms");
                 });
 
-            modelBuilder.Entity("ChatService.Model.EncryptedSymmetricKey", b =>
-                {
-                    b.HasOne("ChatService.Model.Room", "Room")
-                        .WithMany("EncryptedSymmetricKeys")
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Room");
-                });
-
             modelBuilder.Entity("ChatService.Model.Message", b =>
                 {
                     b.HasOne("ChatService.Model.Room", "Room")
@@ -133,8 +99,6 @@ namespace ChatService.Migrations
 
             modelBuilder.Entity("ChatService.Model.Room", b =>
                 {
-                    b.Navigation("EncryptedSymmetricKeys");
-
                     b.Navigation("Messages");
                 });
 #pragma warning restore 612, 618

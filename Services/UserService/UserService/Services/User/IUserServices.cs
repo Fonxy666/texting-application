@@ -11,4 +11,6 @@ public interface IUserServices
     string SaveImageLocally(string userNameFileName, string base64Image);
     string GetContentType(string filePath);
     Task<DeleteUserResponse> DeleteAsync(ApplicationUser user);
+    Task AddNewKeyAsync(Guid userId, Guid roomGuid, EncryptedSymmetricKey newKey);
+    Task AddNewRoomToUser(Guid userId, Guid roomGuid, EncryptedSymmetricKey newKey);
 }

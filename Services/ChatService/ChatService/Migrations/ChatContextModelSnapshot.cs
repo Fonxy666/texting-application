@@ -23,29 +23,6 @@ namespace ChatService.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ChatService.Model.EncryptedSymmetricKey", b =>
-                {
-                    b.Property<Guid>("KeyId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("EncryptedKey")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("RoomId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("KeyId");
-
-                    b.HasIndex("RoomId");
-
-                    b.ToTable("EncryptedSymmetricKey");
-                });
-
             modelBuilder.Entity("ChatService.Model.Message", b =>
                 {
                     b.Property<Guid>("MessageId")
@@ -106,17 +83,6 @@ namespace ChatService.Migrations
                     b.ToTable("Rooms");
                 });
 
-            modelBuilder.Entity("ChatService.Model.EncryptedSymmetricKey", b =>
-                {
-                    b.HasOne("ChatService.Model.Room", "Room")
-                        .WithMany("EncryptedSymmetricKeys")
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Room");
-                });
-
             modelBuilder.Entity("ChatService.Model.Message", b =>
                 {
                     b.HasOne("ChatService.Model.Room", "Room")
@@ -130,8 +96,6 @@ namespace ChatService.Migrations
 
             modelBuilder.Entity("ChatService.Model.Room", b =>
                 {
-                    b.Navigation("EncryptedSymmetricKeys");
-
                     b.Navigation("Messages");
                 });
 #pragma warning restore 612, 618

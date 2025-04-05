@@ -18,12 +18,12 @@ public class RoomService(ChatContext context) : IRoomService
         return await Context.Rooms!.FirstOrDefaultAsync(room => room.RoomId == roomId);
     }
     
-    private async Task<Room?> GetRoomByIdWithKeys(Guid roomId)
-    {
-        return await Context.Rooms!
-            .Include(r => r.EncryptedSymmetricKeys)
-            .FirstOrDefaultAsync(room => room.RoomId == roomId);
-    }
+    //private async Task<Room?> GetRoomByIdWithKeys(Guid roomId)
+    //{
+    //    return await Context.Rooms!
+    //        .Include(r => r.EncryptedSymmetricKeys)
+    //        .FirstOrDefaultAsync(room => room.RoomId == roomId);
+    //}
     
     public async Task<Room?> GetRoomByRoomName(string roomName)
     {
@@ -45,8 +45,6 @@ public class RoomService(ChatContext context) : IRoomService
                 room.SetRoomIdForTests("801d40c6-c95d-47ed-a21a-88cda341d0a9");
                 break;
         }
-        
-        room.AddNewSymmetricKey(creatorId, encryptedSymmetricKey);
         
         await Context.Rooms!.AddAsync(room);
         await Context.SaveChangesAsync();
@@ -73,20 +71,20 @@ public class RoomService(ChatContext context) : IRoomService
         await Context.SaveChangesAsync();
     }
 
-    public async Task<bool> AddNewUserKey(Guid roomId, Guid userId, string key)
-    {
-        var existingRoom = await GetRoomByIdWithKeys(roomId);
-        if (existingRoom == null)
-        {
-            return false;
-        }
+    //public async Task<bool> AddNewUserKey(Guid roomId, Guid userId, string key)
+    //{
+    //    var existingRoom = await GetRoomByIdWithKeys(roomId);
+    //    if (existingRoom == null)
+    //    {
+    //        return false;
+    //    }
 
-        var userKey = new EncryptedSymmetricKey(userId, key, roomId);
+    //    var userKey = new EncryptedSymmetricKey(userId, key, roomId);
 
-        existingRoom.EncryptedSymmetricKeys.Add(userKey);
-        Context.Entry(userKey).State = EntityState.Added;
+    //    existingRoom.EncryptedSymmetricKeys.Add(userKey);
+    //    Context.Entry(userKey).State = EntityState.Added;
 
-        await Context.SaveChangesAsync();
-        return true;
-    }
+    //    await Context.SaveChangesAsync();
+    //    return true;
+    //}
 }

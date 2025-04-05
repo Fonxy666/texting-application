@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ChatService.Migrations
 {
     /// <inheritdoc />
-    public partial class InitChatContext : Migration
+    public partial class InitChatDbContext : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -24,26 +24,6 @@ namespace ChatService.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Rooms", x => x.RoomId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "EncryptedSymmetricKey",
-                columns: table => new
-                {
-                    KeyId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    RoomId = table.Column<Guid>(type: "uuid", nullable: false),
-                    EncryptedKey = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EncryptedSymmetricKey", x => x.KeyId);
-                    table.ForeignKey(
-                        name: "FK_EncryptedSymmetricKey_Rooms_RoomId",
-                        column: x => x.RoomId,
-                        principalTable: "Rooms",
-                        principalColumn: "RoomId",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -71,11 +51,6 @@ namespace ChatService.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_EncryptedSymmetricKey_RoomId",
-                table: "EncryptedSymmetricKey",
-                column: "RoomId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Messages_RoomId",
                 table: "Messages",
                 column: "RoomId");
@@ -84,9 +59,6 @@ namespace ChatService.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "EncryptedSymmetricKey");
-
             migrationBuilder.DropTable(
                 name: "Messages");
 

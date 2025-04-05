@@ -12,7 +12,6 @@ public class Room
     public string RoomName { get; init; }
     public string Password { get; private set; }
     public ICollection<Message> Messages { get; private set; } = new List<Message>();
-    public ICollection<EncryptedSymmetricKey> EncryptedSymmetricKeys { get; private set; } = new List<EncryptedSymmetricKey>();
     
     public Room() {}
     
@@ -51,10 +50,5 @@ public class Room
     public bool IsCreator(Guid userId)
     {
         return CreatorId == userId;
-    }
-
-    public void AddNewSymmetricKey(Guid userId, string key)
-    {
-        EncryptedSymmetricKeys.Add(new EncryptedSymmetricKey(userId, key, RoomId));
     }
 }

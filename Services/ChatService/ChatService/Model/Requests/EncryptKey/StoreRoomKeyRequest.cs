@@ -1,3 +1,3 @@
 ﻿namespace ChatService.Model.Requests.EncryptKey;
 
-public record StoreRoomKeyRequest(string EncryptedKey, string RoomId);
+public record StoreRoomKeyRequest(Guid UserId, string EncryptedKey, Guid RoomId);

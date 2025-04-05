@@ -5,6 +5,7 @@ using ChatService.Model.Requests.Chat;
 using ChatService.Services.Chat.RoomService;
 using ChatService.Model.Responses.Chat;
 using ChatService.Services.Chat.GrpcService;
+using ChatService.Model.Requests.EncryptKey;
 
 namespace ChatService.Controllers;
 
@@ -36,7 +37,26 @@ public class ChatController(
                 return BadRequest(new { error = "This room's name already taken." });
             }
 
-            var result = await roomService.RegisterRoomAsync(request.RoomName, request.Password, new Guid(userId!), request.EncryptedSymmetricRoomKey);
+            var result = await roomService.RegisterRoomAsync(request.RoomName, request.Password, new Guid(userId), request.EncryptedSymmetricRoomKey);
+
+            if (result.Success == false)
+            {
+                return BadRequest(new { error = "Something failed during room creation in the database." });
+            }
+
+            var sendUserUpdateInfos = userGrpcService.SendEncryptedRoomIdForUser(
+                new StoreRoomKeyRequest(
+                    new Guid(userId),
+                    request.EncryptedSymmetricRoomKey,
+                    new Guid(result.RoomId)
+                    )
+                );
+
+            if (!sendUserUpdateInfos.IsCompletedSuccessfully)
+            {
+                Console.WriteLine(sendUserUpdateInfos);
+                return BadRequest(new { error = "There was an error communicating with the grpc server." });
+            }
 
             return Ok(result);
         }
