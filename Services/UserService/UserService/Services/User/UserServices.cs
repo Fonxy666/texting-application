@@ -115,42 +115,4 @@ public class UserServices(UserManager<ApplicationUser> userManager, IConfigurati
 
         return new DeleteUserResponse($"{user.UserName}", "Delete successful.", true);
     }
-
-    public async Task AddNewRoomToUser(Guid userId, Guid roomGuid, EncryptedSymmetricKey newKey)
-    {
-        var existingUser = await context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (existingUser == null)
-            throw new Exception("User not found");
-
-        existingUser.AddToCreatedRoomIds(roomGuid);
-
-        context.Entry(existingUser).Property(x => x.CreatedRoomIds).IsModified = true;
-
-        context.Entry(existingUser).State = EntityState.Modified;
-
-        await context.SaveChangesAsync();
-    }
-
-    public async Task AddNewKeyAsync(Guid userId, Guid roomGuid, EncryptedSymmetricKey newKey)
-    {
-        var existingUser = await context.Users
-            .Include(u => u.UserSymmetricKeys)
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (existingUser == null)
-            throw new Exception("User not found");
-
-        existingUser.AddToUserSymmetricKeyIds(newKey);
-
-        if (context.Entry(newKey).State == EntityState.Detached)
-        {
-            context.EncryptedSymmetricKeys.Add(newKey);
-        }
-
-        context.Entry(existingUser).State = EntityState.Modified;
-
-        await context.SaveChangesAsync();
-    }
 }

@@ -1,11 +1,11 @@
 ﻿using Grpc.Core;
 using Microsoft.AspNetCore.Identity;
 using UserService.Model;
-using UserService.Services.User;
+using UserService.Services.EncryptedSymmetricKeyService;
 
 namespace UserService.Services.gRPCServices;
 
-public class UserGrpcService(UserManager<ApplicationUser> userManager, IUserServices userServices) : GrpcUserService.GrpcUserServiceBase
+public class UserGrpcService(UserManager<ApplicationUser> userManager, ISymmetricKeyService keyService) : GrpcUserService.GrpcUserServiceBase
 {
     public override async Task<BoolResponseWithMessage> UserExisting(UserIdRequest request, ServerCallContext context)
     {
@@ -30,17 +30,10 @@ public class UserGrpcService(UserManager<ApplicationUser> userManager, IUserServ
         var roomGuid = Guid.Parse(request.RoomId);
         var newKey = new EncryptedSymmetricKey(userGuid, request.RoomKey, roomGuid);
 
-        var updatedUser = await userManager.FindByIdAsync(request.UserId);
-        if (updatedUser == null)
-        {
-            return new BoolResponseWithMessage { Success = false, Message = "User not found after key creation." };
-        }
-
         try
         {
-            await userServices.AddNewKeyAsync(userGuid, roomGuid, newKey);
-            await userServices.AddNewRoomToUser(userGuid, roomGuid, newKey);
-            return new BoolResponseWithMessage { Success = true, Message = "User successfully updated." };
+            await keyService.SaveNewKeyAndLinkToUserAsync(newKey);
+            return new BoolResponseWithMessage { Success = true, Message = "Key successfully saved." };
         }
         catch (Exception ex)
         {

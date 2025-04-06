@@ -41,6 +41,10 @@ public class UserGrpcService : IUserGrpcService
         try
         {
             var response = await client.SendEncryptedRoomIdForUserAsync(request);
+            Console.WriteLine("--------------");
+            Console.WriteLine(response.Message);
+            Console.WriteLine(response.Success);
+            Console.WriteLine("--------------");
             return new BoolResponseWithMessage { Success = response.Success };
         }
         catch (Exception ex)

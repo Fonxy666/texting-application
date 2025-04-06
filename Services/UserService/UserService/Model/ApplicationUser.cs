@@ -9,11 +9,10 @@ public class ApplicationUser : IdentityUser<Guid>
     public DateTime? RefreshTokenCreated { get; private set; }
     public DateTime? RefreshTokenExpires { get; private set; }
     public string PublicKey { get; set; }
-    public List<FriendConnection> SentFriendRequests { get; private set; } = new();
-    public List<FriendConnection> ReceivedFriendRequests { get; private set; } = new();
-    public List<Guid> CreatedRoomIds { get; private set; } = new();
-    public List<ApplicationUser> Friends { get; private set; } = new();
-    public List<EncryptedSymmetricKey> UserSymmetricKeys { get; private set; } = new();
+    public ICollection<FriendConnection> SentFriendRequests { get; private set; } = new List<FriendConnection>();
+    public ICollection<FriendConnection> ReceivedFriendRequests { get; private set; } = new List<FriendConnection>();
+    public ICollection<ApplicationUser> Friends { get; private set; } = new List<ApplicationUser>();
+    public ICollection <EncryptedSymmetricKey> UserSymmetricKeys { get; private set; } = new List<EncryptedSymmetricKey>();
 
     public ApplicationUser(string? imageUrl = "-")
     {
@@ -38,14 +37,6 @@ public class ApplicationUser : IdentityUser<Guid>
     public void SetPublicKey(string key)
     {
         PublicKey = key;
-    }
-
-    public void AddToCreatedRoomIds(Guid roomGuid)
-    {
-        if (!CreatedRoomIds.Contains(roomGuid))
-        {
-            CreatedRoomIds.Add(roomGuid);
-        }
     }
 
     public void AddToUserSymmetricKeyIds(EncryptedSymmetricKey newKey)

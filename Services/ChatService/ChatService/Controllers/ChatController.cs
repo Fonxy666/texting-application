@@ -44,7 +44,7 @@ public class ChatController(
                 return BadRequest(new { error = "Something failed during room creation in the database." });
             }
 
-            var sendUserUpdateInfos = userGrpcService.SendEncryptedRoomIdForUser(
+            var sendUserUpdateInfos = await userGrpcService.SendEncryptedRoomIdForUser(
                 new StoreRoomKeyRequest(
                     new Guid(userId),
                     request.EncryptedSymmetricRoomKey,
@@ -52,7 +52,7 @@ public class ChatController(
                     )
                 );
 
-            if (!sendUserUpdateInfos.IsCompletedSuccessfully)
+            if (!sendUserUpdateInfos.Success)
             {
                 Console.WriteLine(sendUserUpdateInfos);
                 return BadRequest(new { error = "There was an error communicating with the grpc server." });

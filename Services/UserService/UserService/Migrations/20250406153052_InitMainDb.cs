@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -8,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace UserService.Migrations
 {
     /// <inheritdoc />
-    public partial class InitMainDbContext : Migration
+    public partial class InitMainDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -37,7 +36,6 @@ namespace UserService.Migrations
                     RefreshTokenCreated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     RefreshTokenExpires = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     PublicKey = table.Column<string>(type: "text", nullable: false),
-                    CreatedRoomIds = table.Column<List<Guid>>(type: "uuid[]", nullable: false),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),

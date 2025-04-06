@@ -18,6 +18,7 @@ using UserService.Services.PrivateKeyFolder;
 using UserService.Services.gRPCServices;
 using UserService.Middlewares;
 using JwtRefreshMiddlewareLibrary;
+using UserService.Services.EncryptedSymmetricKeyService;
 
 namespace UserService;
 
@@ -53,6 +54,7 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<ICookieService, CookieService>();
         services.AddScoped<IFriendConnectionService, FriendConnectionService>(); 
         services.AddScoped<IPrivateKeyService, PrivateKeyService>();
+        services.AddScoped<ISymmetricKeyService, SymmetricKeyService>();
         services.AddTransient<IEmailSender, EmailSender>();
         services.AddGrpc();
         services.AddSingleton<IVaultClient>(vaultClient);
