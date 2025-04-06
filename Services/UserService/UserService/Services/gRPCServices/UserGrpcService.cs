@@ -40,4 +40,39 @@ public class UserGrpcService(UserManager<ApplicationUser> userManager, ISymmetri
             return new BoolResponseWithMessage { Success = false, Message = $"Error: {ex.Message}" };
         }
     }
+
+    public override async Task<UserIdAndPublicKeyResponse> SendUserPublicKeyAndId(UserIdRequest request, ServerCallContext context)
+    {
+        var existingUser = await userManager.FindByIdAsync(request.Id);
+        if (existingUser == null)
+        {
+            return new UserIdAndPublicKeyResponse { };
+        }
+
+        return new UserIdAndPublicKeyResponse { UserId = existingUser.Id.ToString(), PublicKey = existingUser.PublicKey};
+    }
+
+    public override async Task<UsersResponse> SendUserNamesAndGetIds(UserNamesRequest request, ServerCallContext context)
+    {
+        var userIdsAndNames = new List<UserIdAndName>();
+
+        foreach (var name in request.Name)
+        {
+            var existingUser = await userManager.FindByNameAsync(name);
+
+            if (existingUser == null)
+            {
+                continue;
+            }
+
+            userIdsAndNames.Add(new UserIdAndName { Name = existingUser.UserName, Id = existingUser.Id.ToString() });
+        }
+
+        var response = new UsersResponse
+        {
+            Users = { userIdsAndNames }
+        };
+
+        return response;
+    }
 }

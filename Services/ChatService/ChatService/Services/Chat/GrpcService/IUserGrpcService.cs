@@ -4,6 +4,8 @@ namespace ChatService.Services.Chat.GrpcService;
 
 public interface IUserGrpcService
 {
-    public Task<BoolResponseWithMessage> UserExisting(string userId);
-    public Task<BoolResponseWithMessage> SendEncryptedRoomIdForUser(StoreRoomKeyRequest incomingRequest);
+    Task<BoolResponseWithMessage> UserExisting(string userId);
+    Task<BoolResponseWithMessage> SendEncryptedRoomIdForUser(StoreRoomKeyRequest incomingRequest);
+    Task<UserIdAndPublicKeyResponse> SendUserPublicKeyAndId(UserIdRequest request);
+    Task<UsersResponse> SendUserNamesAndGetIds(UserNamesRequest request);
 }

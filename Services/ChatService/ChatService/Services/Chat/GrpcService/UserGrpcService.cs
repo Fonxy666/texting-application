@@ -41,16 +41,46 @@ public class UserGrpcService : IUserGrpcService
         try
         {
             var response = await client.SendEncryptedRoomIdForUserAsync(request);
-            Console.WriteLine("--------------");
-            Console.WriteLine(response.Message);
-            Console.WriteLine(response.Success);
-            Console.WriteLine("--------------");
             return new BoolResponseWithMessage { Success = response.Success };
         }
         catch (Exception ex)
         {
             Console.WriteLine($"gRPC Error: {ex.Message}");
             return new BoolResponseWithMessage { Success = false };
+        }
+    }
+
+    public async Task<UserIdAndPublicKeyResponse> SendUserPublicKeyAndId(UserIdRequest request)
+    {
+        using var channel = GrpcChannel.ForAddress(_grpcUri);
+        var client = new GrpcUserService.GrpcUserServiceClient(channel);
+
+        try
+        {
+            var response = await client.SendUserPublicKeyAndIdAsync(request);
+            return response;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"gRPC Error: {ex.Message}");
+            return new UserIdAndPublicKeyResponse { UserId = null, PublicKey = null };
+        }
+    }
+
+    public async Task<UsersResponse> SendUserNamesAndGetIds(UserNamesRequest request)
+    {
+        using var channel = GrpcChannel.ForAddress(_grpcUri);
+        var client = new GrpcUserService.GrpcUserServiceClient(channel);
+
+        try
+        {
+            var response = await client.SendUserNamesAndGetIdsAsync(request);
+            return response;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"gRPC Error: {ex.Message}");
+            return new UsersResponse { };
         }
     }
 }

@@ -8,7 +8,6 @@ using UserService.Model.Requests.User;
 using UserService.Model.Responses.Auth;
 using UserService.Services.FriendConnection;
 using UserService.Services.User;
-using UserService.Database;
 using UserService.Services.EmailSender;
 using UserService.Model;
 using UserService.Services.Authentication;
