@@ -11,6 +11,12 @@
         "changeOrigin": true,
         "logLevel": "debug"
     },
+    "/api/v1/CryptoKey": {
+        "target": "https://localhost:7100/",
+        "secure": false,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    },
     "/api/v1/Messages": {
         "target": "https://localhost:7101/",
         "secure": false,
@@ -19,12 +25,6 @@
     },
     "/api/v1/Chat": {
         "target": "https://localhost:7101/",
-        "secure": false,
-        "changeOrigin": true,
-        "logLevel": "debug"
-    },
-    "/api/v1/Media": {
-        "target": "https://localhost:7100/",
         "secure": false,
         "changeOrigin": true,
         "logLevel": "debug"

@@ -108,7 +108,7 @@ export class ChatService {
         this.connection.on("GetSymmetricKey", async (encryptedKey: string, roomId: string, roomName: string) => {
             this.setRoomCredentialsAndNavigate(roomName, roomId);
             const data = new StoreRoomSymmetricKey(encryptedKey, roomId);
-            await firstValueFrom(this.cryptoService.sendEncryptedRoomKey(data));
+            // await firstValueFrom(this.cryptoService.sendEncryptedRoomKey(data));
         })
     }
 
