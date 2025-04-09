@@ -1,8 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using UserService.Model.Requests.User;
+using UserService.Model.Requests;
 using UserService.Services.User;
 using UserService.Model.Responses.User;
-using UserService.Database;
 using UserService.Model;
 
 namespace UserService.Services.FriendConnection;

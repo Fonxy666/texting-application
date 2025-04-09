@@ -6,14 +6,13 @@ using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using UserService.Model.Responses.Auth;
-using UserService.Model.Requests.Auth;
-using UserService.Model.Responses.User;
+using UserService.Model.Responses;
 using UserService.Services.User;
 using UserService.Services.EmailSender;
 using UserService.Model;
 using UserService.Services.Authentication;
 using UserService.Services.PrivateKeyFolder;
+using UserService.Model.Requests;
 
 namespace UserService.Controllers;
 

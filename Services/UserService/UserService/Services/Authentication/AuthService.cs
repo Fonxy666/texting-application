@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using UserService.Model;
-using UserService.Model.Requests.Auth;
+using UserService.Model.Requests;
 using UserService.Model.Responses.Auth;
 using UserService.Services.Cookie;
 using UserService.Services.PrivateKeyFolder;

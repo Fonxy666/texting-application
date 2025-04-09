@@ -1,4 +1,4 @@
-﻿using UserService.Model.Requests.User;
+﻿using UserService.Model.Requests;
 using UserService.Model.Responses.User;
 
 namespace UserService.Services.FriendConnection;

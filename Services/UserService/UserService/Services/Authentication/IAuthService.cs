@@ -1,4 +1,4 @@
-﻿using UserService.Model.Requests.Auth;
+﻿using UserService.Model.Requests;
 using UserService.Model.Responses.Auth;
 
 namespace UserService.Services.Authentication;

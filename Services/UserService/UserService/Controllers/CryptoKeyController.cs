@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using UserService.Model.Responses.User;
 using UserService.Model;
 using UserService.Services.PrivateKeyFolder;
-using UserService.Model.Requests.User;
 using UserService.Services.EncryptedSymmetricKeyService;
+using UserService.Model.Requests;
 
 namespace Server.Controllers;
 

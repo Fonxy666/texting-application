@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Model.Responses.User;
-using UserService.Model.Requests.User;
+using UserService.Model.Requests;
 using UserService.Model.Responses.Auth;
 using UserService.Services.FriendConnection;
 using UserService.Services.User;
