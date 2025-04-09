@@ -1,43 +1,25 @@
 {
-    "/api/v1/Auth": {
+    "^/api/v1/(Auth|User|CryptoKey)": {
         "target": "https://localhost:7100/",
         "secure": false,
         "changeOrigin": true,
         "logLevel": "debug"
     },
-    "/api/v1/User": {
+    "^/api/v1/(Messages|Chat)": {
+        "target": "https://localhost:7101/",
+        "secure": false,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    },
+    "/friend": {
         "target": "https://localhost:7100/",
-        "secure": false,
-        "changeOrigin": true,
-        "logLevel": "debug"
-    },
-    "/api/v1/CryptoKey": {
-        "target": "https://localhost:7100/",
-        "secure": false,
-        "changeOrigin": true,
-        "logLevel": "debug"
-    },
-    "/api/v1/Messages": {
-        "target": "https://localhost:7101/",
-        "secure": false,
-        "changeOrigin": true,
-        "logLevel": "debug"
-    },
-    "/api/v1/Chat": {
-        "target": "https://localhost:7101/",
-        "secure": false,
-        "changeOrigin": true,
-        "logLevel": "debug"
-    },
-    "/chat": {
-        "target": "https://localhost:7101/",
         "secure": false,
         "changeOrigin": true,
         "logLevel": "debug",
         "ws": true
     },
-    "/friend": {
-        "target": "https://localhost:7100/",
+    "/chat": {
+        "target": "https://localhost:7101/",
         "secure": false,
         "changeOrigin": true,
         "logLevel": "debug",
