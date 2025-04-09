@@ -30,18 +30,18 @@ public class FriendConnection
         SenderId = senderId;
         ReceiverId = receiverId;
         Status = FriendStatus.Pending;
-        SentTime = DateTime.Now;
+        SentTime = DateTime.UtcNow;
         AcceptedTime = null;
     }
 
     public void SetStatusToAccepted()
     {
         Status = FriendStatus.Accepted;
-        AcceptedTime = DateTime.Now;
+        AcceptedTime = DateTime.UtcNow;
     }
 
     public void ResetSentTime()
     {
-        SentTime = DateTime.Now;
+        SentTime = DateTime.UtcNow;
     }
 }

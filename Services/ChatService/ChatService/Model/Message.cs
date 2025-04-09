@@ -13,7 +13,7 @@ public class Message
     public Room Room { get; set; }
     public Guid SenderId { get; init; }
     public string Text { get; private set; }
-    public string SendTime { get; init; } = DateTime.Now.ToString(CultureInfo.InvariantCulture);
+    public string SendTime { get; init; } = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
     public bool SentAsAnonymous { get; init; }
     public string Iv { get; set; }
     public ICollection<Guid> Seen { get; set; }

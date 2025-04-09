@@ -43,7 +43,7 @@ public class FriendRequestHubTests
         var requestId = Guid.NewGuid().ToString();
         const string senderName = "TestUser";
         var senderId = Guid.NewGuid();
-        var sentTime = DateTime.Now.ToString();
+        var sentTime = DateTime.UtcNow.ToString();
         const string receiverName = "testUser";
 
         _contextMock.SetupGet(c => c.ConnectionId).Returns("connection123");
@@ -110,7 +110,7 @@ public class FriendRequestHubTests
         var requestId = Guid.NewGuid().ToString();
         const string senderName = "TestUser";
         var senderId = Guid.NewGuid().ToString();
-        var sentTime = DateTime.Now.ToString();
+        var sentTime = DateTime.UtcNow.ToString();
         const string receiverName = "testUser";
 
         _contextMock.SetupGet(c => c.ConnectionId).Returns("connection123");

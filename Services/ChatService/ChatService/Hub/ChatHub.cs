@@ -15,7 +15,7 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IUserGr
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, userConnection.Room!);
         connection[Context.ConnectionId] = userConnection;
-        await Clients.Group(userConnection.Room!).SendAsync("ReceiveMessage", "Textinger bot", $"{userConnection.User} has joined the room!", DateTime.Now, null, null, null, userConnection.Room);
+        await Clients.Group(userConnection.Room!).SendAsync("ReceiveMessage", "Textinger bot", $"{userConnection.User} has joined the room!", DateTime.UtcNow, null, null, null, userConnection.Room);
         await SendConnectedUser(userConnection.Room!);
         return Context.ConnectionId;
     }
@@ -51,7 +51,7 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IUserGr
             await Clients.Group(userRoomConnection.Room!).SendAsync("ReceiveMessage",
                 userRoomConnection.User,
                 request.Message,
-                DateTime.Now,
+                DateTime.UtcNow,
                 userId,
                 request.MessageId,
                 new List<string>
@@ -94,7 +94,7 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IUserGr
         {
             connection.Remove(Context.ConnectionId);
             await Clients.Group(roomConnection.Room!)
-                .SendAsync("ReceiveMessage", "Textinger bot", $"{roomConnection.User} has left the room!", DateTime.Now);
+                .SendAsync("ReceiveMessage", "Textinger bot", $"{roomConnection.User} has left the room!", DateTime.UtcNow);
             await SendConnectedUser(roomConnection.Room!);
             
             await Clients.Group(roomConnection.Room!).SendAsync("UserDisconnected", roomConnection.User);
