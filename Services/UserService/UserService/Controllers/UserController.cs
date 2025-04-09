@@ -289,28 +289,9 @@ public class UserController(
     {
         try
         {
-            Console.WriteLine("-=----------------------------------------------------");
-            Console.WriteLine("-=----------------------------------------------------");
-            Console.WriteLine("-=----------------------------------------------------");
-            Console.WriteLine("-=----------------------------------------------------");
-            Console.WriteLine("-=----------------------------------------------------");
-            Console.WriteLine("-=----------------------------------------------------");
-            Console.WriteLine("-=----------------------------------------------------");
-            Console.WriteLine("-=----------------------------------------------------");
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Console.WriteLine(userId);
             var existingSender = await userManager.FindByIdAsync(userId!);
-            Console.WriteLine(existingSender);
             var existingReceiver = await userManager.FindByNameAsync(friendName);
-            Console.WriteLine(existingReceiver);
-            Console.WriteLine("-=----------------------------------------------------");
-            Console.WriteLine("-=----------------------------------------------------");
-            Console.WriteLine("-=----------------------------------------------------");
-            Console.WriteLine("-=----------------------------------------------------");
-            Console.WriteLine("-=----------------------------------------------------");
-            Console.WriteLine("-=----------------------------------------------------");
-            Console.WriteLine("-=----------------------------------------------------");
-            Console.WriteLine("-=----------------------------------------------------");
 
             if (existingSender == existingReceiver)
             {

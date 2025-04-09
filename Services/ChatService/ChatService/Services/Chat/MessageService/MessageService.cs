@@ -34,15 +34,13 @@ public class MessageService(ChatContext context) : IMessageService
         return new SaveMessageResponse(true, message, null);
     }
 
-    public async Task<IQueryable<Message>> GetLast10Messages(Guid roomId)
+    public async Task<IEnumerable<Message>> GetLast10Messages(Guid roomId)
     {
-        var messages = await Context.Messages!
-            .Where(message => message.RoomId == roomId)
-            .OrderByDescending(message => message.SendTime)
-            .Take(10)
-            .OrderBy(message => message.SendTime)
-            .ToListAsync();
-        return messages.AsQueryable();
+       return await Context.Messages
+        .Where(m => m.RoomId == roomId)
+        .OrderByDescending(m => m.SendTime)
+        .Take(10)
+        .ToListAsync();
     }
     
     public async Task<ChatMessageResponse> EditMessage(EditMessageRequest request)

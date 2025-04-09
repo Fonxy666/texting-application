@@ -5,7 +5,7 @@
         "changeOrigin": true,
         "logLevel": "debug"
     },
-    "^/api/v1/(Messages|Chat)": {
+    "^/api/v1/(Message|Chat)": {
         "target": "https://localhost:7101/",
         "secure": false,
         "changeOrigin": true,

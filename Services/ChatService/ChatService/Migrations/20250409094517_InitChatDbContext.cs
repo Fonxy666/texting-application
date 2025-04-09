@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -7,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ChatService.Migrations
 {
     /// <inheritdoc />
-    public partial class InitChatDb : Migration
+    public partial class InitChatDbContext : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -37,7 +36,7 @@ namespace ChatService.Migrations
                     SendTime = table.Column<string>(type: "text", nullable: false),
                     SentAsAnonymous = table.Column<bool>(type: "boolean", nullable: false),
                     Iv = table.Column<string>(type: "text", nullable: false),
-                    Seen = table.Column<List<Guid>>(type: "uuid[]", nullable: false)
+                    Seen = table.Column<Guid[]>(type: "uuid[]", nullable: false)
                 },
                 constraints: table =>
                 {

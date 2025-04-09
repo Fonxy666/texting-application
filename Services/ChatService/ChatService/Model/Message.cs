@@ -15,9 +15,9 @@ public class Message
     public string Text { get; private set; }
     public string SendTime { get; init; } = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
     public bool SentAsAnonymous { get; init; }
-    public string Iv { get; set; }
-    public ICollection<Guid> Seen { get; set; }
-    
+    public string Iv { get; private set; }
+    public IList<Guid> Seen { get; private set; } = new List<Guid>();
+
     public Message() { }
 
     public Message(Guid roomId, Guid senderId, string text, bool sentAsAnonymous, string iv)

@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using UserService.Model.Responses.User;
 using UserService.Model;
 using UserService.Services.PrivateKeyFolder;
+using UserService.Model.Requests.User;
+using UserService.Services.EncryptedSymmetricKeyService;
 
 namespace Server.Controllers;
 
@@ -14,7 +16,8 @@ namespace Server.Controllers;
 public class CryptoKeyController(
     IPrivateKeyService privateKeyService,
     ILogger<CryptoKeyController> logger,
-    UserManager<ApplicationUser> userManager
+    UserManager<ApplicationUser> userManager,
+    ISymmetricKeyService keyService
     ) : ControllerBase
 {
     [HttpGet("GetPrivateKeyAndIv"), Authorize(Roles = "User, Admin")]
@@ -41,7 +44,6 @@ public class CryptoKeyController(
     {
         try
         {
-
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var userGuid = new Guid(userId!);
@@ -67,7 +69,7 @@ public class CryptoKeyController(
         }
     }
 
-    /* [HttpPost("SaveEncryptedRoomKey"), Authorize(Roles = "User, Admin")]
+    [HttpPost("SaveEncryptedRoomKey"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult<string>> SaveEncryptedRoomKey([FromBody] StoreRoomKeyRequest data)
     {
         try
@@ -77,10 +79,13 @@ public class CryptoKeyController(
             var userGuid = new Guid(userId!);
             var roomGuid = new Guid(data.RoomId);
 
-            var saveKeyResponse = await roomService.AddNewUserKey(roomGuid, userGuid, data.EncryptedKey);
-            if (!saveKeyResponse)
+            var newKey = new EncryptedSymmetricKey(userGuid, data.EncryptedKey, roomGuid);
+
+            var result = await keyService.SaveNewKeyAndLinkToUserAsync(newKey);
+
+            if (result == null)
             {
-                return BadRequest("Something unusual happened.");
+                return BadRequest("Error saving the new key");
             }
 
             return Ok(new { data.EncryptedKey });
@@ -90,7 +95,7 @@ public class CryptoKeyController(
             logger.LogError(e, "Error saving the key.");
             return StatusCode(500);
         }
-    } */
+    }
 
     [HttpGet("GetPublicKey"), Authorize(Roles = "User, Admin")]
     public async Task<ActionResult> GetPublicKey([FromQuery] string userName)
