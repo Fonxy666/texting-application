@@ -2,9 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using UserService.Model;
 using UserService.Model.Requests;
-using UserService.Model.Responses.Auth;
+using UserService.Model.Responses;
 using UserService.Services.Cookie;
 using UserService.Services.PrivateKeyFolder;
+using UserService.Services.User;
 
 namespace UserService.Services.Authentication;
 
@@ -12,10 +13,11 @@ public class AuthService(
     UserManager<ApplicationUser> userManager,
     ITokenService tokenService,
     ICookieService cookieService,
+    IApplicationUserService userServices,
     IPrivateKeyService keyService
     ) : IAuthService
 {
-    public async Task<AuthResult> RegisterAsync(RegistrationRequest request, string role, string imagePath)
+    public async Task<ResponseBase> RegisterAsync(RegistrationRequest request, string role, string imagePath)
     {
         var user = new ApplicationUser(imagePath)
         {
@@ -36,17 +38,17 @@ public class AuthService(
 
         if (!createResult.Succeeded || !addToRoleAsync.Succeeded)
         {
-            return new AuthResult(false, "", "");
+            return new FailedAuthResult(null);
         }
         
         var savedUser = await userManager.Users.FirstOrDefaultAsync(u => u.UserName == request.Username);
         var privateKey = new Model.PrivateKey(request.EncryptedPrivateKey, request.Iv);
         var result = await keyService.SaveKeyAsync(privateKey, savedUser!.Id);
 
-        return !result ? new AuthResult(false, "", "") : new AuthResult(true, "", "");
+        return !result ? new FailedAuthResult(null) : new AuthResponseSuccess(savedUser!.Id.ToString());
     }
 
-    public async Task<AuthResult> LoginAsync(string username, bool rememberMe)
+    public async Task<ResponseBase> LoginAsync(string username, bool rememberMe)
     {
         var managedUser = await userManager.FindByNameAsync(username);
         
@@ -66,16 +68,16 @@ public class AuthService(
         cookieService.SetAnimateAndAnonymous(rememberMe);
         await cookieService.SetJwtToken(accessToken, rememberMe);
         
-        return new AuthResult(true, managedUser.Id.ToString(), "");
+        return new AuthResponseSuccess(managedUser.Id.ToString());
     }
 
-    public async Task<AuthResult> LoginWithExternal(string emailAddress)
+    public async Task<ResponseBase> LoginWithExternal(string emailAddress)
     {
         var managedUser = await userManager.FindByEmailAsync(emailAddress);
         
         if (managedUser == null)
         {
-            return new AuthResult(false, "", "");
+            return new FailedAuthResult(null);
         }
         
         var roles = await userManager.GetRolesAsync(managedUser);
@@ -90,21 +92,21 @@ public class AuthService(
         cookieService.SetAnimateAndAnonymous(true);
         await cookieService.SetJwtToken(accessToken, true);
         
-        return new AuthResult(true, managedUser.Id.ToString(), "");
+        return new AuthResponseSuccess(managedUser.Id.ToString());
     }
 
-    public async Task<AuthResult> ExamineLoginCredentials(string username, string password)
+    public async Task<ResponseBase> ExamineLoginCredentials(string username, string password)
     {
         var managedUser = await userManager.FindByNameAsync(username);
 
         if (managedUser == null)
         {
-            return InvalidCredentials("Invalid username or password");
+            return new FailedAuthResult("Invalid username or password");
         }
 
         var lockoutResult = await ExamineLockoutEnabled(managedUser);
 
-        if (!lockoutResult.Success)
+        if (lockoutResult is FailedAuthResult)
         {
             return lockoutResult;
         }
@@ -114,21 +116,21 @@ public class AuthService(
         if (!isPasswordValid)
         {
             await userManager.AccessFailedAsync(managedUser);
-            return InvalidCredentials(userManager.GetAccessFailedCountAsync(managedUser).Result.ToString());
+            return new FailedAuthResult(userManager.GetAccessFailedCountAsync(managedUser).Result.ToString());
         }
         
         await userManager.ResetAccessFailedCountAsync(managedUser);
 
-        return new AuthResult(true, managedUser.Id.ToString(), managedUser.Email!);
+        return new AuthResponseWithEmailSuccess(managedUser.Id.ToString(), managedUser.Email!);
     }
 
-    private async Task<AuthResult> ExamineLockoutEnabled(ApplicationUser user)
+    private async Task<ResponseBase> ExamineLockoutEnabled(ApplicationUser user)
     {
         var lockoutEndDate = await userManager.GetLockoutEndDateAsync(user);
 
         if (lockoutEndDate.HasValue && lockoutEndDate.Value > DateTimeOffset.Now)
         {
-            return InvalidCredentials($"Account is locked. Try again after {lockoutEndDate.Value - DateTimeOffset.Now}");
+            return new FailedAuthResult($"Account is locked. Try again after {lockoutEndDate.Value - DateTimeOffset.Now}");
         }
 
         await userManager.SetLockoutEndDateAsync(user, null);
@@ -139,13 +141,13 @@ public class AuthService(
         {
             await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.Now.AddDays(1));
             await userManager.ResetAccessFailedCountAsync(user);
-            return InvalidCredentials("Account is locked. Try again after 1 day");
+            return new FailedAuthResult("Account is locked. Try again after 1 day");
         }
 
-        return new AuthResult(true, "", "");
+        return new AuthResponseSuccess(null);
     }
 
-    public async Task<AuthResult> LogOut(string userId)
+    public async Task<ResponseBase> LogOut(string userId)
     {
         var user = userManager.Users.FirstOrDefault(user => user.Id.ToString() == userId);
         user!.SetRefreshToken(string.Empty);
@@ -153,13 +155,6 @@ public class AuthService(
         user.SetRefreshTokenExpires(null);
         await userManager.UpdateAsync(user);
         cookieService.DeleteCookies();
-        return new AuthResult(true, "-", "-");
-    }
-
-    private FailedAuthResult InvalidCredentials(string message)
-    {
-        var result = new FailedAuthResult(false, "-", "-", message);
-        result.ErrorMessages.Add("Bad credentials", "Invalid email");
-        return result;
+        return new AuthResponseSuccess(null);
     }
 }

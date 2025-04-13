@@ -38,7 +38,14 @@ public class Startup(IConfiguration configuration)
 
         services.AddHttpContextAccessor();
         services.AddControllers(options =>
-            options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
+        {
+            options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+        })
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.DefaultIgnoreCondition =
+                System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        });
 
         services.AddEndpointsApiExplorer();
 
@@ -50,7 +57,7 @@ public class Startup(IConfiguration configuration)
         services.AddSingleton<JwtRefreshTokenMiddleware>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IUserServices, UserServices>();
+        services.AddScoped<IApplicationUserService, ApplicationUserService>();
         services.AddScoped<ICookieService, CookieService>();
         services.AddScoped<IFriendConnectionService, FriendConnectionService>(); 
         services.AddScoped<IPrivateKeyService, PrivateKeyService>();

@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
-using UserService.Model.Responses.User;
 using UserService.Model;
 
 namespace UserService.Services.User;
 
-public class UserServices(UserManager<ApplicationUser> userManager, IConfiguration configuration, MainDatabaseContext context) : IUserServices
+public class ApplicationUserService(UserManager<ApplicationUser> userManager, IConfiguration configuration, MainDatabaseContext context) : IApplicationUserService
 {
     public Task<bool> ExistingUser(string id)
     {

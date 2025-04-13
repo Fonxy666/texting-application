@@ -1,9 +1,8 @@
 ﻿using UserService.Model;
-using UserService.Model.Responses.User;
 
 namespace UserService.Services.User;
 
-public interface IUserServices
+public interface IApplicationUserService
 {
     Task<bool> ExistingUser(string id);
     Task<ApplicationUser> GetUserWithSentRequests(string userId);

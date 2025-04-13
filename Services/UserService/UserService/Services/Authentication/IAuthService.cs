@@ -1,13 +1,13 @@
 ﻿using UserService.Model.Requests;
-using UserService.Model.Responses.Auth;
+using UserService.Model.Responses;
 
 namespace UserService.Services.Authentication;
 
 public interface IAuthService
 {
-    Task<AuthResult> RegisterAsync(RegistrationRequest request, string role, string imagePath);
-    Task<AuthResult> LoginAsync(string username, bool rememberMe);
-    Task<AuthResult> LoginWithExternal(string emailAddress);
-    Task<AuthResult> ExamineLoginCredentials(string username, string password);
-    Task<AuthResult> LogOut(string userId);
+    Task<ResponseBase> RegisterAsync(RegistrationRequest request, string role, string imagePath);
+    Task<ResponseBase> LoginAsync(string username, bool rememberMe);
+    Task<ResponseBase> LoginWithExternal(string emailAddress);
+    Task<ResponseBase> ExamineLoginCredentials(string username, string password);
+    Task<ResponseBase> LogOut(string userId);
 }

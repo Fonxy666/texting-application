@@ -6,7 +6,7 @@ using UserService.Model;
 
 namespace UserService.Services.FriendConnection;
 
-public class FriendConnectionService(MainDatabaseContext context, IUserServices userServices) : IFriendConnectionService
+public class FriendConnectionService(MainDatabaseContext context, IApplicationUserService userServices) : IFriendConnectionService
 {
     private MainDatabaseContext Context { get; } = context;
 

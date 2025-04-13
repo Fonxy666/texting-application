@@ -20,7 +20,7 @@ public class UserController(
     UserManager<ApplicationUser> userManager,
     IAuthService authenticationService,
     MainDatabaseContext repository,
-    IUserServices userServices,
+    IApplicationUserService userServices,
     ILogger<UserController> logger,
     IEmailSender emailSender,
     IFriendConnectionService friendConnectionService,
