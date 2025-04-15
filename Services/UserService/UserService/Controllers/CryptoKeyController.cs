@@ -3,11 +3,12 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using UserService.Model.Responses.User;
 using UserService.Model;
 using UserService.Services.PrivateKeyFolder;
 using UserService.Services.EncryptedSymmetricKeyService;
 using UserService.Model.Requests;
+using UserService.Model.Responses;
+using UserService.Services.User;
 
 namespace Server.Controllers;
 
@@ -17,20 +18,29 @@ public class CryptoKeyController(
     IPrivateKeyService privateKeyService,
     ILogger<CryptoKeyController> logger,
     UserManager<ApplicationUser> userManager,
-    ISymmetricKeyService keyService
+    ISymmetricKeyService keyService,
+    IApplicationUserService userService
     ) : ControllerBase
 {
     [HttpGet("GetPrivateKeyAndIv"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<PrivateKeyResponse>> GetPrivateKeyAndIv()
+    public async Task<ActionResult<ResponseBase>> GetPrivateKeyAndIv()
     {
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userGuid = new Guid(userId!);
+            if (userId == null)
+            {
+                return BadRequest(new FailedUserResponseWithMessage("There is no Userid provided."));
+            }
 
-            var privateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(userGuid);
+            var privateKeyResponse = await privateKeyService.GetEncryptedKeyByUserIdAsync(userId);
 
-            return Ok(new PrivateKeyResponse(privateKey.EncryptedPrivateKey, privateKey.Iv));
+            if (privateKeyResponse is FailedUserResponse)
+            {
+                return BadRequest(privateKeyResponse);
+            }
+
+            return Ok(privateKeyResponse);
         }
         catch (Exception e)
         {
@@ -40,27 +50,24 @@ public class CryptoKeyController(
     }
 
     [HttpGet("GetPrivateUserKey"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<string>> GetPrivateUserKey([FromQuery] string roomId)
+    public async Task<ActionResult<ResponseBase>> GetPrivateUserKey([FromQuery] string roomId)
     {
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var userGuid = new Guid(userId!);
-            var roomGuid = new Guid(roomId);
-
-            var existingUser = await userManager.Users
-                .Include(u => u.UserSymmetricKeys)
-                .FirstOrDefaultAsync(u => u.Id == userGuid && u.UserSymmetricKeys.Any(k => k.RoomId == roomGuid));
-
-            if (existingUser == null)
+            if (userId == null)
             {
-                return NotFound();
+                return BadRequest(new FailedUserResponseWithMessage("There is no Userid provided."));
             }
 
-            var userKey = existingUser.UserSymmetricKeys.FirstOrDefault(key => key.RoomId == roomGuid);
+            var getKeyResponse = await userService.GetUserPrivatekeyForRoomAsync(userId!, roomId);
 
-            return Ok(new { encryptedKey = userKey!.EncryptedKey });
+            if (getKeyResponse is FailedUserResponseWithMessage error)
+            {
+                return BadRequest(new FailedUserResponse());
+            }
+
+            return Ok(getKeyResponse as PrivateKeyResponseSuccess);
         }
         catch (Exception e)
         {

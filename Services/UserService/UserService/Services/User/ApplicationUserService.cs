@@ -53,6 +53,31 @@ public class ApplicationUserService(UserManager<ApplicationUser> userManager, IC
             .Include(u => u.SentFriendRequests)
             .FirstOrDefaultAsync(u => u.Id == userGuid).Result!);
     }
+    public async Task<ResponseBase> GetUserPrivatekeyForRoomAsync(string userId, string roomId)
+    {
+        if (!Guid.TryParse(userId, out var userGuid))
+        {
+            return new FailedUserResponseWithMessage("Invalid Userid format.");
+        }
+
+        if (!Guid.TryParse(roomId, out var roomGuid))
+        {
+            return new FailedUserResponseWithMessage("Invalid Roomid format.");
+        }
+
+        var existingUser = await userManager.Users
+                .Include(u => u.UserSymmetricKeys)
+                .FirstOrDefaultAsync(u => u.Id == userGuid && u.UserSymmetricKeys.Any(k => k.RoomId == roomGuid));
+
+        if (existingUser == null)
+        {
+            return new FailedUserResponseWithMessage("Cannot find the key for this user.");
+        }
+
+        var userKey = existingUser.UserSymmetricKeys.FirstOrDefault(key => key.RoomId == roomGuid)!.ToString();
+
+        return new PrivateKeyResponseSuccess(userKey!);
+    }
 
     public string SaveImageLocally(string userNameFileName, string base64Image)
     {

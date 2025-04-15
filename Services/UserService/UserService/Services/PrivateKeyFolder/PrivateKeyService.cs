@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using UserService.Model;
-using UserService.Model.Responses.User;
+using UserService.Model.Responses;
 
 namespace UserService.Services.PrivateKeyFolder;
 
@@ -17,7 +17,7 @@ public class PrivateKeyService : IPrivateKeyService
         _vaultAddress = configuration["HashiCorpAddress"] ?? throw new Exception("Vault address missing!");
     }
 
-    public async Task<PrivateKeyResponse> GetEncryptedKeyByUserIdAsync(Guid userId)
+    public async Task<ResponseBase> GetEncryptedKeyByUserIdAsync(string userId)
     {
         try
         {
@@ -41,18 +41,18 @@ public class PrivateKeyService : IPrivateKeyService
 
             if (endToEndEncryptedPrivateKey != null && iv != null)
             {
-                return new PrivateKeyResponse(endToEndEncryptedPrivateKey, iv);
+                return new PrivateKeyResponseSuccess(endToEndEncryptedPrivateKey, iv);
             }
             else
             {
                 Console.WriteLine("Key not found in the Vault response.");
-                return null;
+                return new FailedUserResponse();
             }
         }
         catch (Exception e)
         {
             Console.WriteLine($"Error retrieving key: {e.Message}");
-            return null;
+            return new FailedUserResponse();
         }
     }
 

@@ -62,21 +62,15 @@ public class AuthService(
 
         var existingUser = await userManager.FindByNameAsync(userName);
 
-        if (existingUser == null)
-        {
-            logger.LogError($"{request.UserName} is not registered.");
-            return new FailedAuthResult();
-        }
-
-        var codeExamineResult = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(existingUser.Email!, token, "login");
+        var codeExamineResult = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(existingUser!.Email!, token, "login");
 
         if (!codeExamineResult)
         {
-            logger.LogError($"The provided login code is not correct.");
-            return new FailedAuthResult();
+            logger.LogError("The provided login code is not correct.");
+            return new FailedAuthResultWithMessage("The provided login code is not correct.");
         }
 
-        var encryptedPrivateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser.Id);
+        var encryptedPrivateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser.Id.ToString());
 
         var roles = await userManager.GetRolesAsync(existingUser);
         

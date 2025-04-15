@@ -10,6 +10,7 @@ using UserService.Services.User;
 using UserService.Services.EmailSender;
 using UserService.Services.Authentication;
 using UserService.Model.Requests;
+using Newtonsoft.Json.Linq;
 
 namespace UserService.Controllers;
 
@@ -92,16 +93,19 @@ public class AuthController(
         {
             var result = await authenticationService.ExamineLoginCredentialsAsync(request.UserName, request.Password);
         
-            if (result is FailedAuthResult)
+            if (result is FailedAuthResultWithMessage error)
             {
-                return BadRequest(result);
+                return error.Message switch
+                {
+                    var msg when msg == $"{request.UserName} is not registered." => NotFound(error),
+                    "The provided login code is not correct." => BadRequest(error),
+                    _ => BadRequest(error)
+                };
             }
         
-            const string subject = "Verification code";
             var successResult = result as AuthResponseWithEmailSuccess;
-            var message = $"{subject}: {EmailSenderCodeGenerator.GenerateShortToken(successResult!.Email, "login")}";
 
-            await emailSender.SendEmailAsync(successResult.Email, "login");
+            await emailSender.SendEmailAsync(successResult!.Email, "login");
 
             return Ok(new AuthResponseSuccessWithId(successResult.Id));
         }
