@@ -2,17 +2,35 @@
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using UserService.Model;
+using UserService.Model.Responses;
 
 namespace UserService.Services.User;
 
 public class ApplicationUserService(UserManager<ApplicationUser> userManager, IConfiguration configuration, MainDatabaseContext context) : IApplicationUserService
 {
-    public Task<bool> ExistingUser(string id)
+    public Task<bool> ExamineUserExistingWithIdAsync(string id)
     {
         return userManager.Users.AnyAsync(user => user.Id.ToString() == id);
     }
 
-    public Task<ApplicationUser> GetUserWithSentRequests(string userId)
+    public async Task<ResponseBase> ExamineUserNotExistingAsync(string Username, string Email)
+    {
+        var userWithSameEmail = await userManager.FindByEmailAsync(Email);
+        if (userWithSameEmail != null)
+        {
+            return new FailedAuthResultWithMessage("This E-mail address is already taken.");
+        }
+
+        var userWithSameUserName = await userManager.FindByEmailAsync(Username);
+        if (userWithSameEmail != null)
+        {
+            return new FailedAuthResultWithMessage("This Username is already taken.");
+        }
+
+        return new AuthResponseSuccess();
+    }
+
+    public Task<ApplicationUser> GetUserWithSentRequestsAsync(string userId)
     {
         if (!Guid.TryParse(userId, out var userGuid))
         {
@@ -24,7 +42,7 @@ public class ApplicationUserService(UserManager<ApplicationUser> userManager, IC
             .FirstOrDefaultAsync(u => u.Id == userGuid).Result!);
     }
 
-    public Task<ApplicationUser> GetUserWithReceivedRequests(string userId)
+    public Task<ApplicationUser> GetUserWithReceivedRequestsAsync(string userId)
     {
         if (!Guid.TryParse(userId, out var userGuid))
         {

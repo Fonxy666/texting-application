@@ -8,7 +8,8 @@ public record AuthRequest(
 
 public record GetEmailForVerificationRequest(
     [Required(ErrorMessage = "E-mail cannot be null.")]
-    [EmailAddress(ErrorMessage = "The provided string is not an e-mail.")] string Email);
+    [EmailAddress(ErrorMessage = "The provided string is not an e-mail.")] string Email,
+    [Required(ErrorMessage = "Username cannot be null.")] string Username);
 
 public record LoginAuth(
     [Required(ErrorMessage = "Username cannot be null.")] string UserName,

@@ -28,7 +28,7 @@ export class RegistrationComponent {
 
     sendVerifyEmail(data: any) {
         this.isLoading = true;
-        this.authService.sendVerifyEmail({ Email: data.email })
+        this.authService.sendVerifyEmail({ Email: data.email, Username: data.username })
         .subscribe((response: any) => {
             if (response) {
                 this.user = data;

@@ -4,14 +4,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Model.Responses;
 using UserService.Services.User;
 using UserService.Services.EmailSender;
-using UserService.Model;
 using UserService.Services.Authentication;
-using UserService.Services.PrivateKeyFolder;
 using UserService.Model.Requests;
 
 namespace UserService.Controllers;
@@ -23,25 +20,20 @@ public class AuthController(
     IApplicationUserService userServices,
     IEmailSender emailSender,
     ILogger<AuthController> logger,
-    UserManager<ApplicationUser> userManager,
-    IPrivateKeyService privateKeyService,
     IConfiguration configuration) : ControllerBase
 {
     [HttpPost("SendEmailVerificationToken")]
-    public async Task<ActionResult<string>> SendEmailVerificationCode([FromBody]GetEmailForVerificationRequest receiver)
+    public async Task<ActionResult<ResponseBase>> SendEmailVerificationCode([FromBody]GetEmailForVerificationRequest receiver)
     {
         try
         {
-            var message = $"Verification code: {EmailSenderCodeGenerator.GenerateLongToken(receiver.Email, "registration")}";
-
-            var emailSuccessfullySent = await emailSender.SendEmailAsync(receiver.Email, "Verification code", message);
-
-            if (!emailSuccessfullySent)
+            var emailResponse = await emailSender.SendEmailAsync(receiver.Email, "registration");
+            if (emailResponse is FailedAuthResult)
             {
-                return StatusCode(500, "Failed to send email.");
+                return BadRequest(emailResponse);
             }
 
-            return Ok("Successfully sent.");
+            return Ok(new AuthResponseSuccessWithMessage("Successfully sent."));
         }
         catch (Exception e)
         {
@@ -58,7 +50,7 @@ public class AuthController(
             var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(credentials.Email, credentials.VerifyCode, "registration");
             if (!result)
             {
-                return await Task.FromResult<ActionResult<string>>(BadRequest("Invalid e-mail or token."));
+                return await Task.FromResult<ActionResult<string>>(BadRequest("Invalid token."));
             }
             
             EmailSenderCodeGenerator.RemoveVerificationCode(credentials.Email, "registration");
@@ -67,7 +59,7 @@ public class AuthController(
         catch (Exception e)
         {
             logger.LogError(e, $"Wrong credit for e-mail : {credentials.Email}.");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
         
@@ -77,19 +69,19 @@ public class AuthController(
         try
         {
             var imagePath = userServices.SaveImageLocally(request.Username, request.Image);
-            var result = await authenticationService.RegisterAsync(request, "User", imagePath);
+            var result = await authenticationService.RegisterAsync(request, imagePath);
 
-            if (result is FailedAuthResult failedResult)
+            if (result is FailedAuthResult)
             {
-                return BadRequest(new FailedAuthResult(null));
+                return BadRequest(result);
             }
 
-            return Ok(new AuthResponseSuccess((result as AuthResponseSuccess)!.Id));
+            return Ok(new AuthResponseSuccessWithId((result as AuthResponseSuccessWithId)!.Id));
         }
         catch (Exception e)
         {
             logger.LogError(e, "Error during registration.");
-            return BadRequest("Error during registration.");
+            return StatusCode(500, "Internal server error.");
         }
     }
     
@@ -98,26 +90,25 @@ public class AuthController(
     {
         try
         {
-            var result = await authenticationService.ExamineLoginCredentials(request.UserName, request.Password);
+            var result = await authenticationService.ExamineLoginCredentialsAsync(request.UserName, request.Password);
         
-            if (result is FailedAuthResult failedResult)
+            if (result is FailedAuthResult)
             {
-                Console.WriteLine(failedResult);
-                return BadRequest(new FailedAuthResult(null));
+                return BadRequest(result);
             }
         
             const string subject = "Verification code";
             var successResult = result as AuthResponseWithEmailSuccess;
             var message = $"{subject}: {EmailSenderCodeGenerator.GenerateShortToken(successResult!.Email, "login")}";
 
-            await emailSender.SendEmailAsync(successResult.Email, subject, message);
+            await emailSender.SendEmailAsync(successResult.Email, "login");
 
-            return Ok(new AuthResponseSuccess(successResult.Id));
+            return Ok(new AuthResponseSuccessWithId(successResult.Id));
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Error during sending login token for user: {request.UserName}");
-            return BadRequest($"Error during sending login token for user: {request.UserName}");
+            return StatusCode(500, "Internal server error.");
         }
     }
     
@@ -126,31 +117,19 @@ public class AuthController(
     {
         try
         {
-            var existingUser = await userManager.FindByNameAsync(request.UserName);
-            if (existingUser == null)
+            var loginResult = await authenticationService.LoginAsync(request);
+
+            if (loginResult is FailedAuthResult)
             {
-                return BadRequest(new LoginResponseFailure("Invalid credentials"));
-            }
-            
-            var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(existingUser.Email!, request.Token, "login");
-        
-            if (!result)
-            {
-                return BadRequest(new LoginResponseFailure("Bad request"));
+                return BadRequest(loginResult);
             }
 
-            EmailSenderCodeGenerator.RemoveVerificationCode(existingUser.Email!, "login");
-
-            var encryptedPrivateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser.Id);
-
-            var loginResult = await authenticationService.LoginAsync(request.UserName, request.RememberMe);
-
-            return Ok(new LoginResponseSuccess(existingUser.PublicKey, encryptedPrivateKey.EncryptedPrivateKey));
+            return Ok(loginResult);
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Error during login for user: {request.UserName}");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
     
@@ -259,15 +238,14 @@ public class AuthController(
     }
     
     [HttpGet("Logout")]
-    public async Task<ActionResult<AuthResponse>> LogOut()
+    public async Task<ActionResult<ResponseBase>> Logout()
     {
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            
-            await authenticationService.LogOut(userId!);
+            var logoutResult = await authenticationService.LogOutAsync(userId!);
 
-            return Ok(new AuthResponse(true, userId!));
+            return Ok(logoutResult);
         }
         catch (Exception e)
         {

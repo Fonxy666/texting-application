@@ -4,8 +4,8 @@ using UserService.Model;
 using UserService.Model.Requests;
 using UserService.Model.Responses;
 using UserService.Services.Cookie;
+using UserService.Services.EmailSender;
 using UserService.Services.PrivateKeyFolder;
-using UserService.Services.User;
 
 namespace UserService.Services.Authentication;
 
@@ -13,11 +13,12 @@ public class AuthService(
     UserManager<ApplicationUser> userManager,
     ITokenService tokenService,
     ICookieService cookieService,
-    IApplicationUserService userServices,
-    IPrivateKeyService keyService
+    IPrivateKeyService keyService,
+    ILogger<AuthService> logger,
+    IPrivateKeyService privateKeyService
     ) : IAuthService
 {
-    public async Task<ResponseBase> RegisterAsync(RegistrationRequest request, string role, string imagePath)
+    public async Task<ResponseBase> RegisterAsync(RegistrationRequest request, string imagePath)
     {
         var user = new ApplicationUser(imagePath)
         {
@@ -34,41 +35,66 @@ public class AuthService(
 
         var createResult = await userManager.CreateAsync(user, request.Password);
 
-        var addToRoleAsync = await userManager.AddToRoleAsync(user, role);
-
-        if (!createResult.Succeeded || !addToRoleAsync.Succeeded)
+        if (!createResult.Succeeded)
         {
-            return new FailedAuthResult(null);
+            logger.LogError("Error during database save.");
+            return new FailedAuthResult();
+        }
+
+        var addToRoleAsync = await userManager.AddToRoleAsync(user, "User");
+
+        if (!addToRoleAsync.Succeeded)
+        {
+            logger.LogError("Error during adding user to role.");
+            return new FailedAuthResult();
         }
         
         var savedUser = await userManager.Users.FirstOrDefaultAsync(u => u.UserName == request.Username);
-        var privateKey = new Model.PrivateKey(request.EncryptedPrivateKey, request.Iv);
+        var privateKey = new PrivateKey(request.EncryptedPrivateKey, request.Iv);
         var result = await keyService.SaveKeyAsync(privateKey, savedUser!.Id);
 
-        return !result ? new FailedAuthResult(null) : new AuthResponseSuccess(savedUser!.Id.ToString());
+        return !result ? new FailedAuthResult() : new AuthResponseSuccessWithId(savedUser!.Id.ToString());
     }
 
-    public async Task<ResponseBase> LoginAsync(string username, bool rememberMe)
+    public async Task<ResponseBase> LoginAsync(LoginAuth request)
     {
-        var managedUser = await userManager.FindByNameAsync(username);
-        
-        var roles = await userManager.GetRolesAsync(managedUser!);
-        
-        var accessToken = tokenService.CreateJwtToken(managedUser!, roles[0], rememberMe);
+        var (userName, rememberMe, token) = request;
 
-        if (rememberMe)
+        var existingUser = await userManager.FindByNameAsync(userName);
+
+        if (existingUser == null)
         {
-            cookieService.SetRefreshToken(managedUser!);
-            await userManager.UpdateAsync(managedUser!);
+            logger.LogError($"{request.UserName} is not registered.");
+            return new FailedAuthResult();
+        }
+
+        var codeExamineResult = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(existingUser.Email!, token, "login");
+
+        if (!codeExamineResult)
+        {
+            logger.LogError($"The provided login code is not correct.");
+            return new FailedAuthResult();
+        }
+
+        var encryptedPrivateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser.Id);
+
+        var roles = await userManager.GetRolesAsync(existingUser);
+        
+        var accessToken = tokenService.CreateJwtToken(existingUser!, roles[0], request.RememberMe);
+
+        if (request.RememberMe)
+        {
+            cookieService.SetRefreshToken(existingUser);
+            await userManager.UpdateAsync(existingUser);
         }
 
         cookieService.SetRememberMeCookie(rememberMe);
-        cookieService.SetPublicKey(rememberMe, managedUser!.PublicKey);
-        cookieService.SetUserId(managedUser!.Id, rememberMe);
+        cookieService.SetPublicKey(rememberMe, existingUser.PublicKey);
+        cookieService.SetUserId(existingUser.Id, rememberMe);
         cookieService.SetAnimateAndAnonymous(rememberMe);
         await cookieService.SetJwtToken(accessToken, rememberMe);
         
-        return new AuthResponseSuccess(managedUser.Id.ToString());
+        return new LoginResponseSuccess(existingUser.PublicKey, encryptedPrivateKey.EncryptedPrivateKey);
     }
 
     public async Task<ResponseBase> LoginWithExternal(string emailAddress)
@@ -77,7 +103,7 @@ public class AuthService(
         
         if (managedUser == null)
         {
-            return new FailedAuthResult(null);
+            return new FailedAuthResult();
         }
         
         var roles = await userManager.GetRolesAsync(managedUser);
@@ -92,22 +118,24 @@ public class AuthService(
         cookieService.SetAnimateAndAnonymous(true);
         await cookieService.SetJwtToken(accessToken, true);
         
-        return new AuthResponseSuccess(managedUser.Id.ToString());
+        return new AuthResponseSuccessWithId(managedUser.Id.ToString());
     }
 
-    public async Task<ResponseBase> ExamineLoginCredentials(string username, string password)
+    public async Task<ResponseBase> ExamineLoginCredentialsAsync(string username, string password)
     {
         var managedUser = await userManager.FindByNameAsync(username);
 
         if (managedUser == null)
         {
-            return new FailedAuthResult("Invalid username or password");
+            logger.LogError("This username is not registered.");
+            return new FailedAuthResult();
         }
 
         var lockoutResult = await ExamineLockoutEnabled(managedUser);
 
-        if (lockoutResult is FailedAuthResult)
+        if (lockoutResult is FailedAuthResultWithMessage error)
         {
+            logger.LogError(error.Message);
             return lockoutResult;
         }
 
@@ -116,7 +144,8 @@ public class AuthService(
         if (!isPasswordValid)
         {
             await userManager.AccessFailedAsync(managedUser);
-            return new FailedAuthResult(userManager.GetAccessFailedCountAsync(managedUser).Result.ToString());
+            logger.LogError("Invalid password.");
+            return new FailedAuthResult();
         }
         
         await userManager.ResetAccessFailedCountAsync(managedUser);
@@ -130,7 +159,7 @@ public class AuthService(
 
         if (lockoutEndDate.HasValue && lockoutEndDate.Value > DateTimeOffset.Now)
         {
-            return new FailedAuthResult($"Account is locked. Try again after {lockoutEndDate.Value - DateTimeOffset.Now}");
+            return new FailedAuthResultWithMessage($"Account is locked. Try again after {lockoutEndDate.Value - DateTimeOffset.Now}");
         }
 
         await userManager.SetLockoutEndDateAsync(user, null);
@@ -141,13 +170,13 @@ public class AuthService(
         {
             await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.Now.AddDays(1));
             await userManager.ResetAccessFailedCountAsync(user);
-            return new FailedAuthResult("Account is locked. Try again after 1 day");
+            return new FailedAuthResultWithMessage("Account is locked. Try again after 1 day");
         }
 
-        return new AuthResponseSuccess(null);
+        return new AuthResponseSuccess();
     }
 
-    public async Task<ResponseBase> LogOut(string userId)
+    public async Task<ResponseBase> LogOutAsync(string userId)
     {
         var user = userManager.Users.FirstOrDefault(user => user.Id.ToString() == userId);
         user!.SetRefreshToken(string.Empty);
@@ -155,6 +184,6 @@ public class AuthService(
         user.SetRefreshTokenExpires(null);
         await userManager.UpdateAsync(user);
         cookieService.DeleteCookies();
-        return new AuthResponseSuccess(null);
+        return new AuthResponseSuccess();
     }
 }

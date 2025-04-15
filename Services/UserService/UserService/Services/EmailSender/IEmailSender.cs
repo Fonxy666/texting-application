@@ -1,7 +1,10 @@
-﻿namespace UserService.Services.EmailSender;
+﻿using UserService.Model.Requests;
+using UserService.Model.Responses;
+
+namespace UserService.Services.EmailSender;
 
 public interface IEmailSender
 {
-    Task<bool> SendEmailAsync(string email, string subject, string message);
+    Task<ResponseBase> SendEmailAsync(string UserEmail, string tokenType);
     Task<bool> SendEmailWithLinkAsync(string email, string subject, string userId);
 }
