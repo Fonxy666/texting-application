@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
-using UserService.Model;
-using UserService.Model.Responses;
+using UserService.Models;
+using UserService.Models.Responses;
 
 namespace UserService.Services.User;
 
@@ -13,7 +13,7 @@ public class ApplicationUserService(UserManager<ApplicationUser> userManager, IC
         return userManager.Users.AnyAsync(user => user.Id.ToString() == id);
     }
 
-    public async Task<ResponseBase> ExamineUserNotExistingAsync(string Username, string Email)
+    public async Task<ResponseBase> ExamineUserNotExistingAsync(string UserName, string Email)
     {
         var userWithSameEmail = await userManager.FindByEmailAsync(Email);
         if (userWithSameEmail != null)
@@ -21,7 +21,7 @@ public class ApplicationUserService(UserManager<ApplicationUser> userManager, IC
             return new FailedAuthResultWithMessage("This E-mail address is already taken.");
         }
 
-        var userWithSameUserName = await userManager.FindByEmailAsync(Username);
+        var userWithSameUserName = await userManager.FindByEmailAsync(UserName);
         if (userWithSameEmail != null)
         {
             return new FailedAuthResultWithMessage("This Username is already taken.");
@@ -32,10 +32,7 @@ public class ApplicationUserService(UserManager<ApplicationUser> userManager, IC
 
     public Task<ApplicationUser> GetUserWithSentRequestsAsync(string userId)
     {
-        if (!Guid.TryParse(userId, out var userGuid))
-        {
-            throw new ArgumentException("Invalid id format.");
-        }
+        var userGuid = new Guid(userId);
 
         return Task.FromResult(userManager.Users
             .Include(u => u.SentFriendRequests)
@@ -44,10 +41,7 @@ public class ApplicationUserService(UserManager<ApplicationUser> userManager, IC
 
     public Task<ApplicationUser> GetUserWithReceivedRequestsAsync(string userId)
     {
-        if (!Guid.TryParse(userId, out var userGuid))
-        {
-            throw new ArgumentException("Invalid id format.");
-        }
+        var userGuid = new Guid(userId);
 
         return Task.FromResult(userManager.Users
             .Include(u => u.SentFriendRequests)
@@ -55,16 +49,12 @@ public class ApplicationUserService(UserManager<ApplicationUser> userManager, IC
     }
     public async Task<ResponseBase> GetUserPrivatekeyForRoomAsync(string userId, string roomId)
     {
-        if (!Guid.TryParse(userId, out var userGuid))
-        {
-            return new FailedUserResponseWithMessage("Invalid Userid format.");
-        }
-
         if (!Guid.TryParse(roomId, out var roomGuid))
         {
             return new FailedUserResponseWithMessage("Invalid Roomid format.");
         }
 
+        var userGuid = new Guid(userId);
         var existingUser = await userManager.Users
                 .Include(u => u.UserSymmetricKeys)
                 .FirstOrDefaultAsync(u => u.Id == userGuid && u.UserSymmetricKeys.Any(k => k.RoomId == roomGuid));
@@ -76,10 +66,39 @@ public class ApplicationUserService(UserManager<ApplicationUser> userManager, IC
 
         var userKey = existingUser.UserSymmetricKeys.FirstOrDefault(key => key.RoomId == roomGuid)!.ToString();
 
-        return new PrivateKeyResponseSuccess(userKey!);
+        return new KeyResponseSuccess(userKey!);
     }
 
-    public string SaveImageLocally(string userNameFileName, string base64Image)
+    public async Task<ResponseBase> GetRoommatePublicKey(string userName)
+    {
+        var existingUser = await userManager.FindByNameAsync(userName);
+        if (existingUser == null)
+        {
+            return new FailedUserResponseWithMessage($"There is no user with this Username: {userManager}");
+        }
+
+        return new KeyResponseSuccess(existingUser.PublicKey);
+    }
+    public async Task<ResponseBase> ExamineIfUserHaveSymmetricKeyForRoom(string userName, string roomId)
+    {
+        if (!Guid.TryParse(roomId, out var roomGuid))
+        {
+            return new FailedUserResponseWithMessage("Invalid Roomid format.");
+        }
+
+        var userExisting = await userManager.Users
+                .Include(u => u.UserSymmetricKeys)
+                .AnyAsync(u => u.UserName == userName && u.UserSymmetricKeys.Any(k => k.RoomId == roomGuid));
+
+        if (!userExisting)
+        {
+            return new FailedUserResponseWithMessage($"There is no key or user with this Username: {userName}");
+        }
+
+        return new UserResponseSuccess();
+    }
+
+    public string SaveImageLocally(string usernameFileName, string base64Image)
     {
         var folderPath = configuration["ImageFolderPath"]??Path.Combine(Directory.GetCurrentDirectory(), "Avatars");
         
@@ -88,7 +107,7 @@ public class ApplicationUserService(UserManager<ApplicationUser> userManager, IC
             Directory.CreateDirectory(folderPath);
         }
 
-        var imageName = userNameFileName + ".png";
+        var imageName = usernameFileName + ".png";
         var imagePath = Path.Combine(folderPath, imageName);
 
         try
@@ -124,6 +143,8 @@ public class ApplicationUserService(UserManager<ApplicationUser> userManager, IC
         }
         return contentType;
     }
+
+    public async 
 
     public async Task<DeleteUserResponse> DeleteAsync(ApplicationUser user)
     {

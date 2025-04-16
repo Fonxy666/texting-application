@@ -1,14 +1,12 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNet.SignalR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using UserService.Models;
 using UserService.Services.PrivateKeyFolder;
 using UserService.Services.EncryptedSymmetricKeyService;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
 using UserService.Services.User;
+using UserService.Filters;
 
 namespace Server.Controllers;
 
@@ -17,17 +15,18 @@ namespace Server.Controllers;
 public class CryptoKeyController(
     IPrivateKeyService privateKeyService,
     ILogger<CryptoKeyController> logger,
-    UserManager<ApplicationUser> userManager,
     ISymmetricKeyService keyService,
     IApplicationUserService userService
     ) : ControllerBase
 {
-    [HttpGet("GetPrivateKeyAndIv"), Authorize(Roles = "User, Admin")]
+    [HttpGet("GetPrivateKeyAndIv")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
     public async Task<ActionResult<ResponseBase>> GetPrivateKeyAndIv()
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = (string)HttpContext.Items["UserId"]!;
             if (userId == null)
             {
                 return BadRequest(new FailedUserResponseWithMessage("There is no Userid provided."));
@@ -45,20 +44,18 @@ public class CryptoKeyController(
         catch (Exception e)
         {
             logger.LogError(e, "Error registering the room");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
 
-    [HttpGet("GetPrivateUserKey"), Authorize(Roles = "User, Admin")]
+    [HttpGet("GetPrivateUserKey")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
     public async Task<ActionResult<ResponseBase>> GetPrivateUserKey([FromQuery] string roomId)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                return BadRequest(new FailedUserResponseWithMessage("There is no Userid provided."));
-            }
+            var userId = (string)HttpContext.Items["UserId"]!;
 
             var getKeyResponse = await userService.GetUserPrivatekeyForRoomAsync(userId!, roomId);
 
@@ -67,60 +64,63 @@ public class CryptoKeyController(
                 return BadRequest(new FailedUserResponse());
             }
 
-            return Ok(getKeyResponse as PrivateKeyResponseSuccess);
+            return Ok(getKeyResponse);
         }
         catch (Exception e)
         {
             logger.LogError(e, "Error registering the room");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
 
-    [HttpPost("SaveEncryptedRoomKey"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<string>> SaveEncryptedRoomKey([FromBody] StoreRoomKeyRequest data)
+    [HttpPost("SaveEncryptedRoomKey")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<ResponseBase>> SaveEncryptedRoomKey([FromBody] StoreRoomKeyRequest data)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var userGuid = new Guid(userId!);
+            var userGuid = (Guid)HttpContext.Items["UserId"]!;
             var roomGuid = new Guid(data.RoomId);
 
             var newKey = new EncryptedSymmetricKey(userGuid, data.EncryptedKey, roomGuid);
 
             var result = await keyService.SaveNewKeyAndLinkToUserAsync(newKey);
 
-            if (result == null)
+            if (result is FailedUserResponse)
             {
-                return BadRequest("Error saving the new key");
+                return BadRequest(result);
             }
 
-            return Ok(new { data.EncryptedKey });
+            return Ok(result);
         }
         catch (Exception e)
         {
             logger.LogError(e, "Error saving the key.");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
 
-    [HttpGet("GetPublicKey"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult> GetPublicKey([FromQuery] string userName)
+    [HttpGet("GetPublicKey")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<ResponseBase>> GetPublicKey([FromQuery] string userName)
     {
         try
         {
-            var existingUser = await userManager.FindByNameAsync(userName);
-            if (existingUser == null)
+            var keyResponse = await userService.GetRoommatePublicKey(userName);
+
+            if (keyResponse is FailedUserResponseWithMessage)
             {
-                return BadRequest($"There is no user with this Username: {userManager}");
+                return BadRequest(keyResponse);
             }
 
-            return Ok(new { existingUser.PublicKey });
+            return Ok(keyResponse);
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Error getting public key for {userName}.");
-            return StatusCode(500, new { message = $"An error occurred while trying to get public key for user {userName}." });
+            return StatusCode(500, "Internal server error.");
         }
     }
 
@@ -129,22 +129,19 @@ public class CryptoKeyController(
     {
         try
         {
-            var roomGuid = new Guid(roomId);
-            var existingUser = await userManager.Users
-                .Include(u => u.UserSymmetricKeys)
-                .FirstOrDefaultAsync(u => u.UserName == userName && u.UserSymmetricKeys.Any(k => k.RoomId == roomGuid));
+            var keyExisting = await userService.ExamineIfUserHaveSymmetricKeyForRoom(userName, roomId);
 
-            if (existingUser == null)
+            if (keyExisting is FailedUserResponseWithMessage)
             {
-                return BadRequest($"There is no key or user with this Username: {userName}");
+                return BadRequest(keyExisting);
             }
 
-            return Ok(true);
+            return Ok(keyExisting);
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Error getting public key for {userName}.");
-            return StatusCode(500, new { message = $"An error occurred while trying to get public key for user {userName}." });
+            return StatusCode(500, "Internal server error.");
         }
     }
 }

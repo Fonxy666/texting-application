@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
-using UserService.Model;
-using UserService.Model.Responses;
+using UserService.Models;
+using UserService.Models.Responses;
 
 namespace UserService.Services.PrivateKeyFolder;
 
@@ -41,7 +41,7 @@ public class PrivateKeyService : IPrivateKeyService
 
             if (endToEndEncryptedPrivateKey != null && iv != null)
             {
-                return new PrivateKeyResponseSuccess(endToEndEncryptedPrivateKey, iv);
+                return new PrivateKeyResponseSuccessWithIv(endToEndEncryptedPrivateKey, iv);
             }
             else
             {
@@ -56,7 +56,7 @@ public class PrivateKeyService : IPrivateKeyService
         }
     }
 
-    public async Task<bool> SaveKeyAsync(PrivateKey key, Guid userId)
+    public async Task<ResponseBase> SaveKeyAsync(PrivateKey key, Guid userId)
     {
         try
         {
@@ -84,25 +84,25 @@ public class PrivateKeyService : IPrivateKeyService
             using var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
-            return true;
+            return new UserResponseSuccess();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[Vault] Failed to save key: {ex.Message}");
-            return false;
+            return new FailedUserResponse();
         }
     }
 
-    public async Task<bool> DeleteKey(Guid userId)
+    public async Task<ResponseBase> DeleteKey(string userId)
     {
         try
         {
-            return true;
+            return new UserResponseSuccess();
         }
         catch (Exception e)
         {
             Console.WriteLine($"Error deleting key: {e.Message}");
-            return false;
+            return new FailedUserResponse();
         }
     }
 }

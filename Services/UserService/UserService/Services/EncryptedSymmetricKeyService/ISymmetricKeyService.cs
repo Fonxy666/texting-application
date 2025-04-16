@@ -1,8 +1,9 @@
-﻿using UserService.Model;
+﻿using UserService.Models;
+using UserService.Models.Responses;
 
 namespace UserService.Services.EncryptedSymmetricKeyService;
 
 public interface ISymmetricKeyService
 {
-    Task<bool> SaveNewKeyAndLinkToUserAsync(EncryptedSymmetricKey symmetricKey);
+    Task<ResponseBase> SaveNewKeyAndLinkToUserAsync(EncryptedSymmetricKey symmetricKey);
 }

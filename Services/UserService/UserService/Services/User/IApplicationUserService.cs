@@ -1,5 +1,5 @@
-﻿using UserService.Model;
-using UserService.Model.Responses;
+﻿using UserService.Models;
+using UserService.Models.Responses;
 
 namespace UserService.Services.User;
 
@@ -10,6 +10,8 @@ public interface IApplicationUserService
     Task<ApplicationUser> GetUserWithSentRequestsAsync(string userId);
     Task<ApplicationUser> GetUserWithReceivedRequestsAsync(string userId);
     Task<ResponseBase> GetUserPrivatekeyForRoomAsync(string userId, string roomId);
+    Task<ResponseBase> GetRoommatePublicKey(string Username);
+    Task<ResponseBase> ExamineIfUserHaveSymmetricKeyForRoom(string userName, string roomId);
     string SaveImageLocally(string userNameFileName, string base64Image);
     string GetContentType(string filePath);
     Task<DeleteUserResponse> DeleteAsync(ApplicationUser user);

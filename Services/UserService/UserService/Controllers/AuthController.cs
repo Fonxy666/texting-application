@@ -137,8 +137,8 @@ public class AuthController(
         }
     }
     
-    [ExcludeFromCodeCoverage]
     [HttpGet("LoginWithFacebook")]
+    [ExcludeFromCodeCoverage]
     public async Task FacebookLogin()
     {
         try
@@ -155,8 +155,8 @@ public class AuthController(
         }
     }
     
-    [ExcludeFromCodeCoverage]
     [HttpGet("FacebookResponse")]
+    [ExcludeFromCodeCoverage]
     public async Task<IActionResult> FacebookResponse()
     {
         try
@@ -189,8 +189,8 @@ public class AuthController(
         }
     }
     
-    [ExcludeFromCodeCoverage]
     [HttpGet("LoginWithGoogle")]
+    [ExcludeFromCodeCoverage]
     public async Task GoogleLogin()
     {
         try
@@ -207,8 +207,8 @@ public class AuthController(
         }
     }
 
-    [ExcludeFromCodeCoverage]
     [HttpGet("GoogleResponse")]
+    [ExcludeFromCodeCoverage]
     public async Task<IActionResult> GoogleResponse()
     {
         try
@@ -242,11 +242,12 @@ public class AuthController(
     }
     
     [HttpGet("Logout")]
+    [RequireUserIdCookie]
     public async Task<ActionResult<ResponseBase>> Logout()
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = (Guid)HttpContext.Items["UserId"]!;
             var logoutResult = await authenticationService.LogOutAsync(userId!);
 
             return Ok(logoutResult);

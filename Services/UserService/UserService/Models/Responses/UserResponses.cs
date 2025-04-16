@@ -15,13 +15,15 @@ public record ForgotPasswordSuccess(string Message) : UserResponse<string>(true,
 
 public record FriendHubFriendSuccess(FriendHubFriendData Data) : UserResponse<FriendHubFriendData>(true, Data);
 
-public record PrivateKeyResponseSuccess(string EncryptedKey) : UserResponse<string>(true, EncryptedKey);
+public record KeyResponseSuccess(string Key) : UserResponse<string>(true, Key);
 
 public record PrivateKeyResponseSuccessWithIv(string EncryptedKey, string Iv) : UserResponse<(string, string)>(true, (EncryptedKey, Iv));
 
 public record ShowFriendRequestResponseSuccess(ShowFriendRequestData Data) : UserResponse<ShowFriendRequestData>(true, Data);
 
-public record UsernameResponseSuccess(string Username) : UserResponse<string>(true, Username);
+public record UserResponseSuccess() : UserResponse<string>(true);
+
+public record UsernameResponseSuccessWithUsername(string Username) : UserResponse<string>(true, Username);
 
 public record UserResponseForWsSuccess(string UserId, string ConnectionId) : UserResponse<(string, string)>(true, (UserId, ConnectionId));
 
