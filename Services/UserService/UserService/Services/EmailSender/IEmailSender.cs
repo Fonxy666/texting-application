@@ -1,5 +1,4 @@
-﻿using UserService.Model.Requests;
-using UserService.Model.Responses;
+﻿using UserService.Models.Responses;
 
 namespace UserService.Services.EmailSender;
 

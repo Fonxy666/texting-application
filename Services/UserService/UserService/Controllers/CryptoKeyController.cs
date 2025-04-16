@@ -3,11 +3,11 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using UserService.Model;
+using UserService.Models;
 using UserService.Services.PrivateKeyFolder;
 using UserService.Services.EncryptedSymmetricKeyService;
-using UserService.Model.Requests;
-using UserService.Model.Responses;
+using UserService.Models.Requests;
+using UserService.Models.Responses;
 using UserService.Services.User;
 
 namespace Server.Controllers;

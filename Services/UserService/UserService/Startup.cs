@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using UserService.Database;
 using UserService.Hub;
-using UserService.Model;
+using UserService.Models;
 using UserService.Services.Authentication;
 using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
@@ -19,6 +19,7 @@ using UserService.Services.gRPCServices;
 using UserService.Middlewares;
 using JwtRefreshMiddlewareLibrary;
 using UserService.Services.EncryptedSymmetricKeyService;
+using UserService.Filters;
 
 namespace UserService;
 
@@ -40,6 +41,7 @@ public class Startup(IConfiguration configuration)
         services.AddControllers(options =>
         {
             options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+            options.Filters.Add<ValidateModelAttribute>();
         })
         .AddJsonOptions(options =>
         {

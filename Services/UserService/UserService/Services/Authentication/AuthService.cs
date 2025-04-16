@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using UserService.Model;
-using UserService.Model.Requests;
-using UserService.Model.Responses;
+using UserService.Models;
+using UserService.Models.Requests;
+using UserService.Models.Responses;
 using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
 using UserService.Services.PrivateKeyFolder;

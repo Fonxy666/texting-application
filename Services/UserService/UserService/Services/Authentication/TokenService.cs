@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
-using UserService.Model;
+using UserService.Models;
 
 namespace UserService.Services.Authentication;
 

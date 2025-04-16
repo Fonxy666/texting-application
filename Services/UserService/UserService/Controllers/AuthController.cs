@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
-using UserService.Model.Responses;
+using UserService.Models.Responses;
 using UserService.Services.User;
 using UserService.Services.EmailSender;
 using UserService.Services.Authentication;
-using UserService.Model.Requests;
-using Newtonsoft.Json.Linq;
+using UserService.Models.Requests;
+using UserService.Filters;
 
 namespace UserService.Controllers;
 
@@ -63,7 +63,7 @@ public class AuthController(
             return StatusCode(500, "Internal server error.");
         }
     }
-        
+
     [HttpPost("Register")]
     public async Task<ActionResult<ResponseBase>> Register([FromBody]RegistrationRequest request)
     {
@@ -85,7 +85,7 @@ public class AuthController(
             return StatusCode(500, "Internal server error.");
         }
     }
-    
+
     [HttpPost("SendLoginToken")]
     public async Task<ActionResult<ResponseBase>> SendLoginToken([FromBody]AuthRequest request)
     {
@@ -115,7 +115,7 @@ public class AuthController(
             return StatusCode(500, "Internal server error.");
         }
     }
-    
+
     [HttpPost("Login")]
     public async Task<ActionResult<ResponseBase>> Login([FromBody]LoginAuth request)
     {
