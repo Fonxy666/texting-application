@@ -1,4 +1,4 @@
-﻿namespace UserService.Model;
+﻿namespace UserService.Models;
 
 public class PrivateKey
 {

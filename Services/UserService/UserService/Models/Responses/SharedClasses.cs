@@ -1,3 +1,3 @@
-﻿namespace UserService.Model.Responses;
+﻿namespace UserService.Models.Responses;
 
 public abstract record ResponseBase(bool IsSuccess);

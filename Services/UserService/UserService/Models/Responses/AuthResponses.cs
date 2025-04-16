@@ -1,4 +1,4 @@
-﻿namespace UserService.Model.Responses;
+﻿namespace UserService.Models.Responses;
 
 public abstract record AuthResponse<T>(bool IsSuccess, T? Data = default) : ResponseBase(IsSuccess);
 

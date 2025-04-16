@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace UserService.Model.Requests;
+namespace UserService.Models.Requests;
 
 public record AuthRequest(
     [Required(ErrorMessage = "Username cannot be null.")] string UserName,
