@@ -4,6 +4,7 @@ using UserService.Models.Responses;
 
 namespace UserService.Filters;
 
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class RequireUserIdCookieAttribute : Attribute, IAuthorizationFilter
 {
     public void OnAuthorization(AuthorizationFilterContext context)

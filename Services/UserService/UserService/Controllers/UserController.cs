@@ -1,99 +1,104 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using UserService.Model.Responses.User;
-using UserService.Model.Requests;
-using UserService.Model.Responses.Auth;
 using UserService.Services.FriendConnection;
 using UserService.Services.User;
 using UserService.Services.EmailSender;
-using UserService.Model;
 using UserService.Services.Authentication;
+using UserService.Models.Responses;
+using UserService.Filters;
+using UserService.Models.Requests;
 
 namespace UserService.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
 public class UserController(
-    UserManager<ApplicationUser> userManager,
     IAuthService authenticationService,
     MainDatabaseContext repository,
     IApplicationUserService userServices,
     ILogger<UserController> logger,
-    IEmailSender emailSender,
     IFriendConnectionService friendConnectionService,
-    IConfiguration configuration
+    IConfiguration configuration,
+    IApplicationUserService userService
     ) : ControllerBase
 {
-    [HttpGet("GetUsername"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<UsernameResponse>> GetUsername([FromQuery]string userId)
+    [HttpGet("GetUsername")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<ResponseBase>> GetUsername([FromQuery]string userId)
     {
         try
         {
-            var existingUser = await userManager.FindByIdAsync(userId);
-            if (existingUser == null)
+            var userNameResponse = await userService.GetUsernameAsync(userId);
+
+            if (userNameResponse is FailedResponseWithMessage)
             {
-                return NotFound("User not found.");
+                return NotFound(userNameResponse);
             }
 
-            var response = new UsernameResponse(existingUser.UserName!);
-
-            return response;
+            return Ok(userNameResponse);
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Error getting username for user {userId}");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
     
-    [HttpGet("GetUserCredentials"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<UserResponse>> GetUserCredentials()
+    [HttpGet("GetUserCredentials")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<ResponseBase>> GetUserCredentials()
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var existingUser = await userManager.FindByIdAsync(userId!);
+            var userId = (string)HttpContext.Items["UserId"]!;
 
-            var response = new UserResponse(existingUser.UserName, existingUser.Email, existingUser.TwoFactorEnabled);
+            var userResponse = await userService.GetUserCredentialsAsync(userId);
 
-            return response;
+            if (userResponse is FailedResponse)
+            {
+                return BadRequest(userResponse);
+            }
+
+            return Ok(userResponse);
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Error getting e-mail for user.");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
     
     [HttpGet("SendForgotPasswordToken")]
-    public async Task<ActionResult<ForgotPasswordResponse>> SendForgotPasswordEmail([FromQuery]string email)
+    public async Task<ActionResult<ResponseBase>> SendForgotPasswordEmail([FromQuery]string email)
     {
         try
         {
-            var existingUser = await userManager.FindByEmailAsync(email);
-            if (existingUser == null)
+            var emailResult = await userService.SendForgotPasswordEmailAsync(email);
+
+            if (emailResult is FailedResponseWithMessage error)
             {
-                return NotFound("User not found.");
+                return error.Message switch
+                {
+                    var msg when msg == $"User not found." => NotFound(error.Message),
+                    "Email service is currently unavailable." => StatusCode(500, error.Message)
+                };
             }
 
-            var token = await userManager.GeneratePasswordResetTokenAsync(existingUser);
-            EmailSenderCodeGenerator.StorePasswordResetCode(email, token);
-            await emailSender.SendEmailWithLinkAsync(email, "Password reset", token);
-
-            return new ForgotPasswordResponse(true, "Successfully sent.");
+            return Ok(emailResult);
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Error reset password for user {email}");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
     
     [HttpGet("ExaminePasswordResetLink")]
-    public async Task<ActionResult<bool>> ExamineResetId([FromQuery]string email, [FromQuery]string resetId)
+    public ActionResult<ResponseBase> ExamineResetId([FromQuery]string email, [FromQuery]string resetId)
     {
         try
         {
@@ -101,116 +106,90 @@ public class UserController(
 
             if (!examine)
             {
-                return BadRequest(examine);
+                return BadRequest(new FailedResponse());
             }
 
-            return Ok(examine);
+            return Ok(new AuthResponseSuccess());
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Error reset password for user {email}");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
     
     [HttpPost("SetNewPassword")]
-    public async Task<ActionResult<bool>> SetNewPassword([FromQuery]string resetId, [FromBody]PasswordResetRequest request)
+    public async Task<ActionResult<ResponseBase>> SetNewPassword([FromQuery]string resetId, [FromBody]PasswordResetRequest request)
     {
         try
         {
-            var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(request.Email, resetId, "passwordReset");
-            if (!examine)
-            {
-                return BadRequest(false);
-            }
-            
-            var existingUser = await userManager.FindByEmailAsync(request.Email);
-            var token = await userManager.GeneratePasswordResetTokenAsync(existingUser!);
-            await userManager.ResetPasswordAsync(existingUser!, token, request.NewPassword);
-            
-            await repository.SaveChangesAsync();
+            var newPasswordResult = await userService.SetNewPasswordAfterResetEmailAsync(resetId, request);
 
-            return Ok(true);
+            if (newPasswordResult is FailedResponseWithMessage)
+            {
+                return BadRequest(newPasswordResult);
+            }
+
+            return Ok(newPasswordResult);
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Error reset password for user {request.Email}");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
 
     [ExcludeFromCodeCoverage]
-    [HttpGet("GetImage"), Authorize(Roles = "User, Admin")]
+    [HttpGet("GetImage")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
     public async Task<IActionResult> GetImageWithId([FromQuery]string userId)
     {
         try
         {
-            var existingUser = await userManager.FindByIdAsync(userId);
-            if (existingUser == null)
-            {
-                return NotFound("User not found.");
-            }
-            
-            var folderPath = configuration["ImageFolderPath"] ??
-                             Path.Combine(Directory.GetCurrentDirectory(), "Avatars");
-            
-            var imagePath = Path.Combine(folderPath, $"{existingUser!.UserName}.png");
-            FileContentResult result = null;
+            var getImageResult = await userService.GetImageWithIdAsync(userId);
 
-            if (System.IO.File.Exists(imagePath))
+            if (getImageResult is FailedResponseWithMessage)
             {
-                var imageBytes = await System.IO.File.ReadAllBytesAsync(imagePath);
-                var contentType = userServices.GetContentType(imagePath);
-                
-                Response.Headers.Add("Cache-Control", "max-age=1, public");
-
-                result = File(imageBytes, contentType);
+                return NotFound(getImageResult);
             }
-            
-            return result ?? (IActionResult)NotFound();
+
+            Response.Headers.Append("Cache-Control", "max-age=1, public");
+            return Ok(getImageResult);
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Error getting avatar image for user {userId}");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
     
-    [HttpPatch("ChangeEmail"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<ChangeEmailRequest>> ChangeUserEmail([FromBody]ChangeEmailRequest request)
+    [HttpPatch("ChangeEmail")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<ResponseBase>> ChangeUserEmail([FromBody]ChangeEmailRequest request)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var existingUser = await userManager.FindByIdAsync(userId!);
+            var userId = (string)HttpContext.Items["UserId"]!;
 
-            if (!existingUser!.TwoFactorEnabled)
+            var changeEmailResponse = await userService.ChangeUserEmailAsync(request, userId);
+
+            if (changeEmailResponse is FailedResponseWithMessage error)
             {
-                return NotFound($"2FA not enabled for user: {existingUser.Id}");
+                return error.Message switch
+                {
+                    var msg when msg == $"User not found." => NotFound(error.Message),
+                    _ => BadRequest(error.Message)
+                };
             }
 
-            if (existingUser.Email != request.OldEmail)
-            {
-                return BadRequest("E-mail address not valid.");
-            }
-
-            if (userManager.Users.Any(user => user.Email == request.NewEmail))
-            {
-                return StatusCode(400);
-            }
-                
-            var token = await userManager.GenerateChangeEmailTokenAsync(existingUser, request.NewEmail);
-            await userManager.ChangeEmailAsync(existingUser, request.NewEmail, token);
-                
-            existingUser.NormalizedEmail = request.NewEmail.ToUpper();
-            await repository.SaveChangesAsync();
-            var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
-            return Ok(response);
+            return Ok(changeEmailResponse);
         }
         catch (Exception e)
         {
             logger.LogError(e, $"Error changing e-mail for user {request.OldEmail}");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
     
@@ -236,7 +215,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error changing password for user.");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
 
@@ -254,7 +233,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error changing avatar for user.");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     } 
     
@@ -280,7 +259,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error changing e-mail for user.");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
 
@@ -313,7 +292,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error sending friend request.");
-            return StatusCode(500, new { message = "An error occurred while sending the friend request." });
+            return StatusCode(500, "Internal server error.");
         }
     }
 
@@ -331,7 +310,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error sending friend request.");
-            return StatusCode(500, new { message = "An error occurred while trying to get friend requests count." });
+            return StatusCode(500, "Internal server error.");
         }
     }
     
@@ -352,7 +331,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error sending friend request.");
-            return StatusCode(500, new { message = "An error occurred while trying to get friend requests." });
+            return StatusCode(500, "Internal server error.");
         }
     }
     
@@ -377,7 +356,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, "Error accepting friend request.");
-            return StatusCode(500, new { message = "An error occurred while trying to accept the friend request." });
+            return StatusCode(500, "Internal server error.");
         }
     }
     
@@ -411,7 +390,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error declining friend request.");
-            return StatusCode(500, new { message = "An error occurred while trying to decline the friend request." });
+            return StatusCode(500, "Internal server error.");
         }
     }
     
@@ -429,7 +408,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error getting friend request.");
-            return StatusCode(500, new { message = "An error occurred while trying to get friend request." });
+            return StatusCode(500, "Internal server error.");
         }
     }
     
@@ -460,7 +439,7 @@ public class UserController(
         catch (Exception e)
         {
             logger.LogError(e, "Error sending friend request.");
-            return StatusCode(500, new { message = "An error occurred while trying to get friend requests." });
+            return StatusCode(500, "Internal server error.");
         }
     }
 }

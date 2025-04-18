@@ -1,33 +1,89 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using UserService.Models;
+using UserService.Models.Requests;
 using UserService.Models.Responses;
+using UserService.Services.EmailSender;
 
 namespace UserService.Services.User;
 
-public class ApplicationUserService(UserManager<ApplicationUser> userManager, IConfiguration configuration, MainDatabaseContext context) : IApplicationUserService
+public class ApplicationUserService(
+    UserManager<ApplicationUser> userManager,
+    IConfiguration configuration,
+    MainDatabaseContext context,
+    IEmailSender emailSender,
+    MainDatabaseContext repository
+    ) : IApplicationUserService
 {
-    public Task<bool> ExamineUserExistingWithIdAsync(string id)
+    public Task<bool> ExamineUserExistingWithIdAsync(string userId)
     {
-        return userManager.Users.AnyAsync(user => user.Id.ToString() == id);
+        return userManager.Users.AnyAsync(user => user.Id.ToString() == userId);
     }
 
-    public async Task<ResponseBase> ExamineUserNotExistingAsync(string UserName, string Email)
+    public async Task<ResponseBase> GetUsernameAsync(string userId)
     {
-        var userWithSameEmail = await userManager.FindByEmailAsync(Email);
-        if (userWithSameEmail != null)
+        var existingUser = await userManager.FindByIdAsync(userId);
+        if (existingUser == null)
         {
-            return new FailedAuthResultWithMessage("This E-mail address is already taken.");
+            return new FailedResponseWithMessage("User not found.");
         }
 
-        var userWithSameUserName = await userManager.FindByEmailAsync(UserName);
+        return new UserResponseSuccessWithMessage(existingUser.UserName!);
+    }
+
+    public async Task<ResponseBase> GetImageWithIdAsync(string userId)
+    {
+        var existingUser = await userManager.FindByIdAsync(userId);
+        if (existingUser == null)
+        {
+            return new FailedResponseWithMessage("User not found.");
+        }
+
+        var folderPath = configuration["ImageFolderPath"] ??
+                         Path.Combine(Directory.GetCurrentDirectory(), "Avatars");
+
+        var imagePath = Path.Combine(folderPath, $"{existingUser!.UserName}.png");
+
+        if (!File.Exists(imagePath))
+        {
+            return new FailedResponseWithMessage("User image not found.");
+        }
+
+        var imageBytes = await File.ReadAllBytesAsync(imagePath);
+        var contentType = GetContentType(imagePath);
+
+        return new ImageResponseSuccess(imageBytes, contentType);
+    }
+
+    public async Task<ResponseBase> ExamineUserNotExistingAsync(string username, string email)
+    {
+        var userWithSameEmail = await userManager.FindByEmailAsync(email);
         if (userWithSameEmail != null)
         {
-            return new FailedAuthResultWithMessage("This Username is already taken.");
+            return new FailedResponseWithMessage("This E-mail address is already taken.");
+        }
+
+        var userWithSameUserName = await userManager.FindByEmailAsync(username);
+        if (userWithSameEmail != null)
+        {
+            return new FailedResponseWithMessage("This Username is already taken.");
         }
 
         return new AuthResponseSuccess();
+    }
+
+    public async Task<ResponseBase> GetUserCredentialsAsync(string userId)
+    {
+        var existingUser = await userManager.FindByIdAsync(userId!);
+
+        if (existingUser == null)
+        {
+            return new FailedResponse();
+        }
+
+        return new GetUserCredentialsSuccess(existingUser.UserName!, existingUser.Email!, existingUser.TwoFactorEnabled);
     }
 
     public Task<ApplicationUser> GetUserWithSentRequestsAsync(string userId)
@@ -51,7 +107,7 @@ public class ApplicationUserService(UserManager<ApplicationUser> userManager, IC
     {
         if (!Guid.TryParse(roomId, out var roomGuid))
         {
-            return new FailedUserResponseWithMessage("Invalid Roomid format.");
+            return new FailedResponseWithMessage("Invalid Roomid format.");
         }
 
         var userGuid = new Guid(userId);
@@ -61,7 +117,7 @@ public class ApplicationUserService(UserManager<ApplicationUser> userManager, IC
 
         if (existingUser == null)
         {
-            return new FailedUserResponseWithMessage("Cannot find the key for this user.");
+            return new FailedResponseWithMessage("Cannot find the key for this user.");
         }
 
         var userKey = existingUser.UserSymmetricKeys.FirstOrDefault(key => key.RoomId == roomGuid)!.ToString();
@@ -69,33 +125,101 @@ public class ApplicationUserService(UserManager<ApplicationUser> userManager, IC
         return new KeyResponseSuccess(userKey!);
     }
 
-    public async Task<ResponseBase> GetRoommatePublicKey(string userName)
+    public async Task<ResponseBase> GetRoommatePublicKey(string username)
     {
-        var existingUser = await userManager.FindByNameAsync(userName);
+        var existingUser = await userManager.FindByNameAsync(username);
         if (existingUser == null)
         {
-            return new FailedUserResponseWithMessage($"There is no user with this Username: {userManager}");
+            return new FailedResponseWithMessage($"There is no user with this Username: {userManager}");
         }
 
         return new KeyResponseSuccess(existingUser.PublicKey);
     }
-    public async Task<ResponseBase> ExamineIfUserHaveSymmetricKeyForRoom(string userName, string roomId)
+    public async Task<ResponseBase> ExamineIfUserHaveSymmetricKeyForRoom(string username, string roomId)
     {
         if (!Guid.TryParse(roomId, out var roomGuid))
         {
-            return new FailedUserResponseWithMessage("Invalid Roomid format.");
+            return new FailedResponseWithMessage("Invalid Roomid format.");
         }
 
         var userExisting = await userManager.Users
                 .Include(u => u.UserSymmetricKeys)
-                .AnyAsync(u => u.UserName == userName && u.UserSymmetricKeys.Any(k => k.RoomId == roomGuid));
+                .AnyAsync(u => u.UserName == username && u.UserSymmetricKeys.Any(k => k.RoomId == roomGuid));
 
         if (!userExisting)
         {
-            return new FailedUserResponseWithMessage($"There is no key or user with this Username: {userName}");
+            return new FailedResponseWithMessage($"There is no key or user with this Username: {username}");
         }
 
         return new UserResponseSuccess();
+    }
+    public async Task<ResponseBase> SendForgotPasswordEmailAsync(string email)
+    {
+        var existingUser = await userManager.FindByEmailAsync(email);
+        if (existingUser == null)
+        {
+            return new FailedResponseWithMessage("User not found.");
+        }
+
+        var token = await userManager.GeneratePasswordResetTokenAsync(existingUser);
+        EmailSenderCodeGenerator.StorePasswordResetCode(email, token);
+        var emailResult = await emailSender.SendEmailWithLinkAsync(email, "Password reset", token);
+
+        if (emailResult is FailedResponseWithMessage)
+        {
+            return new FailedResponseWithMessage("Email service is currently unavailable.");
+        }
+
+        return new UserResponseSuccessWithMessage("Successfully sent.");
+    }
+
+    public async Task<ResponseBase> SetNewPasswordAfterResetEmailAsync(string resetId, PasswordResetRequest request)
+    {
+        var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(request.Email, resetId, "passwordReset");
+        if (!examine)
+        {
+            return new FailedResponseWithMessage("Invalid or expired reset code.");
+        }
+
+        var existingUser = await userManager.FindByEmailAsync(request.Email);
+        var token = await userManager.GeneratePasswordResetTokenAsync(existingUser!);
+        await userManager.ResetPasswordAsync(existingUser!, token, request.NewPassword);
+
+        await repository.SaveChangesAsync();
+
+        return new AuthResponseSuccess();
+    }
+
+    public async Task<ResponseBase> ChangeUserEmailAsync(ChangeEmailRequest request, string userId)
+    {
+        var existingUser = await userManager.FindByIdAsync(userId!);
+
+        if (existingUser == null)
+        {
+            return new FailedResponseWithMessage($"User not found.");
+        }
+
+        if (!existingUser!.TwoFactorEnabled)
+        {
+            return new FailedResponseWithMessage($"2FA not enabled for user.");
+        }
+
+        if (existingUser.Email != request.OldEmail)
+        {
+            return new FailedResponseWithMessage("E-mail address not valid.");
+        }
+
+        if (userManager.Users.Any(user => user.Email == request.NewEmail))
+        {
+            return new FailedResponseWithMessage("Same e-mail.");
+        }
+
+        var token = await userManager.GenerateChangeEmailTokenAsync(existingUser, request.NewEmail);
+        await userManager.ChangeEmailAsync(existingUser, request.NewEmail, token);
+
+        existingUser.NormalizedEmail = request.NewEmail.ToUpper();
+        await repository.SaveChangesAsync();
+        return new UsernameUserEmailResponseSuccess(existingUser.Email!, existingUser.UserName!);
     }
 
     public string SaveImageLocally(string usernameFileName, string base64Image)

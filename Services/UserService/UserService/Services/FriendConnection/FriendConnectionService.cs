@@ -1,8 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using UserService.Model.Requests;
+using UserService.Models.Requests;
 using UserService.Services.User;
-using UserService.Model.Responses.User;
-using UserService.Model;
+using UserService.Models;
 
 namespace UserService.Services.FriendConnection;
 
@@ -10,7 +9,7 @@ public class FriendConnectionService(MainDatabaseContext context, IApplicationUs
 {
     private MainDatabaseContext Context { get; } = context;
 
-    public async Task<Model.FriendConnection> GetFriendRequestByIdAsync(string requestId)
+    public async Task<FriendConnection> GetFriendRequestByIdAsync(string requestId)
     {
         Console.WriteLine(requestId);
         if (!Guid.TryParse(requestId, out var requestGuid))

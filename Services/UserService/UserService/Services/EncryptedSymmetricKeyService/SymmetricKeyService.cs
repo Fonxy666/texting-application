@@ -20,7 +20,7 @@ public class SymmetricKeyService(MainDatabaseContext context) : ISymmetricKeySer
             var user = await context.Users.Include(u => u.UserSymmetricKeys).FirstOrDefaultAsync(u => u.Id == symmetricKey.UserId);
             if (user == null)
             {
-                return new FailedUserResponse();
+                return new FailedResponse();
             }
 
             user.UserSymmetricKeys.Add(symmetricKey);

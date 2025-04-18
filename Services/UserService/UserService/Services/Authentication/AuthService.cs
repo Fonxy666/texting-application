@@ -38,7 +38,7 @@ public class AuthService(
         if (!createResult.Succeeded)
         {
             logger.LogError("Error during database save.");
-            return new FailedAuthResult();
+            return new FailedResponse();
         }
 
         var addToRoleAsync = await userManager.AddToRoleAsync(user, "User");
@@ -46,14 +46,14 @@ public class AuthService(
         if (!addToRoleAsync.Succeeded)
         {
             logger.LogError("Error during adding user to role.");
-            return new FailedAuthResult();
+            return new FailedResponse();
         }
         
         var savedUser = await userManager.Users.FirstOrDefaultAsync(u => u.UserName == request.Username);
         var privateKey = new PrivateKey(request.EncryptedPrivateKey, request.Iv);
         var result = await keyService.SaveKeyAsync(privateKey, savedUser!.Id);
 
-        return !result ? new FailedAuthResult() : new AuthResponseSuccessWithId(savedUser!.Id.ToString());
+        return !result.IsSuccess ? new FailedResponse() : new AuthResponseSuccessWithId(savedUser!.Id.ToString());
     }
 
     public async Task<ResponseBase> LoginAsync(LoginAuth request)
@@ -67,10 +67,16 @@ public class AuthService(
         if (!codeExamineResult)
         {
             logger.LogError("The provided login code is not correct.");
-            return new FailedAuthResultWithMessage("The provided login code is not correct.");
+            return new FailedResponseWithMessage("The provided login code is not correct.");
         }
 
-        var encryptedPrivateKey = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser.Id.ToString());
+        var keyRetrievalResult = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser.Id.ToString());
+        if (keyRetrievalResult is FailedResponse)
+        {
+            logger.LogError("Cannot find User private key.");
+            return new FailedResponseWithMessage("Cannot find User private key.");
+        }
+        var encryptedKey = (keyRetrievalResult as PrivateKeyResponseSuccessWithIv)!.EncryptedKey;
 
         var roles = await userManager.GetRolesAsync(existingUser);
         
@@ -88,7 +94,7 @@ public class AuthService(
         cookieService.SetAnimateAndAnonymous(rememberMe);
         await cookieService.SetJwtToken(accessToken, rememberMe);
         
-        return new LoginResponseSuccess(existingUser.PublicKey, encryptedPrivateKey.EncryptedPrivateKey);
+        return new LoginResponseSuccess(existingUser.PublicKey, encryptedKey);
     }
 
     public async Task<ResponseBase> LoginWithExternal(string emailAddress)
@@ -97,7 +103,7 @@ public class AuthService(
         
         if (managedUser == null)
         {
-            return new FailedAuthResult();
+            return new FailedResponse();
         }
         
         var roles = await userManager.GetRolesAsync(managedUser);
@@ -122,12 +128,12 @@ public class AuthService(
         if (managedUser == null)
         {
             logger.LogError("This username is not registered.");
-            return new FailedAuthResult();
+            return new FailedResponse();
         }
 
         var lockoutResult = await ExamineLockoutEnabled(managedUser);
 
-        if (lockoutResult is FailedAuthResultWithMessage error)
+        if (lockoutResult is FailedResponseWithMessage error)
         {
             logger.LogError(error.Message);
             return lockoutResult;
@@ -139,7 +145,7 @@ public class AuthService(
         {
             await userManager.AccessFailedAsync(managedUser);
             logger.LogError("Invalid password.");
-            return new FailedAuthResult();
+            return new FailedResponse();
         }
         
         await userManager.ResetAccessFailedCountAsync(managedUser);
@@ -153,7 +159,7 @@ public class AuthService(
 
         if (lockoutEndDate.HasValue && lockoutEndDate.Value > DateTimeOffset.Now)
         {
-            return new FailedAuthResultWithMessage($"Account is locked. Try again after {lockoutEndDate.Value - DateTimeOffset.Now}");
+            return new FailedResponseWithMessage($"Account is locked. Try again after {lockoutEndDate.Value - DateTimeOffset.Now}");
         }
 
         await userManager.SetLockoutEndDateAsync(user, null);
@@ -164,7 +170,7 @@ public class AuthService(
         {
             await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.Now.AddDays(1));
             await userManager.ResetAccessFailedCountAsync(user);
-            return new FailedAuthResultWithMessage("Account is locked. Try again after 1 day");
+            return new FailedResponseWithMessage("Account is locked. Try again after 1 day");
         }
 
         return new AuthResponseSuccess();
@@ -179,5 +185,10 @@ public class AuthService(
         await userManager.UpdateAsync(user);
         cookieService.DeleteCookies();
         return new AuthResponseSuccess();
+    }
+
+    public Task<ResponseBase> LogOutAsync(Guid userId)
+    {
+        throw new NotImplementedException();
     }
 }

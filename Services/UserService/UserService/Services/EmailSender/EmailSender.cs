@@ -36,11 +36,11 @@ public class EmailSender(IConfiguration configuration, ILogger<EmailSender> logg
         catch (Exception e)
         {
             logger.LogError($"Failed to send email: {e.Message}");
-            return new FailedAuthResult();
+            return new FailedResponse();
         }
     }
 
-    public async Task<bool> SendEmailWithLinkAsync(string email, string subject, string resetId)
+    public async Task<ResponseBase> SendEmailWithLinkAsync(string email, string subject, string resetId)
     {
         var mail = configuration["DeveloperEmail"];
         var pw = configuration["DeveloperAppPassword"];
@@ -57,12 +57,12 @@ public class EmailSender(IConfiguration configuration, ILogger<EmailSender> logg
             {
                 IsBodyHtml = true
             });
-            return true;
+            return new UserResponseSuccess();
         }
         catch (Exception e)
         {
             Console.WriteLine($"Failed to send email with link: {e.Message}");
-            return false;
+            return new FailedResponse();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using UserService.Model;
+﻿using UserService.Models;
 
 namespace UserService.Services.Cookie;
 

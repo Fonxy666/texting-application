@@ -10,10 +10,4 @@ public record AuthResponseSuccessWithMessage(string Message) : AuthResponse<stri
 
 public record AuthResponseWithEmailSuccess(string Id, string Email) : AuthResponse<(string, string)>(true, (Id, Email));
 
-public record FailedAuthResult() : AuthResponse<string>(false);
-
-public record FailedAuthResultWithMessage(string Message) : AuthResponse<string>(false, Message);
-
 public record LoginResponseSuccess(string PublicKey, string EncryptedPrivateKey) : AuthResponse<(string, string)>(true, (PublicKey, EncryptedPrivateKey));
-
-public record LoginResponseFailure(string? ErrorMessage) : AuthResponse<string?>(false, ErrorMessage);

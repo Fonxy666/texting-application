@@ -8,7 +8,7 @@ using UserService.Models.Responses;
 using UserService.Services.User;
 using UserService.Filters;
 
-namespace Server.Controllers;
+namespace UserService.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
@@ -29,12 +29,12 @@ public class CryptoKeyController(
             var userId = (string)HttpContext.Items["UserId"]!;
             if (userId == null)
             {
-                return BadRequest(new FailedUserResponseWithMessage("There is no Userid provided."));
+                return BadRequest(new FailedResponseWithMessage("There is no Userid provided."));
             }
 
             var privateKeyResponse = await privateKeyService.GetEncryptedKeyByUserIdAsync(userId);
 
-            if (privateKeyResponse is FailedUserResponse)
+            if (privateKeyResponse is FailedResponse)
             {
                 return BadRequest(privateKeyResponse);
             }
@@ -59,9 +59,9 @@ public class CryptoKeyController(
 
             var getKeyResponse = await userService.GetUserPrivatekeyForRoomAsync(userId!, roomId);
 
-            if (getKeyResponse is FailedUserResponseWithMessage error)
+            if (getKeyResponse is FailedResponseWithMessage)
             {
-                return BadRequest(new FailedUserResponse());
+                return BadRequest(getKeyResponse);
             }
 
             return Ok(getKeyResponse);
@@ -87,7 +87,7 @@ public class CryptoKeyController(
 
             var result = await keyService.SaveNewKeyAndLinkToUserAsync(newKey);
 
-            if (result is FailedUserResponse)
+            if (result is FailedResponse)
             {
                 return BadRequest(result);
             }
@@ -110,7 +110,7 @@ public class CryptoKeyController(
         {
             var keyResponse = await userService.GetRoommatePublicKey(userName);
 
-            if (keyResponse is FailedUserResponseWithMessage)
+            if (keyResponse is FailedResponseWithMessage)
             {
                 return BadRequest(keyResponse);
             }
@@ -131,7 +131,7 @@ public class CryptoKeyController(
         {
             var keyExisting = await userService.ExamineIfUserHaveSymmetricKeyForRoom(userName, roomId);
 
-            if (keyExisting is FailedUserResponseWithMessage)
+            if (keyExisting is FailedResponseWithMessage)
             {
                 return BadRequest(keyExisting);
             }

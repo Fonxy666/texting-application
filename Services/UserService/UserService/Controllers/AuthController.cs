@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
@@ -29,7 +28,7 @@ public class AuthController(
         try
         {
             var emailResponse = await emailSender.SendEmailAsync(receiver.Email, "registration");
-            if (emailResponse is FailedAuthResult)
+            if (emailResponse is FailedResponse)
             {
                 return BadRequest(emailResponse);
             }
@@ -44,18 +43,18 @@ public class AuthController(
     }
 
     [HttpPost("ExamineVerifyToken")]
-    public async Task<ActionResult<string>> VerifyToken([FromBody]VerifyTokenRequest credentials)
+    public async Task<ActionResult<ResponseBase>> VerifyToken([FromBody]VerifyTokenRequest credentials)
     {
         try
         {
             var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(credentials.Email, credentials.VerifyCode, "registration");
             if (!result)
             {
-                return await Task.FromResult<ActionResult<string>>(BadRequest("Invalid token."));
+                return await Task.FromResult<ActionResult<ResponseBase>>(BadRequest(new FailedResponseWithMessage("Invalid token.")));
             }
             
             EmailSenderCodeGenerator.RemoveVerificationCode(credentials.Email, "registration");
-            return await Task.FromResult<ActionResult<string>>(Ok(true));
+            return await Task.FromResult<ActionResult<ResponseBase>>(Ok(new AuthResponseSuccess()));
         }
         catch (Exception e)
         {
@@ -72,7 +71,7 @@ public class AuthController(
             var imagePath = userServices.SaveImageLocally(request.Username, request.Image);
             var result = await authenticationService.RegisterAsync(request, imagePath);
 
-            if (result is FailedAuthResult)
+            if (result is FailedResponse)
             {
                 return BadRequest(result);
             }
@@ -93,12 +92,12 @@ public class AuthController(
         {
             var result = await authenticationService.ExamineLoginCredentialsAsync(request.UserName, request.Password);
         
-            if (result is FailedAuthResultWithMessage error)
+            if (result is FailedResponseWithMessage error)
             {
                 return error.Message switch
                 {
-                    var msg when msg == $"{request.UserName} is not registered." => NotFound(error),
-                    "The provided login code is not correct." => BadRequest(error),
+                    var msg when msg == $"{request.UserName} is not registered." => NotFound(error.Message),
+                    "The provided login code is not correct." => BadRequest(error.Message),
                     _ => BadRequest(error)
                 };
             }
@@ -123,9 +122,9 @@ public class AuthController(
         {
             var loginResult = await authenticationService.LoginAsync(request);
 
-            if (loginResult is FailedAuthResult)
+            if (loginResult is FailedResponseWithMessage error)
             {
-                return BadRequest(loginResult);
+                return BadRequest(error.Message);
             }
 
             return Ok(loginResult);
