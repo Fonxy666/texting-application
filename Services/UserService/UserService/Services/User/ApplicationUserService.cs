@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
+using UserService.Services.Authentication;
 using UserService.Services.EmailSender;
 
 namespace UserService.Services.User;
@@ -14,7 +14,8 @@ public class ApplicationUserService(
     IConfiguration configuration,
     MainDatabaseContext context,
     IEmailSender emailSender,
-    MainDatabaseContext repository
+    MainDatabaseContext repository,
+    IAuthService authService
     ) : IApplicationUserService
 {
     public Task<bool> ExamineUserExistingWithIdAsync(string userId)
@@ -185,7 +186,11 @@ public class ApplicationUserService(
         var token = await userManager.GeneratePasswordResetTokenAsync(existingUser!);
         await userManager.ResetPasswordAsync(existingUser!, token, request.NewPassword);
 
-        await repository.SaveChangesAsync();
+        var affectedRows = await repository.SaveChangesAsync();
+        if (affectedRows == 0)
+        {
+            return new FailedResponseWithMessage("Failed to save new password change.");
+        }
 
         return new AuthResponseSuccess();
     }
@@ -218,8 +223,37 @@ public class ApplicationUserService(
         await userManager.ChangeEmailAsync(existingUser, request.NewEmail, token);
 
         existingUser.NormalizedEmail = request.NewEmail.ToUpper();
-        await repository.SaveChangesAsync();
+        var affectedRows = await repository.SaveChangesAsync();
+        if (affectedRows == 0)
+        {
+            return new FailedResponseWithMessage("Failed to save email change.");
+        }
+
         return new UsernameUserEmailResponseSuccess(existingUser.Email!, existingUser.UserName!);
+    }
+
+    public async Task<ResponseBase> ChangeUserPasswordAsync(ChangePasswordRequest request, string userId)
+    {
+        var existingUser = await userManager.FindByIdAsync(userId!);
+
+        if (existingUser == null)
+        {
+            return new FailedResponseWithMessage($"User not found.");
+        }
+
+        var correctPassword = await authService.ExamineLoginCredentialsAsync(existingUser!.UserName!, request.OldPassword);
+        if (correctPassword is FailedResponse)
+        {
+            return new FailedResponseWithMessage("Incorrect credentials.");
+        }
+
+        await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.Password);
+        var affectedRows = await repository.SaveChangesAsync();
+        if (affectedRows == 0)
+        {
+            return new FailedResponseWithMessage("Failed to save password change.");
+        }
+        return new UsernameUserEmailResponseSuccess(existingUser.UserName!, existingUser.Email!);
     }
 
     public string SaveImageLocally(string usernameFileName, string base64Image)

@@ -17,7 +17,6 @@ namespace UserService.Controllers;
 public class UserController(
     IAuthService authenticationService,
     MainDatabaseContext repository,
-    IApplicationUserService userServices,
     ILogger<UserController> logger,
     IFriendConnectionService friendConnectionService,
     IConfiguration configuration,
@@ -193,24 +192,27 @@ public class UserController(
         }
     }
     
-    [HttpPatch("ChangePassword"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<EmailUsernameResponse>> ChangeUserPassword([FromBody]ChangePasswordRequest request)
+    [HttpPatch("ChangePassword")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<ResponseBase>> ChangeUserPassword([FromBody]ChangePasswordRequest request)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var existingUser = await userManager.FindByIdAsync(userId!);
-            
-            var correctPassword = await authenticationService.ExamineLoginCredentials(existingUser!.UserName!, request.OldPassword);
-            if (!correctPassword.Success)
+            var userId = (string)HttpContext.Items["UserId"]!;
+
+            var changePasswordResult = await userService.ChangeUserPasswordAsync(request, userId);
+
+            if (changePasswordResult is FailedResponseWithMessage error)
             {
-                return BadRequest("Incorrect credentials.");
+                return error.Message switch
+                {
+                    var msg when msg == $"User not found." => NotFound(error.Message),
+                    _ => BadRequest(error.Message)
+                };
             }
 
-            await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.Password);
-            await repository.SaveChangesAsync();
-            var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
-            return Ok(response);
+            return Ok(changePasswordResult);
         }
         catch (Exception e)
         {
@@ -219,12 +221,14 @@ public class UserController(
         }
     }
 
-    [HttpPatch("ChangeAvatar"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<AuthResponse>> ChangeAvatar([FromBody]string image)
+    [HttpPatch("ChangeAvatar")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<ResponseBase>> ChangeAvatar([FromBody]string image)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = (string)HttpContext.Items["UserId"]!;
             var existingUser = await userManager.FindByIdAsync(userId!);
 
             userServices.SaveImageLocally(existingUser!.UserName!, image);
