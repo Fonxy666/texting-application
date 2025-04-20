@@ -2,12 +2,13 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UserService.Services.FriendConnection;
+using UserService.Services.FriendConnectionService;
 using UserService.Services.User;
 using UserService.Services.EmailSender;
 using UserService.Models.Responses;
 using UserService.Filters;
 using UserService.Models.Requests;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UserService.Controllers;
 
@@ -212,7 +213,7 @@ public class UserController(
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error changing password for user.");
+            logger.LogError(e, "Error changing password for user.");
             return StatusCode(500, "Internal server error.");
         }
     }
@@ -240,7 +241,7 @@ public class UserController(
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error changing avatar for user.");
+            logger.LogError(e, "Error changing avatar for user.");
             return StatusCode(500, "Internal server error.");
         }
     } 
@@ -260,7 +261,7 @@ public class UserController(
             {
                 return error.Message switch
                 {
-                    var msg when msg == $"User not found." => NotFound(error.Message),
+                    var msg when msg == "User not found." => NotFound(error.Message),
                     _ => BadRequest(error.Message)
                 };
             }
@@ -269,36 +270,33 @@ public class UserController(
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error changing e-mail for user.");
+            logger.LogError(e, $"Error deleting the user.");
             return StatusCode(500, "Internal server error.");
         }
     }
 
-    [HttpPost("SendFriendRequest"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<ShowFriendRequestResponse>> SendFriendRequest([FromBody]string friendName)
+    [HttpPost("SendFriendRequest")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<ResponseBase>> SendFriendRequest([FromBody]string friendName)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var existingSender = await userManager.FindByIdAsync(userId!);
-            var existingReceiver = await userManager.FindByNameAsync(friendName);
+            var userId = (string)HttpContext.Items["UserId"]!;
 
-            if (existingSender == existingReceiver)
+            var sendFriendRequestResult = await friendConnectionService.SendFriendRequestAsync(userId, friendName);
+
+            if (sendFriendRequestResult is FailedResponseWithMessage error)
             {
-                return BadRequest(new { message = "You cannot send friend request to yourself." });
-            }
-        
-            var databaseRequest = new FriendRequest(userId!, existingReceiver!.Id.ToString());
-        
-            var alreadySent = await friendConnectionService.AlreadySentFriendRequest(databaseRequest);
-            if (alreadySent)
-            {
-                return BadRequest(new { message = "You already sent a friend request to this user!" });
+                return error.Message switch
+                {
+                    var msg when msg == "User not found." => NotFound(error.Message),
+                    "New friend not found." => NotFound(error.Message),
+                    _ => BadRequest(error.Message)
+                };
             }
 
-            var result = await friendConnectionService.SendFriendRequest(databaseRequest);
-        
-            return Ok(result);
+            return Ok(sendFriendRequestResult);
         }
         catch (Exception e)
         {
@@ -307,37 +305,48 @@ public class UserController(
         }
     }
 
-    [HttpGet("GetFriendRequestCount"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult> GetFriendRequestCount()
+    [HttpGet("GetFriendRequestCount")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<ResponseBase>> GetFriendRequestCount()
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = (string)HttpContext.Items["UserId"]!;
 
-            var result = await friendConnectionService.GetPendingRequestCount(userId!);
+            var result = await friendConnectionService.GetPendingRequestCountAsync(userId!);
+
+            if (result is FailedResponseWithMessage)
+            {
+                return NotFound(result);
+            }
 
             return Ok(result);
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error sending friend request.");
+            logger.LogError(e, $"Error getting the number of friend requests.");
             return StatusCode(500, "Internal server error.");
         }
     }
     
-    [HttpGet("GetFriendRequests"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult> GetFriendRequests()
+    [HttpGet("GetFriendRequests")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<ResponseBase>> GetFriendRequests()
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = (string)HttpContext.Items["UserId"]!;
 
-            var receivedFriendRequests = await friendConnectionService.GetPendingReceivedFriendRequests(userId!);
-            var sentFriendRequests = await friendConnectionService.GetPendingSentFriendRequests(userId!);
+            var requests = await friendConnectionService.GetAllPendingRequestsAsync(userId);
 
-            var allFriendRequests = receivedFriendRequests.Concat(sentFriendRequests).ToList();
+            if (requests is FailedResponseWithMessage)
+            {
+                return NotFound(requests);
+            }
 
-            return Ok(allFriendRequests);
+            return Ok(requests);
         }
         catch (Exception e)
         {

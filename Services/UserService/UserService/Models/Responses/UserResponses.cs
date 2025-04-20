@@ -23,6 +23,10 @@ public record UsernameUserEmailResponseSuccess(string Username, string Email) : 
 
 public record ShowFriendRequestResponseSuccess(ShowFriendRequestData Data) : UserResponse<ShowFriendRequestData>(true, Data);
 
+public record ShowFriendRequestsListResponseSuccess(List<ShowFriendRequestData> Data) : UserResponse<List<ShowFriendRequestData>>(true, Data);
+
 public record UserResponseSuccess() : UserResponse<string>(true);
+
+public record UserResponseSuccessWithNumber(int Count) : UserResponse<int>(true, Count);
 
 public record UserResponseForWsSuccess(string UserId, string ConnectionId) : UserResponse<(string, string)>(true, (UserId, ConnectionId));

@@ -6,7 +6,6 @@ namespace UserService.Services.User;
 
 public interface IApplicationUserService
 {
-    Task<bool> ExamineUserExistingWithIdAsync(string userId);
     Task<ResponseBase> GetUsernameAsync(string userId);
     Task<ResponseBase> GetImageWithIdAsync(string userId);
     Task<ResponseBase> ExamineUserNotExistingAsync(string username, string email);
