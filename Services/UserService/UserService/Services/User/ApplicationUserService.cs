@@ -256,7 +256,99 @@ public class ApplicationUserService(
         return new UsernameUserEmailResponseSuccess(existingUser.UserName!, existingUser.Email!);
     }
 
-    public string SaveImageLocally(string usernameFileName, string base64Image)
+    public async Task<ResponseBase> ChangeUserAvatarAsync(string userId, string image)
+    {
+
+        var existingUser = await userManager.FindByIdAsync(userId!);
+
+        if (existingUser == null)
+        {
+            return new FailedResponseWithMessage($"User not found.");
+        }
+
+        var imageSaveResult = SaveImageLocally(existingUser.UserName!, image);
+
+        return imageSaveResult;
+    }
+
+    public async Task<ResponseBase> DeleteUserAsync(string userId, string password)
+    {
+        using var transaction = await context.Database.BeginTransactionAsync();
+
+        var existingUser = await userManager.FindByIdAsync(userId!);
+        if (existingUser == null)
+        {
+            return new FailedResponseWithMessage("User not found.");
+        }
+
+        if (!await userManager.CheckPasswordAsync(existingUser, password))
+        {
+            return new FailedResponseWithMessage("Invalid credentials.");
+        }
+
+        var removeFriendsResult = await RemoveFriendConnectionsAsync(existingUser);
+
+        if (removeFriendsResult is FailedResponse)
+        {
+            await transaction.RollbackAsync();
+            return removeFriendsResult;
+        }
+
+        var identityResult = await userManager.DeleteAsync(existingUser);
+        if (!identityResult.Succeeded)
+        {
+            await transaction.RollbackAsync();
+            return new FailedResponseWithMessage("Failed to delete user.");
+        }
+
+        var affectedRows = await context.SaveChangesAsync();
+        if (affectedRows == 0)
+        {
+            await transaction.RollbackAsync();
+            return new FailedResponseWithMessage("Failed to save changes.");
+        }
+
+        await transaction.CommitAsync();
+        return new UsernameUserEmailResponseSuccess(existingUser.UserName!, existingUser.Email!);
+    }
+
+    private async Task<ResponseBase> RemoveFriendConnectionsAsync(ApplicationUser existingUser)
+    {
+        var sentFriendRequests = context.FriendConnections!.Where(fc => fc.SenderId == existingUser.Id);
+        var receivedFriendRequests = context.FriendConnections!.Where(fc => fc.ReceiverId == existingUser.Id);
+
+        foreach (var friendRequest in sentFriendRequests)
+        {
+            var receiver = await userManager.FindByIdAsync(friendRequest.ReceiverId.ToString());
+            if (receiver != null)
+            {
+                await context.Entry(receiver).Collection(u => u.Friends).LoadAsync();
+                if (!receiver.Friends.Remove(existingUser))
+                {
+                    return new FailedResponse();
+                }
+            }
+        }
+
+        foreach (var friendRequest in receivedFriendRequests)
+        {
+            var sender = await userManager.FindByIdAsync(friendRequest.SenderId.ToString());
+            if (sender != null)
+            {
+                await context.Entry(sender).Collection(u => u.Friends).LoadAsync();
+                if (!sender.Friends.Remove(existingUser))
+                {
+                    return new FailedResponse();
+                }
+            }
+        }
+
+        context.FriendConnections!.RemoveRange(sentFriendRequests);
+        context.FriendConnections!.RemoveRange(receivedFriendRequests);
+        return new UserResponseSuccess();
+    }
+
+    public ResponseBase SaveImageLocally(string usernameFileName, string base64Image)
     {
         var folderPath = configuration["ImageFolderPath"]??Path.Combine(Directory.GetCurrentDirectory(), "Avatars");
         
@@ -268,13 +360,13 @@ public class ApplicationUserService(
         var imageName = usernameFileName + ".png";
         var imagePath = Path.Combine(folderPath, imageName);
 
+        if (base64Image.Length <= 1)
+        {
+            return new FailedResponseWithMessage("No image provided.");
+        }
+
         try
         {
-            if (base64Image.Length <= 1)
-            {
-                return "";
-            }
-            
             base64Image = base64Image.Replace("data:image/png;base64,", "");
             var imageBytes = Convert.FromBase64String(base64Image);
 
@@ -283,16 +375,16 @@ public class ApplicationUserService(
                 fileStream.Write(imageBytes, 0, imageBytes.Length);
             }
 
-            return imagePath;
+            return new UserResponseSuccessWithMessage(imagePath);
         }
         catch (FormatException ex)
         {
             Console.WriteLine($"Error decoding base64 image: {ex.Message}");
-            throw;
+            return new FailedResponseWithMessage("Error decoding base64 image.");
         }
     }
 
-    public string GetContentType(string filePath)
+    private string GetContentType(string filePath)
     {
         var provider = new FileExtensionContentTypeProvider();
         if (!provider.TryGetContentType(filePath, out var contentType))
@@ -300,40 +392,5 @@ public class ApplicationUserService(
             contentType = "application/octet-stream";
         }
         return contentType;
-    }
-
-    public async 
-
-    public async Task<DeleteUserResponse> DeleteAsync(ApplicationUser user)
-    {
-        var sentFriendRequests = context.FriendConnections.Where(fc => fc.SenderId == user.Id);
-        var receivedFriendRequests = context.FriendConnections.Where(fc => fc.ReceiverId == user.Id);
-
-        foreach (var friendRequest in sentFriendRequests)
-        {
-            var receiver = await userManager.FindByIdAsync(friendRequest.ReceiverId.ToString());
-            if (receiver != null)
-            {
-                await context.Entry(receiver).Collection(u => u.Friends).LoadAsync();
-                receiver.Friends.Remove(user);
-            }
-        }
-
-        foreach (var friendRequest in receivedFriendRequests)
-        {
-            var sender = await userManager.FindByIdAsync(friendRequest.SenderId.ToString());
-            if (sender != null)
-            {
-                await context.Entry(sender).Collection(u => u.Friends).LoadAsync();
-                sender.Friends.Remove(user);
-            }
-        }
-
-        context.FriendConnections.RemoveRange(sentFriendRequests);
-        context.FriendConnections.RemoveRange(receivedFriendRequests);
-
-        await userManager.DeleteAsync(user);
-
-        return new DeleteUserResponse($"{user.UserName}", "Delete successful.", true);
     }
 }

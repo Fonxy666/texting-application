@@ -20,7 +20,7 @@ public interface IApplicationUserService
     Task<ResponseBase> SetNewPasswordAfterResetEmailAsync(string resetId, PasswordResetRequest request);
     Task<ResponseBase> ChangeUserEmailAsync(ChangeEmailRequest request, string userId);
     Task<ResponseBase> ChangeUserPasswordAsync(ChangePasswordRequest request, string userId);
-    string SaveImageLocally(string usernameFileName, string base64Image);
-    string GetContentType(string filePath);
-    Task<DeleteUserResponse> DeleteAsync(ApplicationUser user);
+    Task<ResponseBase> ChangeUserAvatarAsync(string userId, string image);
+    Task<ResponseBase> DeleteUserAsync(string userId, string password);
+    ResponseBase SaveImageLocally(string usernameFileName, string base64Image);
 }

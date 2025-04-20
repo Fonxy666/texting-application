@@ -46,13 +46,13 @@ public class PrivateKeyService : IPrivateKeyService
             else
             {
                 Console.WriteLine("Key not found in the Vault response.");
-                return new FailedUserResponse();
+                return new FailedResponse();
             }
         }
         catch (Exception e)
         {
             Console.WriteLine($"Error retrieving key: {e.Message}");
-            return new FailedUserResponse();
+            return new FailedResponse();
         }
     }
 
@@ -89,7 +89,7 @@ public class PrivateKeyService : IPrivateKeyService
         catch (Exception ex)
         {
             Console.WriteLine($"[Vault] Failed to save key: {ex.Message}");
-            return new FailedUserResponse();
+            return new FailedResponse();
         }
     }
 
@@ -102,7 +102,7 @@ public class PrivateKeyService : IPrivateKeyService
         catch (Exception e)
         {
             Console.WriteLine($"Error deleting key: {e.Message}");
-            return new FailedUserResponse();
+            return new FailedResponse();
         }
     }
 }

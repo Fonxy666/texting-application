@@ -69,7 +69,13 @@ public class AuthController(
         try
         {
             var imagePath = userServices.SaveImageLocally(request.Username, request.Image);
-            var result = await authenticationService.RegisterAsync(request, imagePath);
+
+            if (imagePath is FailedResponseWithMessage error)
+            {
+                return BadRequest(error.Message);
+            }
+
+            var result = await authenticationService.RegisterAsync(request, (imagePath as UserResponseSuccessWithMessage)!.Message);
 
             if (result is FailedResponse)
             {

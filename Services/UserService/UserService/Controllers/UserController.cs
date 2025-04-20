@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using UserService.Services.FriendConnection;
 using UserService.Services.User;
 using UserService.Services.EmailSender;
-using UserService.Services.Authentication;
 using UserService.Models.Responses;
 using UserService.Filters;
 using UserService.Models.Requests;
@@ -15,11 +14,8 @@ namespace UserService.Controllers;
 [ApiController]
 [Route("api/v1/[controller]")]
 public class UserController(
-    IAuthService authenticationService,
-    MainDatabaseContext repository,
     ILogger<UserController> logger,
     IFriendConnectionService friendConnectionService,
-    IConfiguration configuration,
     IApplicationUserService userService
     ) : ControllerBase
 {
@@ -229,10 +225,18 @@ public class UserController(
         try
         {
             var userId = (string)HttpContext.Items["UserId"]!;
-            var existingUser = await userManager.FindByIdAsync(userId!);
+            var imageSaveResult = await userService.ChangeUserAvatarAsync(userId, image);
 
-            userServices.SaveImageLocally(existingUser!.UserName!, image);
-            return Ok(new { Status = "Ok" });
+            if (imageSaveResult is FailedResponseWithMessage error)
+            {
+                return error.Message switch
+                {
+                    var msg when msg == $"User not found." => NotFound(error.Message),
+                    _ => BadRequest(error.Message)
+                };
+            }
+
+            return Ok(imageSaveResult);
         }
         catch (Exception e)
         {
@@ -241,24 +245,27 @@ public class UserController(
         }
     } 
     
-    [HttpDelete("DeleteUser"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<EmailUsernameResponse>> DeleteUser([FromQuery]string password)
+    [HttpDelete("DeleteUser")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<ResponseBase>> DeleteUser([FromQuery]string password)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var existingUser = await userManager.FindByIdAsync(userId!);
+            var userId = (string)HttpContext.Items["UserId"]!;
 
-            if (!userManager.CheckPasswordAsync(existingUser, password).Result)
+            var deleteResult = await userService.DeleteUserAsync(userId, password);
+
+            if (deleteResult is FailedResponseWithMessage error)
             {
-                return BadRequest("Invalid credentials.");
+                return error.Message switch
+                {
+                    var msg when msg == $"User not found." => NotFound(error.Message),
+                    _ => BadRequest(error.Message)
+                };
             }
 
-            await userServices.DeleteAsync(existingUser);
-            
-            await repository.SaveChangesAsync();
-            var response = new EmailUsernameResponse(existingUser.Email!, existingUser.UserName!);
-            return Ok(response);
+            return Ok(deleteResult);
         }
         catch (Exception e)
         {
