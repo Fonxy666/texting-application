@@ -79,7 +79,7 @@ public class AuthController(
 
             if (result is FailedResponse)
             {
-                return BadRequest(result);
+                return StatusCode(500, result);
             }
 
             return Ok(new AuthResponseSuccessWithId((result as AuthResponseSuccessWithId)!.Id));

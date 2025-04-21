@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using UserService.Services.Cookie;
 using UserService.Services.Authentication;
-using UserService.Model;
+using UserService.Models;
 
 namespace UserService.Middlewares;
 

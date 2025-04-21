@@ -1,6 +1,6 @@
 ﻿using Grpc.Core;
 using Microsoft.AspNetCore.Identity;
-using UserService.Model;
+using UserService.Models;
 using UserService.Services.Authentication;
 
 namespace UserService.Services.gRPCServices;

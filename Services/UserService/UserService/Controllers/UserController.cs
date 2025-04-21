@@ -8,7 +8,7 @@ using UserService.Services.EmailSender;
 using UserService.Models.Responses;
 using UserService.Filters;
 using UserService.Models.Requests;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using UserService.Services.Authentication;
 
 namespace UserService.Controllers;
 
@@ -17,7 +17,8 @@ namespace UserService.Controllers;
 public class UserController(
     ILogger<UserController> logger,
     IFriendConnectionService friendConnectionService,
-    IApplicationUserService userService
+    IApplicationUserService userService,
+    IAuthService authenticationService
     ) : ControllerBase
 {
     [HttpGet("GetUsername")]
@@ -254,6 +255,9 @@ public class UserController(
         try
         {
             var userId = (string)HttpContext.Items["UserId"]!;
+            var userGuid = (Guid)HttpContext.Items["UserId"]!;
+
+            await authenticationService.LogOutAsync(userGuid!);
 
             var deleteResult = await userService.DeleteUserAsync(userId, password);
 
@@ -292,6 +296,7 @@ public class UserController(
                 {
                     var msg when msg == "User not found." => NotFound(error.Message),
                     "New friend not found." => NotFound(error.Message),
+                    "Failed to save changes." => StatusCode(500, error.Message),
                     _ => BadRequest(error.Message)
                 };
             }
@@ -355,23 +360,28 @@ public class UserController(
         }
     }
     
-    [HttpPatch("AcceptReceivedFriendRequest"), Authorize(Roles = "User, Admin")]
+    [HttpPatch("AcceptReceivedFriendRequest")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
     public async Task<ActionResult> AcceptFriendRequest([FromBody]string requestId)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            
-            var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(requestId);
+            var userId = (Guid)HttpContext.Items["UserId"]!;
 
-            if (existingRequest == null)
+            var acceptFriendRequestResult = await friendConnectionService.AcceptReceivedFriendRequestAsync(requestId, userId);
+
+            if (acceptFriendRequestResult is FailedResponseWithMessage error)
             {
-                return NotFound(new { message = "Friend request not found." });
+                return error.Message switch
+                {
+                    "Request not found." => NotFound(error.Message),
+                    "Invalid request ID format." => BadRequest(error.Message),
+                    _ => StatusCode(500, error.Message)
+                };
             }
 
-            await friendConnectionService.AcceptReceivedFriendRequest(requestId, userId!);
-
-            return Ok();
+            return Ok(acceptFriendRequestResult);
         }
         catch (Exception e)
         {
@@ -380,32 +390,28 @@ public class UserController(
         }
     }
     
-    [HttpDelete("DeleteFriendRequest"), Authorize(Roles = "User, Admin")]
+    [HttpDelete("DeleteFriendRequest")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
     public async Task<ActionResult> DeleteFriendRequest([FromQuery]string requestId, string userType)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = (string)HttpContext.Items["UserId"]!;
 
-            var existingRequest = await friendConnectionService.GetFriendRequestByIdAsync(requestId);
+            var deleteFriendRequestResult = await friendConnectionService.DeleteFriendRequestAsync(userId, userType, requestId);
 
-            if (existingRequest == null)
+            if (deleteFriendRequestResult is FailedResponseWithMessage error)
             {
-                return NotFound(new { message = "Friend request not found." });
-            }
-            
-            switch (userType)
-            {
-                case "receiver":
-                    await friendConnectionService.DeleteReceivedFriendRequest(requestId, userId!);
-                    break;
-                case "sender":
-                    await friendConnectionService.DeleteSentFriendRequest(requestId, userId!);
-                    break;
+                return error.Message switch
+                {
+                    "Cannot find the request." => NotFound(error.Message),
+                    "Invalid request ID format." => BadRequest(error.Message),
+                    _ => StatusCode(500, error.Message)
+                };
             }
 
-
-            return Ok();
+            return Ok(deleteFriendRequestResult);
         }
         catch (Exception e)
         {
@@ -414,51 +420,59 @@ public class UserController(
         }
     }
     
-    [HttpGet("GetFriends"), Authorize(Roles = "User, Admin")]
+    [HttpGet("GetFriends")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
     public async Task<ActionResult> GetFriends()
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = (string)HttpContext.Items["UserId"]!;
 
-            var result = await friendConnectionService.GetFriends(userId!);
+            var getFriendsResult = await friendConnectionService.GetFriendsAsync(userId!);
 
-            return Ok(result);
+            if (getFriendsResult is FailedResponseWithMessage)
+            {
+                return NotFound(getFriendsResult);
+            }
+
+            return Ok(getFriendsResult);
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error getting friend request.");
+            logger.LogError(e, $"Error getting friends.");
             return StatusCode(500, "Internal server error.");
         }
     }
     
-    [HttpDelete("DeleteFriend"), Authorize(Roles = "User, Admin")]
+    [HttpDelete("DeleteFriend")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
     public async Task<ActionResult> DeleteFriend([FromQuery]string connectionId)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var existingFriendConnection = await friendConnectionService.GetFriendRequestByIdAsync(connectionId);
-
-            if (existingFriendConnection == null)
-            {
-                return NotFound(new { message = "Friend connection not found." });
-            }
+            var userId = (Guid)HttpContext.Items["UserId"]!;
             
-            var userGuid = new Guid(userId!);
-            
-            if (userGuid != existingFriendConnection.SenderId && userGuid != existingFriendConnection.ReceiverId)
+            var friendDeletionResult = await friendConnectionService.DeleteFriendAsync(userId, connectionId);
+
+            if (friendDeletionResult is FailedResponseWithMessage error)
             {
-                return BadRequest(new { message = "You don't have permission for deletion." });
+                return error.Message switch
+                {
+                    "Cannot find friend connection." => NotFound(error.Message),
+                    "Invalid connectionId format." => BadRequest(error.Message),
+                    "You don't have permission for deletion." => Unauthorized(error.Message),
+                    _ => StatusCode(500, error.Message)
+                };
             }
 
-            var result = await friendConnectionService.DeleteFriend(connectionId);
 
-            return Ok(result);
+            return Ok(friendDeletionResult);
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error sending friend request.");
+            logger.LogError(e, "Error deleting friend.");
             return StatusCode(500, "Internal server error.");
         }
     }

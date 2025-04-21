@@ -4,7 +4,6 @@ using UserService.Services.User;
 using UserService.Models;
 using UserService.Models.Responses;
 using Microsoft.AspNetCore.Identity;
-using Azure.Core;
 
 namespace UserService.Services.FriendConnectionService;
 
@@ -181,18 +180,11 @@ public class FriendConnectionService(
                 .Any(fc => fc.ReceiverId == receiverGuid && fc.SenderId == senderGuid));
     }
 
-    public async Task<ResponseBase> AcceptReceivedFriendRequest(string requestId, string receiverId)
+    public async Task<ResponseBase> AcceptReceivedFriendRequestAsync(string requestId, Guid receiverId)
     {
-        using var transaction = await context.Database.BeginTransactionAsync();
-
         if (!Guid.TryParse(requestId, out var requestGuid))
         {
             return new FailedResponseWithMessage("Invalid request ID format.");
-        }
-
-        if (!Guid.TryParse(receiverId, out var userGuid))
-        {
-            return new FailedResponseWithMessage("Invalid receiver ID format.");
         }
 
         var existingRequest = await context.FriendConnections!.FindAsync(requestGuid);
@@ -201,20 +193,22 @@ public class FriendConnectionService(
             return new FailedResponseWithMessage("Request not found.");
         }
 
+        using var transaction = await context.Database.BeginTransactionAsync();
+
         existingRequest.SetStatusToAccepted();
+
+        var linkResult = await LinkUsersAsFriendsAsync(receiverId, existingRequest.SenderId);
+        if (linkResult is FailedResponse)
+        {
+            await transaction.RollbackAsync();
+            return linkResult;
+        }
 
         var affectedRows = await context.SaveChangesAsync();
         if (affectedRows == 0)
         {
             await transaction.RollbackAsync();
-            return new FailedResponseWithMessage("Failed to update request status.");
-        }
-
-        var linkResult = await LinkUsersAsFriendsAsync(userGuid, existingRequest.SenderId);
-        if (linkResult is FailedResponse)
-        {
-            await transaction.RollbackAsync();
-            return linkResult;
+            return new FailedResponseWithMessage("Failed to persist friend request acceptance.");
         }
 
         await transaction.CommitAsync();
@@ -234,76 +228,84 @@ public class FriendConnectionService(
         user.Friends.Add(friend);
         friend.Friends.Add(user);
 
+        return new UserResponseSuccess();
+    }
+
+    public async Task<ResponseBase> DeleteFriendRequestAsync(string userId, string userType, string requestId)
+    {
+        if (!Guid.TryParse(requestId, out var requestGuid))
+        {
+            return new FailedResponseWithMessage("Invalid request ID format.");
+        }
+
+        return userType switch
+        {
+            "receiver" => await DeleteReceivedFriendRequestAsync(requestGuid, userId!),
+            "sender" => await DeleteSentFriendRequestAsync(requestGuid, userId!),
+            _ => new FailedResponseWithMessage("Invalid user type.")
+        };
+    }
+
+    private async Task<ResponseBase> DeleteSentFriendRequestAsync(Guid requestId, string senderId)
+    {
+        var user = await userServices.GetUserWithSentRequestsAsync(senderId);
+
+        var request = user.SentFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestId);
+
+        if (request == null)
+        {
+            return new FailedResponseWithMessage("Cannot find the request.");
+        }
+        
+        context.FriendConnections!.Remove(request);
         var affectedRows = await context.SaveChangesAsync();
         if (affectedRows == 0)
         {
-            return new FailedResponseWithMessage("Failed to update friends.");
+            return new FailedResponseWithMessage("Failed to update connections.");
         }
 
         return new UserResponseSuccess();
     }
 
-    public async Task<bool> DeleteSentFriendRequest(string requestId, string senderId)
+    private async Task<ResponseBase> DeleteReceivedFriendRequestAsync(Guid requestId, string receiverId)
     {
-        if (!Guid.TryParse(requestId, out var requestGuid))
-        {
-            throw new ArgumentException("Invalid requestId format.");
-        }
+        var user = await userServices.GetUserWithReceivedRequestsAsync(receiverId);
 
-        var user = await userServices.GetUserWithSentRequests(senderId);
-
-        var request = user.SentFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestGuid);
+        var request = user.ReceivedFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestId);
 
         if (request == null)
         {
-            return false;
+            return new FailedResponseWithMessage("Cannot find the request.");
         }
-        
-        Context.FriendConnections!.Remove(request);
-        await Context.SaveChangesAsync();
-        return true;
+
+        context.FriendConnections!.Remove(request);
+        var affectedRows = await context.SaveChangesAsync();
+        if (affectedRows == 0)
+        {
+            return new FailedResponseWithMessage("Failed to update connections.");
+        }
+
+        return new UserResponseSuccess();
     }
 
-    public async Task<bool> DeleteReceivedFriendRequest(string requestId, string receiverId)
-    {
-        if (!Guid.TryParse(requestId, out var requestGuid))
-        {
-            throw new ArgumentException("Invalid requestId format.");
-        }
-
-        var user = await userServices.GetUserWithReceivedRequests(receiverId);
-
-        var request = user.ReceivedFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestGuid);
-
-        if (request == null)
-        {
-            return false;
-        }
-        
-        Context.FriendConnections!.Remove(request);
-        await Context.SaveChangesAsync();
-        return true;
-    }
-
-    public async Task<IEnumerable<ShowFriendRequestResponse>> GetFriends(string userId)
+    public async Task<ResponseBase> GetFriendsAsync(string userId)
     {
         var userGuid = new Guid(userId);
-        var user = await Context.Users
+        var user = await context.Users
             .Include(u => u.Friends)
             .FirstOrDefaultAsync(u => u.Id == userGuid);
     
         if (user == null)
         {
-            throw new ArgumentException("User not found.");
+            return new FailedResponseWithMessage("User not found.");
         }
 
-        await Context.SaveChangesAsync();
-        var friendsResponses = new List<ShowFriendRequestResponse>();
+        var friends = new List<ShowFriendRequestData>();
 
         foreach (var fr in user.Friends)
         {
-            var connection = await GetConnectionId(user.Id, fr.Id);
-            friendsResponses.Add(new ShowFriendRequestResponse(
+            var connection = await GetConnectionIdAsync(user.Id, fr.Id);
+            friends.Add(new ShowFriendRequestData(
                 connection.ConnectionId,
                 user.UserName!,
                 user.Id.ToString(),
@@ -313,52 +315,77 @@ public class FriendConnectionService(
             ));
         }
 
-        return friendsResponses;
+        return new ShowFriendRequestsListResponseSuccess(friends);
     }
 
-    public async Task<Model.FriendConnection?> GetConnectionId(Guid userId, Guid friendId)
+    private async Task<FriendConnection?> GetConnectionIdAsync(Guid userId, Guid friendId)
     {
-        return await Context.FriendConnections.FirstOrDefaultAsync(fc =>
+        return await context.FriendConnections!.FirstOrDefaultAsync(fc =>
             fc.ReceiverId == userId && fc.SenderId == friendId || fc.ReceiverId == friendId && fc.SenderId == userId);
     }
 
-    public async Task<bool> DeleteFriend(string connectionId)
+    public async Task<ResponseBase> DeleteFriendAsync(Guid userId, string connectionId)
     {
         if (!Guid.TryParse(connectionId, out var connectionGuid))
         {
             throw new ArgumentException("Invalid connectionId format.");
         }
 
-        var friendConnection = await Context.FriendConnections
+        var friendConnection = await context.FriendConnections!
             .Include(fc => fc.Sender)
             .Include(fc => fc.Receiver)
             .FirstOrDefaultAsync(fc => fc.ConnectionId == connectionGuid);
 
         if (friendConnection == null)
         {
-            return false;
+            return new FailedResponseWithMessage("Cannot find friend connection.");
         }
 
-        Context.FriendConnections.Remove(friendConnection);
-    
-        var sender = await Context.Users
+        if (userId != friendConnection.SenderId && userId != friendConnection.ReceiverId)
+        {
+            return new FailedResponseWithMessage("You don't have permission for deletion.");
+        }
+
+        using var transaction = await context.Database.BeginTransactionAsync();
+
+        context.FriendConnections!.Remove(friendConnection);
+
+        var unlinkResult = await UnlinkFriendsAsync(friendConnection.SenderId, friendConnection.ReceiverId);
+        if (unlinkResult is FailedResponseWithMessage)
+        {
+            await transaction.RollbackAsync();
+            return unlinkResult;
+        }
+
+        var affectedRows = await context.SaveChangesAsync();
+        if (affectedRows == 0)
+        {
+            await transaction.RollbackAsync();
+            return new FailedResponseWithMessage("Failed to update connections.");
+        }
+
+        await transaction.CommitAsync();
+        return new UserResponseSuccess();
+    }
+
+    private async Task<ResponseBase> UnlinkFriendsAsync(Guid senderId, Guid receiverId)
+    {
+        var sender = await context.Users
             .Include(u => u.Friends)
-            .FirstOrDefaultAsync(u => u.Id == friendConnection.SenderId);
-    
-        var receiver = await Context.Users
+            .FirstOrDefaultAsync(u => u.Id == senderId);
+
+        var receiver = await context.Users
             .Include(u => u.Friends)
-            .FirstOrDefaultAsync(u => u.Id == friendConnection.ReceiverId);
-    
+            .FirstOrDefaultAsync(u => u.Id == receiverId);
+
         if (sender == null || receiver == null)
         {
-            return false;
+            return new FailedResponseWithMessage("Something happened during database operations.");
         }
 
         sender.Friends.Remove(receiver);
         receiver.Friends.Remove(sender);
 
-        await Context.SaveChangesAsync();
-
-        return true;
+        return new UserResponseSuccess();
     }
 }

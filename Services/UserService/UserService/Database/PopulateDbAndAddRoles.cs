@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.Security.Cryptography;
 using System.Text;
-using UserService.Model;
+using UserService.Models;
 using UserService.Services.PrivateKeyFolder;
 
 namespace UserService.Database;

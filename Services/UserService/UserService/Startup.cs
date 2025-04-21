@@ -10,7 +10,6 @@ using UserService.Models;
 using UserService.Services.Authentication;
 using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
-using UserService.Services.FriendConnection;
 using UserService.Services.User;
 using VaultSharp;
 using VaultSharp.V1.AuthMethods.Token;
@@ -20,6 +19,7 @@ using UserService.Middlewares;
 using JwtRefreshMiddlewareLibrary;
 using UserService.Services.EncryptedSymmetricKeyService;
 using UserService.Filters;
+using UserService.Services.FriendConnectionService;
 
 namespace UserService;
 

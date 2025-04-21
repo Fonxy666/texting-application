@@ -2,9 +2,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using UserService.Model.Responses.User;
-using UserService.Services.FriendConnection;
-using UserService.Model;
+using UserService.Models;
+using UserService.Services.FriendConnectionService;
 
 namespace UserService.Hub;
 
