@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using UserService.Models;
+using UserService.Models.Responses;
 using UserService.Services.FriendConnectionService;
 
 namespace UserService.Hub;
@@ -24,17 +25,17 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
     
     public async Task GetOnlineFriends(string userId)
     {
-        var onlineFriendList = new List<FriendHubFriend>();
+        var onlineFriendList = new List<FriendHubFriendData>();
         var userWithFriends = await userManager.Users
             .Include(user => user.Friends)
             .FirstOrDefaultAsync(user => user.Id == new Guid(userId));
 
         foreach (var friend in userWithFriends.Friends)
-        {
+            {
             if (Connections.TryGetValue(friend.Id.ToString(), out var receiverConnectionId))
             {
-                var connection = await friendConnectionService.GetConnectionId(userWithFriends.Id, friend.Id);
-                onlineFriendList.Add(new FriendHubFriend(
+                var connection = await friendConnectionService.GetConnectionIdAsync(userWithFriends.Id, friend.Id);
+                onlineFriendList.Add(new FriendHubFriendData(
                     connection!.ConnectionId.ToString(),
                     userWithFriends.UserName!,
                     userWithFriends.Id.ToString(),
@@ -48,10 +49,10 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
         await Clients.Client(Connections[userId]).SendAsync("ReceiveOnlineFriends", onlineFriendList);
     }
 
-    public async Task<UserResponseForWs> JoinToHub(string userId)
+    public async Task<UserResponseForWsSuccess> JoinToHub(string userId)
     {
         Connections[userId] = Context.ConnectionId;
-        var result = new UserResponseForWs(userId, Context.ConnectionId);
+        var result = new UserResponseForWsSuccess(userId, Context.ConnectionId);
         return result;
     }
 

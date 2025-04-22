@@ -318,7 +318,7 @@ public class FriendConnectionService(
         return new ShowFriendRequestsListResponseSuccess(friends);
     }
 
-    private async Task<FriendConnection?> GetConnectionIdAsync(Guid userId, Guid friendId)
+    public async Task<FriendConnection?> GetConnectionIdAsync(Guid userId, Guid friendId)
     {
         return await context.FriendConnections!.FirstOrDefaultAsync(fc =>
             fc.ReceiverId == userId && fc.SenderId == friendId || fc.ReceiverId == friendId && fc.SenderId == userId);

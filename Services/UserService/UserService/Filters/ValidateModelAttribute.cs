@@ -15,7 +15,7 @@ public class ValidateModelAttribute : ActionFilterAttribute
 
         if (!context.ModelState.IsValid)
         {
-            context.Result = new BadRequestObjectResult(new FailedAuthResultWithMessage("Invalid model state."));
+            context.Result = new BadRequestObjectResult(new FailedResponseWithMessage("Invalid model state."));
         }
     }
 

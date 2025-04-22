@@ -13,4 +13,5 @@ public interface IFriendConnectionService
     Task<ResponseBase> DeleteFriendRequestAsync(string userId, string userType, string requestId);
     Task<ResponseBase> GetFriendsAsync(string userId);
     Task<ResponseBase> DeleteFriendAsync(Guid userId, string connectionId);
+    Task<FriendConnection?> GetConnectionIdAsync(Guid userId, Guid friendId);
 }
