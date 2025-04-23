@@ -54,7 +54,7 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
     public async Task<UserResponseForWsSuccess> JoinToHub(string userId)
     {
         Connections[userId] = Context.ConnectionId;
-        var result = new UserResponseForWsSuccess(userId, Context.ConnectionId);
+        var result = new UserResponseForWsSuccess(new ConnectionData(userId, Context.ConnectionId));
         return result;
     }
 

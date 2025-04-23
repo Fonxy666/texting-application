@@ -6,6 +6,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { ResetPasswordRequest } from '../../model/user-credential-requests/ResetPasswordRequest';
 import { ChangePasswordRequestForUser } from '../../model/user-credential-requests/ChangePasswordRequestForUser';
 import { ChangeEmailRequest } from '../../model/user-credential-requests/ChangeEmailRequest';
+import { GetUserCredentials, UserResponse } from '../../model/responses/user-responses.model';
 
 @Injectable({
   providedIn: 'root'
@@ -35,9 +36,9 @@ export class UserService {
         this.imageSubject.next(image);
     }
 
-    getUserCredentials(): Observable<any> {
+    getUserCredentials(): Observable<UserResponse<GetUserCredentials>> {
         return this.errorHandler.handleErrors(
-            this.http.get(`/api/v1/User/GetUserCredentials`, { withCredentials: true })
+            this.http.get<UserResponse<GetUserCredentials>>(`/api/v1/User/GetUserCredentials`, { withCredentials: true })
         )
     }
 

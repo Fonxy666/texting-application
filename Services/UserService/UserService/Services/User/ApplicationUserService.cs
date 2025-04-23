@@ -49,7 +49,7 @@ public class ApplicationUserService(
         var imageBytes = await File.ReadAllBytesAsync(imagePath);
         var contentType = GetContentType(imagePath);
 
-        return new ImageResponseSuccess(imageBytes, contentType);
+        return new ImageResponseSuccess(new ImageData(imageBytes, contentType));
     }
 
     public async Task<ResponseBase> ExamineUserNotExistingAsync(string username, string email)
@@ -78,7 +78,7 @@ public class ApplicationUserService(
             return new FailedResponse();
         }
 
-        return new GetUserCredentialsSuccess(existingUser.UserName!, existingUser.Email!, existingUser.TwoFactorEnabled);
+        return new GetUserCredentialsSuccess(new GetUserCredentialsData(existingUser.UserName!, existingUser.Email!, existingUser.TwoFactorEnabled));
     }
 
     public Task<ApplicationUser> GetUserWithSentRequestsAsync(string userId)
@@ -223,7 +223,7 @@ public class ApplicationUserService(
             return new FailedResponseWithMessage("Failed to save email change.");
         }
 
-        return new UsernameUserEmailResponseSuccess(existingUser.Email!, existingUser.UserName!);
+        return new UsernameUserEmailResponseSuccess(new UserNameEmailData(existingUser.Email!, existingUser.UserName!));
     }
 
     public async Task<ResponseBase> ChangeUserPasswordAsync(ChangePasswordRequest request, string userId)
@@ -247,7 +247,7 @@ public class ApplicationUserService(
         {
             return new FailedResponseWithMessage("Failed to save password change.");
         }
-        return new UsernameUserEmailResponseSuccess(existingUser.UserName!, existingUser.Email!);
+        return new UsernameUserEmailResponseSuccess(new UserNameEmailData(existingUser.UserName!, existingUser.Email!));
     }
 
     public async Task<ResponseBase> ChangeUserAvatarAsync(string userId, string image)
@@ -303,7 +303,7 @@ public class ApplicationUserService(
         }
 
         await transaction.CommitAsync();
-        return new UsernameUserEmailResponseSuccess(existingUser.UserName!, existingUser.Email!);
+        return new UsernameUserEmailResponseSuccess(new UserNameEmailData(existingUser.UserName!, existingUser.Email!));
     }
 
     private async Task<ResponseBase> RemoveFriendConnectionsAsync(ApplicationUser existingUser)

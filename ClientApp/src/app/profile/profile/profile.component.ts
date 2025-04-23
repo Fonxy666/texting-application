@@ -9,6 +9,7 @@ import { filter } from 'rxjs';
 import { FriendService } from '../../services/friend-service/friend.service';
 import { MediaService } from '../../services/media-service/media.service';
 import { UserService } from '../../services/user-service/user.service';
+import { GetUserCredentials, UserResponse } from '../../model/responses/user-responses.model';
 
 @Component({
     selector: 'app-profile',
@@ -86,12 +87,12 @@ export class ProfileComponent implements OnInit {
 
     getUser() {
         this.userService.getUserCredentials()
-        .subscribe(response => {
-            if (response) {
-                this.user.name = response.userName;
-                this.user.email = response.email;
-                this.user.twoFactorEnabled = response.twoFactorEnabled;
-                this.userService.setEmail(response.email);
+        .subscribe((response: UserResponse<GetUserCredentials>) => {
+            if (response.isSuccess) {
+                this.user.name = response.data.userName;
+                this.user.email = response.data.email;
+                this.user.twoFactorEnabled = response.data.twoFactorEnabled;
+                this.userService.setEmail(response.data.email);
             }
         })
     }

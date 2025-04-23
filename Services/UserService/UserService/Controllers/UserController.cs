@@ -151,8 +151,10 @@ public class UserController(
                 return NotFound(getImageResult);
             }
 
+            var image = getImageResult as ImageResponseSuccess;
+
             Response.Headers.Append("Cache-Control", "max-age=1, public");
-            return Ok(getImageResult);
+            return File(image!.Data!.ImageBytes, image!.Data!.ContentType);
         }
         catch (Exception e)
         {

@@ -109,7 +109,7 @@ public class AuthController(
         
             var successResult = result as AuthResponseWithEmailSuccess;
 
-            var sentEmail = await emailSender.SendEmailAsync(successResult!.Email, "login");
+            var sentEmail = await emailSender.SendEmailAsync(successResult!.Data!.Email, "login");
 
             if (sentEmail is FailedResponse)
             {

@@ -96,7 +96,7 @@ public class AuthService(
             logger.LogError("Cannot find User private key.");
             return new FailedResponseWithMessage("Cannot find User private key.");
         }
-        var encryptedKey = (keyRetrievalResult as PrivateKeyResponseSuccessWithIv)!.EncryptedKey;
+        var encryptedKey = (keyRetrievalResult as PrivateKeyResponseSuccessWithIv)!.Data!.EncryptedKey;
 
         var roles = await userManager.GetRolesAsync(existingUser);
         
@@ -114,7 +114,7 @@ public class AuthService(
         cookieService.SetAnimateAndAnonymous(rememberMe);
         await cookieService.SetJwtToken(accessToken, rememberMe);
         
-        return new LoginResponseSuccess(existingUser.PublicKey, encryptedKey);
+        return new LoginResponseSuccess(new KeyData(existingUser.PublicKey, encryptedKey));
     }
 
     public async Task<ResponseBase> LoginWithExternal(string emailAddress)
@@ -172,7 +172,7 @@ public class AuthService(
 
         await userManager.ResetAccessFailedCountAsync(managedUser);
 
-        return new AuthResponseWithEmailSuccess(managedUser.Id.ToString(), managedUser.Email!);
+        return new AuthResponseWithEmailSuccess(new UserIdAndEmailData(managedUser.Id.ToString(), managedUser.Email!));
     }
 
     private async Task<ResponseBase> ExamineLockoutEnabled(ApplicationUser user)

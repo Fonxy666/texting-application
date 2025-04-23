@@ -41,7 +41,7 @@ public class PrivateKeyService : IPrivateKeyService
 
             if (endToEndEncryptedPrivateKey != null && iv != null)
             {
-                return new PrivateKeyResponseSuccessWithIv(endToEndEncryptedPrivateKey, iv);
+                return new PrivateKeyResponseSuccessWithIv(new KeyAndIvData(endToEndEncryptedPrivateKey, iv));
             }
             else
             {
