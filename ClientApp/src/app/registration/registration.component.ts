@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
-import { RegistrationRequest } from '../model/auth-requests/RegistrationRequest';
 import { Router } from '@angular/router';
-import { TokenValidatorRequest } from '../model/auth-requests/TokenValidatorRequest';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../services/auth-service/auth.service';
 import { AuthResponse } from '../model/responses/auth-responses.model';
+import { RegistrationRequest, TokenValidatorRequest } from '../model/auth-requests/auth-requests';
 
 @Component({
   selector: 'app-registration',
@@ -29,7 +28,7 @@ export class RegistrationComponent {
 
     sendVerifyEmail(data: RegistrationRequest) {
         this.isLoading = true;
-        this.authService.sendVerifyEmail({ email: data.email, username: data.username })
+        this.authService.sendVerifyEmail({ email: data.email, userName: data.userName })
         .subscribe((response: AuthResponse<string>) => {
             if (response.isSuccess) {
                 this.user = data;
@@ -58,7 +57,7 @@ export class RegistrationComponent {
 
     getVerifyTokenAndSendRegistration(verifyCode: String) {
         this.isLoading = true;
-        const request = new TokenValidatorRequest(this.user!.email, verifyCode.toString());
+        const request: TokenValidatorRequest = { email: this.user!.email, verifyCode: verifyCode.toString() };
         this.authService.examineVerifyToken(request)
         .subscribe((response: AuthResponse<string>) => {
             if (response.isSuccess) {

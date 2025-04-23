@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { LoginRequest } from '../model/auth-requests/LoginRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { Router } from '@angular/router';
-import { LoginAuthTokenRequest } from '../model/auth-requests/LoginAuthTokenRequest';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../services/auth-service/auth.service';
 import { AuthResponse } from '../model/responses/auth-responses.model';
+import { LoginAuthTokenRequest, LoginRequest } from '../model/auth-requests/auth-requests';
 
 @Component({
     selector: 'app-login',
@@ -26,7 +25,7 @@ export class LoginComponent implements OnInit {
 
     isLoading: boolean = false;
     loginStarted: boolean = false;
-    loginRequest: LoginRequest = new LoginRequest("", "", false);
+    loginRequest: LoginRequest = { userName: "", password: "", rememberMe: false };
 
     ngOnInit(): void {        
         if (this.isLoggedIn()) {
@@ -70,8 +69,8 @@ export class LoginComponent implements OnInit {
         .subscribe((response: AuthResponse<string>) => {
             console.log(response);
             if (response.isSuccess) {
-                this.loginRequest.username = form.username;
-                this.loginRequest.rememberme = form.rememberme;
+                this.loginRequest.userName = form.userName;
+                this.loginRequest.rememberMe = form.rememberMe;
                 this.loginStarted = true;
                 this.isLoading = false;
             }
@@ -103,11 +102,11 @@ export class LoginComponent implements OnInit {
         this.isLoading = true;
         const expirationDate = new Date();
         expirationDate.setFullYear(expirationDate.getFullYear() + 10);
-        const request = new LoginAuthTokenRequest(
-            this.loginRequest.username,
-            this.loginRequest.rememberme,
-            token
-        );
+        const request: LoginAuthTokenRequest = {
+            userName: this.loginRequest.userName,
+            rememberMe : this.loginRequest.rememberMe,
+            token: token
+    };
 
         this.authService.login(request)
         .subscribe((response: AuthResponse<string>) => {

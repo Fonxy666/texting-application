@@ -1,11 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { LoginAuthTokenRequest } from '../../model/auth-requests/LoginAuthTokenRequest';
-import { LoginRequest } from '../../model/auth-requests/LoginRequest';
-import { TokenValidatorRequest } from '../../model/auth-requests/TokenValidatorRequest';
 import { Observable } from 'rxjs';
 import { AuthResponse } from '../../model/responses/auth-responses.model';
-import { EmailAndUserNameRequest, RegistrationRequest } from '../../model/auth-requests/RegistrationRequest';
+import { EmailAndUserNameRequest, LoginAuthTokenRequest, LoginRequest, RegistrationRequest, TokenValidatorRequest } from '../../model/auth-requests/auth-requests';
 
 @Injectable({
   providedIn: 'root'
