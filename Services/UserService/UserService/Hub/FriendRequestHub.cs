@@ -1,8 +1,10 @@
 ﻿using System.Collections.Concurrent;
+using Azure.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using UserService.Models;
+using UserService.Models.Requests;
 using UserService.Models.Responses;
 using UserService.Services.FriendConnectionService;
 
@@ -56,75 +58,74 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
         return result;
     }
 
-    public async Task SendFriendRequest(string requestId, string senderName, string senderId, string sentTime, string receiverName)
+    public async Task SendFriendRequest(ManageFriendRequest request)
     {
-        var receiverId = userManager.FindByNameAsync(receiverName).Result.Id.ToString();
+        var receiverId = userManager.FindByNameAsync(request.ReceiverName).Result!.Id.ToString();
         if (Connections.TryGetValue(receiverId, out var receiverConnectionId))
         {
-            await Clients.Client(receiverConnectionId).SendAsync("ReceiveFriendRequest", requestId, senderName, senderId, sentTime, receiverName, receiverId);
+            await Clients.Client(receiverConnectionId).SendAsync("ReceiveFriendRequest", request);
         }
-        if (Connections.TryGetValue(senderId, out var senderConnectionId))
+        if (Connections.TryGetValue(request.SenderId, out var senderConnectionId))
         {
-            await Clients.Client(senderConnectionId).SendAsync("ReceiveFriendRequest", requestId, senderName, senderId, sentTime, receiverName, receiverId);
+            await Clients.Client(senderConnectionId).SendAsync("ReceiveFriendRequest", request);
         }
     }
     
-    public async Task AcceptFriendRequest(string requestId, string senderName, string senderId, string sentTime, string receiverName)
+    public async Task AcceptFriendRequest(ManageFriendRequest request)
     {
-        var receiverId = userManager.FindByNameAsync(receiverName).Result.Id.ToString();
-        if (Connections.TryGetValue(senderId, out var connectionId))
+        var receiverId = userManager.FindByNameAsync(request.ReceiverName).Result!.Id.ToString();
+        if (Connections.TryGetValue(request.SenderId, out var connectionId))
         {
-            await Clients.Client(connectionId).SendAsync("AcceptFriendRequest", requestId, senderName, senderId, sentTime, receiverName, receiverId);
+            await Clients.Client(connectionId).SendAsync("AcceptFriendRequest", request);
         }
     }
     
-    public async Task DeleteFriendRequest(string requestId, string senderId, string receiverId)
+    public async Task DeleteFriendRequest(DeleteFriendRequest request)
     {
-        if (!Guid.TryParse(senderId, out var senderGuid))
+        if (!Guid.TryParse(request.SenderId, out var senderGuid))
         {
             throw new ArgumentException("Invalid senderId format.");
         }
-        if (!Guid.TryParse(receiverId, out var receiverGuid))
+        if (!Guid.TryParse(request.ReceiverId, out var receiverGuid))
         {
             throw new ArgumentException("Invalid receiverId format.");
         }
 
         if (Connections.TryGetValue(senderGuid.ToString(), out var senderConnectionId))
         {
-            await Clients.Client(senderConnectionId).SendAsync("DeleteFriendRequest", requestId);
+            await Clients.Client(senderConnectionId).SendAsync("DeleteFriendRequest", request.RequestId);
         }
         if (Connections.TryGetValue(receiverGuid.ToString(), out var receiverConnectionId))
         {
-            await Clients.Client(receiverConnectionId).SendAsync("DeleteFriendRequest", requestId);
+            await Clients.Client(receiverConnectionId).SendAsync("DeleteFriendRequest", request.RequestId);
         }
     }
     
-    public async Task DeleteFriend(string requestId, string receiverId, string senderId)
+    public async Task DeleteFriend(DeleteFriendRequest request)
     {
-        if (Connections.TryGetValue(receiverId, out var receiverConnectionId))
+        if (Connections.TryGetValue(request.SenderId, out var senderConnectionId))
         {
-            await Clients.Client(receiverConnectionId).SendAsync("DeleteFriend", requestId);
+            await Clients.Client(senderConnectionId).SendAsync("DeleteFriend", request.RequestId);
         }
-        if (Connections.TryGetValue(senderId, out var senderConnectionId))
+        if (Connections.TryGetValue(request.ReceiverId, out var receiverConnectionId))
         {
-            await Clients.Client(senderConnectionId).SendAsync("DeleteFriend", requestId);
+            await Clients.Client(receiverConnectionId).SendAsync("DeleteFriend", request.RequestId);
         }
     }
 
-    public async Task SendChatRoomInvite(string roomId, string roomName, string receiverName, string senderId, string senderName, string? roomKey)
+    public async Task SendChatRoomInvite(ChatRoomInviteRequest request)
     {
-        var receiverId = userManager.FindByNameAsync(receiverName).Result!.Id.ToString();
+        var receiverId = userManager.FindByNameAsync(request.ReceiverName).Result!.Id.ToString();
         
         if (Connections.TryGetValue(receiverId, out var connectionId))
         {
-            if (roomKey != null)
+            if (request.RoomKey != null)
             {
-                Console.WriteLine("fasza");
-                await Clients.Client(connectionId).SendAsync("ReceiveChatRoomInvite", roomId, roomName, receiverId, senderId, senderName, roomKey);
+                await Clients.Client(connectionId).SendAsync("ReceiveChatRoomInvite", request);
             }
             else
             {
-                await Clients.Client(connectionId).SendAsync("ReceiveChatRoomInvite", roomId, roomName, receiverId, senderId, senderName);
+                await Clients.Client(connectionId).SendAsync("ReceiveChatRoomInvite", request);
             }
         }
     }

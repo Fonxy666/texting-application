@@ -67,7 +67,6 @@ export class LoginComponent implements OnInit {
         this.isLoading = true;
         this.authService.sendLoginToken(form)
         .subscribe((response: AuthResponse<string>) => {
-            console.log(response);
             if (response.isSuccess) {
                 this.loginRequest.userName = form.userName;
                 this.loginRequest.rememberMe = form.rememberMe;

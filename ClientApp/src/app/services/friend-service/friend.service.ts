@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { BehaviorSubject, firstValueFrom, Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { FriendRequestManage } from '../../model/friend-requests/FriendRequestManage';
 import { FriendRequestManageWithReceiverId } from '../../model/friend-requests/FriendRequestManageWithReceiverId';
