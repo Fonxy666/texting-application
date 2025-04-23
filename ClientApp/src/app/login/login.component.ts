@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { LoginAuthTokenRequest } from '../model/auth-requests/LoginAuthTokenRequest';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../services/auth-service/auth.service';
+import { AuthResponse } from '../model/responses/auth-responses.model';
 
 @Component({
     selector: 'app-login',
@@ -66,8 +67,9 @@ export class LoginComponent implements OnInit {
     createTask(form: LoginRequest) {
         this.isLoading = true;
         this.authService.sendLoginToken(form)
-        .subscribe((response: any) => {
-            if (response.success) {
+        .subscribe((response: AuthResponse<string>) => {
+            console.log(response);
+            if (response.isSuccess) {
                 this.loginRequest.username = form.username;
                 this.loginRequest.rememberme = form.rememberme;
                 this.loginStarted = true;
@@ -75,34 +77,19 @@ export class LoginComponent implements OnInit {
             }
         }, 
         (error) => {
-            if (error.status === 400) {
-                if (!isNaN(error.error)) {
-                    console.log(error);
-                    if (error.error == 4) {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: `Only 1 more try.`
-                        });
-                    } else {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: `Invalid username or password, you have ${5-error.error} tries.`
-                        });
-                    }
+            console.log(error);
+            if (error.status === 400 || error.status === 404) {
+                this.isLoading = false;
 
-                    this.isLoading = false;
-                } else {
-                    this.isLoading = false;
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: `${error.error.split(".")[0]}. ${error.error.split(".")[1]}`
-                    });
-                }
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: `${error.error}`
+                });
+
             } else {
                 this.isLoading = false;
+
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
@@ -118,26 +105,26 @@ export class LoginComponent implements OnInit {
         expirationDate.setFullYear(expirationDate.getFullYear() + 10);
         const request = new LoginAuthTokenRequest(
             this.loginRequest.username,
-            this.loginRequest.password,
-            this.loginRequest.rememberme, token
+            this.loginRequest.rememberme,
+            token
         );
 
         this.authService.login(request)
-        .subscribe((response: any) => {
-            if (response.success) {
-                console.log(response);
+        .subscribe((response: AuthResponse<string>) => {
+            if (response.isSuccess) {
                 this.loginStarted = false;
                 this.isLoading = false;
                 this.router.navigate(['/'], { queryParams: { loginSuccess: 'true' } });
             }
         }, 
         (error) => {
+            console.log(error);
             this.isLoading = false;
             if (error.status === 400) {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: 'Wrong token.'
+                    detail: `${error.error}`
                 });
             } else {
                 this.messageService.add({

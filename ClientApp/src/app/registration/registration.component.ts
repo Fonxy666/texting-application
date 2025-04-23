@@ -20,7 +20,7 @@ export class RegistrationComponent {
     ) { }
 
     isLoading: boolean = false;
-    user: any;
+    user: RegistrationRequest | undefined;
     showVerifyPage: boolean = false;
 
     getVerifyTokenAndGoToVerifyPage(data: RegistrationRequest) {
@@ -29,7 +29,7 @@ export class RegistrationComponent {
 
     sendVerifyEmail(data: RegistrationRequest) {
         this.isLoading = true;
-        this.authService.sendVerifyEmail({ Email: data.email, Username: data.username })
+        this.authService.sendVerifyEmail({ email: data.email, username: data.username })
         .subscribe((response: AuthResponse<string>) => {
             if (response.isSuccess) {
                 this.user = data;
@@ -58,7 +58,7 @@ export class RegistrationComponent {
 
     getVerifyTokenAndSendRegistration(verifyCode: String) {
         this.isLoading = true;
-        const request = new TokenValidatorRequest(this.user.email, verifyCode.toString());
+        const request = new TokenValidatorRequest(this.user!.email, verifyCode.toString());
         this.authService.examineVerifyToken(request)
         .subscribe((response: AuthResponse<string>) => {
             if (response.isSuccess) {
@@ -86,9 +86,17 @@ export class RegistrationComponent {
 
     sendRegistration() {
         this.isLoading = true;
-        this.authService.registration(this.user)
-        .subscribe(response => {
-            console.log(response);
+        this.authService.registration(this.user!)
+        .subscribe((response: AuthResponse<string>) => {
+            if (response.isSuccess) {
+                this.router.navigate(['login'], { queryParams: { registrationSuccess: 'true' } });
+            } else {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: `${response.message}`
+                });
+            }
         },
         (error) => {
             this.isLoading = false;

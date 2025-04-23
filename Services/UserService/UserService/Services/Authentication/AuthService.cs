@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using UserService.Models;
 using UserService.Models.Requests;
@@ -147,7 +148,7 @@ public class AuthService(
         if (managedUser == null)
         {
             logger.LogError("This username is not registered.");
-            return new FailedResponse();
+            return new FailedResponseWithMessage($"{username} is not registered.");
         }
 
         var lockoutResult = await ExamineLockoutEnabled(managedUser);
@@ -163,10 +164,12 @@ public class AuthService(
         if (!isPasswordValid)
         {
             await userManager.AccessFailedAsync(managedUser);
+            var accessFailedCount = await userManager.GetAccessFailedCountAsync(managedUser);
             logger.LogError("Invalid password.");
-            return new FailedResponse();
+            return new FailedResponseWithMessage($"Invalid credentials, u have {5 - accessFailedCount} more tries.");
         }
-        
+
+
         await userManager.ResetAccessFailedCountAsync(managedUser);
 
         return new AuthResponseWithEmailSuccess(managedUser.Id.ToString(), managedUser.Email!);
@@ -176,7 +179,7 @@ public class AuthService(
     {
         var lockoutEndDate = await userManager.GetLockoutEndDateAsync(user);
 
-        if (lockoutEndDate.HasValue && lockoutEndDate.Value > DateTimeOffset.Now)
+        if (lockoutEndDate.HasValue && lockoutEndDate.Value > DateTimeOffset.UtcNow)
         {
             return new FailedResponseWithMessage($"Account is locked. Try again after {lockoutEndDate.Value - DateTimeOffset.Now}");
         }
@@ -184,10 +187,10 @@ public class AuthService(
         await userManager.SetLockoutEndDateAsync(user, null);
         
         var userLockout = userManager.GetAccessFailedCountAsync(user).Result >= 4;
-        
+
         if (userLockout)
         {
-            await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.Now.AddDays(1));
+            await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddDays(1));
             await userManager.ResetAccessFailedCountAsync(user);
             return new FailedResponseWithMessage("Account is locked. Try again after 1 day");
         }
@@ -204,10 +207,5 @@ public class AuthService(
         await userManager.UpdateAsync(user);
         cookieService.DeleteCookies();
         return new AuthResponseSuccess();
-    }
-
-    public Task<ResponseBase> LogOutAsync(Guid userId)
-    {
-        throw new NotImplementedException();
     }
 }

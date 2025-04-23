@@ -8,6 +8,7 @@ import { ChatRoomInvite } from '../model/room-requests/ChatRoomInvite';
 import { ChatService } from '../services/chat-service/chat.service';
 import { IndexedDBService } from '../services/db-service/indexed-dbservice.service';
 import { MessageService } from 'primeng/api';
+import { AuthService } from '../services/auth-service/auth.service';
 
 @Component({
     selector: 'app-nav-bar',
@@ -25,7 +26,8 @@ export class NavBarComponent implements OnInit {
         private mediaService: MediaService,
         public chatService: ChatService,
         private dbService: IndexedDBService,
-        private messageService: MessageService
+        private messageService: MessageService,
+        private authService: AuthService
     ) { }
 
     isDropstart: boolean = true;
@@ -70,9 +72,9 @@ export class NavBarComponent implements OnInit {
     }
 
     logout() {
-        this.http.get(`/api/v1/Auth/Logout`, { withCredentials: true })
+        this.authService.logout()
         .subscribe((response: any) => {
-            if (response.success) {
+            if (response.isSuccess) {
                 this.dbService.clearEncryptionKey(this.userId);
                 this.loggedIn = false;
                 sessionStorage.clear();

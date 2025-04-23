@@ -97,22 +97,26 @@ public class AuthController(
         try
         {
             var result = await authenticationService.ExamineLoginCredentialsAsync(request.UserName, request.Password);
-        
+
             if (result is FailedResponseWithMessage error)
             {
                 return error.Message switch
                 {
-                    var msg when msg == $"{request.UserName} is not registered." => NotFound(error.Message),
-                    "The provided login code is not correct." => BadRequest(error.Message),
-                    _ => BadRequest(error)
+                    var msg when msg == $"{request.UserName} is not registered." => NotFound("This username is not registered."),
+                    _ => BadRequest(error.Message)
                 };
             }
         
             var successResult = result as AuthResponseWithEmailSuccess;
 
-            await emailSender.SendEmailAsync(successResult!.Email, "login");
+            var sentEmail = await emailSender.SendEmailAsync(successResult!.Email, "login");
 
-            return Ok(new AuthResponseSuccessWithId(successResult.Id));
+            if (sentEmail is FailedResponse)
+            {
+                return StatusCode(500, "Internal server error.");
+            }
+
+            return Ok(sentEmail);
         }
         catch (Exception e)
         {
@@ -252,7 +256,8 @@ public class AuthController(
     {
         try
         {
-            var userId = (Guid)HttpContext.Items["UserId"]!;
+            Console.WriteLine(HttpContext.Items["UserId"]);
+            var userId = (string)HttpContext.Items["UserId"]!;
             var logoutResult = await authenticationService.LogOutAsync(userId!);
 
             return Ok(logoutResult);

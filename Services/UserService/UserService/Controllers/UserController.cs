@@ -255,9 +255,8 @@ public class UserController(
         try
         {
             var userId = (string)HttpContext.Items["UserId"]!;
-            var userGuid = (Guid)HttpContext.Items["UserId"]!;
 
-            await authenticationService.LogOutAsync(userGuid!);
+            await authenticationService.LogOutAsync(userId!);
 
             var deleteResult = await userService.DeleteUserAsync(userId, password);
 

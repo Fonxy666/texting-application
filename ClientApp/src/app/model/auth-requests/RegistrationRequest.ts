@@ -10,3 +10,10 @@ export class RegistrationRequest {
         public iv: string
     ) { }
 }
+
+export class EmailAndUserNameRequest {
+    constructor(
+        public email: string,
+        public username: string
+    ) { }
+}

@@ -9,5 +9,5 @@ public interface IAuthService
     Task<ResponseBase> LoginAsync(LoginAuth request);
     Task<ResponseBase> LoginWithExternal(string emailAddress);
     Task<ResponseBase> ExamineLoginCredentialsAsync(string username, string password);
-    Task<ResponseBase> LogOutAsync(Guid userId);
+    Task<ResponseBase> LogOutAsync(string userId);
 }
