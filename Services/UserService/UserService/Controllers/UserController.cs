@@ -28,7 +28,7 @@ public class UserController(
     {
         try
         {
-            var userNameResponse = await userService.GetUsernameAsync(userId);
+            var userNameResponse = await userService.GetUserNameAsync(userId);
 
             if (userNameResponse is FailedResponseWithMessage)
             {

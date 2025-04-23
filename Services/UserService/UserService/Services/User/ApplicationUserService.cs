@@ -17,7 +17,7 @@ public class ApplicationUserService(
     MainDatabaseContext repository,
     IAuthService authService
     ) : IApplicationUserService
-{public async Task<ResponseBase> GetUsernameAsync(string userId)
+{public async Task<ResponseBase> GetUserNameAsync(string userId)
     {
         var existingUser = await userManager.FindByIdAsync(userId);
         if (existingUser == null)

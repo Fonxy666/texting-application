@@ -27,7 +27,7 @@ export class AuthService {
             'Content-Type': 'application/json'
         });
 
-        return this.http.post(`/api/v1/Auth/SendEmailVerificationToken`, form, { headers: headers, responseType: 'text' })
+        return this.http.post(`/api/v1/Auth/SendEmailVerificationToken`, form, { headers: headers })
     }
 
     examineVerifyToken(form: TokenValidatorRequest): Observable<any> {

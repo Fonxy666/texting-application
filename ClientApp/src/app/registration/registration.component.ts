@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { TokenValidatorRequest } from '../model/auth-requests/TokenValidatorRequest';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../services/auth-service/auth.service';
+import { AuthResponse } from '../model/responses/auth-responses.model';
 
 @Component({
   selector: 'app-registration',
@@ -26,14 +27,27 @@ export class RegistrationComponent {
         this.sendVerifyEmail(data);
     }
 
-    sendVerifyEmail(data: any) {
+    sendVerifyEmail(data: RegistrationRequest) {
         this.isLoading = true;
         this.authService.sendVerifyEmail({ Email: data.email, Username: data.username })
-        .subscribe((response: any) => {
-            if (response) {
+        .subscribe((response: AuthResponse<string>) => {
+            if (response.isSuccess) {
                 this.user = data;
                 this.isLoading = false;
                 this.showVerifyPage = true;
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: `${response.data}`,
+                    styleClass: 'ui-toast-message-success'
+                });
+            } else if (!response.isSuccess) {
+                this.isLoading = false;
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: `${response.message}`
+                });
             }
         },
         (error) => {
@@ -46,11 +60,17 @@ export class RegistrationComponent {
         this.isLoading = true;
         const request = new TokenValidatorRequest(this.user.email, verifyCode.toString());
         this.authService.examineVerifyToken(request)
-        .subscribe((response: any) => {
-            if (response) {
+        .subscribe((response: AuthResponse<string>) => {
+            if (response.isSuccess) {
                 this.sendRegistration();
                 this.isLoading = false;
                 this.router.navigate(['login'], { queryParams: { registrationSuccess: 'true' } });
+            } else if (!response.isSuccess) {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: `${response.message}`
+                });
             }
         },
         (error) => {

@@ -6,7 +6,7 @@ namespace UserService.Services.User;
 
 public interface IApplicationUserService
 {
-    Task<ResponseBase> GetUsernameAsync(string userId);
+    Task<ResponseBase> GetUserNameAsync(string userId);
     Task<ResponseBase> GetImageWithIdAsync(string userId);
     Task<ResponseBase> ExamineUserNotExistingAsync(string username, string email);
     Task<ResponseBase> GetUserCredentialsAsync(string userId);

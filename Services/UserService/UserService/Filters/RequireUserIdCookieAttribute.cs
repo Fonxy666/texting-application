@@ -10,6 +10,7 @@ public class RequireUserIdCookieAttribute : Attribute, IAuthorizationFilter
     public void OnAuthorization(AuthorizationFilterContext context)
     {
         var userIdClaim = context.HttpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        Console.WriteLine($"userIdClaim: {userIdClaim}");
 
         if (string.IsNullOrWhiteSpace(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
         {
@@ -17,6 +18,6 @@ public class RequireUserIdCookieAttribute : Attribute, IAuthorizationFilter
             return;
         }
 
-        context.HttpContext.Items["UserId"] = userId;
+        context.HttpContext.Items["UserId"] = userIdClaim;
     }
 }

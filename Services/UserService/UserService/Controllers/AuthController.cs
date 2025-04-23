@@ -82,7 +82,7 @@ public class AuthController(
                 return StatusCode(500, result);
             }
 
-            return Ok(new AuthResponseSuccessWithId((result as AuthResponseSuccessWithId)!.Id));
+            return Ok(new AuthResponseSuccess());
         }
         catch (Exception e)
         {

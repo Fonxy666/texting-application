@@ -15,45 +15,64 @@ public class AuthService(
     ICookieService cookieService,
     IPrivateKeyService keyService,
     ILogger<AuthService> logger,
-    IPrivateKeyService privateKeyService
+    IPrivateKeyService privateKeyService,
+    MainDatabaseContext context
     ) : IAuthService
 {
     public async Task<ResponseBase> RegisterAsync(RegistrationRequest request, string imagePath)
     {
-        var user = new ApplicationUser(imagePath)
-        {
-            UserName = request.Username,
-            Email = request.Email,
-            PhoneNumber = request.PhoneNumber,
-            PhoneNumberConfirmed = false,
-            EmailConfirmed = true,
-            TwoFactorEnabled = true,
-            LockoutEnabled = false
-        };
-        
-        user.SetPublicKey(request.PublicKey);
+        using var transaction = await context.Database.BeginTransactionAsync();
 
-        var createResult = await userManager.CreateAsync(user, request.Password);
-
-        if (!createResult.Succeeded)
+        try
         {
-            logger.LogError("Error during database save.");
+            var user = new ApplicationUser(imagePath)
+            {
+                UserName = request.Username,
+                Email = request.Email,
+                PhoneNumber = request.PhoneNumber,
+                PhoneNumberConfirmed = false,
+                EmailConfirmed = true,
+                TwoFactorEnabled = true,
+                LockoutEnabled = false
+            };
+
+            user.SetPublicKey(request.PublicKey);
+
+            var createResult = await userManager.CreateAsync(user, request.Password);
+
+            if (!createResult.Succeeded)
+            {
+                logger.LogError("Error during database save.");
+                return new FailedResponse();
+            }
+
+            var addToRoleAsync = await userManager.AddToRoleAsync(user, "User");
+
+            if (!addToRoleAsync.Succeeded)
+            {
+                logger.LogError("Error during adding user to role.");
+                return new FailedResponse();
+            }
+
+            var savedUser = await userManager.Users.FirstOrDefaultAsync(u => u.UserName == request.Username);
+            var privateKey = new PrivateKey(request.EncryptedPrivateKey, request.Iv);
+            var keyResult = await keyService.SaveKeyAsync(privateKey, savedUser!.Id);
+
+            if (keyResult is FailedResponse)
+            {
+                logger.LogError("Error during key save.");
+                return new FailedResponse();
+            }
+
+            await transaction.CommitAsync();
+
+            return keyResult.IsSuccess ? new AuthResponseSuccess() : new FailedResponse();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Registration failed during transaction.");
             return new FailedResponse();
         }
-
-        var addToRoleAsync = await userManager.AddToRoleAsync(user, "User");
-
-        if (!addToRoleAsync.Succeeded)
-        {
-            logger.LogError("Error during adding user to role.");
-            return new FailedResponse();
-        }
-        
-        var savedUser = await userManager.Users.FirstOrDefaultAsync(u => u.UserName == request.Username);
-        var privateKey = new PrivateKey(request.EncryptedPrivateKey, request.Iv);
-        var result = await keyService.SaveKeyAsync(privateKey, savedUser!.Id);
-
-        return !result.IsSuccess ? new FailedResponse() : new AuthResponseSuccessWithId(savedUser!.Id.ToString());
     }
 
     public async Task<ResponseBase> LoginAsync(LoginAuth request)
