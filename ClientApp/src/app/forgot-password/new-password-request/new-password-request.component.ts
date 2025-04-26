@@ -3,8 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { passwordMatchValidator, passwordValidator } from '../../validators/ValidPasswordValidator';
-import { ResetPasswordRequest } from '../../model/user-credential-requests/ResetPasswordRequest';
 import { UserService } from '../../services/user-service/user.service';
+import { ResetPasswordRequest } from '../../model/user-credential-requests/user-credentials-requests';
 
 @Component({
   selector: 'app-new-password-request',
@@ -104,11 +104,11 @@ export class NewPasswordRequestComponent implements OnInit {
     }
 
     onFormSubmit() {
-        const resetRequest = new ResetPasswordRequest(
-            this.emailParam,
-            this.idParam,
-            this.passwordReset.get('password')?.value
-        )
+        const resetRequest: ResetPasswordRequest = {
+            Email: this.emailParam,
+            ResetCode: this.idParam,
+            NewPassword: this.passwordReset.get('password')?.value
+        }
 
         this.userService.setNewPassword(this.idParam, resetRequest)
         .subscribe((response: any) => {

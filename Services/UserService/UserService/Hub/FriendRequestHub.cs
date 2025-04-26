@@ -41,7 +41,7 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
                     connection!.ConnectionId.ToString(),
                     userWithFriends.UserName!,
                     userWithFriends.Id.ToString(),
-                    connection.AcceptedTime.ToString()!,
+                    connection.AcceptedTime,
                     friend.UserName!,
                     friend.Id.ToString()
                 ));

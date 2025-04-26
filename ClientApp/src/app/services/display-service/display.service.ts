@@ -7,15 +7,14 @@ export class DisplayService {
 
     constructor() { }
 
-    displayRemainingTime(time: string) {
-        const givenTime = new Date(time);
+    displayRemainingTime(time: Date) {
         const currentTime = new Date();
 
-        let years = currentTime.getFullYear() - givenTime.getFullYear();
-        let months = currentTime.getMonth() - givenTime.getMonth();
-        let days = currentTime.getDate() - givenTime.getDate();
-        let hours = currentTime.getHours() - givenTime.getHours();
-        let minutes = currentTime.getMinutes() - givenTime.getMinutes();
+        let years = currentTime.getFullYear() - time.getFullYear();
+        let months = currentTime.getMonth() - time.getMonth();
+        let days = currentTime.getDate() - time.getDate();
+        let hours = currentTime.getHours() - time.getHours();
+        let minutes = currentTime.getMinutes() - time.getMinutes();
 
         if (minutes < 0) {
             minutes += 60;

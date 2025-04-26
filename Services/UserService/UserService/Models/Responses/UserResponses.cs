@@ -3,7 +3,7 @@
 public abstract record UserResponse<T>(bool IsSuccess, T? Data = default) : ResponseBase(IsSuccess);
 
 // Shared models
-public record FriendHubFriendData(string RequestId, string SenderName, string SenderId, string SentTime, string ReceiverName, string ReceiverId);
+public record FriendHubFriendData(string RequestId, string SenderName, string SenderId, DateTime? SentTime, string ReceiverName, string ReceiverId);
 public record ShowFriendRequestData(Guid RequestId, string SenderName, string SenderId, DateTime? SentTime, string ReceiverName, string ReceiverId);
 public record GetUserCredentialsData(string Username, string Email, bool TwoFactorEnabled);
 public record KeyAndIvData(string EncryptedKey, string Iv);

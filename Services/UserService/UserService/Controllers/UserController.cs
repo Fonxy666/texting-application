@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Services.FriendConnectionService;
@@ -368,9 +367,9 @@ public class UserController(
     {
         try
         {
-            var userId = (Guid)HttpContext.Items["UserId"]!;
+            var userId = (string)HttpContext.Items["UserId"]!;
 
-            var acceptFriendRequestResult = await friendConnectionService.AcceptReceivedFriendRequestAsync(requestId, userId);
+            var acceptFriendRequestResult = await friendConnectionService.AcceptReceivedFriendRequestAsync(userId, requestId);
 
             if (acceptFriendRequestResult is FailedResponseWithMessage error)
             {
@@ -449,13 +448,13 @@ public class UserController(
     [HttpDelete("DeleteFriend")]
     [Authorize(Roles = "User, Admin")]
     [RequireUserIdCookie]
-    public async Task<ActionResult> DeleteFriend([FromQuery]string connectionId)
+    public async Task<ActionResult> DeleteFriend([FromQuery]string requestId)
     {
         try
         {
-            var userId = (Guid)HttpContext.Items["UserId"]!;
+            var userId = (string)HttpContext.Items["UserId"]!;
             
-            var friendDeletionResult = await friendConnectionService.DeleteFriendAsync(userId, connectionId);
+            var friendDeletionResult = await friendConnectionService.DeleteFriendAsync(userId, requestId);
 
             if (friendDeletionResult is FailedResponseWithMessage error)
             {

@@ -3,10 +3,8 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
-import { ResetPasswordRequest } from '../../model/user-credential-requests/ResetPasswordRequest';
-import { ChangePasswordRequestForUser } from '../../model/user-credential-requests/ChangePasswordRequestForUser';
-import { ChangeEmailRequest } from '../../model/user-credential-requests/ChangeEmailRequest';
 import { GetUserCredentials, UserResponse } from '../../model/responses/user-responses.model';
+import { ChangeEmailRequest, ChangePasswordRequestForUser, ResetPasswordRequest } from '../../model/user-credential-requests/user-credentials-requests';
 
 @Injectable({
   providedIn: 'root'

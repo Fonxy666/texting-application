@@ -19,30 +19,29 @@ export class MediaService {
         if (this.profilePics[userId]) {
             return of(this.profilePics[userId]);
         }
-
+    
         return this.errorHandler.handleErrors(
             this.http.get(`/api/v1/User/GetImage?userId=${userId}`, { withCredentials: true, responseType: 'blob' })
-            .pipe(
-                switchMap((response: Blob) => {
-                    const reader = new FileReader();
-                    const result$ = new Observable<string>((observer) => {
-                        reader.onloadend = () => {
-                        const result = reader.result as string;
-                        this.profilePics[userId] = result;
-                        observer.next(result);
-                        observer.complete();
-                        };
-                    });
-                    reader.readAsDataURL(response);
-                    return result$;
-                }),
-                catchError((error) => {
-                console.log(error);
-                const defaultPic = "https://ptetutorials.com/images/user-profile.png";
-                this.profilePics[userId] = defaultPic;
-                return of(defaultPic);
-                })
-            )
-        )
+                .pipe(
+                    switchMap((response: Blob) => {
+                        return new Observable<string>((observer) => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                                const result = reader.result as string;
+                                this.profilePics[userId] = result;
+                                observer.next(result);
+                                observer.complete();
+                            };
+                            reader.readAsDataURL(response);
+                        });
+                    }),
+                    catchError((error) => {
+                        console.log(error);
+                        const defaultPic = "https://ptetutorials.com/images/user-profile.png";
+                        this.profilePics[userId] = defaultPic;
+                        return of(defaultPic);
+                    })
+                )
+        );
     }
 }

@@ -2,14 +2,13 @@ import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
-import { FriendRequestManageWithReceiverId } from '../../model/friend-requests/FriendRequestManageWithReceiverId';
 import { isEqual } from 'lodash';
 import { HttpClient } from '@angular/common/http';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
-import { ChatRoomInvite } from '../../model/room-requests/ChatRoomInvite';
 import { CryptoService } from '../crypto-service/crypto.service';
 import { StoreRoomSymmetricKey } from '../../model/room-requests/StoreRoomSymmetricKey';
 import { ShowFriendRequestData, UserResponse } from '../../model/responses/user-responses.model';
+import { ChatRoomInviteRequest, DeleteFriendRequest, FriendRequestManage } from '../../model/friend-requests/friend-requests.model';
 
 @Injectable({
     providedIn: 'root'
@@ -20,8 +19,8 @@ export class FriendService {
     public friendRequests: { [userId: string]: ShowFriendRequestData[] } = {};
     public friends$ = new BehaviorSubject<ShowFriendRequestData[]>([]);
     public friends: { [userId: string]: ShowFriendRequestData[] } = {};
-    public chatRoomInvites$ = new BehaviorSubject<ChatRoomInvite[]>([]);
-    public chatRoomInvites: { [userId: string]: ChatRoomInvite[] } = {};
+    public chatRoomInvites$ = new BehaviorSubject<ChatRoomInviteRequest[]>([]);
+    public chatRoomInvites: { [userId: string]: ChatRoomInviteRequest[] } = {};
     public onlineFriends$ = new BehaviorSubject<ShowFriendRequestData[]>([]);
     public onlineFriends: { [userId: string]: ShowFriendRequestData[] } = {};
     public loggedIn: boolean = this.cookieService.check("UserId");
@@ -45,27 +44,27 @@ export class FriendService {
             this.loadInitialData();
         }
 
-        this.connection.on("ReceiveFriendRequest", (requestId: string, senderName: string, senderId: string, sentTime: string, receiverName: string, receiverId: string) => {
+        this.connection.on("ReceiveFriendRequest", (request: ShowFriendRequestData) => {
             const newRequest: ShowFriendRequestData = {
-                connectionId: requestId,
-                senderUserName: senderName,
-                senderId: senderId,
-                time: new Date(sentTime),
-                receiverUserName: receiverName,
-                receiverId: receiverId
+                requestId: request.requestId,
+                senderName: request.senderName,
+                senderId: request.senderId,
+                sentTime: new Date(request.sentTime),
+                receiverName: request.receiverName,
+                receiverId: request.receiverId!
             };
         
             this.addRequest(newRequest);
         });
 
-        this.connection.on("AcceptFriendRequest", (requestId: string, senderName: string, senderId: string, sentTime: string, receiverName: string, receiverId: string) => {
+        this.connection.on("AcceptFriendRequest", (request: FriendRequestManage) => {
             const newRequest: ShowFriendRequestData = {
-                connectionId: requestId,
-                senderUserName: senderName,
-                senderId: senderId,
-                time: new Date(sentTime),
-                receiverUserName: receiverName,
-                receiverId: receiverId
+                requestId: request.requestId,
+                senderName: request.senderName,
+                senderId: request.senderId,
+                sentTime: new Date(request.sentTime),
+                receiverName: request.receiverName,
+                receiverId: request.receiverId!
             };
 
             this.updateFriendRequests(newRequest);
@@ -79,16 +78,16 @@ export class FriendService {
             this.deleteFromFriends(requestId);
         });
 
-        this.connection.on("ReceiveChatRoomInvite", async (roomId: string, roomName: string, receiverId: string, senderId: string, senderName: string, roomKey?: string) => {
-            if (roomKey !== undefined) {
-                const request = new StoreRoomSymmetricKey(roomKey!, roomId);
+        this.connection.on("ReceiveChatRoomInvite", async (request: ChatRoomInviteRequest) => {
+            if (request.roomKey !== undefined) {
+                const keyRequest = new StoreRoomSymmetricKey(request.roomKey!, request.roomId);
 
-                this.cryptoService.sendEncryptedRoomKey(request)
+                this.cryptoService.sendEncryptedRoomKey(keyRequest)
                     .subscribe(() => {
-                        this.updateChatInvites(roomId, roomName, receiverId, senderId, senderName);
+                        this.updateChatInvites(request);
                     }) 
             } else {
-                this.updateChatInvites(roomId, roomName, receiverId, senderId, senderName);
+                this.updateChatInvites(request);
             }
         });
 
@@ -152,9 +151,9 @@ export class FriendService {
         }
     }
 
-    public async sendFriendRequest(request: FriendRequestManageWithReceiverId) {
+    public async sendFriendRequest(request: ShowFriendRequestData) {
         try {
-            await this.connection.invoke("SendFriendRequest", request.requestId, request.senderName, request.senderId, request.sentTime, request.receiverName);
+            await this.connection.invoke("SendFriendRequest", request);
         } catch (error) {
             console.error('Error sending friend request via SignalR:', error);
         }
@@ -163,6 +162,10 @@ export class FriendService {
     private addRequest(request: ShowFriendRequestData) {
         const userId = this.cookieService.get('UserId');
 
+        if (typeof request.sentTime === 'string') {
+            request.sentTime = new Date(request.sentTime);
+        }
+
         if (!this.friendRequests[request.receiverId]) {
             this.friendRequests[request.receiverId] = [];
         }
@@ -170,11 +173,11 @@ export class FriendService {
             this.friendRequests[request.senderId] = [];
         }
     
-        if (!this.friendRequests[request.receiverId].some(friend => isEqual(friend.connectionId, request.connectionId))) {
+        if (!this.friendRequests[request.receiverId].some(friend => isEqual(friend.requestId, request.requestId))) {
             this.friendRequests[request.receiverId].push(request);
         }
 
-        if (!this.friendRequests[request.senderId].some(friend => isEqual(friend.connectionId, request.connectionId))) {
+        if (!this.friendRequests[request.senderId].some(friend => isEqual(friend.requestId, request.requestId))) {
             this.friendRequests[request.senderId].push(request);
         }
 
@@ -183,7 +186,7 @@ export class FriendService {
 
     public async acceptFriendRequest(request: ShowFriendRequestData) {
         try {
-            await this.connection.invoke("AcceptFriendRequest", request.connectionId, request.senderUserName, request.senderId, request.time, request.receiverUserName);
+            await this.connection.invoke("AcceptFriendRequest", request);
             this.updateFriendRequests(request);
         } catch (error) {
             console.error('Error accepting friend request via SignalR:', error);
@@ -192,6 +195,10 @@ export class FriendService {
     
     private updateFriendRequests(request: ShowFriendRequestData) {
         const userId = this.cookieService.get('UserId');
+
+        if (typeof request.sentTime === 'string') {
+            request.sentTime = new Date(request.sentTime);
+        }
         
         if (!this.friendRequests[userId]) {
             this.friendRequests[userId] = [];
@@ -200,7 +207,7 @@ export class FriendService {
             this.friends[userId] = [];
         }
     
-        this.friendRequests[userId] = this.friendRequests[userId].filter(r => r.connectionId !== request.connectionId);
+        this.friendRequests[userId] = this.friendRequests[userId].filter(r => r.requestId !== request.requestId);
         
         this.friends[userId].push(request);
     
@@ -208,10 +215,10 @@ export class FriendService {
         this.friends$.next(this.friends[userId]);
     }
 
-    public async deleteFriendRequest(requestId: string, senderId: string, receiverId: string) {
+    public async deleteFriendRequest(request: DeleteFriendRequest) {
         try {
-            await this.connection.invoke("DeleteFriendRequest", requestId, senderId, receiverId);
-            this.updateFriendRequestsWithDeclinedRequest(requestId);
+            await this.connection.invoke("DeleteFriendRequest", request);
+            this.updateFriendRequestsWithDeclinedRequest(request.requestId);
         } catch (error) {
             console.error('Error declining friend request via SignalR:', error);
         }
@@ -219,14 +226,14 @@ export class FriendService {
 
     private updateFriendRequestsWithDeclinedRequest(requestId: string) {
         const userId = this.cookieService.get('UserId');
-        this.friendRequests[userId] = this.friendRequests[userId].filter(r => r.connectionId !== requestId);
+        this.friendRequests[userId] = this.friendRequests[userId].filter(r => r.requestId !== requestId);
         this.friendRequests$.next(this.friendRequests[userId]);
     }
 
-    public async deleteFriend(requestId: string, receiverId: string, senderId: string) {
+    public async deleteFriend(request: DeleteFriendRequest) {
         try {
-            await this.connection.invoke("DeleteFriend", requestId, receiverId, senderId);
-            this.deleteFromFriends(requestId);
+            await this.connection.invoke("DeleteFriend", request);
+            this.deleteFromFriends(request.requestId);
         } catch (error) {
             console.error('Error deleting friend via SignalR:', error);
         }
@@ -234,30 +241,33 @@ export class FriendService {
 
     private deleteFromFriends(requestId: string) {
         const userId = this.cookieService.get('UserId');
-        this.friends[userId] = this.friends[userId].filter(r => r.connectionId !== requestId)
+        this.friends[userId] = this.friends[userId].filter(r => r.requestId !== requestId)
         this.friends$.next(this.friends[userId]);
     }
 
-    public async sendChatRoomInvite(roomId: string, roomName: string, receiverName: string, senderId: string, senderName: string, roomKey?: string) {
+    public async sendChatRoomInvite(request: ChatRoomInviteRequest) {
         try {
-            if (roomKey !== undefined) {
-                await this.connection.invoke("SendChatRoomInvite", roomId, roomName, receiverName, senderId, senderName, roomKey);
+            if (request.roomKey !== undefined) {
+                await this.connection.invoke("SendChatRoomInvite", request);
             } else {
-                await this.connection.invoke("SendChatRoomInvite", roomId, roomName, receiverName, senderId, senderName, null);
+                await this.connection.invoke("SendChatRoomInvite", request);
             }
         } catch (error) {
             console.error('Error declining friend request via SignalR:', error);
         }
     }
 
-    private updateChatInvites(roomId: string, roomName: string, receiverId: string, senderId: string, senderName: string, roomKey?: string) {
-        if (!this.chatRoomInvites[receiverId]) {
-            this.chatRoomInvites[receiverId] = [];
+    private updateChatInvites(request: ChatRoomInviteRequest) {
+        if (!this.chatRoomInvites[request.receiverName]) {
+            this.chatRoomInvites[request.receiverName] = [];
         }
         
-        roomKey !== null? this.chatRoomInvites[receiverId].push(new ChatRoomInvite(senderId, roomId, roomName, senderName, roomKey)) : this.chatRoomInvites[receiverId].push(new ChatRoomInvite(senderId, roomId, roomName, senderName))
+        request.roomKey !== null?
+            this.chatRoomInvites[request.receiverName]
+                .push(request) :
+                this.chatRoomInvites[request.receiverName].push(request)
         
-        this.chatRoomInvites$.next(this.chatRoomInvites[receiverId]);
+        this.chatRoomInvites$.next(this.chatRoomInvites[request.receiverName]);
     }
 
     public handleChatInviteClick(roomId: string, senderId: string) {
@@ -296,6 +306,10 @@ export class FriendService {
                         const requestList = this.friendRequests[userId];
                         
                         if (!requestList.some(request => isEqual(request, res))) {
+                            if (typeof res.sentTime === 'string') {
+                                res.sentTime = new Date(res.sentTime);
+                            }
+
                             requestList.push(res);
                         }
     
@@ -321,6 +335,10 @@ export class FriendService {
                         const friendsList = this.friends[userId];
                         
                         if (!friendsList.some(friend => isEqual(friend, res))) {
+                            if (typeof res.sentTime === 'string') {
+                                res.sentTime = new Date(res.sentTime);
+                            }
+
                             friendsList.push(res);
                         }
         
@@ -333,7 +351,12 @@ export class FriendService {
 
     sendFriendRequestHttp(friendName: string): Observable<UserResponse<ShowFriendRequestData>> {
         return this.errorHandler.handleErrors(
-            this.http.post<UserResponse<ShowFriendRequestData>>(`/api/v1/User/SendFriendRequest`, friendName, { withCredentials: true })
+            this.http.post<UserResponse<ShowFriendRequestData>>(`/api/v1/User/SendFriendRequest`, JSON.stringify(friendName), {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                withCredentials: true
+            })
         )
     }
 
@@ -351,19 +374,29 @@ export class FriendService {
 
     acceptFriendRequestHttp(requestId: string): Observable<UserResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.patch<UserResponse<void>>(`/api/v1/User/AcceptReceivedFriendRequest`, JSON.stringify(requestId), { withCredentials: true })
+            this.http.patch<UserResponse<void>>(`/api/v1/User/AcceptReceivedFriendRequest`, JSON.stringify(requestId), { 
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                withCredentials: true
+            })
         )
     }
 
     friendRequestDecline(requestId: string, userType: string): Observable<UserResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.delete<UserResponse<void>>(`/api/v1/User/DeleteFriendRequest?requestId=${requestId}&userType=${userType}`, { withCredentials: true })
+            this.http.delete<UserResponse<void>>(`/api/v1/User/DeleteFriendRequest?requestId=${requestId}&userType=${userType}`, { 
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                withCredentials: true
+            })
         )
     }
 
     deleteFriendHttp(requestId: string): Observable<UserResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.delete<UserResponse<void>>(`/api/v1/User/DeleteFriend?connectionId=${requestId}`, { withCredentials: true })
+            this.http.delete<UserResponse<void>>(`/api/v1/User/DeleteFriend?requestId=${requestId}`, { withCredentials: true })
         )
     }
 }

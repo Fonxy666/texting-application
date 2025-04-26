@@ -80,7 +80,8 @@ public class CryptoKeyController(
     {
         try
         {
-            var userGuid = (Guid)HttpContext.Items["UserId"]!;
+            var userId = (string)HttpContext.Items["UserId"]!;
+            var userGuid = Guid.Parse(userId);
             var roomGuid = new Guid(data.RoomId);
 
             var newKey = new EncryptedSymmetricKey(userGuid, data.EncryptedKey, roomGuid);

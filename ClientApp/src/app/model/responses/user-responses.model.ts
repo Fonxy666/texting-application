@@ -30,11 +30,11 @@ export interface UserEncryptedPrivateKeyAndIv {
 }
 
 export interface ShowFriendRequestData {
-    connectionId: string;
-    senderUserName: string;
+    requestId: string;
+    senderName: string;
     senderId: string;
-    time: Date;
-    receiverUserName: string;
+    sentTime: Date;
+    receiverName: string;
     receiverId: string;
 }
   

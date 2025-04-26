@@ -3,10 +3,10 @@ import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CookieService } from 'ngx-cookie-service';
 import { FriendService } from '../../../services/friend-service/friend.service';
-import { FriendRequestManageWithReceiverId } from '../../../model/friend-requests/FriendRequestManageWithReceiverId';
 import { MediaService } from '../../../services/media-service/media.service';
 import { DisplayService } from '../../../services/display-service/display.service';
 import { ShowFriendRequestData, UserResponse } from '../../../model/responses/user-responses.model';
+import { DeleteFriendRequest } from '../../../model/friend-requests/friend-requests.model';
 
 @Component({
   selector: 'app-manage-friend-request',
@@ -74,13 +74,15 @@ export class ManageFriendRequestComponent implements OnInit {
                         detail: `Friend request successfully sent to '${friendName}'.`,
                         styleClass: 'ui-toast-message-success'
                     });
-                    this.friendService.sendFriendRequest(
-                        new FriendRequestManageWithReceiverId(
-                            response.data.connectionId,
-                            response.data.senderUserName,
-                            response.data.senderId,
-                            response.data.time.toString(),
-                            friendName));
+                    const newRequest: ShowFriendRequestData = {
+                        requestId: response.data.requestId,
+                        senderName: response.data.senderName,
+                        senderId: response.data.senderId,
+                        sentTime: new Date(response.data.sentTime),
+                        receiverName: friendName,
+                        receiverId: response.data.receiverId
+                    }
+                    this.friendService.sendFriendRequest(newRequest);
                     this.friendName.reset();
                 }
             },
@@ -97,37 +99,52 @@ export class ManageFriendRequestComponent implements OnInit {
     }
 
     handleFriendRequestAccept(request: ShowFriendRequestData) {
-        this.friendService.acceptFriendRequestHttp(request.connectionId)
+        this.friendService.acceptFriendRequestHttp(request.requestId)
         .subscribe(
-            () => {
-                let newRequest: ShowFriendRequestData = {
-                    connectionId: request.connectionId,
-                    senderUserName: request.senderUserName,
-                    senderId: request.senderId,
-                    time: request.time,
-                    receiverUserName: request.receiverUserName,
-                    receiverId: request.receiverId
+            (response: UserResponse<void>) => {
+                if (response.isSuccess) {
+                    let newRequest: ShowFriendRequestData = {
+                        requestId: request.requestId,
+                        senderName: request.senderName,
+                        senderId: request.senderId,
+                        sentTime: new Date(request.sentTime),
+                        receiverName: request.receiverName,
+                        receiverId: request.receiverId
+                    }
+
+                    this.friendService.acceptFriendRequest(newRequest);
                 }
-                this.friendService.acceptFriendRequest(newRequest)
             }
         );
     }
 
     handleFriendRequestDecline(requestId: string, senderId: string, receiverId: string, userType: string) {
+        const declineRequest: DeleteFriendRequest = {
+            requestId: requestId,
+            senderId: senderId,
+            receiverId: receiverId
+        }
         this.friendService.friendRequestDecline(requestId, userType)
         .subscribe(
-            () => {
-                this.friendService.deleteFriendRequest(requestId, senderId, receiverId);
+            (response: UserResponse<void>) => {
+                if (response.isSuccess) {
+                    this.friendService.deleteFriendRequest(declineRequest);
+                }
             }
         );
     }
 
     deleteFriend(requestId: string, receiverId: string, senderId: string) {
+        const declineRequest: DeleteFriendRequest = {
+            requestId: requestId,
+            senderId: senderId,
+            receiverId: receiverId
+        }
         this.friendService.deleteFriendHttp(requestId)
         .subscribe(
-            (response) => {
-                if (response) {
-                    this.friendService.deleteFriend(requestId, receiverId, senderId);
+            (response: UserResponse<void>) => {
+                if (response.isSuccess) {
+                    this.friendService.deleteFriend(declineRequest);
                 }
             }
         );

@@ -2,8 +2,8 @@ import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/co
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { passwordValidator, passwordMatchValidator } from '../../../validators/ValidPasswordValidator';
 import { MessageService } from 'primeng/api';
-import { ChangePasswordRequestForUser } from '../../../model/user-credential-requests/ChangePasswordRequestForUser';
 import { UserService } from '../../../services/user-service/user.service';
+import { ChangePasswordRequestForUser } from '../../../model/user-credential-requests/user-credentials-requests';
 
 @Component({
   selector: 'app-generate-password-change-request',
@@ -76,10 +76,10 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
     }
 
     OnFormSubmit() {
-        const changePasswordRequest = new ChangePasswordRequestForUser(
-            this.changePasswordRequest.get('oldPassword')?.value,
-            this.changePasswordRequest.get('password')?.value
-        );
+        const changePasswordRequest: ChangePasswordRequestForUser = {
+            oldPassword: this.changePasswordRequest.get('oldPassword')?.value,
+            password: this.changePasswordRequest.get('password')?.value
+        };
 
         this.userService.changePassword(changePasswordRequest)
         .subscribe((response: any) => {

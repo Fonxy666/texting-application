@@ -5,7 +5,6 @@ import { firstValueFrom, forkJoin, Subscription } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
 import { MessageRequest } from '../../model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
-import { ChangeMessageRequest } from '../../model/user-credential-requests/ChangeMessageRequest';
 import { ChangeMessageSeenRequest } from '../../model/message-requests/ChangeMessageSeenRequest';
 import { ConnectedUser } from '../../model/room-requests/ConnectedUser';
 import { MessageService } from 'primeng/api';
@@ -19,6 +18,8 @@ import { UserService } from '../../services/user-service/user.service';
 import { CryptoService } from '../../services/crypto-service/crypto.service';
 import { IndexedDBService } from '../../services/db-service/indexed-dbservice.service';
 import { ShowFriendRequestData } from '../../model/responses/user-responses.model';
+import { ChangeMessageRequest } from '../../model/user-credential-requests/user-credentials-requests';
+import { ChatRoomInviteRequest } from '../../model/friend-requests/friend-requests.model';
 
 @Component({
   selector: 'app-chat',
@@ -545,7 +546,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             });
         } else {
             this.onlineFriends = this.friendService.onlineFriends$.value.filter(user =>
-                this.userId !== user.senderId? user.senderUserName.toLowerCase().includes(this.searchTermForFriends.toLowerCase()) : user.receiverUserName.toLowerCase().includes(this.searchTermForFriends.toLowerCase())
+                this.userId !== user.senderId? user.senderName.toLowerCase().includes(this.searchTermForFriends.toLowerCase()) : user.receiverName.toLowerCase().includes(this.searchTermForFriends.toLowerCase())
             );
         }
     };
@@ -560,13 +561,15 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
         await firstValueFrom(this.cryptoService.userHaveKeyForRoom(receiverName, sessionStorage.getItem("roomId")!))
         .then(() => {
-            this.friendService.sendChatRoomInvite(
-                sessionStorage.getItem("roomId")!,
-                sessionStorage.getItem("room")!,
-                receiverName,
-                this.userId!,
-                userName
-            )
+            var request: ChatRoomInviteRequest = {
+                roomId: sessionStorage.getItem("roomId")!,
+                roomName: sessionStorage.getItem("room")!,
+                receiverName: receiverName,
+                senderId: this.userId!,
+                senderName: userName
+                
+            }
+            this.friendService.sendChatRoomInvite(request);
         })
             .catch(async err => {
                 if (err.error !== `There is no key or user with this Username: ${receiverName}`) {
@@ -587,14 +590,15 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     const encryptRoomKeyForUser = await this.cryptoService.encryptSymmetricKey(keyToArrayBuffer, cryptoKeyUserPublicKey);
                     const bufferToBase64 = this.cryptoService.bufferToBase64(encryptRoomKeyForUser);
     
-                    this.friendService.sendChatRoomInvite(
-                        sessionStorage.getItem("roomId")!,
-                        sessionStorage.getItem("room")!,
-                        receiverName,
-                        this.userId!,
-                        userName,
-                        bufferToBase64
-                    )
+                    var request: ChatRoomInviteRequest = {
+                        roomId: sessionStorage.getItem("roomId")!,
+                        roomName: sessionStorage.getItem("room")!,
+                        receiverName: receiverName,
+                        senderId: this.userId!,
+                        senderName: userName,
+                        roomKey: bufferToBase64
+                    }
+                    this.friendService.sendChatRoomInvite(request)
                 }
             });
 

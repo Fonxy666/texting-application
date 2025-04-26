@@ -95,7 +95,7 @@ public class ApplicationUserService(
         var userGuid = new Guid(userId);
 
         return Task.FromResult(userManager.Users
-            .Include(u => u.SentFriendRequests)
+            .Include(u => u.ReceivedFriendRequests)
             .FirstOrDefaultAsync(u => u.Id == userGuid).Result!);
     }
     public async Task<ResponseBase> GetUserPrivatekeyForRoomAsync(string userId, string roomId)

@@ -180,8 +180,9 @@ public class FriendConnectionService(
                 .Any(fc => fc.ReceiverId == receiverGuid && fc.SenderId == senderGuid));
     }
 
-    public async Task<ResponseBase> AcceptReceivedFriendRequestAsync(string requestId, Guid receiverId)
+    public async Task<ResponseBase> AcceptReceivedFriendRequestAsync(string userId, string requestId)
     {
+        var userGuid = Guid.Parse(userId);
         if (!Guid.TryParse(requestId, out var requestGuid))
         {
             return new FailedResponseWithMessage("Invalid request ID format.");
@@ -197,7 +198,7 @@ public class FriendConnectionService(
 
         existingRequest.SetStatusToAccepted();
 
-        var linkResult = await LinkUsersAsFriendsAsync(receiverId, existingRequest.SenderId);
+        var linkResult = await LinkUsersAsFriendsAsync(userGuid, existingRequest.SenderId);
         if (linkResult is FailedResponse)
         {
             await transaction.RollbackAsync();
@@ -269,6 +270,13 @@ public class FriendConnectionService(
 
     private async Task<ResponseBase> DeleteReceivedFriendRequestAsync(Guid requestId, string receiverId)
     {
+        Console.WriteLine("---------------------");
+        Console.WriteLine("---------------------");
+        Console.WriteLine("---------------------");
+        Console.WriteLine("---------------------");
+        Console.WriteLine("---------------------");
+        Console.WriteLine("---------------------");
+        Console.WriteLine(requestId);
         var user = await userServices.GetUserWithReceivedRequestsAsync(receiverId);
 
         var request = user.ReceivedFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestId);
@@ -324,12 +332,13 @@ public class FriendConnectionService(
             fc.ReceiverId == userId && fc.SenderId == friendId || fc.ReceiverId == friendId && fc.SenderId == userId);
     }
 
-    public async Task<ResponseBase> DeleteFriendAsync(Guid userId, string connectionId)
+    public async Task<ResponseBase> DeleteFriendAsync(string userId, string connectionId)
     {
         if (!Guid.TryParse(connectionId, out var connectionGuid))
         {
             throw new ArgumentException("Invalid connectionId format.");
         }
+        var userGuid = Guid.Parse(userId);
 
         var friendConnection = await context.FriendConnections!
             .Include(fc => fc.Sender)
@@ -341,7 +350,7 @@ public class FriendConnectionService(
             return new FailedResponseWithMessage("Cannot find friend connection.");
         }
 
-        if (userId != friendConnection.SenderId && userId != friendConnection.ReceiverId)
+        if (userGuid != friendConnection.SenderId && userGuid != friendConnection.ReceiverId)
         {
             return new FailedResponseWithMessage("You don't have permission for deletion.");
         }

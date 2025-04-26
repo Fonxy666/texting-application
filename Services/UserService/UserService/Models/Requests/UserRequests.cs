@@ -38,7 +38,8 @@ public record ManageFriendRequest(
     [Required(ErrorMessage = "Sender name cannot be null.")] string SenderName,
     [Required(ErrorMessage = "Sender id cannot be null.")] string SenderId,
     [Required(ErrorMessage = "Sent time cannot be null.")] string SentTime,
-    [Required(ErrorMessage = "Receiver name cannot be null.")] string ReceiverName
+    [Required(ErrorMessage = "Receiver name cannot be null.")] string ReceiverName,
+    [Required(ErrorMessage = "Receiver name cannot be null.")] string ReceiverId
 );
 
 public record ChatRoomInviteRequest(

@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ChangeEmailRequest } from '../../../model/user-credential-requests/ChangeEmailRequest';
 import { MessageService } from 'primeng/api';
 import { HttpClient } from '@angular/common/http';
 import { UserService } from '../../../services/user-service/user.service';
+import { ChangeEmailRequest } from '../../../model/user-credential-requests/user-credentials-requests';
 
 @Component({
   selector: 'app-generate-email-change-request',
@@ -33,10 +33,10 @@ export class GenerateEmailChangeRequestComponent implements OnInit {
 
     OnFormSubmit() {
         if (this.changeEmailRequest.valid) {
-            const changeEmailRequest = new ChangeEmailRequest(
-                this.email,
-                this.changeEmailRequest.get('newEmail')?.value
-            );
+            const changeEmailRequest: ChangeEmailRequest = {
+                oldEmail: this.email,
+                newEmail: this.changeEmailRequest.get('newEmail')?.value
+            }
 
             if (changeEmailRequest.newEmail === changeEmailRequest.oldEmail) {
                 this.messageService.add({
