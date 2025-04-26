@@ -3,10 +3,10 @@ import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CookieService } from 'ngx-cookie-service';
 import { FriendService } from '../../../services/friend-service/friend.service';
-import { FriendRequestManage } from '../../../model/friend-requests/FriendRequestManage';
 import { FriendRequestManageWithReceiverId } from '../../../model/friend-requests/FriendRequestManageWithReceiverId';
 import { MediaService } from '../../../services/media-service/media.service';
 import { DisplayService } from '../../../services/display-service/display.service';
+import { ShowFriendRequestData, UserResponse } from '../../../model/responses/user-responses.model';
 
 @Component({
   selector: 'app-manage-friend-request',
@@ -17,8 +17,8 @@ import { DisplayService } from '../../../services/display-service/display.servic
 export class ManageFriendRequestComponent implements OnInit {
     avatarUrl: { [key: string]: string } = {};
     userId: string = "";
-    friendRequests: FriendRequestManage[] | undefined;
-    friends: FriendRequestManage[] | undefined;
+    friendRequests: ShowFriendRequestData[] | undefined;
+    friends: ShowFriendRequestData[] | undefined;
 
     constructor(
         private friendService: FriendService,
@@ -66,8 +66,8 @@ export class ManageFriendRequestComponent implements OnInit {
         const friendName = this.friendName.get('userName')?.value;
         this.friendService.sendFriendRequestHttp(friendName)
         .subscribe(
-            (response: any) => {
-                if (response) {
+            (response: UserResponse<ShowFriendRequestData>) => {
+                if (response.isSuccess) {
                     this.messageService.add({
                         severity: 'success',
                         summary: 'Success',
@@ -76,10 +76,10 @@ export class ManageFriendRequestComponent implements OnInit {
                     });
                     this.friendService.sendFriendRequest(
                         new FriendRequestManageWithReceiverId(
-                            response.requestId,
-                            response.senderName,
-                            response.senderId,
-                            response.sentTime,
+                            response.data.connectionId,
+                            response.data.senderUserName,
+                            response.data.senderId,
+                            response.data.time.toString(),
                             friendName));
                     this.friendName.reset();
                 }
@@ -96,20 +96,19 @@ export class ManageFriendRequestComponent implements OnInit {
         );
     }
 
-    handleFriendRequestAccept(request: FriendRequestManage) {
-        this.friendService.acceptFriendRequestHttp(request.requestId)
+    handleFriendRequestAccept(request: ShowFriendRequestData) {
+        this.friendService.acceptFriendRequestHttp(request.connectionId)
         .subscribe(
             () => {
-                this.friendService.acceptFriendRequest(
-                    new FriendRequestManage(
-                        request.requestId,
-                        request.senderName,
-                        request.senderId,
-                        request.sentTime,
-                        request.receiverName,
-                        request.receiverId
-                    )
-                );
+                let newRequest: ShowFriendRequestData = {
+                    connectionId: request.connectionId,
+                    senderUserName: request.senderUserName,
+                    senderId: request.senderId,
+                    time: request.time,
+                    receiverUserName: request.receiverUserName,
+                    receiverId: request.receiverId
+                }
+                this.friendService.acceptFriendRequest(newRequest)
             }
         );
     }

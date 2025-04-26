@@ -10,16 +10,16 @@
                     <div class="display-request">
                         <div class="display-name">
                             Sent request to 
-                            <span [title]="request.receiverName">
-                                {{ this.displayService.displayUserName(request.receiverName) }}
+                            <span [title]="request.receiverUserName">
+                                {{ this.displayService.displayUserName(request.receiverUserName) }}
                             </span>
                             <img class="avatar-image" [src]="avatarUrl[request.receiverId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
                         </div>
                         <div class="display-time-buttons">
                             <label>
-                                {{ this.displayService.displayRemainingTime(request.sentTime) }}
+                                {{ this.displayService.displayRemainingTime(request.time) }}
                             </label>
-                            <i class="fa fa-close mx-3" aria-hidden="true" (click)="this.handleFriendRequestDecline(request.requestId, request.senderId, request.receiverId, 'sender')"></i>
+                            <i class="fa fa-close mx-3" aria-hidden="true" (click)="this.handleFriendRequestDecline(request.connectionId, request.senderId, request.receiverId, 'sender')"></i>
                         </div>
                     </div>
                 </ng-container>
@@ -34,10 +34,10 @@
                         </div>
                         <div class="display-time-buttons">
                             <label>
-                                {{ this.displayService.displayRemainingTime(request.sentTime) }}
+                                {{ this.displayService.displayRemainingTime(request.time) }}
                             </label>
                             <i class="fa fa-check ms-3" aria-hidden="true" (click)="this.handleFriendRequestAccept(request)"></i>
-                            <i class="fa fa-close mx-3" aria-hidden="true" (click)="this.handleFriendRequestDecline(request.requestId, request.senderId, request.receiverId, 'receiver')"></i>
+                            <i class="fa fa-close mx-3" aria-hidden="true" (click)="this.handleFriendRequestDecline(request.connectionId, request.senderId, request.receiverId, 'receiver')"></i>
                         </div>
                     </div>
                 </ng-container>
@@ -58,25 +58,25 @@
                         </div>
                         <div class="display-time-buttons">
                             <label>
-                                {{ this.displayService.displayRemainingTime(request.sentTime) }}
+                                {{ this.displayService.displayRemainingTime(request.time) }}
                             </label>
-                            <i class="fa fa-close mx-3" aria-hidden="true" (click)="this.deleteFriend(request.requestId, request.receiverId, request.senderId)"></i>
+                            <i class="fa fa-close mx-3" aria-hidden="true" (click)="this.deleteFriend(request.time, request.receiverId, request.senderId)"></i>
                         </div>
                     </div>
                 </ng-container>
                 <ng-container *ngIf="request.receiverId !== this.userId">
                     <div class="display-request">
                         <div class="display-name">
-                            <span [title]="request.receiverName">
-                                {{ this.displayService.displayUserName(request.receiverName) }}
+                            <span [title]="request.receiverUserName">
+                                {{ this.displayService.displayUserName(request.receiverUserName) }}
                             </span>
                             <img class="avatar-image" [src]="avatarUrl[request.receiverId] || 'https://ptetutorials.com/images/user-profile.png'" alt="User Avatar">
                         </div>
                         <div class="display-time-buttons">
                             <label>
-                                {{ this.displayService.displayRemainingTime(request.sentTime) }}
+                                {{ this.displayService.displayRemainingTime(new Date(request.time)) }}
                             </label>
-                            <i class="fa fa-close mx-3" aria-hidden="true" (click)="this.deleteFriend(request.requestId, request.receiverId, request.senderId)"></i>
+                            <i class="fa fa-close mx-3" aria-hidden="true" (click)="this.deleteFriend(request.connectionId, request.receiverId, request.senderId)"></i>
                         </div>
                     </div>
                 </ng-container>

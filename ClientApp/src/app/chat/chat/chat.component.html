@@ -44,14 +44,14 @@
                     <ng-container *ngFor="let request of this.onlineFriends; let i = index">
                         <ng-container *ngIf="request.receiverId === this.userId">
                             <div class="chat_header">
-                                {{ request.senderName }}
-                                <i class="fa fa-check mx-3" aria-hidden="true" data-bs-dismiss="modal" aria-label="Close" (click)="handleInviteToRoom(request.senderName)"></i>
+                                {{ request.senderUserName }}
+                                <i class="fa fa-check mx-3" aria-hidden="true" data-bs-dismiss="modal" aria-label="Close" (click)="handleInviteToRoom(request.senderUserName)"></i>
                             </div>
                         </ng-container>
                         <ng-container *ngIf="request.receiverId !== this.userId">
                             <div class="chat_header">
-                                {{ request.receiverName }}
-                                <i class="fa fa-check mx-3" aria-hidden="true" data-bs-dismiss="modal" aria-label="Close" (click)="handleInviteToRoom(request.receiverName)"></i>
+                                {{ request.receiverUserName }}
+                                <i class="fa fa-check mx-3" aria-hidden="true" data-bs-dismiss="modal" aria-label="Close" (click)="handleInviteToRoom(request.receiverUserName)"></i>
                             </div>
                         </ng-container>
                     </ng-container>

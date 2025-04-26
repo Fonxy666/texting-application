@@ -12,13 +12,13 @@ import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { passwordMatchValidator, passwordValidator } from '../../validators/ValidPasswordValidator';
 import { FriendService } from '../../services/friend-service/friend.service';
-import { FriendRequestManage } from '../../model/friend-requests/FriendRequestManage';
 import { DisplayService } from '../../services/display-service/display.service';
 import { MediaService } from '../../services/media-service/media.service';
 import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePasswordRequestForRoom';
 import { UserService } from '../../services/user-service/user.service';
 import { CryptoService } from '../../services/crypto-service/crypto.service';
 import { IndexedDBService } from '../../services/db-service/indexed-dbservice.service';
+import { ShowFriendRequestData } from '../../model/responses/user-responses.model';
 
 @Component({
   selector: 'app-chat',
@@ -45,7 +45,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     showPassword: boolean = false;
     isLoading: boolean = false;
     private subscriptions: Subscription = new Subscription();
-    onlineFriends: FriendRequestManage[] | undefined;
+    onlineFriends: ShowFriendRequestData[] | undefined;
     userKey: string = "";
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
@@ -545,7 +545,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             });
         } else {
             this.onlineFriends = this.friendService.onlineFriends$.value.filter(user =>
-                this.userId !== user.senderId? user.senderName.toLowerCase().includes(this.searchTermForFriends.toLowerCase()) : user.receiverName.toLowerCase().includes(this.searchTermForFriends.toLowerCase())
+                this.userId !== user.senderId? user.senderUserName.toLowerCase().includes(this.searchTermForFriends.toLowerCase()) : user.receiverUserName.toLowerCase().includes(this.searchTermForFriends.toLowerCase())
             );
         }
     };

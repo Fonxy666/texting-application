@@ -331,9 +331,9 @@ export class FriendService {
         );
     }
 
-    sendFriendRequestHttp(friendName: string): Observable<UserResponse<string>> {
+    sendFriendRequestHttp(friendName: string): Observable<UserResponse<ShowFriendRequestData>> {
         return this.errorHandler.handleErrors(
-            this.http.post<UserResponse<string>>(`/api/v1/User/SendFriendRequest`, friendName, { withCredentials: true })
+            this.http.post<UserResponse<ShowFriendRequestData>>(`/api/v1/User/SendFriendRequest`, friendName, { withCredentials: true })
         )
     }
 
