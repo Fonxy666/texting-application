@@ -28,5 +28,14 @@ export interface UserEncryptedPrivateKeyAndIv {
     encryptedPrivateKey: string;
     iv: string;
 }
+
+export interface ShowFriendRequestData {
+    connectionId: string;
+    senderUserName: string;
+    senderId: string;
+    time: Date;
+    receiverUserName: string;
+    receiverId: string;
+}
   
 export type UserResponse<T> = UserResponseSuccess<T> | UserResponseFailure;

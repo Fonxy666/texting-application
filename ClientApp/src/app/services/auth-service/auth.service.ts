@@ -22,11 +22,7 @@ export class AuthService {
     }
 
     sendVerifyEmail(form: EmailAndUserNameRequest): Observable<AuthResponse<string>> {
-        const headers = new HttpHeaders({ 
-            'Content-Type': 'application/json'
-        });
-
-        return this.http.post<AuthResponse<string>>(`/api/v1/Auth/SendEmailVerificationToken`, form, { headers: headers })
+        return this.http.post<AuthResponse<string>>(`/api/v1/Auth/SendEmailVerificationToken`, form )
     }
 
     examineVerifyToken(form: TokenValidatorRequest): Observable<AuthResponse<string>> {

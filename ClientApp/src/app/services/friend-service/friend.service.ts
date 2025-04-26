@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
-import { FriendRequestManage } from '../../model/friend-requests/FriendRequestManage';
 import { FriendRequestManageWithReceiverId } from '../../model/friend-requests/FriendRequestManageWithReceiverId';
 import { isEqual } from 'lodash';
 import { HttpClient } from '@angular/common/http';
@@ -10,20 +9,21 @@ import { ErrorHandlerService } from '../error-handler-service/error-handler.serv
 import { ChatRoomInvite } from '../../model/room-requests/ChatRoomInvite';
 import { CryptoService } from '../crypto-service/crypto.service';
 import { StoreRoomSymmetricKey } from '../../model/room-requests/StoreRoomSymmetricKey';
+import { ShowFriendRequestData, UserResponse } from '../../model/responses/user-responses.model';
 
 @Injectable({
     providedIn: 'root'
 })
 export class FriendService {
     public connection: signalR.HubConnection;
-    public friendRequests$ = new BehaviorSubject<FriendRequestManage[]>([]);
-    public friendRequests: { [userId: string]: FriendRequestManage[] } = {};
-    public friends$ = new BehaviorSubject<FriendRequestManage[]>([]);
-    public friends: { [userId: string]: FriendRequestManage[] } = {};
+    public friendRequests$ = new BehaviorSubject<ShowFriendRequestData[]>([]);
+    public friendRequests: { [userId: string]: ShowFriendRequestData[] } = {};
+    public friends$ = new BehaviorSubject<ShowFriendRequestData[]>([]);
+    public friends: { [userId: string]: ShowFriendRequestData[] } = {};
     public chatRoomInvites$ = new BehaviorSubject<ChatRoomInvite[]>([]);
     public chatRoomInvites: { [userId: string]: ChatRoomInvite[] } = {};
-    public onlineFriends$ = new BehaviorSubject<FriendRequestManage[]>([]);
-    public onlineFriends: { [userId: string]: FriendRequestManage[] } = {};
+    public onlineFriends$ = new BehaviorSubject<ShowFriendRequestData[]>([]);
+    public onlineFriends: { [userId: string]: ShowFriendRequestData[] } = {};
     public loggedIn: boolean = this.cookieService.check("UserId");
     public announceNumber$ = new BehaviorSubject<number>(0);
     public announceNumber: { [userId: string]: number } = {};
@@ -46,11 +46,29 @@ export class FriendService {
         }
 
         this.connection.on("ReceiveFriendRequest", (requestId: string, senderName: string, senderId: string, sentTime: string, receiverName: string, receiverId: string) => {
-            this.addRequest(new FriendRequestManage(requestId, senderName, senderId, sentTime, receiverName, receiverId));
+            const newRequest: ShowFriendRequestData = {
+                connectionId: requestId,
+                senderUserName: senderName,
+                senderId: senderId,
+                time: new Date(sentTime),
+                receiverUserName: receiverName,
+                receiverId: receiverId
+            };
+        
+            this.addRequest(newRequest);
         });
 
         this.connection.on("AcceptFriendRequest", (requestId: string, senderName: string, senderId: string, sentTime: string, receiverName: string, receiverId: string) => {
-            this.updateFriendRequests(new FriendRequestManage(requestId, senderName, senderId, sentTime, receiverName, receiverId));
+            const newRequest: ShowFriendRequestData = {
+                connectionId: requestId,
+                senderUserName: senderName,
+                senderId: senderId,
+                time: new Date(sentTime),
+                receiverUserName: receiverName,
+                receiverId: receiverId
+            };
+
+            this.updateFriendRequests(newRequest);
         });
 
         this.connection.on("DeleteFriendRequest", (requestId: string) => {
@@ -74,7 +92,7 @@ export class FriendService {
             }
         });
 
-        this.connection.on("ReceiveOnlineFriends", (onlineFriends: FriendRequestManage[]) => {
+        this.connection.on("ReceiveOnlineFriends", (onlineFriends: ShowFriendRequestData[]) => {
             this.onlineFriends$.next(onlineFriends);
         });
     }
@@ -142,7 +160,7 @@ export class FriendService {
         }
     }
 
-    private addRequest(request: FriendRequestManage) {
+    private addRequest(request: ShowFriendRequestData) {
         const userId = this.cookieService.get('UserId');
 
         if (!this.friendRequests[request.receiverId]) {
@@ -152,27 +170,27 @@ export class FriendService {
             this.friendRequests[request.senderId] = [];
         }
     
-        if (!this.friendRequests[request.receiverId].some(friend => isEqual(friend.requestId, request.requestId))) {
+        if (!this.friendRequests[request.receiverId].some(friend => isEqual(friend.connectionId, request.connectionId))) {
             this.friendRequests[request.receiverId].push(request);
         }
 
-        if (!this.friendRequests[request.senderId].some(friend => isEqual(friend.requestId, request.requestId))) {
+        if (!this.friendRequests[request.senderId].some(friend => isEqual(friend.connectionId, request.connectionId))) {
             this.friendRequests[request.senderId].push(request);
         }
 
         this.friendRequests$.next(this.friendRequests[userId]);
     }
 
-    public async acceptFriendRequest(request: FriendRequestManage) {
+    public async acceptFriendRequest(request: ShowFriendRequestData) {
         try {
-            await this.connection.invoke("AcceptFriendRequest", request.requestId, request.senderName, request.senderId, request.sentTime, request.receiverName);
+            await this.connection.invoke("AcceptFriendRequest", request.connectionId, request.senderUserName, request.senderId, request.time, request.receiverUserName);
             this.updateFriendRequests(request);
         } catch (error) {
             console.error('Error accepting friend request via SignalR:', error);
         }
     }
     
-    private updateFriendRequests(request: FriendRequestManage) {
+    private updateFriendRequests(request: ShowFriendRequestData) {
         const userId = this.cookieService.get('UserId');
         
         if (!this.friendRequests[userId]) {
@@ -182,7 +200,7 @@ export class FriendService {
             this.friends[userId] = [];
         }
     
-        this.friendRequests[userId] = this.friendRequests[userId].filter(r => r.requestId !== request.requestId);
+        this.friendRequests[userId] = this.friendRequests[userId].filter(r => r.connectionId !== request.connectionId);
         
         this.friends[userId].push(request);
     
@@ -201,7 +219,7 @@ export class FriendService {
 
     private updateFriendRequestsWithDeclinedRequest(requestId: string) {
         const userId = this.cookieService.get('UserId');
-        this.friendRequests[userId] = this.friendRequests[userId].filter(r => r.requestId !== requestId);
+        this.friendRequests[userId] = this.friendRequests[userId].filter(r => r.connectionId !== requestId);
         this.friendRequests$.next(this.friendRequests[userId]);
     }
 
@@ -216,7 +234,7 @@ export class FriendService {
 
     private deleteFromFriends(requestId: string) {
         const userId = this.cookieService.get('UserId');
-        this.friends[userId] = this.friends[userId].filter(r => r.requestId !== requestId)
+        this.friends[userId] = this.friends[userId].filter(r => r.connectionId !== requestId)
         this.friends$.next(this.friends[userId]);
     }
 
@@ -264,34 +282,28 @@ export class FriendService {
 
         this.getPendingFriendRequests()
         .subscribe(
-            (response: FriendRequestManage[]) => {
+            (response: UserResponse<ShowFriendRequestData[]>) => {
+                if (!this.friends[userId]) {
+                    this.friends[userId] = [];
+                }
+
                 if (!this.friendRequests[userId]) {
                     this.friendRequests[userId] = [];
                 }
     
-                response.forEach(res => {
-                    const requestList = this.friendRequests[userId];
-                    
-                    if (!requestList.some(request => isEqual(request, res))) {
-                        requestList.push(res);
-                    }
-
-                    this.friendRequests$.next(requestList);
-                });
+                if (response.isSuccess) {
+                    response.data.forEach(res => {
+                        const requestList = this.friendRequests[userId];
+                        
+                        if (!requestList.some(request => isEqual(request, res))) {
+                            requestList.push(res);
+                        }
+    
+                        this.friendRequests$.next(requestList);
+                    });
+                }
             }
         );
-    }
-
-    getPendingFriendRequests(): Observable<any> {
-        return this.errorHandler.handleErrors(
-            this.http.get(`/api/v1/User/GetFriendRequests`, { withCredentials: true })
-        )
-    }
-
-    private getFriends(): Observable<any> {
-        return this.errorHandler.handleErrors(
-            this.http.get(`/api/v1/User/GetFriends`, { withCredentials: true })
-        )
     }
 
     private saveFriends() {
@@ -299,60 +311,59 @@ export class FriendService {
 
         this.getFriends()
         .subscribe(
-            (response: FriendRequestManage[]) => {
+            (response: UserResponse<ShowFriendRequestData[]>) => {
                 if (!this.friends[userId]) {
                     this.friends[userId] = [];
                 }
     
-                response.forEach(res => {
-                    const friendsList = this.friends[userId];
-                    
-                    if (!friendsList.some(friend => isEqual(friend, res))) {
-                        friendsList.push(res);
-                    }
-    
-                    this.friends$.next(friendsList);
-                });
+                if (response.isSuccess) {
+                    response.data.forEach(res => {
+                        const friendsList = this.friends[userId];
+                        
+                        if (!friendsList.some(friend => isEqual(friend, res))) {
+                            friendsList.push(res);
+                        }
+        
+                        this.friends$.next(friendsList);
+                    });
+                }
             }
         );
     }
 
-    sendFriendRequestHttp(friendName: string): Observable<any> {
+    sendFriendRequestHttp(friendName: string): Observable<UserResponse<string>> {
         return this.errorHandler.handleErrors(
-            this.http.post(`/api/v1/User/SendFriendRequest`, JSON.stringify(friendName), {
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                withCredentials: true
-            })
+            this.http.post<UserResponse<string>>(`/api/v1/User/SendFriendRequest`, friendName, { withCredentials: true })
         )
     }
 
-    acceptFriendRequestHttp(requestId: string) {
+    getPendingFriendRequests(): Observable<UserResponse<ShowFriendRequestData[]>> {
         return this.errorHandler.handleErrors(
-            this.http.patch(`/api/v1/User/AcceptReceivedFriendRequest`, JSON.stringify(requestId), {
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                withCredentials: true
-            })
+            this.http.get<UserResponse<ShowFriendRequestData[]>>(`/api/v1/User/GetFriendRequests`, { withCredentials: true })
         )
     }
 
-    friendRequestDecline(requestId: string, userType: string) {
+    private getFriends(): Observable<UserResponse<ShowFriendRequestData[]>> {
         return this.errorHandler.handleErrors(
-            this.http.delete(`/api/v1/User/DeleteFriendRequest?requestId=${requestId}&userType=${userType}`, {
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                withCredentials: true
-            })
+            this.http.get<UserResponse<ShowFriendRequestData[]>>(`/api/v1/User/GetFriends`, { withCredentials: true })
         )
     }
 
-    deleteFriendHttp(requestId: string) {
+    acceptFriendRequestHttp(requestId: string): Observable<UserResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.delete(`/api/v1/User/DeleteFriend?connectionId=${requestId}`, { withCredentials: true })
+            this.http.patch<UserResponse<void>>(`/api/v1/User/AcceptReceivedFriendRequest`, JSON.stringify(requestId), { withCredentials: true })
+        )
+    }
+
+    friendRequestDecline(requestId: string, userType: string): Observable<UserResponse<void>> {
+        return this.errorHandler.handleErrors(
+            this.http.delete<UserResponse<void>>(`/api/v1/User/DeleteFriendRequest?requestId=${requestId}&userType=${userType}`, { withCredentials: true })
+        )
+    }
+
+    deleteFriendHttp(requestId: string): Observable<UserResponse<void>> {
+        return this.errorHandler.handleErrors(
+            this.http.delete<UserResponse<void>>(`/api/v1/User/DeleteFriend?connectionId=${requestId}`, { withCredentials: true })
         )
     }
 }
