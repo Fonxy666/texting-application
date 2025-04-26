@@ -18,5 +18,15 @@ export interface GetUserCredentials {
     email: string;
     twoFactorEnabled: boolean;
 }
+
+export interface UserPrivateKeyAndIv {
+    privateKey: string;
+    iv: string;
+}
+
+export interface UserEncryptedPrivateKeyAndIv {
+    encryptedPrivateKey: string;
+    iv: string;
+}
   
 export type UserResponse<T> = UserResponseSuccess<T> | UserResponseFailure;
