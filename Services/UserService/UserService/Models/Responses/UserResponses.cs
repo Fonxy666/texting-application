@@ -9,6 +9,7 @@ public record GetUserCredentialsData(string Username, string Email, bool TwoFact
 public record KeyAndIvData(string EncryptedKey, string Iv);
 public record ImageData(byte[] ImageBytes, string ContentType);
 public record UserNameEmailData(string Username, string Email);
+public record UserEmailData(string Email);
 public record ConnectionData(string UserId, string ConnectionId);
 
 // Success/Failure responses

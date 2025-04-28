@@ -91,8 +91,8 @@ export class NewPasswordRequestComponent implements OnInit {
 
     examineCode() {
         this.userService.examinePasswordResetLink(this.emailParam, this.idParam)
-        .subscribe((response: any) => {
-            if (response == true) {
+        .subscribe((response) => {
+            if (response.isSuccess) {
                 this.validCode = true;
             } else {
                 this.validCode = false;
@@ -111,9 +111,8 @@ export class NewPasswordRequestComponent implements OnInit {
         }
 
         this.userService.setNewPassword(this.idParam, resetRequest)
-        .subscribe((response: any) => {
-            console.log(response);
-            if (response == true) {
+        .subscribe((response) => {
+            if (response.isSuccess) {
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Success',
@@ -123,6 +122,12 @@ export class NewPasswordRequestComponent implements OnInit {
                 setTimeout(() => {
                     this.router.navigate(['/']);
                 }, 2000);
+            } else {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: response.message
+                });
             }
         },
         (error) => {

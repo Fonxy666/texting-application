@@ -59,8 +59,9 @@ export class GenerateAvatarChangeRequestComponent {
 
     OnFormSubmit() {
         this.userService.changeAvatar(JSON.stringify(this.profilePic))
-        .subscribe((response: any) => {
-            if (response && response.status === 'Ok') {
+        .subscribe((response) => {
+            if (response.length > 0) {
+                window.location.reload();
                 this.messageService.add({
                     severity: 'info',
                     summary: 'Info',

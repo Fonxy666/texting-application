@@ -48,9 +48,8 @@ export class GenerateEmailChangeRequestComponent implements OnInit {
             }
 
             this.userService.changeEmail(changeEmailRequest)
-            this.http.patch(`/api/v1/User/ChangeEmail`, changeEmailRequest, { withCredentials: true})
-            .subscribe((response: any) => {
-                if (response) {
+            .subscribe((response) => {
+                if (response.isSuccess) {
                     this.messageService.add({
                         severity: 'info',
                         summary: 'Info',
@@ -59,16 +58,16 @@ export class GenerateEmailChangeRequestComponent implements OnInit {
                     });
                     this.userService.setEmail(changeEmailRequest.newEmail);
                     this.changeEmailRequest.reset();
-                }
-            }, 
-            (error) => {
-                if (error.status === 400) {
+                } else {
                     this.messageService.add({
                         severity: 'error',
                         summary: 'Error',
-                        detail: 'This new e-mail is already in use. Try with another.'
+                        detail: response.message,
                     });
                 }
+            }, 
+            (error) => {
+                console.error(error);
             })
         }
     }

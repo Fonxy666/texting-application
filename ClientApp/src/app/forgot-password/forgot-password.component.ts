@@ -22,9 +22,8 @@ export class ForgotPasswordComponent {
     sendPasswordResetEmail(email: string) {
         this.isLoading = true;
         this.userService.forgotPassword(email)
-        .subscribe((response: any) => {
-            if (response.success) {
-                console.log(response);
+        .subscribe((response) => {
+            if (response.isSuccess) {
                 this.isLoading = false;
                 this.messageService.add({
                     severity: 'success',
@@ -35,15 +34,16 @@ export class ForgotPasswordComponent {
                 setTimeout(() => {
                     window.close();
                 }, 5000);
+            } else {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: response.message
+                });
             }
         },
         (error) => {
             this.isLoading = false;
-            this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'There is no user with this e-mail.'
-            });
             console.error("An error occurred:", error);
         });
     }

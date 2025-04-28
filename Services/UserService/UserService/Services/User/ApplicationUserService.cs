@@ -223,7 +223,7 @@ public class ApplicationUserService(
             return new FailedResponseWithMessage("Failed to save email change.");
         }
 
-        return new UsernameUserEmailResponseSuccess(new UserNameEmailData(existingUser.Email!, existingUser.UserName!));
+        return new EmailResponseSuccess(new UserEmailData( request.NewEmail ));
     }
 
     public async Task<ResponseBase> ChangeUserPasswordAsync(ChangePasswordRequest request, string userId)

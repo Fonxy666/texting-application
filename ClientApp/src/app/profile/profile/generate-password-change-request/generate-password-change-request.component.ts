@@ -82,24 +82,24 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
         };
 
         this.userService.changePassword(changePasswordRequest)
-        .subscribe((response: any) => {
-            if (response) {
+        .subscribe((response) => {
+            if (response.isSuccess) {
                 this.messageService.add({
                     severity: 'info',
                     summary: 'Info',
                     detail: 'Your password changed.',
                     styleClass: 'ui-toast-message-info'
                 });
-            }
-        }, 
-        (error) => {
-            if (error.status === 400) {
+            } else {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: 'Unsuccessful change, wrong password(s).'
+                    detail: response.message
                 });
             }
+        }, 
+        (error) => {
+            console.error(error);
         });
     }
 
