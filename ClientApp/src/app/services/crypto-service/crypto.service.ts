@@ -75,7 +75,6 @@ export class CryptoService {
     }
 
     isBase64(str: string): boolean {
-        console.log("PEC56BWNBtO4lE9z61BaKW15yA==".length)
         if (str.length === 24 && !str.includes(" ")) {
             return true;
         } 

@@ -1,8 +1,8 @@
 import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { ChatService } from '../../services/chat-service/chat.service';
 import { Router } from '@angular/router';
-import { firstValueFrom, forkJoin, Subscription } from 'rxjs';
-import { filter, take } from 'rxjs/operators';
+import { combineLatest, firstValueFrom, forkJoin, from, of, Subscription } from 'rxjs';
+import { filter, switchMap, take } from 'rxjs/operators';
 import { MessageRequest } from '../../model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageSeenRequest } from '../../model/message-requests/ChangeMessageSeenRequest';
@@ -46,7 +46,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     isLoading: boolean = false;
     private subscriptions: Subscription = new Subscription();
     onlineFriends: ShowFriendRequestData[] | undefined;
-    userKey: string = "";
+    userKey: string | null = null;
 
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
@@ -78,11 +78,56 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
         this.chatService.setCurrentRoom(this.roomId);
 
-        this.dbService.getEncryptionKey(this.userId).then(key => {
-            if (key !== null) {
-                this.userKey = key;
+        from(this.dbService.getEncryptionKey(this.userId)).pipe(
+            filter((key): key is string => key !== null), // Filter out nulls and narrow the type
+            switchMap(key => {
+              this.userKey = key; // Optional if you still want to cache it
+              return combineLatest([
+                of(key),
+                this.chatService.messages$
+              ]);
+            })
+          ).subscribe(async ([key, data]) => {
+            if (data.length < 1) return;
+        
+            const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(key);
+            if (!decryptedRoomKey) {
+              console.error("Cannot get room key.");
+              return;
             }
-        })
+        
+            const decryptedMessages = await Promise.all(data.map(async innerData => {
+              if (innerData.encrypted) {
+                try {
+                  innerData.messageData.message = await this.cryptoService.decryptMessage(
+                    innerData.messageData.message,
+                    decryptedRoomKey,
+                    innerData.messageData.iv
+                  );
+                  innerData.encrypted = false;
+                  return innerData;
+                } catch (error) {
+                  console.log("Failed to decrypt message:", innerData, error);
+                }
+              } else {
+                return innerData;
+              }
+            }));
+        
+            this.messages = decryptedMessages.filter(Boolean); // Filter out undefined from failed decryptions
+        
+            this.messages.forEach(() => {
+              this.mediaService.getAvatarImage(this.userId).subscribe(image => {
+                this.avatars[this.userId] = image;
+              });
+            });
+          });
+
+        // this.dbService.getEncryptionKey(this.userId).then(key => {
+        //     if (key !== null) {
+        //         this.userKey = key;
+        //     }
+        // })
 
         if (this.roomId) {
                 this.subscriptions.add(
@@ -99,42 +144,42 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             console.error('No roomId found in session storage.');
         }
 
-        this.chatService.messages$.subscribe(async data => {
-            if (data.length < 1) {
-                return;
-            }
+        // this.chatService.messages$.subscribe(async data => {
+        //     if (data.length < 1) {
+        //         return;
+        //     }
 
-            const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey);
+        //     const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey, `this.chatService.messages$.subscribe`);
 
-            if (decryptedRoomKey === null) {
-                console.error("Cannot get room key.");
-            }
+        //     if (decryptedRoomKey === null) {
+        //         console.error("Cannot get room key.");
+        //     }
 
-            const decryptedMessages = await Promise.all(data.map(async innerData => {
-                if (innerData.encrypted) {
-                    try {
-                        innerData.messageData.message = await this.cryptoService.decryptMessage(innerData.messageData.message, decryptedRoomKey!, innerData.messageData.iv);
-                        innerData.encrypted = false;
-                        return innerData;
-                    } catch (error) {
-                        console.log("Failed to decrypt message:", innerData, error);
-                    }
-                } else {
-                    return innerData;
-                }
-            }));
+        //     const decryptedMessages = await Promise.all(data.map(async innerData => {
+        //         if (innerData.encrypted) {
+        //             try {
+        //                 innerData.messageData.message = await this.cryptoService.decryptMessage(innerData.messageData.message, decryptedRoomKey!, innerData.messageData.iv);
+        //                 innerData.encrypted = false;
+        //                 return innerData;
+        //             } catch (error) {
+        //                 console.log("Failed to decrypt message:", innerData, error);
+        //             }
+        //         } else {
+        //             return innerData;
+        //         }
+        //     }));
 
-            this.messages = decryptedMessages;
+        //     this.messages = decryptedMessages;
 
-            this.messages.forEach(() => {
-                this.mediaService.getAvatarImage(this.userId).subscribe((image) => {
-                    this.avatars[this.userId] = image;
-                });
-            })
-        });
+        //     this.messages.forEach(() => {
+        //         this.mediaService.getAvatarImage(this.userId).subscribe((image) => {
+        //             this.avatars[this.userId] = image;
+        //         });
+        //     })
+        // });
 
         this.chatService.connection.on("ModifyMessage", async (messageId: string, messageText: string) => {
-            const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey);
+            const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!);
 
             if (decryptedRoomKey === null) {
                 console.error("Cannot get room key.");
@@ -228,7 +273,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     async sendMessage() {
-        const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey);
+        const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!);
 
         if (decryptedRoomKey === null) {
             console.error("Cannot get room key.");
@@ -290,45 +335,53 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     async getMessages() {
+        // If userKey not loaded, load it first
+        if (!this.userKey) {
+            this.userKey = await this.dbService.getEncryptionKey(this.userId);
+            if (!this.userKey) {
+                console.error("Failed to load userKey");
+                return;
+            }
+        }
+    
         if (this.chatService.messages[this.roomId] === undefined) {
             return;
         }
-
+    
         const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey);
-
         if (decryptedRoomKey === null) {
             console.error("Cannot get room key.");
+            return;
         }
-
-        this.chatService.getMessages(this.roomId)
-                .subscribe((response: any) => {
-                    const userNames = response.map((element: any) =>
-                        this.userService.getUsername(element.senderId)
-                    );
-                    forkJoin(userNames).subscribe(async (usernames: any) => {
-                        const fetchedMessages = response.map(async (element: any, index: number) => ({
-                            encrypted: false,
-                            messageData: {
-                                messageId: element.messageId,
-                                user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
-                                userId: element.senderId,
-                                message: await this.cryptoService.decryptMessage(element.text, decryptedRoomKey!, element.iv),
-                                messageTime: element.sendTime,
-                                seenList: element.seen
-                            }
-                        }));
-                    
-                        const decryptedMessages = await Promise.all(fetchedMessages);
-                    
-                        const existingMessageIds = new Set(this.chatService.messages[this.roomId].map((msg: any) => msg.messageData.messageId));
-                        const uniqueMessages = decryptedMessages.filter((msg: any) => !existingMessageIds.has(msg.messageId));
-                    
-                        this.chatService.messages[this.roomId] = [...uniqueMessages, ...this.chatService.messages[this.roomId]];
-                    
-                        this.chatService.messages$.next(this.chatService.messages[this.roomId]);
-                    });
-                });
-    };
+    
+        this.chatService.getMessages(this.roomId).subscribe((response: any) => {
+            const userNames = response.map((element: any) =>
+                this.userService.getUsername(element.senderId)
+            );
+    
+            forkJoin(userNames).subscribe(async (usernames: any) => {
+                const fetchedMessages = response.map(async (element: any, index: number) => ({
+                    encrypted: false,
+                    messageData: {
+                        messageId: element.messageId,
+                        user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
+                        userId: element.senderId,
+                        message: await this.cryptoService.decryptMessage(element.text, decryptedRoomKey!, element.iv),
+                        messageTime: element.sendTime,
+                        seenList: element.seen
+                    }
+                }));
+    
+                const decryptedMessages = await Promise.all(fetchedMessages);
+    
+                const existingMessageIds = new Set(this.chatService.messages[this.roomId].map((msg: any) => msg.messageData.messageId));
+                const uniqueMessages = decryptedMessages.filter((msg: any) => !existingMessageIds.has(msg.messageData.messageId));
+    
+                this.chatService.messages[this.roomId] = [...uniqueMessages, ...this.chatService.messages[this.roomId]];
+                this.chatService.messages$.next(this.chatService.messages[this.roomId]);
+            });
+        });
+    }
 
     searchInConnectedUsers() {
         if (this.searchTerm.trim() === '') {
@@ -350,7 +403,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     async sendMessageModifyHttpRequest(request: ChangeMessageRequest) {
-        const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey);
+        const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!);
 
         if (decryptedRoomKey === null) {
             console.error("Cannot get room key.");
@@ -577,7 +630,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
                 const receiverObject = await firstValueFrom(this.cryptoService.getPublicKey(receiverName));
                 if (receiverObject.isSuccess) {
-                    const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey);
+                    const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!);
 
                     if (decryptedRoomKey === null) {
                         console.error("Cannot get room key.");

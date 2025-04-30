@@ -4,7 +4,6 @@ using ChatService.Model.Requests.Message;
 using ChatService.Model;
 using ChatService.Services.Chat.GrpcService;
 using ChatService.Model.Responses.Chat;
-using Microsoft.AspNetCore.Identity;
 
 namespace ChatService.Hub;
 
@@ -39,12 +38,6 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IUserGr
 
     public async Task SendSymmetricKeyToRequestUser(string encryptedRoomKey, string connectionId, string roomId, string roomName)
     {
-        Console.WriteLine("---------");
-        Console.WriteLine("---------");
-        Console.WriteLine("---------");
-        Console.WriteLine(encryptedRoomKey);
-        Console.WriteLine("---------");
-        Console.WriteLine("---------");
         await Clients.Client(connectionId).SendAsync("GetSymmetricKey", encryptedRoomKey, roomId, roomName);
     }
 
