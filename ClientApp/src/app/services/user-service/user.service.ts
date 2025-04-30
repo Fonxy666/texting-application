@@ -87,9 +87,9 @@ export class UserService {
         )
     }
 
-    changeAvatar(image: string): Observable<string> {
+    changeAvatar(image: string): Observable<UserResponse<string>> {
         return this. errorHandler.handleErrors(
-            this.http.patch<string>(`/api/v1/User/ChangeAvatar`, image, {
+            this.http.patch<UserResponse<string>>(`/api/v1/User/ChangeAvatar`, image, {
                 headers: {
                     'Content-Type': 'application/json'
                 },

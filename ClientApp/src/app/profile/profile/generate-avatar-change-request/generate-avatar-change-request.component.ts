@@ -60,13 +60,22 @@ export class GenerateAvatarChangeRequestComponent {
     OnFormSubmit() {
         this.userService.changeAvatar(JSON.stringify(this.profilePic))
         .subscribe((response) => {
-            if (response.length > 0) {
-                window.location.reload();
+            console.log(response.isSuccess);
+            if (response.isSuccess) {
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
                 this.messageService.add({
                     severity: 'info',
                     summary: 'Info',
                     detail: 'Avatar change succeeded :)',
                     styleClass: 'ui-toast-message-info'
+                });
+            } else {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: response.message
                 });
             }
         });
