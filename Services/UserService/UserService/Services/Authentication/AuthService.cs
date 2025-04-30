@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using UserService.Models;
 using UserService.Models.Requests;
@@ -44,7 +43,7 @@ public class AuthService(
             if (!createResult.Succeeded)
             {
                 logger.LogError("Error during database save.");
-                return new FailedResponse();
+                return new Failure();
             }
 
             var addToRoleAsync = await userManager.AddToRoleAsync(user, "User");
@@ -52,27 +51,27 @@ public class AuthService(
             if (!addToRoleAsync.Succeeded)
             {
                 logger.LogError("Error during adding user to role.");
-                return new FailedResponse();
+                return new Failure();
             }
 
             var savedUser = await userManager.Users.FirstOrDefaultAsync(u => u.UserName == request.Username);
             var privateKey = new PrivateKey(request.EncryptedPrivateKey, request.Iv);
             var keyResult = await keyService.SaveKeyAsync(privateKey, savedUser!.Id);
 
-            if (keyResult is FailedResponse)
+            if (keyResult is Failure)
             {
                 logger.LogError("Error during key save.");
-                return new FailedResponse();
+                return new Failure();
             }
 
             await transaction.CommitAsync();
 
-            return keyResult.IsSuccess ? new AuthResponseSuccess() : new FailedResponse();
+            return keyResult.IsSuccess ? new Success() : new Failure();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Registration failed during transaction.");
-            return new FailedResponse();
+            return new Failure();
         }
     }
 
@@ -87,16 +86,16 @@ public class AuthService(
         if (!codeExamineResult)
         {
             logger.LogError("The provided login code is not correct.");
-            return new FailedResponseWithMessage("The provided login code is not correct.");
+            return new FailureWithMessage("The provided login code is not correct.");
         }
 
         var keyRetrievalResult = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser.Id.ToString());
-        if (keyRetrievalResult is FailedResponse)
+        if (keyRetrievalResult is Failure)
         {
             logger.LogError("Cannot find User private key.");
-            return new FailedResponseWithMessage("Cannot find User private key.");
+            return new FailureWithMessage("Cannot find User private key.");
         }
-        var encryptedKey = (keyRetrievalResult as PrivateKeyResponseSuccessWithIv)!.Data!.EncryptedPrivateKey;
+        var encryptedKey = (keyRetrievalResult as SuccessWithDto<KeyAndIvDto>)!.Data!.EncryptedPrivateKey;
 
         var roles = await userManager.GetRolesAsync(existingUser);
         
@@ -114,7 +113,7 @@ public class AuthService(
         cookieService.SetAnimateAndAnonymous(rememberMe);
         await cookieService.SetJwtToken(accessToken, rememberMe);
         
-        return new LoginResponseSuccess(new KeyData(existingUser.PublicKey, encryptedKey));
+        return new SuccessWithDto<KeysDto>(new KeysDto(existingUser.PublicKey, encryptedKey));
     }
 
     public async Task<ResponseBase> LoginWithExternal(string emailAddress)
@@ -123,7 +122,7 @@ public class AuthService(
         
         if (managedUser == null)
         {
-            return new FailedResponse();
+            return new Failure();
         }
         
         var roles = await userManager.GetRolesAsync(managedUser);
@@ -138,7 +137,7 @@ public class AuthService(
         cookieService.SetAnimateAndAnonymous(true);
         await cookieService.SetJwtToken(accessToken, true);
         
-        return new AuthResponseSuccessWithId(managedUser.Id.ToString());
+        return new SuccessWithDto<UserIdDto>(new UserIdDto(managedUser.Id.ToString()));
     }
 
     public async Task<ResponseBase> ExamineLoginCredentialsAsync(string username, string password)
@@ -148,12 +147,12 @@ public class AuthService(
         if (managedUser == null)
         {
             logger.LogError("This username is not registered.");
-            return new FailedResponseWithMessage($"{username} is not registered.");
+            return new FailureWithMessage($"{username} is not registered.");
         }
 
         var lockoutResult = await ExamineLockoutEnabled(managedUser);
 
-        if (lockoutResult is FailedResponseWithMessage error)
+        if (lockoutResult is FailureWithMessage error)
         {
             logger.LogError(error.Message);
             return lockoutResult;
@@ -166,13 +165,13 @@ public class AuthService(
             await userManager.AccessFailedAsync(managedUser);
             var accessFailedCount = await userManager.GetAccessFailedCountAsync(managedUser);
             logger.LogError("Invalid password.");
-            return new FailedResponseWithMessage($"Invalid credentials, u have {5 - accessFailedCount} more tries.");
+            return new FailureWithMessage($"Invalid credentials, u have {5 - accessFailedCount} more tries.");
         }
 
 
         await userManager.ResetAccessFailedCountAsync(managedUser);
 
-        return new AuthResponseWithEmailSuccess(new UserIdAndEmailData(managedUser.Id.ToString(), managedUser.Email!));
+        return new SuccessWithDto<UserNameEmailDto>(new UserNameEmailDto(managedUser.Id.ToString(), managedUser.Email!));
     }
 
     private async Task<ResponseBase> ExamineLockoutEnabled(ApplicationUser user)
@@ -181,7 +180,7 @@ public class AuthService(
 
         if (lockoutEndDate.HasValue && lockoutEndDate.Value > DateTimeOffset.UtcNow)
         {
-            return new FailedResponseWithMessage($"Account is locked. Try again after {lockoutEndDate.Value - DateTimeOffset.Now}");
+            return new FailureWithMessage($"Account is locked. Try again after {lockoutEndDate.Value - DateTimeOffset.Now}");
         }
 
         await userManager.SetLockoutEndDateAsync(user, null);
@@ -192,10 +191,10 @@ public class AuthService(
         {
             await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddDays(1));
             await userManager.ResetAccessFailedCountAsync(user);
-            return new FailedResponseWithMessage("Account is locked. Try again after 1 day");
+            return new FailureWithMessage("Account is locked. Try again after 1 day");
         }
 
-        return new AuthResponseSuccess();
+        return new Success();
     }
 
     public async Task<ResponseBase> LogOutAsync(string userId)
@@ -206,6 +205,6 @@ public class AuthService(
         user.SetRefreshTokenExpires(null);
         await userManager.UpdateAsync(user);
         cookieService.DeleteCookies();
-        return new AuthResponseSuccess();
+        return new Success();
     }
 }

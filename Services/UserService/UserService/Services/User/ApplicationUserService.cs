@@ -21,10 +21,10 @@ public class ApplicationUserService(
         var existingUser = await userManager.FindByIdAsync(userId);
         if (existingUser == null)
         {
-            return new FailedResponseWithMessage("User not found.");
+            return new FailureWithMessage("User not found.");
         }
 
-        return new UserResponseSuccessWithMessage(existingUser.UserName!);
+        return new SuccessWithDto<UserNameDto>(new UserNameDto(existingUser.UserName!));
     }
 
     public async Task<ResponseBase> GetImageWithIdAsync(string userId)
@@ -32,7 +32,7 @@ public class ApplicationUserService(
         var existingUser = await userManager.FindByIdAsync(userId);
         if (existingUser == null)
         {
-            return new FailedResponseWithMessage("User not found.");
+            return new FailureWithMessage("User not found.");
         }
 
         var folderPath = configuration["ImageFolderPath"] ??
@@ -42,13 +42,13 @@ public class ApplicationUserService(
 
         if (!File.Exists(imagePath))
         {
-            return new FailedResponseWithMessage("User image not found.");
+            return new FailureWithMessage("User image not found.");
         }
 
         var imageBytes = await File.ReadAllBytesAsync(imagePath);
         var contentType = GetContentType(imagePath);
 
-        return new ImageResponseSuccess(new ImageData(imageBytes, contentType));
+        return new SuccessWithDto<ImageDto>(new ImageDto(imageBytes, contentType));
     }
 
     public async Task<ResponseBase> ExamineUserNotExistingAsync(string username, string email)
@@ -56,16 +56,16 @@ public class ApplicationUserService(
         var userWithSameEmail = await userManager.FindByEmailAsync(email);
         if (userWithSameEmail != null)
         {
-            return new FailedResponseWithMessage("This E-mail address is already taken.");
+            return new FailureWithMessage("This E-mail address is already taken.");
         }
 
         var userWithSameUserName = await userManager.FindByEmailAsync(username);
         if (userWithSameEmail != null)
         {
-            return new FailedResponseWithMessage("This Username is already taken.");
+            return new FailureWithMessage("This Username is already taken.");
         }
 
-        return new AuthResponseSuccess();
+        return new Success();
     }
 
     public async Task<ResponseBase> GetUserCredentialsAsync(string userId)
@@ -74,10 +74,11 @@ public class ApplicationUserService(
 
         if (existingUser == null)
         {
-            return new FailedResponse();
+            return new Failure();
         }
 
-        return new GetUserCredentialsSuccess(new GetUserCredentialsData(existingUser.UserName!, existingUser.Email!, existingUser.TwoFactorEnabled));
+        return new SuccessWithDto<UsernameUserEmailAndTwoFactorEnabledDto>(
+            new UsernameUserEmailAndTwoFactorEnabledDto(existingUser.UserName!, existingUser.Email!, existingUser.TwoFactorEnabled));
     }
 
     public Task<ApplicationUser> GetUserWithSentRequestsAsync(string userId)
@@ -102,7 +103,7 @@ public class ApplicationUserService(
     {
         if (!Guid.TryParse(roomId, out var roomGuid))
         {
-            return new FailedResponseWithMessage("Invalid Roomid format.");
+            return new FailureWithMessage("Invalid Roomid format.");
         }
 
         var userGuid = new Guid(userId);
@@ -112,12 +113,12 @@ public class ApplicationUserService(
 
         if (existingUser == null)
         {
-            return new FailedResponseWithMessage("Cannot find the key for this user.");
+            return new FailureWithMessage("Cannot find the key for this user.");
         }
 
         var userKey = existingUser.UserSymmetricKeys.FirstOrDefault(key => key.RoomId == roomGuid);
 
-        return new KeyResponseSuccess(new UserKeyData(userKey!.EncryptedKey));
+        return new SuccessWithDto<UserPrivateKeyDto>(new UserPrivateKeyDto(userKey!.EncryptedKey));
     }
 
     public async Task<ResponseBase> GetRoommatePublicKey(string username)
@@ -125,16 +126,16 @@ public class ApplicationUserService(
         var existingUser = await userManager.FindByNameAsync(username);
         if (existingUser == null)
         {
-            return new FailedResponseWithMessage($"There is no user with this Username: {userManager}");
+            return new FailureWithMessage($"There is no user with this Username: {userManager}");
         }
 
-        return new KeyResponseSuccess(new UserKeyData(existingUser.PublicKey));
+        return new SuccessWithDto<UserPublicKeyDto>(new UserPublicKeyDto(existingUser.PublicKey));
     }
     public async Task<ResponseBase> ExamineIfUserHaveSymmetricKeyForRoom(string username, string roomId)
     {
         if (!Guid.TryParse(roomId, out var roomGuid))
         {
-            return new FailedResponseWithMessage("Invalid Roomid format.");
+            return new FailureWithMessage("Invalid Roomid format.");
         }
 
         var userExisting = await userManager.Users
@@ -143,29 +144,29 @@ public class ApplicationUserService(
 
         if (!userExisting)
         {
-            return new FailedResponseWithMessage($"There is no key or user with this Username: {username}");
+            return new FailureWithMessage($"There is no key or user with this Username: {username}");
         }
 
-        return new UserResponseSuccess();
+        return new Success();
     }
     public async Task<ResponseBase> SendForgotPasswordEmailAsync(string email)
     {
         var existingUser = await userManager.FindByEmailAsync(email);
         if (existingUser == null)
         {
-            return new FailedResponseWithMessage("User not found.");
+            return new FailureWithMessage("User not found.");
         }
 
         var token = await userManager.GeneratePasswordResetTokenAsync(existingUser);
         EmailSenderCodeGenerator.StorePasswordResetCode(email, token);
         var emailResult = await emailSender.SendEmailWithLinkAsync(email, "Password reset", token);
 
-        if (emailResult is FailedResponseWithMessage)
+        if (emailResult is FailureWithMessage)
         {
-            return new FailedResponseWithMessage("Email service is currently unavailable.");
+            return new FailureWithMessage("Email service is currently unavailable.");
         }
 
-        return new UserResponseSuccessWithMessage("Successfully sent.");
+        return new SuccessWithMessage("Successfully sent.");
     }
 
     public async Task<ResponseBase> SetNewPasswordAfterResetEmailAsync(string resetId, PasswordResetRequest request)
@@ -173,13 +174,13 @@ public class ApplicationUserService(
         var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(request.Email, resetId, "passwordReset");
         if (!examine)
         {
-            return new FailedResponseWithMessage("Invalid or expired reset code.");
+            return new FailureWithMessage("Invalid or expired reset code.");
         }
 
         var existingUser = await userManager.FindByEmailAsync(request.Email);
         if (existingUser == null)
         {
-            return new FailedResponseWithMessage("User not found.");
+            return new FailureWithMessage("User not found.");
         }
 
         var token = await userManager.GeneratePasswordResetTokenAsync(existingUser);
@@ -188,10 +189,10 @@ public class ApplicationUserService(
         if (!resetResult.Succeeded)
         {
             var errorMessages = string.Join(", ", resetResult.Errors.Select(e => e.Description));
-            return new FailedResponseWithMessage("Failed to save new password change.");
+            return new FailureWithMessage("Failed to save new password change.");
         }
 
-        return new AuthResponseSuccess();
+        return new Success();
     }
 
     public async Task<ResponseBase> ChangeUserEmailAsync(ChangeEmailRequest request, string userId)
@@ -200,22 +201,22 @@ public class ApplicationUserService(
 
         if (existingUser == null)
         {
-            return new FailedResponseWithMessage($"User not found.");
+            return new FailureWithMessage($"User not found.");
         }
 
         if (!existingUser!.TwoFactorEnabled)
         {
-            return new FailedResponseWithMessage($"2FA not enabled for user.");
+            return new FailureWithMessage($"2FA not enabled for user.");
         }
 
         if (existingUser.Email != request.OldEmail)
         {
-            return new FailedResponseWithMessage("E-mail address not valid.");
+            return new FailureWithMessage("E-mail address not valid.");
         }
 
         if (userManager.Users.Any(user => user.Email == request.NewEmail))
         {
-            return new FailedResponseWithMessage("Same e-mail.");
+            return new FailureWithMessage("Same e-mail.");
         }
 
         var token = await userManager.GenerateChangeEmailTokenAsync(existingUser, request.NewEmail);
@@ -224,10 +225,10 @@ public class ApplicationUserService(
         if (!changeResult.Succeeded)
         {
             var errorMessages = string.Join(", ", changeResult.Errors.Select(e => e.Description));
-            return new FailedResponseWithMessage("Failed to change Email.");
+            return new FailureWithMessage("Failed to change Email.");
         }
 
-        return new EmailResponseSuccess(new UserEmailData( request.NewEmail ));
+        return new SuccessWithDto<UserEmailDto>(new UserEmailDto( request.NewEmail ));
     }
 
     public async Task<ResponseBase> ChangeUserPasswordAsync(ChangePasswordRequest request, string userId)
@@ -236,13 +237,13 @@ public class ApplicationUserService(
 
         if (existingUser == null)
         {
-            return new FailedResponseWithMessage($"User not found.");
+            return new FailureWithMessage($"User not found.");
         }
 
         var correctPassword = await authService.ExamineLoginCredentialsAsync(existingUser!.UserName!, request.OldPassword);
-        if (correctPassword is FailedResponseWithMessage)
+        if (correctPassword is FailureWithMessage)
         {
-            if ((correctPassword as FailedResponseWithMessage)!.Message.Contains("Account is locked"))
+            if ((correctPassword as FailureWithMessage)!.Message.Contains("Account is locked"))
             {
                 await authService.LogOutAsync(userId);
             }
@@ -255,10 +256,10 @@ public class ApplicationUserService(
         if (!changeResult.Succeeded)
         {
             var errorMessages = string.Join(", ", changeResult.Errors.Select(e => e.Description));
-            return new FailedResponseWithMessage("Failed to change Password.");
+            return new FailureWithMessage("Failed to change Password.");
         }
 
-        return new UsernameUserEmailResponseSuccess(new UserNameEmailData(existingUser.UserName!, existingUser.Email!));
+        return new SuccessWithDto<UserNameEmailDto>(new UserNameEmailDto(existingUser.UserName!, existingUser.Email!));
     }
 
     public async Task<ResponseBase> ChangeUserAvatarAsync(string userId, string image)
@@ -268,7 +269,7 @@ public class ApplicationUserService(
 
         if (existingUser == null)
         {
-            return new FailedResponseWithMessage($"User not found.");
+            return new FailureWithMessage($"User not found.");
         }
 
         var imageSaveResult = SaveImageLocally(existingUser.UserName!, image);
@@ -283,17 +284,17 @@ public class ApplicationUserService(
         var existingUser = await userManager.FindByIdAsync(userId!);
         if (existingUser == null)
         {
-            return new FailedResponseWithMessage("User not found.");
+            return new FailureWithMessage("User not found.");
         }
 
         if (!await userManager.CheckPasswordAsync(existingUser, password))
         {
-            return new FailedResponseWithMessage("Invalid credentials.");
+            return new FailureWithMessage("Invalid credentials.");
         }
 
         var removeFriendsResult = await RemoveFriendConnectionsAsync(existingUser);
 
-        if (removeFriendsResult is FailedResponse)
+        if (removeFriendsResult is Failure)
         {
             await transaction.RollbackAsync();
             return removeFriendsResult;
@@ -303,18 +304,18 @@ public class ApplicationUserService(
         if (!identityResult.Succeeded)
         {
             await transaction.RollbackAsync();
-            return new FailedResponseWithMessage("Failed to delete user.");
+            return new FailureWithMessage("Failed to delete user.");
         }
 
         var affectedRows = await context.SaveChangesAsync();
         if (affectedRows == 0)
         {
             await transaction.RollbackAsync();
-            return new FailedResponseWithMessage("Failed to save changes.");
+            return new FailureWithMessage("Failed to save changes.");
         }
 
         await transaction.CommitAsync();
-        return new UsernameUserEmailResponseSuccess(new UserNameEmailData(existingUser.UserName!, existingUser.Email!));
+        return new SuccessWithDto<UserNameEmailDto>(new UserNameEmailDto(existingUser.UserName!, existingUser.Email!));
     }
 
     private async Task<ResponseBase> RemoveFriendConnectionsAsync(ApplicationUser existingUser)
@@ -330,7 +331,7 @@ public class ApplicationUserService(
                 await context.Entry(receiver).Collection(u => u.Friends).LoadAsync();
                 if (!receiver.Friends.Remove(existingUser))
                 {
-                    return new FailedResponse();
+                    return new Failure();
                 }
             }
         }
@@ -343,14 +344,14 @@ public class ApplicationUserService(
                 await context.Entry(sender).Collection(u => u.Friends).LoadAsync();
                 if (!sender.Friends.Remove(existingUser))
                 {
-                    return new FailedResponse();
+                    return new Failure();
                 }
             }
         }
 
         context.FriendConnections!.RemoveRange(sentFriendRequests);
         context.FriendConnections!.RemoveRange(receivedFriendRequests);
-        return new UserResponseSuccess();
+        return new Success();
     }
 
     public ResponseBase SaveImageLocally(string usernameFileName, string base64Image)
@@ -367,7 +368,7 @@ public class ApplicationUserService(
 
         if (base64Image.Length <= 1)
         {
-            return new FailedResponseWithMessage("No image provided.");
+            return new FailureWithMessage("No image provided.");
         }
 
         try
@@ -380,12 +381,12 @@ public class ApplicationUserService(
                 fileStream.Write(imageBytes, 0, imageBytes.Length);
             }
 
-            return new UserResponseSuccessWithMessage(imagePath);
+            return new SuccessWithMessage(imagePath);
         }
         catch (FormatException ex)
         {
             Console.WriteLine($"Error decoding base64 image: {ex.Message}");
-            return new FailedResponseWithMessage("Error decoding base64 image.");
+            return new FailureWithMessage("Error decoding base64 image.");
         }
     }
 

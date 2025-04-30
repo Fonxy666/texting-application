@@ -2,8 +2,10 @@
 
 public abstract record ResponseBase(bool IsSuccess);
 
-public abstract record FailedResponseBase<T>(bool IsSuccess, T? Data = default) : ResponseBase(IsSuccess);
+public record SuccessResponse<T>(T? Data = default) : ResponseBase(true);
 
-public record FailedResponse() : UserResponse<string>(false);
-
-public record FailedResponseWithMessage(string Message) : FailedResponseBase<string>(false, Message);
+public record Success() : ResponseBase(true);
+public record Failure() : ResponseBase(false);
+public record SuccessWithDto<T>(T? Data) : SuccessResponse<T?>(Data);
+public record SuccessWithMessage(string Message) : ResponseBase(true);
+public record FailureWithMessage(string Message) : ResponseBase(false);

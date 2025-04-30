@@ -41,18 +41,18 @@ public class PrivateKeyService : IPrivateKeyService
 
             if (endToEndEncryptedPrivateKey != null && iv != null)
             {
-                return new PrivateKeyResponseSuccessWithIv(new KeyAndIvData(endToEndEncryptedPrivateKey, iv));
+                return new SuccessWithDto<KeyAndIvDto>(new KeyAndIvDto(endToEndEncryptedPrivateKey, iv));
             }
             else
             {
                 Console.WriteLine("Key not found in the Vault response.");
-                return new FailedResponse();
+                return new Failure();
             }
         }
         catch (Exception e)
         {
             Console.WriteLine($"Error retrieving key: {e.Message}");
-            return new FailedResponse();
+            return new Failure();
         }
     }
 
@@ -84,12 +84,12 @@ public class PrivateKeyService : IPrivateKeyService
             using var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
-            return new UserResponseSuccess();
+            return new Success();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[Vault] Failed to save key: {ex.Message}");
-            return new FailedResponse();
+            return new Failure();
         }
     }
 
@@ -97,12 +97,12 @@ public class PrivateKeyService : IPrivateKeyService
     {
         try
         {
-            return new UserResponseSuccess();
+            return new Success();
         }
         catch (Exception e)
         {
             Console.WriteLine($"Error deleting key: {e.Message}");
-            return new FailedResponse();
+            return new Failure();
         }
     }
 }

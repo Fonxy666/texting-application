@@ -29,7 +29,7 @@ public class UserController(
         {
             var userNameResponse = await userService.GetUserNameAsync(userId);
 
-            if (userNameResponse is FailedResponseWithMessage)
+            if (userNameResponse is FailureWithMessage)
             {
                 return NotFound(userNameResponse);
             }
@@ -54,7 +54,7 @@ public class UserController(
 
             var userResponse = await userService.GetUserCredentialsAsync(userId);
 
-            if (userResponse is FailedResponse)
+            if (userResponse is Failure)
             {
                 return BadRequest(userResponse);
             }
@@ -75,7 +75,7 @@ public class UserController(
         {
             var emailResult = await userService.SendForgotPasswordEmailAsync(email);
 
-            if (emailResult is FailedResponseWithMessage error)
+            if (emailResult is FailureWithMessage error)
             {
                 return error.Message switch
                 {
@@ -102,10 +102,10 @@ public class UserController(
 
             if (!examine)
             {
-                return BadRequest(new FailedResponse());
+                return BadRequest(new Failure());
             }
 
-            return Ok(new AuthResponseSuccess());
+            return Ok(new Success());
         }
         catch (Exception e)
         {
@@ -121,7 +121,7 @@ public class UserController(
         {
             var newPasswordResult = await userService.SetNewPasswordAfterResetEmailAsync(resetId, request);
 
-            if (newPasswordResult is FailedResponseWithMessage)
+            if (newPasswordResult is FailureWithMessage)
             {
                 return BadRequest(newPasswordResult);
             }
@@ -145,12 +145,12 @@ public class UserController(
         {
             var getImageResult = await userService.GetImageWithIdAsync(userId);
 
-            if (getImageResult is FailedResponseWithMessage)
+            if (getImageResult is FailureWithMessage)
             {
                 return NotFound(getImageResult);
             }
 
-            var image = getImageResult as ImageResponseSuccess;
+            var image = getImageResult as SuccessWithDto<ImageDto>;
 
             Response.Headers.Append("Cache-Control", "max-age=1, public");
             return File(image!.Data!.ImageBytes, image!.Data!.ContentType);
@@ -173,7 +173,7 @@ public class UserController(
 
             var changeEmailResponse = await userService.ChangeUserEmailAsync(request, userId);
 
-            if (changeEmailResponse is FailedResponseWithMessage error)
+            if (changeEmailResponse is FailureWithMessage error)
             {
                 return error.Message switch
                 {
@@ -202,7 +202,7 @@ public class UserController(
 
             var changePasswordResult = await userService.ChangeUserPasswordAsync(request, userId);
 
-            if (changePasswordResult is FailedResponseWithMessage error)
+            if (changePasswordResult is FailureWithMessage error)
             {
                 return error.Message switch
                 {
@@ -230,7 +230,7 @@ public class UserController(
             var userId = (string)HttpContext.Items["UserId"]!;
             var imageSaveResult = await userService.ChangeUserAvatarAsync(userId, image);
 
-            if (imageSaveResult is FailedResponseWithMessage error)
+            if (imageSaveResult is FailureWithMessage error)
             {
                 return error.Message switch
                 {
@@ -261,7 +261,7 @@ public class UserController(
 
             var deleteResult = await userService.DeleteUserAsync(userId, password);
 
-            if (deleteResult is FailedResponseWithMessage error)
+            if (deleteResult is FailureWithMessage error)
             {
                 return error.Message switch
                 {
@@ -290,7 +290,7 @@ public class UserController(
 
             var sendFriendRequestResult = await friendConnectionService.SendFriendRequestAsync(userId, friendName);
 
-            if (sendFriendRequestResult is FailedResponseWithMessage error)
+            if (sendFriendRequestResult is FailureWithMessage error)
             {
                 return error.Message switch
                 {
@@ -321,7 +321,7 @@ public class UserController(
 
             var result = await friendConnectionService.GetPendingRequestCountAsync(userId!);
 
-            if (result is FailedResponseWithMessage)
+            if (result is FailureWithMessage)
             {
                 return NotFound(result);
             }
@@ -346,7 +346,7 @@ public class UserController(
 
             var requests = await friendConnectionService.GetAllPendingRequestsAsync(userId);
 
-            if (requests is FailedResponseWithMessage)
+            if (requests is FailureWithMessage)
             {
                 return NotFound(requests);
             }
@@ -371,7 +371,7 @@ public class UserController(
 
             var acceptFriendRequestResult = await friendConnectionService.AcceptReceivedFriendRequestAsync(userId, requestId);
 
-            if (acceptFriendRequestResult is FailedResponseWithMessage error)
+            if (acceptFriendRequestResult is FailureWithMessage error)
             {
                 return error.Message switch
                 {
@@ -401,7 +401,7 @@ public class UserController(
 
             var deleteFriendRequestResult = await friendConnectionService.DeleteFriendRequestAsync(userId, userType, requestId);
 
-            if (deleteFriendRequestResult is FailedResponseWithMessage error)
+            if (deleteFriendRequestResult is FailureWithMessage error)
             {
                 return error.Message switch
                 {
@@ -431,7 +431,7 @@ public class UserController(
 
             var getFriendsResult = await friendConnectionService.GetFriendsAsync(userId!);
 
-            if (getFriendsResult is FailedResponseWithMessage)
+            if (getFriendsResult is FailureWithMessage)
             {
                 return NotFound(getFriendsResult);
             }
@@ -456,7 +456,7 @@ public class UserController(
             
             var friendDeletionResult = await friendConnectionService.DeleteFriendAsync(userId, requestId);
 
-            if (friendDeletionResult is FailedResponseWithMessage error)
+            if (friendDeletionResult is FailureWithMessage error)
             {
                 return error.Message switch
                 {

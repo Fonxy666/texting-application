@@ -45,6 +45,10 @@ export class DisplayService {
     }
 
     displayUserName(name: string) {
+        if (!name) {
+            return 'Unknown';
+        }
+        
         if (name.length <= 8) {
             return name;
         } else {

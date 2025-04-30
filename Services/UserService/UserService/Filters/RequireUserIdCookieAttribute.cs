@@ -13,7 +13,7 @@ public class RequireUserIdCookieAttribute : Attribute, IAuthorizationFilter
 
         if (string.IsNullOrWhiteSpace(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
         {
-            context.Result = new UnauthorizedObjectResult(new FailedResponseWithMessage("Unauthorized User."));
+            context.Result = new UnauthorizedObjectResult(new FailureWithMessage("Unauthorized User."));
             return;
         }
 

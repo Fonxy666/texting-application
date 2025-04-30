@@ -79,55 +79,52 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.chatService.setCurrentRoom(this.roomId);
 
         from(this.dbService.getEncryptionKey(this.userId)).pipe(
-            filter((key): key is string => key !== null), // Filter out nulls and narrow the type
+            filter((key): key is string => key !== null),
             switchMap(key => {
-              this.userKey = key; // Optional if you still want to cache it
-              return combineLatest([
-                of(key),
-                this.chatService.messages$
-              ]);
+                this.userKey = key;
+                return combineLatest([
+                    of(key),
+                    this.chatService.messages$
+                ]);
             })
-          ).subscribe(async ([key, data]) => {
-            if (data.length < 1) return;
-        
-            const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(key);
-            if (!decryptedRoomKey) {
-              console.error("Cannot get room key.");
-              return;
-            }
-        
-            const decryptedMessages = await Promise.all(data.map(async innerData => {
-              if (innerData.encrypted) {
-                try {
-                  innerData.messageData.message = await this.cryptoService.decryptMessage(
-                    innerData.messageData.message,
-                    decryptedRoomKey,
-                    innerData.messageData.iv
-                  );
-                  innerData.encrypted = false;
-                  return innerData;
-                } catch (error) {
-                  console.log("Failed to decrypt message:", innerData, error);
+            ).subscribe(async ([key, data]) => {
+
+                if (data.length < 1) return;
+            
+                const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(key);
+                if (!decryptedRoomKey) {
+                    console.error("Cannot get room key.");
+                    return;
                 }
-              } else {
-                return innerData;
-              }
+            
+                const decryptedMessages = await Promise.all(data.map(async innerData => {
+
+                if (innerData.encrypted) {
+                    try {
+                        innerData.messageData.message = await this.cryptoService.decryptMessage(
+                            innerData.messageData.message,
+                            decryptedRoomKey,
+                            innerData.messageData.iv
+                        );
+
+                        innerData.encrypted = false;
+                        return innerData;
+                    } catch (error) {
+                        console.log("Failed to decrypt message:", innerData, error);
+                    }
+                } else {
+                    return innerData;
+                }
             }));
         
-            this.messages = decryptedMessages.filter(Boolean); // Filter out undefined from failed decryptions
+            this.messages = decryptedMessages.filter(Boolean);
         
             this.messages.forEach(() => {
-              this.mediaService.getAvatarImage(this.userId).subscribe(image => {
-                this.avatars[this.userId] = image;
-              });
+                this.mediaService.getAvatarImage(this.userId).subscribe(image => {
+                    this.avatars[this.userId] = image;
+                });
             });
-          });
-
-        // this.dbService.getEncryptionKey(this.userId).then(key => {
-        //     if (key !== null) {
-        //         this.userKey = key;
-        //     }
-        // })
+        });
 
         if (this.roomId) {
                 this.subscriptions.add(
@@ -143,40 +140,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         } else {
             console.error('No roomId found in session storage.');
         }
-
-        // this.chatService.messages$.subscribe(async data => {
-        //     if (data.length < 1) {
-        //         return;
-        //     }
-
-        //     const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey, `this.chatService.messages$.subscribe`);
-
-        //     if (decryptedRoomKey === null) {
-        //         console.error("Cannot get room key.");
-        //     }
-
-        //     const decryptedMessages = await Promise.all(data.map(async innerData => {
-        //         if (innerData.encrypted) {
-        //             try {
-        //                 innerData.messageData.message = await this.cryptoService.decryptMessage(innerData.messageData.message, decryptedRoomKey!, innerData.messageData.iv);
-        //                 innerData.encrypted = false;
-        //                 return innerData;
-        //             } catch (error) {
-        //                 console.log("Failed to decrypt message:", innerData, error);
-        //             }
-        //         } else {
-        //             return innerData;
-        //         }
-        //     }));
-
-        //     this.messages = decryptedMessages;
-
-        //     this.messages.forEach(() => {
-        //         this.mediaService.getAvatarImage(this.userId).subscribe((image) => {
-        //             this.avatars[this.userId] = image;
-        //         });
-        //     })
-        // });
 
         this.chatService.connection.on("ModifyMessage", async (messageId: string, messageText: string) => {
             const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!);
@@ -272,6 +235,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }
     };
 
+    logdata(data: any) {
+        // console.log(data);
+    }
+
     async sendMessage() {
         const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!);
 
@@ -335,7 +302,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     async getMessages() {
-        // If userKey not loaded, load it first
         if (!this.userKey) {
             this.userKey = await this.dbService.getEncryptionKey(this.userId);
             if (!this.userKey) {
@@ -354,17 +320,19 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             return;
         }
     
-        this.chatService.getMessages(this.roomId).subscribe((response: any) => {
-            const userNames = response.map((element: any) =>
+        this.chatService.getMessages(this.roomId).subscribe((userNamesResponse: any) => {
+            console.log(userNamesResponse)
+            const userNames = userNamesResponse.map((element: any) =>
                 this.userService.getUsername(element.senderId)
             );
     
-            forkJoin(userNames).subscribe(async (usernames: any) => {
-                const fetchedMessages = response.map(async (element: any, index: number) => ({
+            forkJoin(userNames).subscribe(async (userNameData: any) => {
+                console.log(userNameData);
+                const fetchedMessages = userNamesResponse.map(async (element: any, index: number) => ({
                     encrypted: false,
                     messageData: {
                         messageId: element.messageId,
-                        user: element.sentAsAnonymous === true ? "Anonymous" : usernames[index].username,
+                        user: element.sentAsAnonymous === true ? "Anonymous" : userNameData[index].username,
                         userId: element.senderId,
                         message: await this.cryptoService.decryptMessage(element.text, decryptedRoomKey!, element.iv),
                         messageTime: element.sendTime,

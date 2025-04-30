@@ -20,14 +20,14 @@ public class SymmetricKeyService(MainDatabaseContext context) : ISymmetricKeySer
             var user = await context.Users.Include(u => u.UserSymmetricKeys).FirstOrDefaultAsync(u => u.Id == symmetricKey.UserId);
             if (user == null)
             {
-                return new FailedResponse();
+                return new Failure();
             }
 
             user.UserSymmetricKeys.Add(symmetricKey);
             await context.SaveChangesAsync();
 
             await transaction.CommitAsync();
-            return new UserResponseSuccess();
+            return new Success();
         }
         catch
         {

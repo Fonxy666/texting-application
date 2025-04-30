@@ -31,12 +31,12 @@ public class EmailSender(IConfiguration configuration, ILogger<EmailSender> logg
             client.Credentials = new NetworkCredential(_developerMail, _developerPw);
 
             await client.SendMailAsync(new MailMessage(_developerMail, UserEmail, "Verification code", message));
-            return new AuthResponseSuccess();
+            return new Success();
         }
         catch (Exception e)
         {
             logger.LogError($"Failed to send email: {e.Message}");
-            return new FailedResponse();
+            return new FailureWithMessage("Cannot send e-mail to this address.");
         }
     }
 
@@ -57,12 +57,12 @@ public class EmailSender(IConfiguration configuration, ILogger<EmailSender> logg
             {
                 IsBodyHtml = true
             });
-            return new UserResponseSuccess();
+            return new Success();
         }
         catch (Exception e)
         {
             Console.WriteLine($"Failed to send email with link: {e.Message}");
-            return new FailedResponse();
+            return new FailureWithMessage("Cannot send e-mail to this address.");
         }
     }
 }

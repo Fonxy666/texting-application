@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using Azure.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +26,7 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
     
     public async Task GetOnlineFriends(string userId)
     {
-        var onlineFriendList = new List<FriendHubFriendData>();
+        var onlineFriendList = new List<ShowFriendRequestDto>();
         var userWithFriends = await userManager.Users
             .Include(user => user.Friends)
             .FirstOrDefaultAsync(user => user.Id == new Guid(userId));
@@ -37,8 +36,8 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
             if (Connections.TryGetValue(friend.Id.ToString(), out var receiverConnectionId))
             {
                 var connection = await friendConnectionService.GetConnectionIdAsync(userWithFriends.Id, friend.Id);
-                onlineFriendList.Add(new FriendHubFriendData(
-                    connection!.ConnectionId.ToString(),
+                onlineFriendList.Add(new ShowFriendRequestDto(
+                    connection!.ConnectionId,
                     userWithFriends.UserName!,
                     userWithFriends.Id.ToString(),
                     connection.AcceptedTime,
@@ -51,10 +50,10 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
         await Clients.Client(Connections[userId]).SendAsync("ReceiveOnlineFriends", onlineFriendList);
     }
 
-    public async Task<UserResponseForWsSuccess> JoinToHub(string userId)
+    public async Task<SuccessWithDto<UserIdAndConnectionIdDto>> JoinToHub(string userId)
     {
         Connections[userId] = Context.ConnectionId;
-        var result = new UserResponseForWsSuccess(new ConnectionData(userId, Context.ConnectionId));
+        var result = new SuccessWithDto<UserIdAndConnectionIdDto>(new UserIdAndConnectionIdDto(userId, Context.ConnectionId));
         return result;
     }
 

@@ -28,12 +28,12 @@ public class AuthController(
         try
         {
             var emailResponse = await emailSender.SendEmailAsync(receiver.Email, "registration");
-            if (emailResponse is FailedResponse)
+            if (emailResponse is Failure)
             {
                 return BadRequest(emailResponse);
             }
 
-            return Ok(new AuthResponseSuccessWithMessage("Successfully sent."));
+            return Ok(new SuccessWithMessage("Successfully sent."));
         }
         catch (Exception e)
         {
@@ -50,11 +50,11 @@ public class AuthController(
             var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(credentials.Email, credentials.VerifyCode, "registration");
             if (!result)
             {
-                return await Task.FromResult<ActionResult<ResponseBase>>(BadRequest(new FailedResponseWithMessage("Invalid token.")));
+                return await Task.FromResult<ActionResult<ResponseBase>>(BadRequest(new FailureWithMessage("Invalid token.")));
             }
             
             EmailSenderCodeGenerator.RemoveVerificationCode(credentials.Email, "registration");
-            return await Task.FromResult<ActionResult<ResponseBase>>(Ok(new AuthResponseSuccess()));
+            return await Task.FromResult<ActionResult<ResponseBase>>(Ok(new Success()));
         }
         catch (Exception e)
         {
@@ -70,19 +70,19 @@ public class AuthController(
         {
             var imagePath = userServices.SaveImageLocally(request.Username, request.Image);
 
-            if (imagePath is FailedResponseWithMessage error)
+            if (imagePath is FailureWithMessage error)
             {
                 return BadRequest(error.Message);
             }
 
-            var result = await authenticationService.RegisterAsync(request, (imagePath as UserResponseSuccessWithMessage)!.Message);
+            var result = await authenticationService.RegisterAsync(request, (imagePath as SuccessWithMessage)!.Message);
 
-            if (result is FailedResponse)
+            if (result is Failure)
             {
                 return StatusCode(500, result);
             }
 
-            return Ok(new AuthResponseSuccess());
+            return Ok(new Success());
         }
         catch (Exception e)
         {
@@ -98,7 +98,7 @@ public class AuthController(
         {
             var result = await authenticationService.ExamineLoginCredentialsAsync(request.UserName, request.Password);
 
-            if (result is FailedResponseWithMessage error)
+            if (result is FailureWithMessage error)
             {
                 return error.Message switch
                 {
@@ -107,16 +107,16 @@ public class AuthController(
                 };
             }
         
-            var successResult = result as AuthResponseWithEmailSuccess;
+            var userEmail = (result as SuccessWithDto<UserNameEmailDto>)!.Data!.Email;
 
-            var sentEmail = await emailSender.SendEmailAsync(successResult!.Data!.Email, "login");
+            var sentEmail = await emailSender.SendEmailAsync(userEmail, "login");
 
-            if (sentEmail is FailedResponse)
+            if (sentEmail is Failure)
             {
                 return StatusCode(500, "Internal server error.");
             }
 
-            return Ok(sentEmail);
+            return Ok(new SuccessWithDto<UserEmailDto>(new UserEmailDto(userEmail)));
         }
         catch (Exception e)
         {
@@ -132,7 +132,7 @@ public class AuthController(
         {
             var loginResult = await authenticationService.LoginAsync(request);
 
-            if (loginResult is FailedResponseWithMessage error)
+            if (loginResult is FailureWithMessage error)
             {
                 return BadRequest(error.Message);
             }
