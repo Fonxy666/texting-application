@@ -14,7 +14,6 @@ public class ApplicationUserService(
     IConfiguration configuration,
     MainDatabaseContext context,
     IEmailSender emailSender,
-    MainDatabaseContext repository,
     IAuthService authService
     ) : IApplicationUserService
 {public async Task<ResponseBase> GetUserNameAsync(string userId)
@@ -177,12 +176,17 @@ public class ApplicationUserService(
         }
 
         var existingUser = await userManager.FindByEmailAsync(request.Email);
-        var token = await userManager.GeneratePasswordResetTokenAsync(existingUser!);
-        await userManager.ResetPasswordAsync(existingUser!, token, request.NewPassword);
-
-        var affectedRows = await repository.SaveChangesAsync();
-        if (affectedRows == 0)
+        if (existingUser == null)
         {
+            return new FailedResponseWithMessage("User not found.");
+        }
+
+        var token = await userManager.GeneratePasswordResetTokenAsync(existingUser);
+        var resetResult = await userManager.ResetPasswordAsync(existingUser, token, request.NewPassword);
+
+        if (!resetResult.Succeeded)
+        {
+            var errorMessages = string.Join(", ", resetResult.Errors.Select(e => e.Description));
             return new FailedResponseWithMessage("Failed to save new password change.");
         }
 
@@ -214,13 +218,12 @@ public class ApplicationUserService(
         }
 
         var token = await userManager.GenerateChangeEmailTokenAsync(existingUser, request.NewEmail);
-        await userManager.ChangeEmailAsync(existingUser, request.NewEmail, token);
+        var changeResult = await userManager.ChangeEmailAsync(existingUser, request.NewEmail, token);
 
-        existingUser.NormalizedEmail = request.NewEmail.ToUpper();
-        var affectedRows = await repository.SaveChangesAsync();
-        if (affectedRows == 0)
+        if (!changeResult.Succeeded)
         {
-            return new FailedResponseWithMessage("Failed to save email change.");
+            var errorMessages = string.Join(", ", changeResult.Errors.Select(e => e.Description));
+            return new FailedResponseWithMessage("Failed to change Email.");
         }
 
         return new EmailResponseSuccess(new UserEmailData( request.NewEmail ));
@@ -236,17 +239,24 @@ public class ApplicationUserService(
         }
 
         var correctPassword = await authService.ExamineLoginCredentialsAsync(existingUser!.UserName!, request.OldPassword);
-        if (correctPassword is FailedResponse)
+        if (correctPassword is FailedResponseWithMessage)
         {
-            return new FailedResponseWithMessage("Incorrect credentials.");
+            if ((correctPassword as FailedResponseWithMessage)!.Message.Contains("Account is locked"))
+            {
+                await authService.LogOutAsync(userId);
+            }
+
+            return correctPassword;
         }
 
-        await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.Password);
-        var affectedRows = await repository.SaveChangesAsync();
-        if (affectedRows == 0)
+        var changeResult = await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.Password);
+
+        if (!changeResult.Succeeded)
         {
-            return new FailedResponseWithMessage("Failed to save password change.");
+            var errorMessages = string.Join(", ", changeResult.Errors.Select(e => e.Description));
+            return new FailedResponseWithMessage("Failed to change Password.");
         }
+
         return new UsernameUserEmailResponseSuccess(new UserNameEmailData(existingUser.UserName!, existingUser.Email!));
     }
 

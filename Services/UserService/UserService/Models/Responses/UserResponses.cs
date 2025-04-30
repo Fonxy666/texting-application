@@ -17,6 +17,8 @@ public record UserResponseSuccessWithMessage(string Message) : UserResponse<stri
 
 public record FriendHubFriendSuccess(FriendHubFriendData Data) : UserResponse<FriendHubFriendData>(true, Data);
 
+public record EmailResponseSuccess(UserEmailData Data) : UserResponse<UserEmailData>(true, Data);
+
 public record KeyResponseSuccess(string Key) : UserResponse<string>(true, Key);
 
 public record ImageResponseSuccess(ImageData Data) : UserResponse<ImageData>(true, Data);

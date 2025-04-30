@@ -1,6 +1,5 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { FriendService } from '../services/friend-service/friend.service';
 import { MediaService } from '../services/media-service/media.service';
@@ -21,7 +20,6 @@ export class NavBarComponent implements OnInit {
     constructor(
         private cookieService : CookieService,
         private router: Router,
-        private http: HttpClient,
         public friendService: FriendService,
         private mediaService: MediaService,
         public chatService: ChatService,

@@ -4,6 +4,7 @@ import { passwordValidator, passwordMatchValidator } from '../../../validators/V
 import { MessageService } from 'primeng/api';
 import { UserService } from '../../../services/user-service/user.service';
 import { ChangePasswordRequestForUser } from '../../../model/user-credential-requests/user-credentials-requests';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-generate-password-change-request',
@@ -24,6 +25,7 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
 
     constructor(
         private fb: FormBuilder,
+        private router: Router,
         private userService: UserService,
         private messageService: MessageService,
         private renderer: Renderer2
@@ -97,9 +99,18 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
                     detail: response.message
                 });
             }
-        }, 
+        },
         (error) => {
-            console.error(error);
+            if (error.error.includes("Account is locked")) {
+                this.router.navigate(['/'], { queryParams: { logout: 'true' } });
+                console.log("OKE");
+            }
+            console.log(error);
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: error.error
+            });
         });
     }
 
