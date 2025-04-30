@@ -34,7 +34,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     roomId: string = "";
     inputMessage: string = "";
     roomName: string = sessionStorage.getItem("room")?? "";
-    myImage: string = "./assets/images/chat-mountain.jpg";
     connectedUsers: ConnectedUser[] = [];
     searchTerm: string = '';
     searchTermForFriends: string = '';

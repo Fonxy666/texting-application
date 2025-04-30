@@ -6,7 +6,7 @@ import { ChatService } from '../../services/chat-service/chat.service';
 import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
 import { MessageService } from 'primeng/api';
 import { CryptoService } from '../../services/crypto-service/crypto.service';
-import { catchError, firstValueFrom, from, of } from 'rxjs';
+import { catchError, firstValueFrom, from, of, tap } from 'rxjs';
 import { IndexedDBService } from '../../services/db-service/indexed-dbservice.service';
 
 @Component({
@@ -116,12 +116,11 @@ export class JoinRoomComponent implements OnInit {
                     const userId = this.cookieService.get("UserId");
                     const usersInRoom = await this.chatService.getUsersInSpecificRoom(response.roomId);
                     const keyResponse = await firstValueFrom(
-                        this.cryptoService.getUserPrivateKeyForRoom(response.roomId)
-                            .pipe(
-                                catchError(() => {
-                                    return of(null);
-                                  })
-                            )
+                        this.cryptoService.getUserPrivateKeyForRoom(response.roomId).pipe(
+                            catchError(err => {
+                                return of(null);
+                            })
+                        )
                     );
                     const awaitedUserInputKey = await firstValueFrom(
                         from(this.dbService.getEncryptionKey(userId))

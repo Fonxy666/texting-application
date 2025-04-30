@@ -20,7 +20,7 @@ export interface GetUserCredentials {
 }
 
 export interface UserPrivateKeyAndIv {
-    privateKey: string;
+    encryptedPrivateKey: string;
     iv: string;
 }
 

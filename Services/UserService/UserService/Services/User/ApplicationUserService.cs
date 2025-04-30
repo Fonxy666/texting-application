@@ -97,6 +97,7 @@ public class ApplicationUserService(
             .Include(u => u.ReceivedFriendRequests)
             .FirstOrDefaultAsync(u => u.Id == userGuid).Result!);
     }
+    
     public async Task<ResponseBase> GetUserPrivatekeyForRoomAsync(string userId, string roomId)
     {
         if (!Guid.TryParse(roomId, out var roomGuid))
@@ -114,9 +115,9 @@ public class ApplicationUserService(
             return new FailedResponseWithMessage("Cannot find the key for this user.");
         }
 
-        var userKey = existingUser.UserSymmetricKeys.FirstOrDefault(key => key.RoomId == roomGuid)!.ToString();
+        var userKey = existingUser.UserSymmetricKeys.FirstOrDefault(key => key.RoomId == roomGuid);
 
-        return new KeyResponseSuccess(userKey!);
+        return new KeyResponseSuccess(new UserKeyData(userKey!.EncryptedKey));
     }
 
     public async Task<ResponseBase> GetRoommatePublicKey(string username)
@@ -127,7 +128,7 @@ public class ApplicationUserService(
             return new FailedResponseWithMessage($"There is no user with this Username: {userManager}");
         }
 
-        return new KeyResponseSuccess(existingUser.PublicKey);
+        return new KeyResponseSuccess(new UserKeyData(existingUser.PublicKey));
     }
     public async Task<ResponseBase> ExamineIfUserHaveSymmetricKeyForRoom(string username, string roomId)
     {

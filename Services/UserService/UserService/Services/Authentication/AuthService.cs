@@ -96,7 +96,7 @@ public class AuthService(
             logger.LogError("Cannot find User private key.");
             return new FailedResponseWithMessage("Cannot find User private key.");
         }
-        var encryptedKey = (keyRetrievalResult as PrivateKeyResponseSuccessWithIv)!.Data!.EncryptedKey;
+        var encryptedKey = (keyRetrievalResult as PrivateKeyResponseSuccessWithIv)!.Data!.EncryptedPrivateKey;
 
         var roles = await userManager.GetRolesAsync(existingUser);
         

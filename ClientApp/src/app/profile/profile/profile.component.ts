@@ -24,7 +24,6 @@ export class ProfileComponent implements OnInit {
     profilePic: string = "";
     imageChangedEvent: any = '';
     croppedImage: any = '';
-    myImage: string = "./assets/images/chat-mountain.jpg";
     user: { id: string, name: string, image: string, token: string, email: string, twoFactorEnabled: boolean } = { id: "", name: '', image: '', token: '', email: '', twoFactorEnabled: false };
     passwordChangeRequest!: FormGroup;
     announceNumber: number = 0;

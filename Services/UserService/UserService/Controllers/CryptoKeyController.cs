@@ -64,6 +64,9 @@ public class CryptoKeyController(
                 return BadRequest(getKeyResponse);
             }
 
+            Console.WriteLine("-------------");
+            Console.WriteLine(getKeyResponse);
+            Console.WriteLine("-------------");
             return Ok(getKeyResponse);
         }
         catch (Exception e)

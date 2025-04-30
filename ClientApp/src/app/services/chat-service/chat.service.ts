@@ -96,12 +96,16 @@ export class ChatService {
             const encryptedRoomSymmetricKey = await firstValueFrom(this.cryptoService.getUserPrivateKeyForRoom(userData.roomId));
             if (encryptedRoomSymmetricKey.isSuccess && userEncryptedData.isSuccess) {
                 const encryptedRoomSymmetricKeyToArrayBuffer = this.cryptoService.base64ToBuffer(encryptedRoomSymmetricKey.data.encryptedPrivateKey);
-                const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.data.privateKey, userEncryptionInput!, userEncryptedData.data.iv);
+                const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.data.encryptedPrivateKey, userEncryptionInput!, userEncryptedData.data.iv);
                 const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
                 const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
                 const keyToArrayBuffer = await this.cryptoService.exportCryptoKey(decryptedRoomKey);
                 const encryptRoomKeyForUser = await this.cryptoService.encryptSymmetricKey(keyToArrayBuffer, cryptoKeyUserPublicKey);
                 const bufferToBase64 = this.cryptoService.bufferToBase64(encryptRoomKeyForUser);
+                console.log(`bufferToBase64: ${bufferToBase64}`);
+                console.log(`userData.requestId: ${userData.requestId}`);
+                console.log(`userData.roomId: ${userData.roomId}`);
+                console.log(`userData.roomName: ${userData.roomName}`);
                 await this.sendRoomSymmetricKey(bufferToBase64, userData.requestId, userData.roomId, userData.roomName);
             } else if (!encryptedRoomSymmetricKey.isSuccess) {
                 console.error(encryptedRoomSymmetricKey.message);

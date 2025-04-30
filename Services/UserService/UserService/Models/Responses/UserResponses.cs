@@ -6,11 +6,12 @@ public abstract record UserResponse<T>(bool IsSuccess, T? Data = default) : Resp
 public record FriendHubFriendData(string RequestId, string SenderName, string SenderId, DateTime? SentTime, string ReceiverName, string ReceiverId);
 public record ShowFriendRequestData(Guid RequestId, string SenderName, string SenderId, DateTime? SentTime, string ReceiverName, string ReceiverId);
 public record GetUserCredentialsData(string Username, string Email, bool TwoFactorEnabled);
-public record KeyAndIvData(string EncryptedKey, string Iv);
+public record KeyAndIvData(string EncryptedPrivateKey, string Iv);
 public record ImageData(byte[] ImageBytes, string ContentType);
 public record UserNameEmailData(string Username, string Email);
 public record UserEmailData(string Email);
 public record ConnectionData(string UserId, string ConnectionId);
+public record UserKeyData(string EncryptedPrivateKey);
 
 // Success/Failure responses
 public record UserResponseSuccessWithMessage(string Message) : UserResponse<string>(true, Message);
@@ -19,7 +20,7 @@ public record FriendHubFriendSuccess(FriendHubFriendData Data) : UserResponse<Fr
 
 public record EmailResponseSuccess(UserEmailData Data) : UserResponse<UserEmailData>(true, Data);
 
-public record KeyResponseSuccess(string Key) : UserResponse<string>(true, Key);
+public record KeyResponseSuccess(UserKeyData Data) : UserResponse<UserKeyData>(true, Data);
 
 public record ImageResponseSuccess(ImageData Data) : UserResponse<ImageData>(true, Data);
 

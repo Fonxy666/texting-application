@@ -2,7 +2,7 @@
     <app-nav-bar />
     <app-loading-screen *ngIf="isLoading"/>
     <p-toast position="top-center"></p-toast>
-    <img [src]="myImage" class="background-image">
+    <app-background-image [backgroundVideoSrc]="'./assets/videos/white_black_video_2.mp4'"></app-background-image>
     <div class="modal fade" id="deleteRoomModal" tabindex="-1" aria-labelledby="deleteRoomModal" data-bs-theme="dark" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">

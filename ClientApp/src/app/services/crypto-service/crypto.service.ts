@@ -257,7 +257,7 @@ export class CryptoService {
 
         if (userEncryptedData.isSuccess && encryptedRoomSymmetricKey.isSuccess) {
             const encryptedRoomSymmetricKeyToArrayBuffer = this.base64ToBuffer(encryptedRoomSymmetricKey.data.encryptedPrivateKey);
-            const decryptedUserPrivateKey = await this.decryptPrivateKey(userEncryptedData.data.privateKey, userKey, userEncryptedData.data.iv);
+            const decryptedUserPrivateKey = await this.decryptPrivateKey(userEncryptedData.data.encryptedPrivateKey, userKey, userEncryptedData.data.iv);
             if (decryptedUserPrivateKey === null) {
                 this.messageService.add({
                     severity: 'error',

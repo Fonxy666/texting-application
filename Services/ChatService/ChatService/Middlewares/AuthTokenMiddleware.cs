@@ -36,7 +36,6 @@ public class AuthTokenMiddleware(RequestDelegate next, GrpcUserService.GrpcUserS
         }
 
         var userIdResponse = await grpcClient.UserExistingAsync(new UserIdRequest { Id = userId });
-        Console.WriteLine($"User exists: {userIdResponse.Success}");
 
         await next(context);
     }
