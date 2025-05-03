@@ -2,13 +2,13 @@ using Microsoft.AspNetCore.Identity;
 using UserService.Services.Cookie;
 using UserService.Services.Authentication;
 using UserService.Models;
-using Textinger.Shared.JwtRefreshTokenValidator;
+using Textinger.Shared.JwtRefreshTokenValidation;
 
 namespace UserService.Middlewares;
 
 public class JwtRefreshMiddleware(RequestDelegate next)
 {
-    public async Task Invoke(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService, JwtRefreshTokenMiddleware jwtMiddleware)
+    public async Task Invoke(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService, IJwtRefreshTokenValidator jwtMiddleware)
     {
         if (jwtMiddleware.ExamineCookies(context))
         {
@@ -34,7 +34,7 @@ public class JwtRefreshMiddleware(RequestDelegate next)
         await cookieService.SetJwtToken(newToken, rememberMe);
     }
 
-    private async Task RefreshToken(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService, JwtRefreshTokenMiddleware jwtMiddleware)
+    private async Task RefreshToken(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService, IJwtRefreshTokenValidator jwtMiddleware)
     {
         var user = await userManager.FindByIdAsync(context.Request.Cookies["UserId"]!);
         var rememberMe = context.Request.Cookies["RememberMe"] == "True";

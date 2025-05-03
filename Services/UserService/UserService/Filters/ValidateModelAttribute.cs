@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc;
-using UserService.Models.Responses;
+using Textinger.Shared.Responses;
 
 namespace UserService.Filters;
 

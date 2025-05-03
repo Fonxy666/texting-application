@@ -6,7 +6,7 @@ using ChatService.Model;
 using ChatService.Services.Chat.GrpcService;
 using ChatService.Services.Chat.MessageService;
 using ChatService.Services.Chat.RoomService;
-using JwtRefreshMiddlewareLibrary;
+using Textinger.Shared.JwtRefreshTokenValidation;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -34,7 +34,7 @@ public class Startup(IConfiguration configuration)
             options.EnableDetailedErrors = true;
         });
 
-        services.AddSingleton<JwtRefreshTokenMiddleware>();
+        services.AddSingleton<IJwtRefreshTokenValidator, JwtRefreshTokenValidator>();
         services.AddScoped<IUserGrpcService, UserGrpcService>();
         services.AddScoped<IRoomService, RoomService>();
         services.AddScoped<IMessageService, MessageService>();

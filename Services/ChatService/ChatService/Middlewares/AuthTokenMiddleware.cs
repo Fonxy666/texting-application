@@ -1,9 +1,9 @@
 ﻿using Grpc.Net.Client;
-using JwtRefreshMiddlewareLibrary;
+using Textinger.Shared.JwtRefreshTokenValidation;
 
 namespace ChatService.Middlewares;
 
-public class AuthTokenMiddleware(RequestDelegate next, GrpcUserService.GrpcUserServiceClient grpcClient, JwtRefreshTokenMiddleware jwtMiddleware)
+public class AuthTokenMiddleware(RequestDelegate next, GrpcUserService.GrpcUserServiceClient grpcClient, IJwtRefreshTokenValidator jwtMiddleware)
 {
     public async Task InvokeAsync(HttpContext context)
     {
