@@ -68,14 +68,14 @@ public class AuthController(
     {
         try
         {
-            var imagePath = userServices.SaveImageLocally(request.Username, request.Image);
+            var imagePathResult = userServices.SaveImageLocally(request.Username, request.Image);
 
-            if (imagePath is FailureWithMessage error)
+            if (imagePathResult is FailureWithMessage)
             {
-                return BadRequest(error.Message);
+                return BadRequest(imagePathResult);
             }
 
-            var result = await authenticationService.RegisterAsync(request, (imagePath as SuccessWithMessage)!.Message);
+            var result = await authenticationService.RegisterAsync(request, (imagePathResult as SuccessWithMessage)!.Message);
 
             if (result is Failure)
             {
@@ -103,7 +103,7 @@ public class AuthController(
                 return error.Message switch
                 {
                     var msg when msg == $"{request.UserName} is not registered." => NotFound("This username is not registered."),
-                    _ => BadRequest(error.Message)
+                    _ => BadRequest(error)
                 };
             }
         
@@ -132,9 +132,9 @@ public class AuthController(
         {
             var loginResult = await authenticationService.LoginAsync(request);
 
-            if (loginResult is FailureWithMessage error)
+            if (loginResult is FailureWithMessage)
             {
-                return BadRequest(error.Message);
+                return BadRequest(loginResult);
             }
 
             return Ok(loginResult);

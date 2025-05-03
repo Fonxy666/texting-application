@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace UserService.Migrations
 {
     [DbContext(typeof(MainDatabaseContext))]
-    [Migration("20250409091726_InitMainDbContext")]
-    partial class InitMainDbContext
+    [Migration("20250503105410_InitMainDatabase")]
+    partial class InitMainDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -23,21 +23,6 @@ namespace UserService.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("ApplicationUserApplicationUser", b =>
-                {
-                    b.Property<Guid>("ApplicationUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("FriendsId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("ApplicationUserId", "FriendsId");
-
-                    b.HasIndex("FriendsId");
-
-                    b.ToTable("UserFriends", (string)null);
-                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
@@ -169,7 +154,22 @@ namespace UserService.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("UserService.Model.ApplicationUser", b =>
+            modelBuilder.Entity("UserFriends", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("FriendId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("UserId", "FriendId");
+
+                    b.HasIndex("FriendId");
+
+                    b.ToTable("UserFriends", (string)null);
+                });
+
+            modelBuilder.Entity("UserService.Models.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -220,7 +220,8 @@ namespace UserService.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("RefreshToken")
-                        .HasColumnType("text");
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
 
                     b.Property<DateTime?>("RefreshTokenCreated")
                         .HasColumnType("timestamp with time zone");
@@ -250,7 +251,7 @@ namespace UserService.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("UserService.Model.EncryptedSymmetricKey", b =>
+            modelBuilder.Entity("UserService.Models.EncryptedSymmetricKey", b =>
                 {
                     b.Property<Guid>("KeyId")
                         .ValueGeneratedOnAdd()
@@ -258,7 +259,8 @@ namespace UserService.Migrations
 
                     b.Property<string>("EncryptedKey")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
 
                     b.Property<Guid>("RoomId")
                         .HasColumnType("uuid");
@@ -273,7 +275,7 @@ namespace UserService.Migrations
                     b.ToTable("EncryptedSymmetricKeys");
                 });
 
-            modelBuilder.Entity("UserService.Model.FriendConnection", b =>
+            modelBuilder.Entity("UserService.Models.FriendConnection", b =>
                 {
                     b.Property<Guid>("ConnectionId")
                         .ValueGeneratedOnAdd()
@@ -289,10 +291,14 @@ namespace UserService.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("SentTime")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("current_timestamp");
 
                     b.Property<int>("Status")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.HasKey("ConnectionId");
 
@@ -301,21 +307,6 @@ namespace UserService.Migrations
                     b.HasIndex("SenderId");
 
                     b.ToTable("FriendConnections");
-                });
-
-            modelBuilder.Entity("ApplicationUserApplicationUser", b =>
-                {
-                    b.HasOne("UserService.Model.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("UserService.Model.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("FriendsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -329,7 +320,7 @@ namespace UserService.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
-                    b.HasOne("UserService.Model.ApplicationUser", null)
+                    b.HasOne("UserService.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -338,7 +329,7 @@ namespace UserService.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("UserService.Model.ApplicationUser", null)
+                    b.HasOne("UserService.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -353,7 +344,7 @@ namespace UserService.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("UserService.Model.ApplicationUser", null)
+                    b.HasOne("UserService.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -362,16 +353,31 @@ namespace UserService.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("UserService.Model.ApplicationUser", null)
+                    b.HasOne("UserService.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("UserService.Model.EncryptedSymmetricKey", b =>
+            modelBuilder.Entity("UserFriends", b =>
                 {
-                    b.HasOne("UserService.Model.ApplicationUser", "User")
+                    b.HasOne("UserService.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("FriendId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UserService.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UserService.Models.EncryptedSymmetricKey", b =>
+                {
+                    b.HasOne("UserService.Models.ApplicationUser", "User")
                         .WithMany("UserSymmetricKeys")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -380,15 +386,15 @@ namespace UserService.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UserService.Model.FriendConnection", b =>
+            modelBuilder.Entity("UserService.Models.FriendConnection", b =>
                 {
-                    b.HasOne("UserService.Model.ApplicationUser", "Receiver")
+                    b.HasOne("UserService.Models.ApplicationUser", "Receiver")
                         .WithMany("ReceivedFriendRequests")
                         .HasForeignKey("ReceiverId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("UserService.Model.ApplicationUser", "Sender")
+                    b.HasOne("UserService.Models.ApplicationUser", "Sender")
                         .WithMany("SentFriendRequests")
                         .HasForeignKey("SenderId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -399,7 +405,7 @@ namespace UserService.Migrations
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("UserService.Model.ApplicationUser", b =>
+            modelBuilder.Entity("UserService.Models.ApplicationUser", b =>
                 {
                     b.Navigation("ReceivedFriendRequests");
 

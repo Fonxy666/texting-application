@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace UserService.Migrations
 {
     /// <inheritdoc />
-    public partial class InitMainDbContext : Migration
+    public partial class InitMainDatabase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,7 +32,7 @@ namespace UserService.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     ImageUrl = table.Column<string>(type: "text", nullable: true),
-                    RefreshToken = table.Column<string>(type: "text", nullable: true),
+                    RefreshToken = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
                     RefreshTokenCreated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     RefreshTokenExpires = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     PublicKey = table.Column<string>(type: "text", nullable: false),
@@ -169,7 +169,7 @@ namespace UserService.Migrations
                     KeyId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     RoomId = table.Column<Guid>(type: "uuid", nullable: false),
-                    EncryptedKey = table.Column<string>(type: "text", nullable: false)
+                    EncryptedKey = table.Column<string>(type: "character varying(1024)", maxLength: 1024, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -189,8 +189,8 @@ namespace UserService.Migrations
                     ConnectionId = table.Column<Guid>(type: "uuid", nullable: false),
                     SenderId = table.Column<Guid>(type: "uuid", nullable: false),
                     ReceiverId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    SentTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    SentTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "current_timestamp"),
                     AcceptedTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
@@ -201,7 +201,7 @@ namespace UserService.Migrations
                         column: x => x.ReceiverId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_FriendConnections_AspNetUsers_SenderId",
                         column: x => x.SenderId,
@@ -214,21 +214,21 @@ namespace UserService.Migrations
                 name: "UserFriends",
                 columns: table => new
                 {
-                    ApplicationUserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    FriendsId = table.Column<Guid>(type: "uuid", nullable: false)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FriendId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserFriends", x => new { x.ApplicationUserId, x.FriendsId });
+                    table.PrimaryKey("PK_UserFriends", x => new { x.UserId, x.FriendId });
                     table.ForeignKey(
-                        name: "FK_UserFriends_AspNetUsers_ApplicationUserId",
-                        column: x => x.ApplicationUserId,
+                        name: "FK_UserFriends_AspNetUsers_FriendId",
+                        column: x => x.FriendId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_UserFriends_AspNetUsers_FriendsId",
-                        column: x => x.FriendsId,
+                        name: "FK_UserFriends_AspNetUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -287,9 +287,9 @@ namespace UserService.Migrations
                 column: "SenderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserFriends_FriendsId",
+                name: "IX_UserFriends_FriendId",
                 table: "UserFriends",
-                column: "FriendsId");
+                column: "FriendId");
         }
 
         /// <inheritdoc />

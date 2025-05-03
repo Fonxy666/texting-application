@@ -79,8 +79,8 @@ public class UserController(
             {
                 return error.Message switch
                 {
-                    var msg when msg == $"User not found." => NotFound(error.Message),
-                    "Email service is currently unavailable." => StatusCode(500, error.Message)
+                    var msg when msg == $"User not found." => NotFound(error),
+                    "Email service is currently unavailable." => StatusCode(500, error)
                 };
             }
 
@@ -177,8 +177,8 @@ public class UserController(
             {
                 return error.Message switch
                 {
-                    var msg when msg == $"User not found." => NotFound(error.Message),
-                    _ => BadRequest(error.Message)
+                    var msg when msg == $"User not found." => NotFound(error),
+                    _ => BadRequest(error)
                 };
             }
 
@@ -206,8 +206,8 @@ public class UserController(
             {
                 return error.Message switch
                 {
-                    var msg when msg == $"User not found." => NotFound(error.Message),
-                    _ => BadRequest(error.Message)
+                    var msg when msg == $"User not found." => NotFound(error),
+                    _ => BadRequest(error)
                 };
             }
 
@@ -234,8 +234,8 @@ public class UserController(
             {
                 return error.Message switch
                 {
-                    var msg when msg == $"User not found." => NotFound(error.Message),
-                    _ => BadRequest(error.Message)
+                    var msg when msg == $"User not found." => NotFound(error),
+                    _ => BadRequest(error)
                 };
             }
 
@@ -265,8 +265,8 @@ public class UserController(
             {
                 return error.Message switch
                 {
-                    var msg when msg == "User not found." => NotFound(error.Message),
-                    _ => BadRequest(error.Message)
+                    var msg when msg == "User not found." => NotFound(error),
+                    _ => BadRequest(error)
                 };
             }
 
@@ -294,10 +294,10 @@ public class UserController(
             {
                 return error.Message switch
                 {
-                    var msg when msg == "User not found." => NotFound(error.Message),
-                    "New friend not found." => NotFound(error.Message),
-                    "Failed to save changes." => StatusCode(500, error.Message),
-                    _ => BadRequest(error.Message)
+                    var msg when msg == "User not found." => NotFound(error),
+                    "New friend not found." => NotFound(error),
+                    "Failed to save changes." => StatusCode(500, error),
+                    _ => BadRequest(error)
                 };
             }
 
@@ -375,9 +375,9 @@ public class UserController(
             {
                 return error.Message switch
                 {
-                    "Request not found." => NotFound(error.Message),
-                    "Invalid request ID format." => BadRequest(error.Message),
-                    _ => StatusCode(500, error.Message)
+                    "Request not found." => NotFound(error),
+                    "Invalid request ID format." => BadRequest(error),
+                    _ => StatusCode(500, error)
                 };
             }
 
@@ -405,9 +405,9 @@ public class UserController(
             {
                 return error.Message switch
                 {
-                    "Cannot find the request." => NotFound(error.Message),
-                    "Invalid request ID format." => BadRequest(error.Message),
-                    _ => StatusCode(500, error.Message)
+                    "Cannot find the request." => NotFound(error),
+                    "Invalid request ID format." => BadRequest(error),
+                    _ => StatusCode(500, error)
                 };
             }
 
@@ -460,10 +460,10 @@ public class UserController(
             {
                 return error.Message switch
                 {
-                    "Cannot find friend connection." => NotFound(error.Message),
-                    "Invalid connectionId format." => BadRequest(error.Message),
-                    "You don't have permission for deletion." => Unauthorized(error.Message),
-                    _ => StatusCode(500, error.Message)
+                    "Cannot find friend connection." => NotFound(error),
+                    "Invalid connectionId format." => BadRequest(error),
+                    "You don't have permission for deletion." => Unauthorized(error),
+                    _ => StatusCode(500, error)
                 };
             }
 

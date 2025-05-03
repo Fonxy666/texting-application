@@ -1,19 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace UserService.Models;
+﻿namespace UserService.Models;
 
 public class FriendConnection
-{
-    [Key]
-    public Guid ConnectionId { get; init; } = Guid.NewGuid();
+{    public Guid ConnectionId { get; init; } = Guid.NewGuid();
 
     public Guid SenderId { get; init; }
-    [ForeignKey("SenderId")]
     public ApplicationUser? Sender { get; set; }
 
     public Guid ReceiverId { get; init; }
-    [ForeignKey("ReceiverId")]
     public ApplicationUser? Receiver { get; set; }
 
     public FriendStatus Status { get; private set; } = FriendStatus.Pending;
@@ -40,8 +33,5 @@ public class FriendConnection
         AcceptedTime = DateTime.UtcNow;
     }
 
-    public void ResetSentTime()
-    {
-        SentTime = DateTime.UtcNow;
-    }
+    public void ResetSentTime() => SentTime = DateTime.UtcNow;
 }

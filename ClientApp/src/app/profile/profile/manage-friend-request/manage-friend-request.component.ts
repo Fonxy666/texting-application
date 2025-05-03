@@ -5,7 +5,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { FriendService } from '../../../services/friend-service/friend.service';
 import { MediaService } from '../../../services/media-service/media.service';
 import { DisplayService } from '../../../services/display-service/display.service';
-import { ShowFriendRequestData, UserResponse } from '../../../model/responses/user-responses.model';
+import { ShowFriendRequestData, UserResponse, UserResponseFailure } from '../../../model/responses/user-responses.model';
 import { DeleteFriendRequest } from '../../../model/friend-requests/friend-requests.model';
 
 @Component({
@@ -86,14 +86,13 @@ export class ManageFriendRequestComponent implements OnInit {
                     this.friendName.reset();
                 }
             },
-            (error: any) => {
-                if (error.status === 400) {
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: `${error.error.message}`
-                    });
-                }
+            (error: UserResponseFailure) => {
+                console.log(error);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: `${error.error?.message}`
+                });
             }
         );
     }

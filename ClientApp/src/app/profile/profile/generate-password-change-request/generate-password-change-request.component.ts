@@ -92,11 +92,17 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
                     detail: 'Your password changed.',
                     styleClass: 'ui-toast-message-info'
                 });
+
+                this.changePasswordRequest.reset();
+
+                this.showOldPassword = false;
+                this.showNewPassword = false;
+                this.showRepeatNewPassword = false;
             } else {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: response.message
+                    detail: response.error?.message
                 });
             }
         },

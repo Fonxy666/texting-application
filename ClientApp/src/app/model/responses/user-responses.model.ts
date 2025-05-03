@@ -5,7 +5,9 @@ export interface UserResponseSuccess<T> {
   
 export interface UserResponseFailure {
     isSuccess: false;
-    message?: string;
+    error?: {
+        message?: string
+    }
 }
 
 export interface UserKeys {

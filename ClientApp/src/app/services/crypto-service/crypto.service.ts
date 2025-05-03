@@ -269,10 +269,10 @@ export class CryptoService {
 
             return decryptedRoomKey;
         } else if (!userEncryptedData.isSuccess) {
-            console.error(userEncryptedData.message);
+            console.error(userEncryptedData.error?.message);
             return null;
         } else if (!encryptedRoomSymmetricKey.isSuccess) {
-            console.error(encryptedRoomSymmetricKey.message);
+            console.error(encryptedRoomSymmetricKey.error?.message);
             return null;
         }
 

@@ -104,9 +104,9 @@ export class ChatService {
                 const bufferToBase64 = this.cryptoService.bufferToBase64(encryptRoomKeyForUser);
                 await this.sendRoomSymmetricKey(bufferToBase64, userData.connectionId, userData.roomId, userData.roomName);
             } else if (!encryptedRoomSymmetricKey.isSuccess) {
-                console.error(encryptedRoomSymmetricKey.message);
+                console.error(encryptedRoomSymmetricKey.error?.message);
             } else if (!userEncryptedData.isSuccess) {
-                console.error(userEncryptedData.message);
+                console.error(userEncryptedData.error?.message);
             }
         })
 

@@ -216,7 +216,7 @@ public class ApplicationUserService(
 
         if (userManager.Users.Any(user => user.Email == request.NewEmail))
         {
-            return new FailureWithMessage("Same e-mail.");
+            return new FailureWithMessage("This email is already in use.");
         }
 
         var token = await userManager.GenerateChangeEmailTokenAsync(existingUser, request.NewEmail);
