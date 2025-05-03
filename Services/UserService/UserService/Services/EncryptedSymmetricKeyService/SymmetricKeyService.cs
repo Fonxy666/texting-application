@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using UserService.Models;
-using UserService.Models.Responses;
+using Textinger.Shared.Responses;
 
 namespace UserService.Services.EncryptedSymmetricKeyService;
 

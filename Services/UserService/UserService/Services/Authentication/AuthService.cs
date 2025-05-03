@@ -6,6 +6,7 @@ using UserService.Models.Responses;
 using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
 using UserService.Services.PrivateKeyFolder;
+using Textinger.Shared.Responses;
 
 namespace UserService.Services.Authentication;
 

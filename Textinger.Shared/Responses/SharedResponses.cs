@@ -1,4 +1,4 @@
-﻿namespace UserService.Models.Responses;
+﻿namespace Textinger.Shared.Responses;
 
 public abstract record ResponseBase(bool IsSuccess);
 

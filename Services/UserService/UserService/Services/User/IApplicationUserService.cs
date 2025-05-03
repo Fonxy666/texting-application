@@ -1,6 +1,6 @@
 ﻿using UserService.Models;
 using UserService.Models.Requests;
-using UserService.Models.Responses;
+using Textinger.Shared.Responses;
 
 namespace UserService.Services.User;
 

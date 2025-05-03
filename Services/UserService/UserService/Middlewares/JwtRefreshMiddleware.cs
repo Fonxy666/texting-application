@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using UserService.Services.Cookie;
 using UserService.Services.Authentication;
 using UserService.Models;
-using JwtRefreshMiddlewareLibrary;
+using Textinger.Shared.JwtRefreshTokenValidator;
 
 namespace UserService.Middlewares;
 

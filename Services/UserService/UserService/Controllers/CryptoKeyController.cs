@@ -4,9 +4,9 @@ using UserService.Models;
 using UserService.Services.PrivateKeyFolder;
 using UserService.Services.EncryptedSymmetricKeyService;
 using UserService.Models.Requests;
-using UserService.Models.Responses;
 using UserService.Services.User;
 using UserService.Filters;
+using Textinger.Shared.Responses;
 
 namespace UserService.Controllers;
 

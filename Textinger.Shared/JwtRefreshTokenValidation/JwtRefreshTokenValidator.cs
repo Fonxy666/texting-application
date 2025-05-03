@@ -1,10 +1,10 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+﻿using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Http;
 
-namespace JwtRefreshMiddlewareLibrary;
+namespace Textinger.Shared.JwtRefreshTokenValidation;
 
-public class JwtRefreshTokenMiddleware
+public class JwtRefreshTokenValidator : IJwtRefreshTokenValidator
 {
     public bool ExamineCookies(HttpContext context)
     {

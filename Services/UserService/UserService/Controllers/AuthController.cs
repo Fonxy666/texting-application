@@ -10,6 +10,7 @@ using UserService.Services.EmailSender;
 using UserService.Services.Authentication;
 using UserService.Models.Requests;
 using UserService.Filters;
+using Textinger.Shared.Responses;
 
 namespace UserService.Controllers;
 

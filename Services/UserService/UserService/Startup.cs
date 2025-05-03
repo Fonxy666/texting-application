@@ -16,10 +16,10 @@ using VaultSharp.V1.AuthMethods.Token;
 using UserService.Services.PrivateKeyFolder;
 using UserService.Services.gRPCServices;
 using UserService.Middlewares;
-using JwtRefreshMiddlewareLibrary;
 using UserService.Services.EncryptedSymmetricKeyService;
 using UserService.Filters;
 using UserService.Services.FriendConnectionService;
+using Textinger.Shared.JwtRefreshTokenValidation;
 
 namespace UserService;
 
@@ -56,7 +56,7 @@ public class Startup(IConfiguration configuration)
             options.EnableDetailedErrors = true;
         });
 
-        services.AddSingleton<JwtRefreshTokenMiddleware>();
+        services.AddSingleton<IJwtRefreshTokenValidator, JwtRefreshTokenValidator>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IApplicationUserService, ApplicationUserService>();

@@ -8,6 +8,7 @@ using UserService.Models.Responses;
 using UserService.Filters;
 using UserService.Models.Requests;
 using UserService.Services.Authentication;
+using Textinger.Shared.Responses;
 
 namespace UserService.Controllers;
 

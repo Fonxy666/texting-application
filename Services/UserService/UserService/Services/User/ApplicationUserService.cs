@@ -6,6 +6,7 @@ using UserService.Models.Requests;
 using UserService.Models.Responses;
 using UserService.Services.Authentication;
 using UserService.Services.EmailSender;
+using Textinger.Shared.Responses;
 
 namespace UserService.Services.User;
 

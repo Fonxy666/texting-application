@@ -6,6 +6,7 @@ using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
 using UserService.Services.FriendConnectionService;
+using Textinger.Shared.Responses;
 
 namespace UserService.Hub;
 

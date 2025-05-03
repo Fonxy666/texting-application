@@ -1,5 +1,4 @@
 ﻿namespace UserService.Models.Responses;
-
 public record ShowFriendRequestDto(Guid RequestId, string SenderName, string SenderId, DateTime? SentTime, string ReceiverName, string ReceiverId);
 public record UsernameUserEmailAndTwoFactorEnabledDto(string Username, string Email, bool TwoFactorEnabled);
 public record KeyAndIvDto(string EncryptedPrivateKey, string Iv);
