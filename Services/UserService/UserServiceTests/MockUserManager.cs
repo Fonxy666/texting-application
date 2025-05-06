@@ -1,6 +1,6 @@
-﻿using AuthenticationService.Model;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Moq;
+using UserService.Models;
 
 namespace Tests;
 

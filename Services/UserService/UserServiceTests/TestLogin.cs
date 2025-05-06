@@ -1,7 +1,7 @@
 ﻿using System.Text;
-using AuthenticationService.Model.Requests.Auth;
-using AuthenticationService.Services.EmailSender;
 using Newtonsoft.Json;
+using UserService.Models.Requests;
+using UserService.Services.EmailSender;
 
 namespace Tests;
 

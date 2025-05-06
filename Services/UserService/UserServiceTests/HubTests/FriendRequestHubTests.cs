@@ -1,11 +1,11 @@
 ﻿using System.Collections.Concurrent;
-using AuthenticationService.Hub;
-using AuthenticationService.Model;
-using AuthenticationService.Services.FriendConnection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using MockQueryable.Moq;
 using Moq;
+using UserService.Hub;
+using UserService.Models;
+using UserService.Services.FriendConnectionService;
 using Xunit;
 using Assert = Xunit.Assert;
 

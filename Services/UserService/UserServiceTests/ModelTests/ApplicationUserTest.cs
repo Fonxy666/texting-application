@@ -1,5 +1,5 @@
-﻿using AuthenticationService.Model;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
+using UserService.Models;
 
 namespace Tests.ModelTests;
 

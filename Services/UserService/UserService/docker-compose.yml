@@ -1,5 +1,6 @@
 version: '3.7'
 services:
+  
   vault:
     image: hashicorp/vault:latest
     container_name: private_key_vault
@@ -13,18 +14,70 @@ services:
     cap_add:
       - IPC_LOCK
     entrypoint: vault server -config=/vault/config/vault.json
+    networks:
+      - normal-network
+    
+  test_vault:
+    image: hashicorp/vault:latest
+    container_name: test_private_key_vault
+    ports:
+      - "8201:8201"
+    restart: always
+    environment:
+      - VAULT_DEV_MODE=true
+      - VAULT_DEV_ROOT_TOKEN_ID=root
+    cap_add:
+      - IPC_LOCK
+    command: vault server -dev
+    networks:
+      - test-network
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:8201/v1/sys/health" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   postgres:
     image: postgres:latest
-    container_name: postgres_db
+    container_name: user_db
     env_file:
       - .env
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${ADMIN_PASSWORD}
-      POSTGRES_DB: auth_db
+      POSTGRES_DB: user_db
     ports:
       - "5432:5432"
     volumes:
       - ./pgdata:/var/lib/postgresql/data
     restart: always
+    networks:
+      - normal-network
+    
+  test_postgres:
+    image: postgres:latest
+    container_name: test_user_db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: testPassword123@
+      POSTGRES_DB: test_user_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./test_pgdata:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - test-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      
+networks:
+  normal-network:
+    driver: bridge
+  test-network:
+    driver: bridge
