@@ -8,6 +8,10 @@
   </PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="coverlet.collector" Version="6.0.4">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="Docker.DotNet" Version="3.125.15" />
 		<PackageReference Include="DotNetEnv" Version="3.0.0" />
 		<PackageReference Include="Google.Protobuf" Version="3.29.3" />
@@ -40,12 +44,6 @@
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.1" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
 		<PackageReference Include="VaultSharp" Version="1.17.5.1" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Update="testConfiguration.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
 	</ItemGroup>
 
 	<ItemGroup>

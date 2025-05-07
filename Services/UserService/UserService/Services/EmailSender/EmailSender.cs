@@ -13,24 +13,21 @@ public class EmailSender(IConfiguration configuration, ILogger<EmailSender> logg
         EnableSsl = true
     });
 
-    public async Task<ResponseBase> SendEmailAsync(string UserEmail, string tokenType)
+    public async Task<ResponseBase> SendEmailAsync(string userEmail, string tokenType)
     {
         var message = tokenType switch
         {
-            "registration" => $"Verification code: {EmailSenderCodeGenerator.GenerateLongToken(UserEmail, "registration")}",
-            "login" => $"Login code: {EmailSenderCodeGenerator.GenerateShortToken(UserEmail, "login")}",
+            "registration" => $"Verification code: {EmailSenderCodeGenerator.GenerateLongToken(userEmail, "registration")}",
+            "login" => $"Login code: {EmailSenderCodeGenerator.GenerateShortToken(userEmail, "login")}",
             _ => throw new ArgumentException("Invalid token type", nameof(tokenType))
         };
-
-        var mail = configuration["DeveloperEmail"];
-        var pw = configuration["DeveloperAppPassword"];
 
         try
         {
             var client = SmtpClientFactory();
             client.Credentials = new NetworkCredential(_developerMail, _developerPw);
 
-            await client.SendMailAsync(new MailMessage(_developerMail, UserEmail, "Verification code", message));
+            await client.SendMailAsync(new MailMessage(_developerMail, userEmail, "Verification code", message));
             return new Success();
         }
         catch (Exception e)
@@ -42,9 +39,6 @@ public class EmailSender(IConfiguration configuration, ILogger<EmailSender> logg
 
     public async Task<ResponseBase> SendEmailWithLinkAsync(string email, string subject, string resetId)
     {
-        var mail = configuration["DeveloperEmail"];
-        var pw = configuration["DeveloperAppPassword"];
-
         try
         {
             var client = SmtpClientFactory();

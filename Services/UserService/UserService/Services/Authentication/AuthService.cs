@@ -22,58 +22,111 @@ public class AuthService(
 {
     public async Task<ResponseBase> RegisterAsync(RegistrationRequest request, string imagePath)
     {
+        var validateUserInputResult = await ValidateUserInput(request);
+        if (validateUserInputResult is FailureWithMessage)
+        {
+            return validateUserInputResult;
+        }
+        
         using var transaction = await context.Database.BeginTransactionAsync();
 
         try
         {
-            var user = new ApplicationUser(imagePath)
+            var userCreationResult = await CreateUser(request, imagePath);
+            if (userCreationResult is FailureWithMessage)
             {
-                UserName = request.Username,
-                Email = request.Email,
-                PhoneNumber = request.PhoneNumber,
-                PhoneNumberConfirmed = false,
-                EmailConfirmed = true,
-                TwoFactorEnabled = true,
-                LockoutEnabled = false
-            };
-
-            user.SetPublicKey(request.PublicKey);
-
-            var createResult = await userManager.CreateAsync(user, request.Password);
-
-            if (!createResult.Succeeded)
-            {
-                logger.LogError("Error during database save.");
-                return new Failure();
+                return userCreationResult;
             }
 
-            var addToRoleAsync = await userManager.AddToRoleAsync(user, "User");
-
-            if (!addToRoleAsync.Succeeded)
+            var saveKeyResult = await SavePrivateKey(request);
+            if (saveKeyResult is FailureWithMessage)
             {
-                logger.LogError("Error during adding user to role.");
-                return new Failure();
-            }
-
-            var savedUser = await userManager.Users.FirstOrDefaultAsync(u => u.UserName == request.Username);
-            var privateKey = new PrivateKey(request.EncryptedPrivateKey, request.Iv);
-            var keyResult = await keyService.SaveKeyAsync(privateKey, savedUser!.Id);
-
-            if (keyResult is Failure)
-            {
-                logger.LogError("Error during key save.");
-                return new Failure();
+                return saveKeyResult;
             }
 
             await transaction.CommitAsync();
 
-            return keyResult.IsSuccess ? new Success() : new Failure();
+            return saveKeyResult.IsSuccess ? new Success() : new Failure();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Registration failed during transaction.");
             return new Failure();
         }
+    }
+
+    private async Task<ResponseBase> ValidateUserInput(RegistrationRequest request)
+    {
+        var existingUserByEmail = await context.Users.AnyAsync(u => u.Email == request.Email);
+        if (existingUserByEmail)
+        {
+            return new FailureWithMessage("Email is already taken");
+        }
+        
+        var existingUserByUsername = await context.Users.AnyAsync(u => u.UserName == request.Username);
+        
+        if (existingUserByUsername)
+        {
+            return new FailureWithMessage("Username is already taken");
+        }
+        
+        var existingUserByPhoneNumber = await context.Users.AnyAsync(u => u.PhoneNumber == request.PhoneNumber);
+
+        if (existingUserByPhoneNumber)
+        {
+            return new FailureWithMessage("Phone number is already taken");
+        }
+
+        return new Success();
+    }
+
+    private async Task<ResponseBase> CreateUser(RegistrationRequest request, string imagePath)
+    {
+        var user = new ApplicationUser(imagePath)
+        {
+            UserName = request.Username,
+            Email = request.Email,
+            PhoneNumber = request.PhoneNumber,
+            PhoneNumberConfirmed = false,
+            EmailConfirmed = true,
+            TwoFactorEnabled = true,
+            LockoutEnabled = false
+        };
+
+        user.SetPublicKey(request.PublicKey);
+
+        var createResult = await userManager.CreateAsync(user, request.Password);
+
+        if (!createResult.Succeeded)
+        {
+            logger.LogError("Error during database save.");
+            return new Failure();
+        }
+
+        var addToRoleAsync = await userManager.AddToRoleAsync(user, "User");
+
+        if (!addToRoleAsync.Succeeded)
+        {
+            logger.LogError("Error during adding user to role.");
+            return new Failure();
+        }
+
+        return new Success();
+    }
+
+    private async Task<ResponseBase> SavePrivateKey(RegistrationRequest request)
+    {
+        var savedUser = await userManager.Users.FirstOrDefaultAsync(u => u.UserName == request.Username);
+        var privateKey = new PrivateKey(request.EncryptedPrivateKey, request.Iv);
+        var keyResult = await keyService.SaveKeyAsync(privateKey, savedUser!.Id);
+
+        if (keyResult is Failure)
+        {
+            logger.LogError("Error during key save.");
+            return new Failure();
+        }
+
+        return new Success();
     }
 
     public async Task<ResponseBase> LoginAsync(LoginAuth request)

@@ -1,165 +1,133 @@
-﻿using AuthenticationService.Model;
-using AuthenticationService.Model.Requests.Auth;
-using AuthenticationService.Services.Authentication;
-using AuthenticationService.Services.Cookie;
-using AuthenticationService.Services.PrivateKeyService;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
-using MockQueryable.Moq;
-using Moq;
-using Server.Model;
-using Server.Model.Requests.Auth;
-using Server.Services.Authentication;
-using Server.Services.Cookie;
-using Server.Services.PrivateKey;
+using Microsoft.EntityFrameworkCore;
+using Textinger.Shared.Responses;
+using UserService.Database;
+using UserService.Models;
+using UserService.Models.Requests;
+using UserService.Models.Responses;
+using UserService.Services.Authentication;
+using UserService.Services.Cookie;
+using UserService.Services.EmailSender;
+using UserService.Services.PrivateKeyFolder;
 using Xunit;
 using Xunit.Abstractions;
 using Assert = NUnit.Framework.Assert;
 
-namespace Tests.ServicesTests.Auth;
+namespace UserServiceTests.ServicesTests.Auth;
 
-public class AuthServiceTests(ITestOutputHelper testOutputHelper)
+public class AuthServiceTests : IAsyncLifetime
 {
-    private readonly Mock<UserManager<ApplicationUser>> _mockUserManager = MockUserManager.Create();
+    private readonly ITestOutputHelper _testOutputHelper;
+    private readonly ServiceProvider _provider;
+    private readonly IAuthService _authService;
+    private readonly MainDatabaseContext _context;
+    private readonly IConfiguration _configuration;
 
-    [Fact]
-    public async Task RegisterAsync_SuccessfulRegistration_ReturnsAuthResultWithToken()
+    public AuthServiceTests(ITestOutputHelper testOutputHelper)
     {
-        var userManagerMock = MockUserManager.Create();
-        var tokenServiceMock = new Mock<ITokenService>();
-        var cookieService = new Mock<ICookieService>();
-        var keyService = new Mock<IPrivateKeyService>();
+        _testOutputHelper = testOutputHelper;
+        var services = new ServiceCollection();
+        
+        _configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("test-config.json")
+            .Build();
 
-        const string senderName = "TestUser";
-        var senderId = Guid.NewGuid().ToString();
+        services.AddDbContext<MainDatabaseContext>(options =>
+            options.UseNpgsql("Host=localhost;Port=5434;Username=postgres;Password=testPassword123@;Database=test_user_db;SSL Mode=Disable;"));
 
-        var applicationUser1 = new ApplicationUser { UserName = senderName, Id = Guid.Parse(senderId), PublicKey = "publidsadascKey" };
-        var users = new List<ApplicationUser> { applicationUser1 }.AsQueryable().BuildMock();
+        services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
+            .AddEntityFrameworkStores<MainDatabaseContext>();
 
-        userManagerMock.Setup(um => um.Users).Returns(users);
-        userManagerMock.Setup(um => um.FindByNameAsync(It.IsAny<string>()))
-            .ReturnsAsync((string _) => users.FirstOrDefault(u => u.UserName == "TestUser"));
+        services.AddSingleton(_configuration);
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IPrivateKeyService, FakeKeyService>();
+        services.AddScoped<ICookieService, FakeCookieService>();
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IApplicationBuilder, ApplicationBuilder>();
+        services.AddLogging();
 
-        userManagerMock.Setup(um => um.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
-            .ReturnsAsync(IdentityResult.Success);
+        _provider = services.BuildServiceProvider();
 
-        userManagerMock.Setup(um => um.AddToRoleAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
-            .ReturnsAsync(IdentityResult.Success);
+        _context = _provider.GetRequiredService<MainDatabaseContext>();
+        _authService = _provider.GetRequiredService<IAuthService>();
+    }
 
-        keyService.Setup(ks => ks.SaveKeyAsync(It.IsAny<PrivateKey>()))
-            .ReturnsAsync(true);
+    public async Task InitializeAsync()
+    {
+        await _context.Database.EnsureDeletedAsync();
+        await _context.Database.EnsureCreatedAsync();
+        
+        var app = _provider.GetRequiredService<IApplicationBuilder>();
+        PopulateDbAndAddRoles.AddRolesAndAdminSync(app, _configuration);
+        PopulateDbAndAddRoles.CreateTestUsersSync(app, 1);
+    }
 
-        var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object, cookieService.Object, keyService.Object);
-        var regRequest = new RegistrationRequest("test@example.com", "TestUser", "passwordD123!!!", "image", "123456789",
-            "publidsadascKey", "privadsadsateKey", "ivdsadas");
-
-        var result = await authService.RegisterAsync(regRequest, "User", regRequest.Image);
-
-        Assert.That(result.Success, Is.True);
+    public Task DisposeAsync()
+    {
+        _provider.Dispose();
+        return Task.CompletedTask;
     }
 
     [Fact]
-    public async Task LoginAsync_ValidCredentials_ReturnsAuthResultWithToken()
+    public async Task RegisterAsync_HandlesValidRegistration_AndPreventsDuplicateEmailUsernamePhone()
     {
-        var userManagerMock = MockUserManager.Create();
-        var tokenServiceMock = new Mock<ITokenService>();
-        var cookieService = new Mock<ICookieService>();
-        var keyService = new Mock<IPrivateKeyService>();
+        // Success test
+        var request = new RegistrationRequest("test1@example.com", "testUserName", "Password123!", "IMAGE",
+            "06201234567", "publicKeyHere", "encryptedPrivateKeyHere", "ivDataHere");
 
-        var authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object, cookieService.Object, keyService.Object);
+        string imagePath = "fake/image/path.jpg";
 
-        var result = await authService.LoginAsync("TestUser", false);
+        var result = await _authService.RegisterAsync(request, imagePath);
 
-        Assert.That(result.Success, Is.True);
-    }
-    
-    [Fact]
-    public async Task LoginWithExternalAsync_ValidCredentials_ReturnsAuthResultWithToken()
-    {
-        var tokenServiceMock = new Mock<ITokenService>();
-        var cookieServiceMock = new Mock<ICookieService>();
-        var keyService = new Mock<IPrivateKeyService>();
+        Assert.That(result, Is.InstanceOf<Success>());
 
-        var authService = new AuthService(_mockUserManager.Object, tokenServiceMock.Object, cookieServiceMock.Object, keyService.Object);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "testUserName");
+        Assert.That(user, Is.Not.Null);
+        Assert.That(user.Email, Is.EqualTo(request.Email));
+        
+        // Failure with already in use email
+        var existingEmailRequest = new RegistrationRequest("test1@example.com", "newTestUserName", "Password123!", "IMAGE",
+            "06201234568", "publicKeyHere", "encryptedPrivateKeyHere", "ivDataHere");
 
-        var testEmail = "test@example.com";
-        var testUser = new ApplicationUser("testImage")
-        {
-            UserName = "TestUser",
-            Email = testEmail,
-            Id = Guid.NewGuid()
-        };
-        var testRoles = new List<string> { "User" };
-        const string testToken = "testToken";
+        var existingEmailResult = await _authService.RegisterAsync(existingEmailRequest, imagePath);
 
-        _mockUserManager.Setup(um => um.FindByEmailAsync(testEmail)).ReturnsAsync(testUser);
-        _mockUserManager.Setup(um => um.GetRolesAsync(testUser)).ReturnsAsync(testRoles);
-        tokenServiceMock.Setup(ts => ts.CreateJwtToken(testUser, testRoles[0], true)).Returns(testToken);
+        Assert.That(existingEmailResult, Is.EqualTo(new FailureWithMessage("Email is already taken")));
+        
+        // Failure with already in use username
+        var existingUsernameRequest = new RegistrationRequest("test2@example.com", "testUserName", "Password123!", "IMAGE",
+            "06201234568", "publicKeyHere", "encryptedPrivateKeyHere", "ivDataHere");
 
-        var result = await authService.LoginWithExternal(testEmail);
+        var existingUsernameResult = await _authService.RegisterAsync(existingUsernameRequest, imagePath);
 
-        Assert.True(result.Success);
-        Assert.AreEqual(testUser.Id.ToString(), result.Id);
+        Assert.That(existingUsernameResult, Is.EqualTo(new FailureWithMessage("Username is already taken")));
+        
+        // Failure with already in use phone number
+        var existingPhoneNumberRequest = new RegistrationRequest("test2@example.com", "newTestUserName", "Password123!", "IMAGE",
+            "06201234567", "publicKeyHere", "encryptedPrivateKeyHere", "ivDataHere");
 
-        cookieServiceMock.Verify(cs => cs.SetRefreshToken(testUser), Times.Once);
-        cookieServiceMock.Verify(cs => cs.SetRememberMeCookie(true), Times.Once);
-        cookieServiceMock.Verify(cs => cs.SetUserId(testUser.Id, true), Times.Once);
-        cookieServiceMock.Verify(cs => cs.SetAnimateAndAnonymous(true), Times.Once);
-        cookieServiceMock.Verify(cs => cs.SetJwtToken(testToken, true), Times.Once);
-        _mockUserManager.Verify(um => um.UpdateAsync(testUser), Times.Once);
-    }
-    
-    [Fact]
-    public async Task ExamineLockoutEnabled_AccountLocked_ReturnsInvalidCredentials()
-    {
-        var user = new ApplicationUser("testImage")
-        {
-            UserName = "TestUser",
-            Email = "test@example.com",
-            PasswordHash = "TestPasswordHash"
-        };
-
-        var lockoutEndDate = DateTimeOffset.Now.AddMinutes(30);
-
-        _mockUserManager.Setup(um => um.FindByNameAsync(user.UserName)).ReturnsAsync(user);
-        _mockUserManager.Setup(um => um.GetLockoutEndDateAsync(user)).ReturnsAsync(lockoutEndDate);
-
-        var authService = CreateAuthService();
-
-        var result = await authService.ExamineLoginCredentials(user.UserName, "TestPassword");
-        testOutputHelper.WriteLine(result.ErrorMessages.Keys.ToString());
-
-        Assert.False(result.Success);
+        var existingPhoneNumberResult = await _authService.RegisterAsync(existingPhoneNumberRequest, imagePath);
+        
+        Assert.That(existingPhoneNumberResult, Is.EqualTo(new FailureWithMessage("Phone number is already taken")));
     }
 
     [Fact]
-    public async Task ExamineLockoutEnabled_UserLockout_ReturnsInvalidCredentials()
+    public async Task LoginAsync_HandlesValidLogin_AndPreventsLoginWithInvalidData()
     {
-        var user = new ApplicationUser("testImage")
-        {
-            UserName = "TestUser",
-            Email = "test@example.com",
-            PasswordHash = "TestPasswordHash"
-        };
+        var token = EmailSenderCodeGenerator.GenerateShortToken("test1@hotmail.com", "login");
+        // Success test
+        var successRequest = new LoginAuth( "TestUsername1", true, token);
 
-        _mockUserManager.Setup(um => um.FindByNameAsync(user.UserName)).ReturnsAsync(user);
-        _mockUserManager.Setup(um => um.GetLockoutEndDateAsync(user)).ReturnsAsync((DateTimeOffset?)null);
-        _mockUserManager.Setup(um => um.GetAccessFailedCountAsync(user)).ReturnsAsync(4);
+        var successResult = await _authService.LoginAsync(successRequest);
 
-        var authService = CreateAuthService();
+        Assert.That(successResult, Is.InstanceOf<SuccessWithDto<KeysDto>>());
+        
+        // Failure with wrong token
+        var wrongToken = EmailSenderCodeGenerator.GenerateShortToken("bad@hotmail.com", "login");
+        var wrongWIthBBadTokenRequest = new LoginAuth( "TestUsername1", true, wrongToken);
+        var failureWIthWrongTokenResult = await _authService.LoginAsync(wrongWIthBBadTokenRequest);
 
-        var result = await authService.ExamineLoginCredentials(user.UserName, "TestPassword");
-
-        Assert.False(result.Success);
-
-        _mockUserManager.Verify(um => um.SetLockoutEndDateAsync(user, It.IsAny<DateTimeOffset>()), Times.Once);
-        _mockUserManager.Verify(um => um.ResetAccessFailedCountAsync(user), Times.Once);
-    }
-    
-    private AuthService CreateAuthService()
-    {
-        var tokenServiceMock = new Mock<ITokenService>();
-        var cookieServiceMock = new Mock<ICookieService>();
-        var keyService = new Mock<IPrivateKeyService>();
-        return new AuthService(_mockUserManager.Object, tokenServiceMock.Object, cookieServiceMock.Object, keyService.Object);
+        Assert.That(failureWIthWrongTokenResult, Is.EqualTo(new FailureWithMessage("The provided login code is not correct.")));
     }
 }
