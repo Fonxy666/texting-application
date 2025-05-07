@@ -49,10 +49,4 @@
       <HintPath>..\..\..\Textinger.Shared\bin\Release\net8.0\Textinger.Shared.dll</HintPath>
     </Reference>
   </ItemGroup>
-
-  <ItemGroup>
-    <Content Update="test-config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
 </Project>

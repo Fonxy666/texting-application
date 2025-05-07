@@ -14,19 +14,17 @@ using Xunit;
 using Xunit.Abstractions;
 using Assert = NUnit.Framework.Assert;
 
-namespace UserServiceTests.ServicesTests.Auth;
+namespace UserServiceTests.ServicesTests;
 
 public class AuthServiceTests : IAsyncLifetime
 {
-    private readonly ITestOutputHelper _testOutputHelper;
     private readonly ServiceProvider _provider;
     private readonly IAuthService _authService;
     private readonly MainDatabaseContext _context;
     private readonly IConfiguration _configuration;
 
-    public AuthServiceTests(ITestOutputHelper testOutputHelper)
+    public AuthServiceTests()
     {
-        _testOutputHelper = testOutputHelper;
         var services = new ServiceCollection();
         
         _configuration = new ConfigurationBuilder()
