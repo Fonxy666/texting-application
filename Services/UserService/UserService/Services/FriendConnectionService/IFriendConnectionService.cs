@@ -5,7 +5,6 @@ namespace UserService.Services.FriendConnectionService;
 
 public interface IFriendConnectionService
 {
-    Task<FriendConnection> GetFriendRequestByIdAsync(string requestId);
     Task<ResponseBase> SendFriendRequestAsync(string userId, string friendName);
     Task<ResponseBase> GetAllPendingRequestsAsync(string userId);
     Task<ResponseBase> GetPendingRequestCountAsync(string userId);

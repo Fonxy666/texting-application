@@ -13,23 +13,6 @@ public class FriendConnectionService(
     MainDatabaseContext context,
     IApplicationUserService userServices) : IFriendConnectionService
 {
-
-    public async Task<FriendConnection?> GetFriendRequestByIdAsync(string requestId)
-    {
-        if (!Guid.TryParse(requestId, out var requestGuid))
-        {
-            throw new ArgumentException("Invalid requestId format.");
-        }
-
-        var existingConnection = await context.FriendConnections!.FirstOrDefaultAsync(fc => fc.ConnectionId == requestGuid);
-        if (existingConnection == null)
-        {
-            return null;
-        }
-
-        return existingConnection;
-    }
-
     public async Task<ResponseBase> SendFriendRequestAsync(string userId, string friendName)
     {
         var existingUser = await userManager.FindByIdAsync(userId);
@@ -37,7 +20,8 @@ public class FriendConnectionService(
         {
             return new FailureWithMessage("User not found.");
         }
-        else if (existingUser.UserName == friendName)
+        
+        if (existingUser.UserName == friendName)
         {
             return new FailureWithMessage("You cannot send friend request to yourself.");
         }
@@ -48,7 +32,7 @@ public class FriendConnectionService(
             return new FailureWithMessage("New friend not found.");
         }
 
-        if (await AlreadySentFriendRequest(new FriendRequest(userId!, existingNewFriend!.Id.ToString())))
+        if (await AlreadySentFriendRequest(new FriendRequest(userId, existingNewFriend!.Id.ToString())))
         {
             return new FailureWithMessage("You already sent a friend request to this user!");
         }
@@ -75,12 +59,18 @@ public class FriendConnectionService(
 
     public async Task<ResponseBase> GetAllPendingRequestsAsync(string userId)
     {
-        var receivedFriendRequests = await GetPendingReceivedFriendRequests(userId!);
+        var existingUser = await userManager.FindByIdAsync(userId);
+        if (existingUser == null)
+        {
+            return new FailureWithMessage("User not found.");
+        }
+        
+        var receivedFriendRequests = await GetPendingReceivedFriendRequests(userId);
         if (receivedFriendRequests is FailureWithMessage)
         {
             return receivedFriendRequests;
         }
-        var sentFriendRequests = await GetPendingSentFriendRequests(userId!);
+        var sentFriendRequests = await GetPendingSentFriendRequests(userId);
         if (sentFriendRequests is FailureWithMessage)
         {
             return sentFriendRequests;
