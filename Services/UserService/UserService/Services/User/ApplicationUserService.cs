@@ -23,11 +23,13 @@ public class ApplicationUserService(
     
     public async Task<ResponseBase> GetUserNameAsync(string userId)
     {
-        return await userHelper.GetUserOrFailureResponseAsync(
+        return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
             UserIdentifierType.UserId, 
             userId,
             (Func<ApplicationUser, ResponseBase>)(existingUser => 
-                new SuccessWithDto<UserNameDto>(new UserNameDto(existingUser.UserName!)))
+                new SuccessWithDto<UserNameDto>(new UserNameDto(existingUser.UserName!))
+            ),
+            message => new FailureWithMessage(message)
         );
     }
 
@@ -52,7 +54,8 @@ public class ApplicationUserService(
                 var contentType = GetContentType(imagePath);
 
                 return new SuccessWithDto<ImageDto>(new ImageDto(imageBytes, contentType));
-            })
+            }),
+            message => new FailureWithMessage(message)
         );
     }
 
@@ -61,10 +64,12 @@ public class ApplicationUserService(
         return await userHelper.GetUserOrFailureResponseAsync(
             UserIdentifierType.UserId,
             userId,
-            (Func<ApplicationUser, ResponseBase>)(existingUser => 
+            (Func<ApplicationUser, ResponseBase>)(existingUser =>
                 new SuccessWithDto<UsernameUserEmailAndTwoFactorEnabledDto>(
-                new UsernameUserEmailAndTwoFactorEnabledDto(existingUser.UserName!, existingUser.Email!, existingUser.TwoFactorEnabled)))
-            );
+                    new UsernameUserEmailAndTwoFactorEnabledDto(existingUser.UserName!, existingUser.Email!,
+                        existingUser.TwoFactorEnabled))),
+            message => new FailureWithMessage(message)
+        );
     }
 
     public async Task<ResponseBase> GetUserWithSentRequestsAsync(string userId)
@@ -74,7 +79,8 @@ public class ApplicationUserService(
             userId,
             (Func<ApplicationUser, ResponseBase>)(existingUser => 
                 new SuccessWithDto<ApplicationUser>(existingUser)
-            )
+            ),
+            message => new FailureWithMessage(message)
         );
     }
 
@@ -85,7 +91,8 @@ public class ApplicationUserService(
             userId,
             (Func<ApplicationUser, ResponseBase>)(existingUser => 
                 new SuccessWithDto<ApplicationUser>(existingUser)
-            )
+            ),
+            message => new FailureWithMessage(message)
         );
     }
     
@@ -100,17 +107,25 @@ public class ApplicationUserService(
             UserIdentifierType.UserIdIncludeSymmetricKeys,
             userId,
             (Func<ApplicationUser, ResponseBase>)(existingUser => 
+            {
+                var userKey = existingUser.UserSymmetricKeys.FirstOrDefault(key => key.RoomId == roomGuid);
+
+                if (userKey != null)
                 {
                     return new SuccessWithDto<UserPrivateKeyDto>(
-                        new UserPrivateKeyDto(existingUser.UserSymmetricKeys.FirstOrDefault(key => key.RoomId == roomGuid)!.EncryptedKey)
-                        );
+                        new UserPrivateKeyDto(userKey.EncryptedKey)
+                    );
                 }
-            ));
-        
+                
+                return new FailureWithMessage($"No symmetric key found for room: {roomId}");
+            }),
+            message => new FailureWithMessage(message)
+        );
+    
         if (userResponse is FailureWithMessage failure)
         {
             return failure;
-        };
+        }
 
         return userResponse;
     }
@@ -122,7 +137,8 @@ public class ApplicationUserService(
             userName,
             (Func<ApplicationUser, ResponseBase>)(existingUser => 
                 new SuccessWithDto<UserPublicKeyDto>(new UserPublicKeyDto(existingUser.PublicKey)
-            ))
+            )),
+            message => new FailureWithMessage(message)
         );
     }
     public async Task<ResponseBase> ExamineIfUserHaveSymmetricKeyForRoom(string userName, string roomId)
@@ -136,6 +152,7 @@ public class ApplicationUserService(
             UserIdentifierType.UsernameExamineSymmetricKeys,
             userName,
             (Func<ApplicationUser, ResponseBase>)(_ =>  new Success()),
+            message => new FailureWithMessage(message),
             roomGuid);
     }
     public async Task<ResponseBase> SendForgotPasswordEmailAsync(string email)
@@ -155,7 +172,8 @@ public class ApplicationUserService(
                 }
 
                 return new SuccessWithMessage("Successfully sent.");
-            }));
+            }),
+            message => new FailureWithMessage(message));
     }
 
     public async Task<ResponseBase> SetNewPasswordAfterResetEmailAsync(string resetId, PasswordResetRequest request)
@@ -180,7 +198,8 @@ public class ApplicationUserService(
                 }
 
                 return new Success();
-            }));
+            }),
+            message => new FailureWithMessage(message));
     }
 
     public async Task<ResponseBase> ChangeUserEmailAsync(ChangeEmailRequest request, string userId)
@@ -214,7 +233,8 @@ public class ApplicationUserService(
                 }
 
                 return new SuccessWithDto<UserEmailDto>(new UserEmailDto( request.NewEmail ));
-            }));
+            }),
+            message => new FailureWithMessage(message));
     }
 
     public async Task<ResponseBase> ChangeUserPasswordAsync(ChangePasswordRequest request, string userId)
@@ -244,7 +264,8 @@ public class ApplicationUserService(
                 }
 
                 return new SuccessWithDto<UserNameEmailDto>(new UserNameEmailDto(existingUser.UserName!, existingUser.Email!));
-            }));
+            }),
+            message => new FailureWithMessage(message));
     }
 
     public async Task<ResponseBase> ChangeUserAvatarAsync(string userId, string image)
@@ -257,7 +278,8 @@ public class ApplicationUserService(
                 var imageSaveResult = SaveImageLocally(existingUser.UserName!, image);
 
                 return imageSaveResult;
-            }));
+            }),
+            message => new FailureWithMessage(message));
     }
 
     public async Task<ResponseBase> DeleteUserAsync(string userId, string password)
@@ -298,7 +320,8 @@ public class ApplicationUserService(
 
                 await transaction.CommitAsync();
                 return new SuccessWithDto<UserNameEmailDto>(new UserNameEmailDto(existingUser.UserName!, existingUser.Email!));
-            }));
+            }),
+            message => new FailureWithMessage(message));
     }
 
     private async Task<ResponseBase> RemoveFriendConnectionsAsync(ApplicationUser existingUser)

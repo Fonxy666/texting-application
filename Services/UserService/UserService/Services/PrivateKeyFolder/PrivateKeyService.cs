@@ -44,11 +44,9 @@ public class PrivateKeyService : IPrivateKeyService
             {
                 return new SuccessWithDto<KeyAndIvDto>(new KeyAndIvDto(endToEndEncryptedPrivateKey, iv));
             }
-            else
-            {
-                Console.WriteLine("Key not found in the Vault response.");
-                return new Failure();
-            }
+            
+            Console.WriteLine("Key not found in the Vault response.");
+            return new Failure();
         }
         catch (Exception e)
         {

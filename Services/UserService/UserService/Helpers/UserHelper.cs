@@ -1,42 +1,40 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Textinger.Shared.Responses;
 using UserService.Models;
 
 namespace UserService.Helpers;
 
 public class UserHelper(UserManager<ApplicationUser> userManager) : IUserHelper
 {
-    public async Task<ResponseBase> GetUserOrFailureResponseAsync(
-    UserIdentifierType type,
-    string userCredential,
-    Delegate onSuccess,
-    Guid? roomId
-    )
+    public async Task<T> GetUserOrFailureResponseAsync<T>(
+        UserIdentifierType type,
+        string userCredential,
+        Delegate onSuccess,
+        Func<string, T> onFailure,
+        Guid? roomId)
     {
         Guid? userGuid = type is UserIdentifierType.UserId or 
-            UserIdentifierType.UserIdIncludeReceivedRequest or 
-            UserIdentifierType.UserIdIncludeSentRequest or 
-            UserIdentifierType.UserIdIncludeFriends or
-            UserIdentifierType.UserIdIncludeSymmetricKeys
-            ? Guid.TryParse(userCredential, out var parsedGuid) ? parsedGuid : null
-            : null;
+                         UserIdentifierType.UserIdIncludeReceivedRequest or 
+                         UserIdentifierType.UserIdIncludeSentRequest or 
+                         UserIdentifierType.UserIdIncludeFriends or
+                         UserIdentifierType.UserIdIncludeSymmetricKeys
+                         ? Guid.TryParse(userCredential, out var parsedGuid) ? parsedGuid : null
+                         : null;
 
         if ((int)type >= 1 && userGuid == null)
-        {
-            return new FailureWithMessage("Invalid user ID format.");
-        }
+            return onFailure("Invalid user ID format.");
 
         if (type == UserIdentifierType.UsernameExamineSymmetricKeys)
         {
-            var boolResult = await userManager.Users
+            var ok = await userManager.Users
                 .Include(u => u.UserSymmetricKeys)
                 .AnyAsync(u => u.UserName == userCredential && u.UserSymmetricKeys.Any(k => k.RoomId == roomId));
 
-            return boolResult ? new Success() : new FailureWithMessage($"There is no key or user with this Username: {userCredential}");
+            return ok ? (T)onSuccess.DynamicInvoke(new ApplicationUser { UserName = userCredential })! 
+                      : onFailure($"There is no key or user with this Username: {userCredential}");
         }
 
-        var result = type switch
+        var user = type switch
         {
             UserIdentifierType.Username => await userManager.FindByNameAsync(userCredential),
             UserIdentifierType.UserId => await userManager.FindByIdAsync(userCredential),
@@ -56,17 +54,22 @@ public class UserHelper(UserManager<ApplicationUser> userManager) : IUserHelper
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
 
-        if (result == null)
-        {
-            return new FailureWithMessage("User not found.");
-        }
+        if (user == null)
+            return onFailure("User not found.");
 
-        if (onSuccess.Method.ReturnType == typeof(Task<ResponseBase>))
+        var returnType = onSuccess.Method.ReturnType;
+
+        if (typeof(Task).IsAssignableFrom(returnType))
         {
-            var resultAsync = await (Task<ResponseBase>)onSuccess.DynamicInvoke(result)!;
-            return resultAsync;
+            var task = (Task)onSuccess.DynamicInvoke(user)!;
+            await task.ConfigureAwait(false);
+
+            var resultProperty = task.GetType().GetProperty("Result");
+            return (T)resultProperty!.GetValue(task)!;
         }
-        var resultSync = (ResponseBase)onSuccess.DynamicInvoke(result)!;
-        return resultSync;
+        else
+        {
+            return (T)onSuccess.DynamicInvoke(user)!;
+        }
     }
 }

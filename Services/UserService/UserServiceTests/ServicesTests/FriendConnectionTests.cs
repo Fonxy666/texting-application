@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Textinger.Shared.Responses;
 using UserService.Database;
+using UserService.Helpers;
 using UserService.Models;
 using UserService.Models.Responses;
 using UserService.Services.Authentication;
@@ -45,6 +46,7 @@ public class FriendConnectionTests : IAsyncLifetime
         services.AddScoped<IPrivateKeyService, FakeKeyService>();
         services.AddScoped<ICookieService, FakeCookieService>();
         services.AddScoped<IApplicationUserService, ApplicationUserService>();
+        services.AddScoped<IUserHelper, UserHelper>();
         services.AddScoped<IEmailSender, EmailSender>();
         services.AddScoped<IFriendConnectionService, FriendConnectionService>();
         services.AddScoped<ITokenService, TokenService>();

@@ -5,9 +5,10 @@ namespace UserService.Helpers;
 
 public interface IUserHelper
 {
-    Task<ResponseBase> GetUserOrFailureResponseAsync(
+    Task<T> GetUserOrFailureResponseAsync<T>(
         UserIdentifierType type,
         string userCredential,
         Delegate onSuccess,
+        Func<string, T> onFailure,
         Guid? roomId = null);
 }
