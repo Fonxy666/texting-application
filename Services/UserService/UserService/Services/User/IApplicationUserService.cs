@@ -8,10 +8,9 @@ public interface IApplicationUserService
 {
     Task<ResponseBase> GetUserNameAsync(string userId);
     Task<ResponseBase> GetImageWithIdAsync(string userId);
-    Task<ResponseBase> ExamineUserNotExistingAsync(string username, string email);
     Task<ResponseBase> GetUserCredentialsAsync(string userId);
-    Task<ApplicationUser> GetUserWithSentRequestsAsync(string userId);
-    Task<ApplicationUser> GetUserWithReceivedRequestsAsync(string userId);
+    Task<ResponseBase> GetUserWithSentRequestsAsync(string userId);
+    Task<ResponseBase> GetUserWithReceivedRequestsAsync(string userId);
     Task<ResponseBase> GetUserPrivatekeyForRoomAsync(string userId, string roomId);
     Task<ResponseBase> GetRoommatePublicKey(string username);
     Task<ResponseBase> ExamineIfUserHaveSymmetricKeyForRoom(string username, string roomId);

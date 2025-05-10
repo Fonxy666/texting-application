@@ -242,7 +242,7 @@ public class FriendConnectionService(
     {
         var user = await userServices.GetUserWithSentRequestsAsync(senderId);
 
-        var request = user.SentFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestId);
+        var request = (user as SuccessWithDto<ApplicationUser>)!.Data!.SentFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestId);
 
         if (request == null)
         {
@@ -263,7 +263,7 @@ public class FriendConnectionService(
     {
         var user = await userServices.GetUserWithReceivedRequestsAsync(receiverId);
 
-        var request = user.ReceivedFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestId);
+        var request = (user as SuccessWithDto<ApplicationUser>)!.Data!.ReceivedFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestId);
 
         if (request == null)
         {
