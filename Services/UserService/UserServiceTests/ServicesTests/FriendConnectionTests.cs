@@ -81,7 +81,6 @@ public class FriendConnectionTests : IAsyncLifetime
         // Success test
         var result =
             await _friendService.SendFriendRequestAsync("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "TestUsername2");
-
         Assert.That(result, Is.InstanceOf<SuccessWithDto<ShowFriendRequestDto>>());
         
         // Bad request with not existing user id
@@ -118,6 +117,7 @@ public class FriendConnectionTests : IAsyncLifetime
         var requestId = _context.FriendConnections.FirstOrDefaultAsync(fc => fc.SenderId == Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916") && fc.Receiver.UserName == "TestUsername2").Result.ConnectionId.ToString();
         
         var result = await _friendService.AcceptReceivedFriendRequestAsync("10f96e12-e245-420a-8bad-b61fb21c4b2d", requestId);
+        _testOutputHelper.WriteLine(result.ToString());
         Assert.That(result, Is.InstanceOf<Success>());
         
         // Bad requestId format

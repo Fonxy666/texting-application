@@ -11,7 +11,6 @@ using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
 using UserService.Services.PrivateKeyFolder;
 using Xunit;
-using Xunit.Abstractions;
 using Assert = NUnit.Framework.Assert;
 
 namespace UserServiceTests.ServicesTests;

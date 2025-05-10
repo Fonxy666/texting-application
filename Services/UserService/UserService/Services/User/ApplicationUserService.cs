@@ -24,7 +24,7 @@ public class ApplicationUserService(
     public async Task<ResponseBase> GetUserNameAsync(string userId)
     {
         return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
-            UserIdentifierType.UserId, 
+            UserIdentifierType.UserId,
             userId,
             (Func<ApplicationUser, ResponseBase>)(existingUser => 
                 new SuccessWithDto<UserNameDto>(new UserNameDto(existingUser.UserName!))
@@ -38,7 +38,7 @@ public class ApplicationUserService(
         return await userHelper.GetUserOrFailureResponseAsync(
             UserIdentifierType.UserId,
             userId,
-            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser => 
+            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser =>
             {
                 var folderPath = configuration["ImageFolderPath"] ?? 
                                  Path.Combine(Directory.GetCurrentDirectory(), "Avatars");
@@ -75,7 +75,7 @@ public class ApplicationUserService(
     public async Task<ResponseBase> GetUserWithSentRequestsAsync(string userId)
     {
         return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UserIdIncludeSentRequest,
+            UserIdentifierType.UserIdIncludeSentRequests,
             userId,
             (Func<ApplicationUser, ResponseBase>)(existingUser => 
                 new SuccessWithDto<ApplicationUser>(existingUser)
@@ -87,7 +87,7 @@ public class ApplicationUserService(
     public async Task<ResponseBase> GetUserWithReceivedRequestsAsync(string userId)
     {
         return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UserIdIncludeReceivedRequest,
+            UserIdentifierType.UserIdIncludeReceivedRequests,
             userId,
             (Func<ApplicationUser, ResponseBase>)(existingUser => 
                 new SuccessWithDto<ApplicationUser>(existingUser)

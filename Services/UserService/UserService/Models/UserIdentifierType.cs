@@ -6,8 +6,11 @@ public enum UserIdentifierType
     UsernameExamineSymmetricKeys,
     UserId,
     UserEmail,
-    UserIdIncludeReceivedRequest,
-    UserIdIncludeSentRequest,
+    UserIdIncludeReceivedRequests,
+    UserIdIncludeReceiverAndSentRequests,
+    UserIdIncludeSentRequests,
     UserIdIncludeFriends,
+    UserIdIncludeSentRequestsAndReceivers,
+    UserIdIncludeReceivedRequestsAndSenders,
     UserIdIncludeSymmetricKeys
 }

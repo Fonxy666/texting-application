@@ -14,10 +14,13 @@ public class UserHelper(UserManager<ApplicationUser> userManager) : IUserHelper
         Guid? roomId)
     {
         Guid? userGuid = type is UserIdentifierType.UserId or 
-                         UserIdentifierType.UserIdIncludeReceivedRequest or 
-                         UserIdentifierType.UserIdIncludeSentRequest or 
+                         UserIdentifierType.UserIdIncludeReceivedRequests or 
+                         UserIdentifierType.UserIdIncludeSentRequests or 
                          UserIdentifierType.UserIdIncludeFriends or
-                         UserIdentifierType.UserIdIncludeSymmetricKeys
+                         UserIdentifierType.UserIdIncludeReceiverAndSentRequests or
+                         UserIdentifierType.UserIdIncludeSymmetricKeys or
+                         UserIdentifierType.UserIdIncludeReceivedRequestsAndSenders or
+                         UserIdentifierType.UserIdIncludeSentRequestsAndReceivers
                          ? Guid.TryParse(userCredential, out var parsedGuid) ? parsedGuid : null
                          : null;
 
@@ -39,12 +42,24 @@ public class UserHelper(UserManager<ApplicationUser> userManager) : IUserHelper
             UserIdentifierType.Username => await userManager.FindByNameAsync(userCredential),
             UserIdentifierType.UserId => await userManager.FindByIdAsync(userCredential),
             UserIdentifierType.UserEmail => await userManager.FindByEmailAsync(userCredential),
-            UserIdentifierType.UserIdIncludeReceivedRequest => await userManager.Users
+            UserIdentifierType.UserIdIncludeReceivedRequests => await userManager.Users
                 .Include(u => u.ReceivedFriendRequests)
                 .FirstOrDefaultAsync(u => u.Id == new Guid(userCredential)),
-            UserIdentifierType.UserIdIncludeSentRequest => await userManager.Users
+            UserIdentifierType.UserIdIncludeSentRequests => await userManager.Users
                 .Include(u => u.SentFriendRequests)
                 .FirstOrDefaultAsync(u => u.Id == new Guid(userCredential)),
+            UserIdentifierType.UserIdIncludeReceivedRequestsAndSenders => await userManager.Users
+                .Include(u => u.SentFriendRequests)
+                .ThenInclude(fr => fr.Receiver)
+                .FirstOrDefaultAsync(u => u.Id == userGuid),
+            UserIdentifierType.UserIdIncludeReceiverAndSentRequests => await userManager.Users
+                .Include(u => u.SentFriendRequests)
+                .Include(u => u.ReceivedFriendRequests)
+                .FirstOrDefaultAsync(u => u.Id == userGuid),
+            UserIdentifierType.UserIdIncludeSentRequestsAndReceivers => await userManager.Users
+                .Include(u => u.SentFriendRequests)
+                .ThenInclude(fr => fr.Receiver)
+                .FirstOrDefaultAsync(u => u.Id == userGuid),
             UserIdentifierType.UserIdIncludeFriends => await userManager.Users
                 .Include(u => u.Friends)
                 .FirstOrDefaultAsync(u => u.Id == new Guid(userCredential)),
@@ -65,7 +80,12 @@ public class UserHelper(UserManager<ApplicationUser> userManager) : IUserHelper
             await task.ConfigureAwait(false);
 
             var resultProperty = task.GetType().GetProperty("Result");
-            return (T)resultProperty!.GetValue(task)!;
+            var result = resultProperty?.GetValue(task);
+            if (result is not T typedResult)
+            {
+                throw new InvalidCastException($"Expected result of type {typeof(T)}, but got {result?.GetType()}");
+            }
+            return typedResult;
         }
         else
         {
