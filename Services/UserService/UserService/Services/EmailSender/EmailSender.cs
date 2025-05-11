@@ -8,7 +8,8 @@ public class EmailSender(IConfiguration configuration, ILogger<EmailSender> logg
 {
     private readonly string _developerMail = configuration["DeveloperEmail"]!;
     private readonly string _developerPw = configuration["DeveloperAppPassword"]!;
-    public Func<ISmtpClientWrapper> SmtpClientFactory { get; set; } = () => new SmtpClientWrapper(new SmtpClient("smtp.gmail.com", 587)
+
+    private Func<ISmtpClientWrapper> SmtpClientFactory { get; set; } = () => new SmtpClientWrapper(new SmtpClient("smtp.gmail.com", 587)
     {
         EnableSsl = true
     });

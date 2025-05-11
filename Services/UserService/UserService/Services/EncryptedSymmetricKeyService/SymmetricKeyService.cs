@@ -8,7 +8,7 @@ public class SymmetricKeyService(MainDatabaseContext context) : ISymmetricKeySer
 {
     public async Task<ResponseBase> SaveNewKeyAndLinkToUserAsync(EncryptedSymmetricKey symmetricKey)
     {
-        using var transaction = await context.Database.BeginTransactionAsync();
+        await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
         {

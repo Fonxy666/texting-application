@@ -8,7 +8,7 @@ namespace UserService.Services.PrivateKeyFolder;
 
 public class PrivateKeyService : IPrivateKeyService
 {
-    private readonly HttpClient _httpClient = new HttpClient();
+    private readonly HttpClient _httpClient = new ();
     private readonly string _vaultToken;
     private readonly string _vaultAddress;
 

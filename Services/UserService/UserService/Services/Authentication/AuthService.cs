@@ -7,6 +7,7 @@ using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
 using UserService.Services.PrivateKeyFolder;
 using Textinger.Shared.Responses;
+using UserService.Helpers;
 
 namespace UserService.Services.Authentication;
 
@@ -17,7 +18,8 @@ public class AuthService(
     IPrivateKeyService keyService,
     ILogger<AuthService> logger,
     IPrivateKeyService privateKeyService,
-    MainDatabaseContext context
+    MainDatabaseContext context,
+    IUserHelper userHelper
     ) : IAuthService
 {
     public async Task<ResponseBase> RegisterAsync(RegistrationRequest request, string imagePath)
@@ -28,7 +30,7 @@ public class AuthService(
             return validateUserInputResult;
         }
         
-        using var transaction = await context.Database.BeginTransactionAsync();
+        await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
         {
@@ -38,7 +40,7 @@ public class AuthService(
                 return userCreationResult;
             }
 
-            var saveKeyResult = await SavePrivateKey(request);
+            var saveKeyResult = await SavePrivateKey(request, (userCreationResult as SuccessWithDto<UserIdDto>).Data.Id);
             if (saveKeyResult is FailureWithMessage)
             {
                 return saveKeyResult;
@@ -57,24 +59,28 @@ public class AuthService(
 
     private async Task<ResponseBase> ValidateUserInput(RegistrationRequest request)
     {
-        var existingUserByEmail = await context.Users.AnyAsync(u => u.Email == request.Email);
-        if (existingUserByEmail)
-        {
-            return new FailureWithMessage("Email is already taken");
-        }
-        
-        var existingUserByUsername = await context.Users.AnyAsync(u => u.UserName == request.Username);
-        
-        if (existingUserByUsername)
-        {
-            return new FailureWithMessage("Username is already taken");
-        }
-        
-        var existingUserByPhoneNumber = await context.Users.AnyAsync(u => u.PhoneNumber == request.PhoneNumber);
+        var conflictingUser = await context.Users
+            .Where(u => u.Email == request.Email 
+                        || u.UserName == request.Username 
+                        || u.PhoneNumber == request.PhoneNumber)
+            .FirstOrDefaultAsync();
 
-        if (existingUserByPhoneNumber)
+        if (conflictingUser != null)
         {
-            return new FailureWithMessage("Phone number is already taken");
+            if (conflictingUser.Email == request.Email)
+            {
+                return new FailureWithMessage("Email is already taken");
+            }
+
+            if (conflictingUser.UserName == request.Username)
+            {
+                return new FailureWithMessage("Username is already taken");
+            }
+
+            if (conflictingUser.PhoneNumber == request.PhoneNumber)
+            {
+                return new FailureWithMessage("Phone number is already taken");
+            }
         }
 
         return new Success();
@@ -111,14 +117,13 @@ public class AuthService(
             return new Failure();
         }
 
-        return new Success();
+        return new SuccessWithDto<UserIdDto>(new UserIdDto(user.Id.ToString()));
     }
 
-    private async Task<ResponseBase> SavePrivateKey(RegistrationRequest request)
+    private async Task<ResponseBase> SavePrivateKey(RegistrationRequest request, string userId)
     {
-        var savedUser = await userManager.Users.FirstOrDefaultAsync(u => u.UserName == request.Username);
         var privateKey = new PrivateKey(request.EncryptedPrivateKey, request.Iv);
-        var keyResult = await keyService.SaveKeyAsync(privateKey, savedUser!.Id);
+        var keyResult = await keyService.SaveKeyAsync(privateKey, Guid.Parse(userId));
 
         if (keyResult is Failure)
         {
@@ -172,60 +177,61 @@ public class AuthService(
 
     public async Task<ResponseBase> LoginWithExternal(string emailAddress)
     {
-        var managedUser = await userManager.FindByEmailAsync(emailAddress);
+        return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
+            UserIdentifierType.UserEmail,
+            emailAddress,
+            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser =>
+                {
+                    var roles = await userManager.GetRolesAsync(existingUser);
+                    var accessToken = tokenService.CreateJwtToken(existingUser, roles[0], true);
         
-        if (managedUser == null)
-        {
-            return new Failure();
-        }
-        
-        var roles = await userManager.GetRolesAsync(managedUser);
-        var accessToken = tokenService.CreateJwtToken(managedUser, roles[0], true);
-        
-        cookieService.SetRefreshToken(managedUser);
-        await userManager.UpdateAsync(managedUser);
+                    cookieService.SetRefreshToken(existingUser);
+                    await userManager.UpdateAsync(existingUser);
 
-        cookieService.SetRememberMeCookie(true);
-        cookieService.SetPublicKey(true, managedUser.PublicKey);
-        cookieService.SetUserId(managedUser.Id, true);
-        cookieService.SetAnimateAndAnonymous(true);
-        await cookieService.SetJwtToken(accessToken, true);
+                    cookieService.SetRememberMeCookie(true);
+                    cookieService.SetPublicKey(true, existingUser.PublicKey);
+                    cookieService.SetUserId(existingUser.Id, true);
+                    cookieService.SetAnimateAndAnonymous(true);
+                    await cookieService.SetJwtToken(accessToken, true);
         
-        return new SuccessWithDto<UserIdDto>(new UserIdDto(managedUser.Id.ToString()));
+                    return new SuccessWithDto<UserIdDto>(new UserIdDto(existingUser.Id.ToString()));
+                }
+            ),
+            message => new FailureWithMessage(message));
     }
 
     public async Task<ResponseBase> ExamineLoginCredentialsAsync(string username, string password)
     {
-        var managedUser = await userManager.FindByNameAsync(username);
+        return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
+            UserIdentifierType.Username,
+            username,
+            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser =>
+                {
+                    var lockoutResult = await ExamineLockoutEnabled(existingUser);
 
-        if (managedUser == null)
-        {
-            logger.LogError("This username is not registered.");
-            return new FailureWithMessage($"{username} is not registered.");
-        }
+                    if (lockoutResult is FailureWithMessage error)
+                    {
+                        logger.LogError(error.Message);
+                        return lockoutResult;
+                    }
 
-        var lockoutResult = await ExamineLockoutEnabled(managedUser);
+                    var isPasswordValid = await userManager.CheckPasswordAsync(existingUser, password);
 
-        if (lockoutResult is FailureWithMessage error)
-        {
-            logger.LogError(error.Message);
-            return lockoutResult;
-        }
-
-        var isPasswordValid = await userManager.CheckPasswordAsync(managedUser, password);
-
-        if (!isPasswordValid)
-        {
-            await userManager.AccessFailedAsync(managedUser);
-            var accessFailedCount = await userManager.GetAccessFailedCountAsync(managedUser);
-            logger.LogError("Invalid password.");
-            return new FailureWithMessage($"Invalid credentials, u have {5 - accessFailedCount} more tries.");
-        }
+                    if (!isPasswordValid)
+                    {
+                        await userManager.AccessFailedAsync(existingUser);
+                        var accessFailedCount = await userManager.GetAccessFailedCountAsync(existingUser);
+                        logger.LogError("Invalid password.");
+                        return new FailureWithMessage($"Invalid credentials, u have {5 - accessFailedCount} more tries.");
+                    }
 
 
-        await userManager.ResetAccessFailedCountAsync(managedUser);
+                    await userManager.ResetAccessFailedCountAsync(existingUser);
 
-        return new SuccessWithDto<UserNameEmailDto>(new UserNameEmailDto(managedUser.Id.ToString(), managedUser.Email!));
+                    return new SuccessWithDto<UserNameEmailDto>(new UserNameEmailDto(existingUser.Id.ToString(), existingUser.Email!));
+                }
+            ),
+            message => new FailureWithMessage(message));
     }
 
     private async Task<ResponseBase> ExamineLockoutEnabled(ApplicationUser user)
@@ -253,12 +259,19 @@ public class AuthService(
 
     public async Task<ResponseBase> LogOutAsync(string userId)
     {
-        var user = userManager.Users.FirstOrDefault(user => user.Id.ToString() == userId);
-        user!.SetRefreshToken(string.Empty);
-        user.SetRefreshTokenCreated(null);
-        user.SetRefreshTokenExpires(null);
-        await userManager.UpdateAsync(user);
-        cookieService.DeleteCookies();
-        return new Success();
+        return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
+            UserIdentifierType.UserId,
+            userId,
+            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser =>
+                {
+                    existingUser.SetRefreshToken(string.Empty);
+                    existingUser.SetRefreshTokenCreated(null);
+                    existingUser.SetRefreshTokenExpires(null);
+                    await userManager.UpdateAsync(existingUser);
+                    cookieService.DeleteCookies();
+                    return new Success();
+                }
+            ),
+            message => new FailureWithMessage(message));
     }
 }
