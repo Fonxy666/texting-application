@@ -14,6 +14,8 @@ public class ApplicationUser : IdentityUser<Guid>
     public ICollection<ApplicationUser> Friends { get; private set; }
     public ICollection<EncryptedSymmetricKey> UserSymmetricKeys { get; private set; }
 
+    public ApplicationUser() { }
+    
     public ApplicationUser(string? imageUrl = "-")
     {
         ImageUrl = imageUrl;

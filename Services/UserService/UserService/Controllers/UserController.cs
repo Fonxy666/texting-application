@@ -22,8 +22,8 @@ public class UserController(
     ) : ControllerBase
 {
     [HttpGet("GetUsername")]
-    [Authorize(Roles = "User, Admin")]
-    [RequireUserIdCookie]
+    //[Authorize(Roles = "User, Admin")]
+    //[RequireUserIdCookie]
     public async Task<ActionResult<ResponseBase>> GetUsername([FromQuery]string userId)
     {
         try
@@ -45,8 +45,8 @@ public class UserController(
     }
     
     [HttpGet("GetUserCredentials")]
-    [Authorize(Roles = "User, Admin")]
-    [RequireUserIdCookie]
+    // [Authorize(Roles = "User, Admin")]
+    // [RequireUserIdCookie]
     public async Task<ActionResult<ResponseBase>> GetUserCredentials()
     {
         try

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Textinger.Shared.Responses;
 using UserService.Database;
+using UserService.Helpers;
 using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
@@ -42,6 +43,7 @@ public class AuthServiceTests : IAsyncLifetime
         services.AddScoped<IPrivateKeyService, FakeKeyService>();
         services.AddScoped<ICookieService, FakeCookieService>();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IUserHelper, UserHelper>();
         services.AddScoped<IApplicationBuilder, ApplicationBuilder>();
         services.AddLogging();
 
