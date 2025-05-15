@@ -117,13 +117,13 @@ public class AuthService(
             return new Failure();
         }
 
-        return new SuccessWithDto<UserIdDto>(new UserIdDto(user.Id.ToString()));
+        return new SuccessWithDto<UserIdDto>(new UserIdDto(user.Id));
     }
 
-    private async Task<ResponseBase> SavePrivateKey(RegistrationRequest request, string userId)
+    private async Task<ResponseBase> SavePrivateKey(RegistrationRequest request, Guid userId)
     {
         var privateKey = new PrivateKey(request.EncryptedPrivateKey, request.Iv);
-        var keyResult = await keyService.SaveKeyAsync(privateKey, Guid.Parse(userId));
+        var keyResult = await keyService.SaveKeyAsync(privateKey, userId);
 
         if (keyResult is Failure)
         {
@@ -194,7 +194,7 @@ public class AuthService(
                     cookieService.SetAnimateAndAnonymous(true);
                     await cookieService.SetJwtToken(accessToken, true);
         
-                    return new SuccessWithDto<UserIdDto>(new UserIdDto(existingUser.Id.ToString()));
+                    return new SuccessWithDto<UserIdDto>(new UserIdDto(existingUser.Id));
                 }
             ),
             message => new FailureWithMessage(message));

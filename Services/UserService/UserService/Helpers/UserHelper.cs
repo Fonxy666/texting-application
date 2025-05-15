@@ -1,13 +1,12 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Textinger.Shared.Responses;
 using UserService.Models;
-using UserService.Models.Responses;
 
 namespace UserService.Helpers;
 
-public class UserHelper(UserManager<ApplicationUser> userManager, MainDatabaseContext context) : IUserHelper
+public class UserHelper(MainDatabaseContext context) : IUserHelper
 {
     public async Task<T> GetUserOrFailureResponseAsync<T>(
         UserIdentifierType type,
@@ -42,25 +41,6 @@ public class UserHelper(UserManager<ApplicationUser> userManager, MainDatabaseCo
                       : onFailure($"There is no key or user with this Username: {userCredential}");
         } */
         
-        var props = onSuccess.Method.GetParameters()[0].ParameterType.GetProperties().Select(p => p.Name).ToArray();
-        Console.WriteLine(props);
-        var returningType = onSuccess.Method.GetParameters()[0].ParameterType;
-        Console.WriteLine(returningType);
-
-        var methodInfo = typeof(UserHelper)
-            .GetMethod(nameof(GetUserByProperties), BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.MakeGenericMethod(returningType);
-        
-        var newDto = (Task)methodInfo?.Invoke(this, new object[] { userCredential, props, returningType })!;
-        
-        await newDto.ConfigureAwait(false);
-        var dtoResult = newDto.GetType().GetProperty("Result");
-        var dto = dtoResult?.GetValue(newDto);
-        Console.WriteLine("-------------------------------");
-        Console.WriteLine(dto);
-        Console.WriteLine(dto.GetType());
-        Console.WriteLine("-------------------------------");
-
         /* var user = type switch
         {
             UserIdentifierType.Username => await userManager.FindByNameAsync(userCredential),
@@ -92,50 +72,35 @@ public class UserHelper(UserManager<ApplicationUser> userManager, MainDatabaseCo
                 .FirstOrDefaultAsync(u => u.Id == new Guid(userCredential) && u.UserSymmetricKeys.Any(k => k.RoomId == roomId)),
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         }; */
+        
+        var props = onSuccess.Method.GetParameters()[0].ParameterType.GetProperties().Select(p => p.Name).ToArray();
+        var returningType = onSuccess.Method.GetParameters()[0].ParameterType;
+
+        var methodInfo = typeof(UserHelper)
+            .GetMethod(nameof(GetUserByProperties), BindingFlags.NonPublic | BindingFlags.Instance)
+            ?.MakeGenericMethod(returningType);
+        
+        var newDto = (Task)methodInfo?.Invoke(this, new object[] { userCredential, props, returningType })!;
+        await newDto.ConfigureAwait(false);
+        var dtoResult = newDto.GetType().GetProperty("Result");
+        var dto = dtoResult?.GetValue(newDto);
 
         if (dto == null)
         {
             return onFailure("User not found.");
         }
 
-        var returnType = onSuccess.Method.ReturnType;
-        Console.WriteLine(returnType);
+        var successDtoType = typeof(SuccessWithDto<>).MakeGenericType(dto.GetType());
+        var successDto = Activator.CreateInstance(successDtoType, dto)!;
 
-        if (typeof(Task).IsAssignableFrom(returnType))
-        {
-            var task = (Task)onSuccess.DynamicInvoke(dto)!;
-            await task.ConfigureAwait(false);
-
-            var resultProperty = task.GetType().GetProperty("Result");
-            var result = resultProperty?.GetValue(task);
-            if (result is not T typedResult)
-            {
-                throw new InvalidCastException($"Expected result of type {typeof(T)}, but got {result?.GetType()}");
-            }
-            return typedResult;
-        }
-        else
-        {
-            return (T)onSuccess.DynamicInvoke(returnType)!;
-        }
+        return (T)successDto;
     }
     
     private async Task<T?> GetUserByProperties<T>(string userCredential, string[] propertyNames, Type returningType)
     {
         var parameter = Expression.Parameter(typeof(ApplicationUser), "u");
 
-        var propertyAccessors = propertyNames.Select<string, Expression>(name =>
-        {
-            var prop = Expression.Property(parameter, name);
-
-            if (prop.Type == typeof(Guid))
-            {
-                return Expression.Call(
-                    prop,
-                    typeof(Guid).GetMethod("ToString", Type.EmptyTypes)!);
-            }
-            return prop;
-        }).ToArray();
+        var propertyAccessors = propertyNames.Select<string, Expression>(name => Expression.Property(parameter, name)).ToArray();
 
         var ctorArgTypes = propertyNames.Select(name => typeof(T).GetProperty(name)?.PropertyType ?? typeof(object)).ToArray();
         var ctor = returningType.GetConstructor(ctorArgTypes);
@@ -143,7 +108,6 @@ public class UserHelper(UserManager<ApplicationUser> userManager, MainDatabaseCo
         var newDto = Expression.New(ctor!, propertyAccessors);
 
         var lambda = Expression.Lambda<Func<ApplicationUser, T>>(newDto, parameter);
-        Console.WriteLine(lambda.ToString());
 
         var result = await context.Users
             .Where(u => u.Id == Guid.Parse(userCredential))

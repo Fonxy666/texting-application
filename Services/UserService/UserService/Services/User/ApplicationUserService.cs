@@ -26,8 +26,8 @@ public class ApplicationUserService(
         return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
             UserIdentifierType.UserId,
             userId,
-            (Func<UsernameUserEmailAndTwoFactorEnabledDto, ResponseBase>)(_ => 
-                new SuccessWithDto<UsernameUserEmailAndTwoFactorEnabledDto>(new UsernameUserEmailAndTwoFactorEnabledDto("HAHA", "HAHA", true))
+            (Func<UserIdDto, ResponseBase>)(dto => 
+                new SuccessWithDto<UserIdDto>(dto)
             ),
             message => new FailureWithMessage(message)
         );

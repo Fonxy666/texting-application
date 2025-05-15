@@ -33,7 +33,7 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
             .FirstOrDefaultAsync(user => user.Id == new Guid(userId));
 
         foreach (var friend in userWithFriends.Friends)
-            {
+        {
             if (Connections.TryGetValue(friend.Id.ToString(), out var receiverConnectionId))
             {
                 var connection = await friendConnectionService.GetConnectionIdAsync(userWithFriends.Id, friend.Id);
@@ -43,7 +43,7 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
                     userWithFriends.Id.ToString(),
                     connection.AcceptedTime,
                     friend.UserName!,
-                    friend.Id.ToString()
+                    friend.Id
                 ));
             }
         }
@@ -54,7 +54,7 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
     public async Task<SuccessWithDto<UserIdAndConnectionIdDto>> JoinToHub(string userId)
     {
         Connections[userId] = Context.ConnectionId;
-        var result = new SuccessWithDto<UserIdAndConnectionIdDto>(new UserIdAndConnectionIdDto(userId, Context.ConnectionId));
+        var result = new SuccessWithDto<UserIdAndConnectionIdDto>(new UserIdAndConnectionIdDto(Guid.Parse(userId), Context.ConnectionId));
         return result;
     }
 

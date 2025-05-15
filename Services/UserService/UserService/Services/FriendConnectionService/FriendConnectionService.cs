@@ -50,7 +50,7 @@ public class FriendConnectionService(
                 savedRequest.Entity.SenderId.ToString(),
                 savedRequest.Entity.SentTime,
                 savedRequest.Entity.Receiver!.UserName!,
-                savedRequest.Entity.Receiver.Id.ToString()));
+                savedRequest.Entity.Receiver.Id));
         }
 
         return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
@@ -99,7 +99,7 @@ public class FriendConnectionService(
                 fr.Sender.Id.ToString(),
                 fr.SentTime,
                 fr.Receiver!.UserName!,
-                fr.Receiver.Id.ToString()
+                fr.Receiver.Id
             ))
             .ToList() ?? [];
                     
@@ -116,7 +116,7 @@ public class FriendConnectionService(
                 fr.Sender.Id.ToString(),
                 fr.SentTime,
                 fr.Receiver!.UserName!,
-                fr.Receiver.Id.ToString()
+                fr.Receiver.Id
             ))
             .ToList() ?? [];
                     
@@ -285,7 +285,7 @@ public class FriendConnectionService(
                             existingUser.Id.ToString(),
                             connection.AcceptedTime,
                             fr.UserName!,
-                            fr.Id.ToString()
+                            fr.Id
                         ));
                     }
 
