@@ -1,12 +1,13 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Textinger.Shared.Responses;
 using UserService.Models;
 
 namespace UserService.Helpers;
 
-public class UserHelper(MainDatabaseContext context) : IUserHelper
+public class UserHelper(MainDatabaseContext context, UserManager<ApplicationUser> userManager) : IUserHelper
 {
     public async Task<T> GetUserOrFailureResponseAsync<T>(
         UserIdentifierType type,
@@ -30,48 +31,6 @@ public class UserHelper(MainDatabaseContext context) : IUserHelper
         {
             return onFailure("Invalid user ID format.");
         }
-
-        /* bif (type == UserIdentifierType.UsernameExamineSymmetricKeys)
-        {
-            var ok = await userManager.Users
-                .Include(u => u.UserSymmetricKeys)
-                .AnyAsync(u => u.UserName == userCredential && u.UserSymmetricKeys.Any(k => k.RoomId == roomId));
-
-            return ok ? (T)onSuccess.DynamicInvoke(new ApplicationUser { UserName = userCredential })! 
-                      : onFailure($"There is no key or user with this Username: {userCredential}");
-        } */
-        
-        /* var user = type switch
-        {
-            UserIdentifierType.Username => await userManager.FindByNameAsync(userCredential),
-            UserIdentifierType.UserId => await userManager.FindByIdAsync(userCredential),
-            UserIdentifierType.UserEmail => await userManager.FindByEmailAsync(userCredential),
-            UserIdentifierType.UserIdIncludeReceivedRequests => await userManager.Users
-                .Include(u => u.ReceivedFriendRequests)
-                .FirstOrDefaultAsync(u => u.Id == new Guid(userCredential)),
-            UserIdentifierType.UserIdIncludeSentRequests => await userManager.Users
-                .Include(u => u.SentFriendRequests)
-                .FirstOrDefaultAsync(u => u.Id == new Guid(userCredential)),
-            UserIdentifierType.UserIdIncludeReceivedRequestsAndSenders => await userManager.Users
-                .Include(u => u.SentFriendRequests)
-                .ThenInclude(fr => fr.Receiver)
-                .FirstOrDefaultAsync(u => u.Id == userGuid),
-            UserIdentifierType.UserIdIncludeReceiverAndSentRequests => await userManager.Users
-                .Include(u => u.SentFriendRequests)
-                .Include(u => u.ReceivedFriendRequests)
-                .FirstOrDefaultAsync(u => u.Id == userGuid),
-            UserIdentifierType.UserIdIncludeSentRequestsAndReceivers => await userManager.Users
-                .Include(u => u.SentFriendRequests)
-                .ThenInclude(fr => fr.Receiver)
-                .FirstOrDefaultAsync(u => u.Id == userGuid),
-            UserIdentifierType.UserIdIncludeFriends => await userManager.Users
-                .Include(u => u.Friends)
-                .FirstOrDefaultAsync(u => u.Id == new Guid(userCredential)),
-            UserIdentifierType.UserIdIncludeSymmetricKeys => await userManager.Users
-                .Include(u => u.UserSymmetricKeys)
-                .FirstOrDefaultAsync(u => u.Id == new Guid(userCredential) && u.UserSymmetricKeys.Any(k => k.RoomId == roomId)),
-            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-        }; */
         
         var props = onSuccess.Method.GetParameters()[0].ParameterType.GetProperties().Select(p => p.Name).ToArray();
         var returningType = onSuccess.Method.GetParameters()[0].ParameterType;
@@ -79,13 +38,53 @@ public class UserHelper(MainDatabaseContext context) : IUserHelper
         var methodInfo = typeof(UserHelper)
             .GetMethod(nameof(GetUserByProperties), BindingFlags.NonPublic | BindingFlags.Instance)
             ?.MakeGenericMethod(returningType);
-        
-        var newDto = (Task)methodInfo?.Invoke(this, new object[] { userCredential, props, returningType })!;
-        await newDto.ConfigureAwait(false);
-        var dtoResult = newDto.GetType().GetProperty("Result");
-        var dto = dtoResult?.GetValue(newDto);
 
-        if (dto == null)
+        object? dto = null;
+        
+        switch (type)
+        {
+            case UserIdentifierType.Username:
+                dto = await InvokeUserQueryAsync(nameof(ApplicationUser.UserName), userCredential, methodInfo!, props, returningType);
+                break;
+
+            case UserIdentifierType.UserEmail:
+                dto = await InvokeUserQueryAsync(nameof(ApplicationUser.Email), userCredential, methodInfo!, props, returningType);
+                break;
+
+            case UserIdentifierType.UserId:
+                dto = await InvokeUserQueryAsync(nameof(ApplicationUser.Id), userGuid!.Value, methodInfo!, props, returningType);
+                break;
+
+            case UserIdentifierType.UsernameExamineSymmetricKeys:
+                await GetUserKey(userCredential, roomId!.Value);
+                break;
+
+            case UserIdentifierType.UserIdIncludeReceivedRequests:
+                break;
+                
+            case UserIdentifierType.UserIdIncludeReceivedRequestsAndSenders:
+                break;
+            
+            case UserIdentifierType.UserIdIncludeReceiverAndSentRequests:
+                break;
+
+            case UserIdentifierType.UserIdIncludeSentRequests:
+                break;
+
+            case UserIdentifierType.UserIdIncludeFriends:
+                break;
+
+            case UserIdentifierType.UserIdIncludeSentRequestsAndReceivers:
+                break;
+
+            case UserIdentifierType.UserIdIncludeSymmetricKeys:
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(type), $"Unsupported identifier type: {type}");
+        }
+
+        if (dto == null || dto.Equals(false))
         {
             return onFailure("User not found.");
         }
@@ -95,9 +94,29 @@ public class UserHelper(MainDatabaseContext context) : IUserHelper
 
         return (T)successDto;
     }
-    
-    private async Task<T?> GetUserByProperties<T>(string userCredential, string[] propertyNames, Type returningType)
+
+    private async Task<object?> InvokeUserQueryAsync(string propertyName, object value, MethodInfo methodInfo, string[] props, Type returningType)
     {
+        var parameter = Expression.Parameter(typeof(ApplicationUser), "u");
+        var property = Expression.Property(parameter, propertyName);
+        var constant = Expression.Constant(value, property.Type);
+        var equal = Expression.Equal(property, constant);
+        var predicate = Expression.Lambda(equal, parameter);
+        
+        var task = (Task)methodInfo?.Invoke(this, new object[] { predicate, props, returningType })!;
+        await task.ConfigureAwait(false);
+
+        var resultProperty = task.GetType().GetProperty("Result");
+        return resultProperty?.GetValue(task);
+    }
+    
+    private async Task<T?> GetUserByProperties<T>(Expression<Func<ApplicationUser, bool>> predicate, string[] propertyNames, Type returningType)
+    {
+        if (returningType == typeof(ApplicationUser))
+        {
+            return (T?)(object?)await userManager.Users.FirstOrDefaultAsync(predicate);
+        }
+        
         var parameter = Expression.Parameter(typeof(ApplicationUser), "u");
 
         var propertyAccessors = propertyNames.Select<string, Expression>(name => Expression.Property(parameter, name)).ToArray();
@@ -108,12 +127,19 @@ public class UserHelper(MainDatabaseContext context) : IUserHelper
         var newDto = Expression.New(ctor!, propertyAccessors);
 
         var lambda = Expression.Lambda<Func<ApplicationUser, T>>(newDto, parameter);
-
+        
         var result = await context.Users
-            .Where(u => u.Id == Guid.Parse(userCredential))
+            .Where(predicate)
             .Select(lambda)
             .SingleOrDefaultAsync();
         
         return result;
+    }
+
+    private async Task<bool?> GetUserKey(string userName, Guid roomId)
+    {
+        return await userManager.Users
+            .Include(u => u.UserSymmetricKeys)
+            .AnyAsync(u => u.UserName == userName && u.UserSymmetricKeys.Any(k => k.RoomId == roomId));
     }
 }

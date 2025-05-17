@@ -47,7 +47,7 @@ public class FriendConnectionService(
             return new SuccessWithDto<ShowFriendRequestDto>(new ShowFriendRequestDto(
                 savedRequest.Entity.ConnectionId,
                 savedRequest.Entity.Sender!.UserName!,
-                savedRequest.Entity.SenderId.ToString(),
+                savedRequest.Entity.SenderId,
                 savedRequest.Entity.SentTime,
                 savedRequest.Entity.Receiver!.UserName!,
                 savedRequest.Entity.Receiver.Id));
@@ -96,7 +96,7 @@ public class FriendConnectionService(
             .Select(fr => new ShowFriendRequestDto(
                 fr.ConnectionId,
                 fr.Sender!.UserName!,
-                fr.Sender.Id.ToString(),
+                fr.Sender.Id,
                 fr.SentTime,
                 fr.Receiver!.UserName!,
                 fr.Receiver.Id
@@ -113,7 +113,7 @@ public class FriendConnectionService(
             .Select(fr => new ShowFriendRequestDto(
                 fr.ConnectionId,
                 fr.Sender!.UserName!,
-                fr.Sender.Id.ToString(),
+                fr.Sender.Id,
                 fr.SentTime,
                 fr.Receiver!.UserName!,
                 fr.Receiver.Id
@@ -282,7 +282,7 @@ public class FriendConnectionService(
                         friends.Add(new ShowFriendRequestDto(
                             connection!.ConnectionId,
                             existingUser.UserName!,
-                            existingUser.Id.ToString(),
+                            existingUser.Id,
                             connection.AcceptedTime,
                             fr.UserName!,
                             fr.Id

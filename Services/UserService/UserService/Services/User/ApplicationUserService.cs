@@ -26,8 +26,8 @@ public class ApplicationUserService(
         return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
             UserIdentifierType.UserId,
             userId,
-            (Func<UserIdDto, ResponseBase>)(dto => 
-                new SuccessWithDto<UserIdDto>(dto)
+            (Func<UserNameDto, ResponseBase>)(dto => 
+                new SuccessWithDto<UserNameDto>(dto)
             ),
             message => new FailureWithMessage(message)
         );
@@ -38,12 +38,12 @@ public class ApplicationUserService(
         return await userHelper.GetUserOrFailureResponseAsync(
             UserIdentifierType.UserId,
             userId,
-            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser =>
+            (Func<UserNameDto, Task<ResponseBase>>)(async userNameDto =>
             {
                 var folderPath = configuration["ImageFolderPath"] ?? 
                                  Path.Combine(Directory.GetCurrentDirectory(), "Avatars");
 
-                var imagePath = Path.Combine(folderPath, $"{existingUser.UserName}.png");
+                var imagePath = Path.Combine(folderPath, $"{userNameDto.UserName}.png");
 
                 if (!File.Exists(imagePath))
                 {
@@ -61,13 +61,12 @@ public class ApplicationUserService(
 
     public async Task<ResponseBase> GetUserCredentialsAsync(string userId)
     {
-        return await userHelper.GetUserOrFailureResponseAsync(
+        return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
             UserIdentifierType.UserId,
             userId,
-            (Func<ApplicationUser, ResponseBase>)(existingUser =>
-                new SuccessWithDto<UsernameUserEmailAndTwoFactorEnabledDto>(
-                    new UsernameUserEmailAndTwoFactorEnabledDto(existingUser.UserName!, existingUser.Email!,
-                        existingUser.TwoFactorEnabled))),
+            (Func<UsernameUserEmailAndTwoFactorEnabledDto, ResponseBase>)(dto =>
+                new SuccessWithDto<UsernameUserEmailAndTwoFactorEnabledDto>(dto)
+                ),
             message => new FailureWithMessage(message)
         );
     }
@@ -89,7 +88,7 @@ public class ApplicationUserService(
         return await userHelper.GetUserOrFailureResponseAsync(
             UserIdentifierType.UserIdIncludeReceivedRequests,
             userId,
-            (Func<ApplicationUser, ResponseBase>)(existingUser => 
+            (Func<ApplicationUser, ResponseBase>)(existingUser =>
                 new SuccessWithDto<ApplicationUser>(existingUser)
             ),
             message => new FailureWithMessage(message)

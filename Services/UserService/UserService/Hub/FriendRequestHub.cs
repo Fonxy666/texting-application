@@ -40,7 +40,7 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
                 onlineFriendList.Add(new ShowFriendRequestDto(
                     connection!.ConnectionId,
                     userWithFriends.UserName!,
-                    userWithFriends.Id.ToString(),
+                    userWithFriends.Id,
                     connection.AcceptedTime,
                     friend.UserName!,
                     friend.Id

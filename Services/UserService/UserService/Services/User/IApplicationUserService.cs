@@ -1,5 +1,4 @@
-﻿using UserService.Models;
-using UserService.Models.Requests;
+﻿using UserService.Models.Requests;
 using Textinger.Shared.Responses;
 
 namespace UserService.Services.User;
