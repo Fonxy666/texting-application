@@ -1,27 +1,22 @@
 ﻿using Grpc.Core;
-using UserService.Helpers;
+using Microsoft.AspNetCore.Identity;
 using UserService.Models;
 using UserService.Services.Authentication;
 
 namespace UserService.Services.gRPCServices;
 
-public class AuthGrpcService(ITokenService tokenService, IUserHelper userHelper) : GrpcAuthService.GrpcAuthServiceBase
+public class AuthGrpcService(ITokenService tokenService, UserManager<ApplicationUser> userManager) : GrpcAuthService.GrpcAuthServiceBase
 {
     public override async Task<JwtResponse> NewJwtToken(GrpcNewJwtRequest request, ServerCallContext context)
     {
-        JwtResponse OnSuccess(ApplicationUser existingUser)
+        var existingUser = await userManager.FindByIdAsync(request.UserId);
+        if (existingUser is null)
         {
-            var newToken = tokenService.CreateJwtToken(existingUser, "User", request.Remember);
-            return new JwtResponse { JwtToken = newToken };
+            return new JwtResponse { JwtToken = "User not existing." };
         }
-
-        JwtResponse OnFailure(string message) => new() { JwtToken = "User not existing." };
         
-        return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UserId,
-            request.UserId,
-            (Func<ApplicationUser, JwtResponse>)OnSuccess,
-            (Func<string, JwtResponse>)OnFailure
-        );
+        var newToken = tokenService.CreateJwtToken(existingUser, "User", request.Remember);
+        
+        return new JwtResponse { JwtToken = newToken };
     }
 }

@@ -7,7 +7,7 @@ namespace UserServiceTests;
 
 public class FakeKeyService : IPrivateKeyService
 {
-    public Task<ResponseBase> GetEncryptedKeyByUserIdAsync(string userId)
+    public Task<ResponseBase> GetEncryptedKeyByUserIdAsync(Guid userId)
     {
         return Task.FromResult<ResponseBase>(
             new SuccessWithDto<KeyAndIvDto>(new KeyAndIvDto("testKey", "testIv")));
@@ -18,7 +18,7 @@ public class FakeKeyService : IPrivateKeyService
         return Task.FromResult<ResponseBase>(new Success());
     }
 
-    public Task<ResponseBase> DeleteKey(string userId)
+    public Task<ResponseBase> DeleteKey(Guid userId)
     {
         return Task.FromResult<ResponseBase>(new Success());
     }

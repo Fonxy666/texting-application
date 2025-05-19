@@ -16,13 +16,17 @@ export class UserService {
         private http: HttpClient,
         private cookieService: CookieService
     ) {
-        this.getUsername(this.cookieService.get("UserId")).subscribe(response => {
-            if (response.isSuccess) {
-                this.userName = response.data;
-            } else {
-                this.userName = "Username"
-            }
-        });
+        let userId = this.cookieService.get("UserId");
+        
+        if (userId !== "") {
+            this.getUsername(userId).subscribe(response => {
+                if (response.isSuccess) {
+                    this.userName = response.data;
+                } else {
+                    this.userName = "Username"
+                }
+            });
+        }
     }
 
     private emailSubject = new BehaviorSubject<string>('');

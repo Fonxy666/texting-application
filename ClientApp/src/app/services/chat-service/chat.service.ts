@@ -46,7 +46,10 @@ export class ChatService {
             .configureLogging(signalR.LogLevel.Critical)
             .build();
 
-        this.initializeConnection();
+        let userId = this.cookieService.get("UserId");
+        if (userId !== "") {
+            this.initializeConnection();
+        }
 
         this.connection.on("ReceiveMessage", async (user: string, message: string, messageTime: string, userId: string, messageId: string, seenList: string[], roomId: string, iv: string) => {
             if (!this.messages[roomId]) {

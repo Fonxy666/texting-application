@@ -5,7 +5,7 @@ namespace UserService.Services.PrivateKeyFolder;
 
 public interface IPrivateKeyService
 {
-    Task<ResponseBase> GetEncryptedKeyByUserIdAsync(string userId);
+    Task<ResponseBase> GetEncryptedKeyByUserIdAsync(Guid userId);
     Task<ResponseBase> SaveKeyAsync(PrivateKey key, Guid userId);
-    Task<ResponseBase> DeleteKey(string userId);
+    Task<ResponseBase> DeleteKey(Guid userId);
 }

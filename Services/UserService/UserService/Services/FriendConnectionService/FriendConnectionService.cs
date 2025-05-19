@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using UserService.Models.Requests;
 using UserService.Services.User;
 using UserService.Models;
 using UserService.Models.Responses;
-using Microsoft.AspNetCore.Identity;
 using Textinger.Shared.Responses;
 using UserService.Helpers;
 
@@ -12,131 +12,108 @@ namespace UserService.Services.FriendConnectionService;
 public class FriendConnectionService(
     MainDatabaseContext context,
     IApplicationUserService userServices,
+    UserManager<ApplicationUser> userManager,
     IUserHelper userHelper) : IFriendConnectionService
 {
-    public async Task<ResponseBase> SendFriendRequestAsync(string userId, string friendName)
+    public async Task<ResponseBase> SendFriendRequestAsync(Guid userId, string friendName)
     {
-        async Task<ResponseBase> HandleCurrentUser(ApplicationUser existingUser)
+        var existingUserUserName = await context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => u.Id)
+            .FirstOrDefaultAsync();
+        
+        if (existingUserUserName.ToString() == friendName)
         {
-            if (existingUser.UserName == friendName)
-                return new FailureWithMessage("You cannot send friend request to yourself.");
+            return new FailureWithMessage("You cannot send friend request to yourself.");
+        }
+        
+        var existingNewFriendId = await context.Users
+            .Where(u => u.UserName == friendName)
+            .Select(u => u.Id)
+            .FirstOrDefaultAsync();
+        
+        if (await AlreadySentFriendRequest(new FriendRequest(userId.ToString(), existingNewFriendId.ToString())))
+        {
+            return new FailureWithMessage("You already sent a friend request to this user!");
+        }
+        
+        var friendRequest = new FriendConnection(userId, existingNewFriendId);
 
-            return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
-                UserIdentifierType.Username,
-                friendName,
-                HandleNewFriend,
-                _ => new FailureWithMessage("New friend not found."));
+        var savedRequest = await context.FriendConnections.AddAsync(friendRequest);
+        var affectedRows = await context.SaveChangesAsync();
+        if (affectedRows == 0)
+        {
+            return new FailureWithMessage("Failed to save changes.");
         }
 
-        async Task<ResponseBase> HandleNewFriend(ApplicationUser existingNewFriend)
+        return new SuccessWithDto<ShowFriendRequestDto>(new ShowFriendRequestDto(
+            savedRequest.Entity.ConnectionId,
+            savedRequest.Entity.Sender!.UserName!,
+            savedRequest.Entity.SenderId,
+            savedRequest.Entity.SentTime,
+            savedRequest.Entity.Receiver!.UserName!,
+            savedRequest.Entity.Receiver.Id));
+    }
+
+    public async Task<ResponseBase> GetAllPendingRequestsAsync(Guid userId)
+    {
+        var rawFriendConnection = await context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => new
+            {
+                Received = u.ReceivedFriendRequests
+                    .Where(rfr => rfr.Status == FriendStatus.Pending)
+                    .Select(rfr => new
+                    {
+                        rfr.ConnectionId,
+                        SenderId = rfr.Sender!.Id,
+                        SenderUserName = rfr.Sender!.UserName!,
+                        rfr.SentTime,
+                        ReceiverUserName = rfr.Receiver!.UserName!,
+                        ReceiverId = rfr.Receiver.Id
+                    }),
+                Sent = u.SentFriendRequests
+                    .Where(rfr => rfr.Status == FriendStatus.Pending)
+                    .Select(rfr => new
+                    {
+                        rfr.ConnectionId,
+                        SenderId = rfr.Sender!.Id,
+                        SenderUserName = rfr.Sender!.UserName!,
+                        rfr.SentTime,
+                        ReceiverUserName = rfr.Receiver!.UserName!,
+                        ReceiverId = rfr.Receiver.Id
+                    })
+            })
+            .FirstOrDefaultAsync();
+        
+        if (rawFriendConnection == null)
         {
-            if (await AlreadySentFriendRequest(new FriendRequest(userId, existingNewFriend.Id.ToString())))
-            {
-                return new FailureWithMessage("You already sent a friend request to this user!");
-            }
-
-            var friendRequest = new FriendConnection(new Guid(userId), existingNewFriend.Id);
-
-            var savedRequest = await context.FriendConnections!.AddAsync(friendRequest);
-            var affectedRows = await context.SaveChangesAsync();
-            if (affectedRows == 0)
-            {
-                return new FailureWithMessage("Failed to save changes.");
-            }
-
-            return new SuccessWithDto<ShowFriendRequestDto>(new ShowFriendRequestDto(
-                savedRequest.Entity.ConnectionId,
-                savedRequest.Entity.Sender!.UserName!,
-                savedRequest.Entity.SenderId,
-                savedRequest.Entity.SentTime,
-                savedRequest.Entity.Receiver!.UserName!,
-                savedRequest.Entity.Receiver.Id));
+            return new FailureWithMessage("User not found.");
         }
-
-        return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
-            UserIdentifierType.UserId,
-            userId,
-            HandleCurrentUser,
-            message => new FailureWithMessage(message));
-    }
-
-    public async Task<ResponseBase> GetAllPendingRequestsAsync(string userId)
-    {
-        return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
-            UserIdentifierType.UserIdIncludeReceiverAndSentRequests,
-            userId,
-            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser =>
-            {
-                var receivedFriendRequests = await GetPendingReceivedFriendRequests(existingUser);
-                if (receivedFriendRequests is FailureWithMessage)
-                {
-                    return receivedFriendRequests;
-                }
-                var sentFriendRequests = await GetPendingSentFriendRequests(existingUser);
-                if (sentFriendRequests is FailureWithMessage)
-                {
-                    return sentFriendRequests;
-                }
-
-                var receivedList = (receivedFriendRequests as SuccessWithDto<List<ShowFriendRequestDto>>)?.Data ?? new();
-                var sentList = (sentFriendRequests as SuccessWithDto<List<ShowFriendRequestDto>>)?.Data ?? new();
-
-                var allRequests = receivedList!.Concat(sentList!).ToList();
-
-                return new SuccessWithDto<List<ShowFriendRequestDto>>(allRequests);
-            }
-            ),
-            message => new FailureWithMessage(message));
-    }
-
-    private Task<ResponseBase> GetPendingReceivedFriendRequests(ApplicationUser user)
-    {
-        var pendingRequests = user.ReceivedFriendRequests?
-            .Where(fr => fr.Status == FriendStatus.Pending)
-            .Select(fr => new ShowFriendRequestDto(
-                fr.ConnectionId,
-                fr.Sender!.UserName!,
-                fr.Sender.Id,
-                fr.SentTime,
-                fr.Receiver!.UserName!,
-                fr.Receiver.Id
+        
+        var friendRequestsDto = rawFriendConnection.Received
+            .Concat(rawFriendConnection.Sent)
+            .Select(rfr => new ShowFriendRequestDto(
+                rfr.ConnectionId,
+                rfr.SenderUserName,
+                rfr.SenderId,
+                rfr.SentTime,
+                rfr.ReceiverUserName,
+                rfr.ReceiverId
             ))
-            .ToList() ?? [];
-                    
-        return Task.FromResult<ResponseBase>(new SuccessWithDto<List<ShowFriendRequestDto>>(pendingRequests));
-    }
+            .ToList();
+        
 
-    private Task<ResponseBase> GetPendingSentFriendRequests(ApplicationUser user)
-    {
-        var pendingRequests = user.ReceivedFriendRequests?
-            .Where(fr => fr.Status == FriendStatus.Pending)
-            .Select(fr => new ShowFriendRequestDto(
-                fr.ConnectionId,
-                fr.Sender!.UserName!,
-                fr.Sender.Id,
-                fr.SentTime,
-                fr.Receiver!.UserName!,
-                fr.Receiver.Id
-            ))
-            .ToList() ?? [];
-                    
-        return Task.FromResult<ResponseBase>(new SuccessWithDto<List<ShowFriendRequestDto>>(pendingRequests));
+        return new SuccessWithDto<List<ShowFriendRequestDto>>(friendRequestsDto);
     }
     
-    public async Task<ResponseBase> GetPendingRequestCountAsync(string userId)
+    public async Task<ResponseBase> GetPendingRequestCountAsync(Guid userId)
     {
-        return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
-            UserIdentifierType.UserIdIncludeReceivedRequests,
-            userId,
-            (Func<ApplicationUser, ResponseBase>)(existingUser =>
-                {
-                    var pendingRequestsCount = existingUser.ReceivedFriendRequests
-                        .Count(fc => fc.Status == FriendStatus.Pending);
-
-                    return new SuccessWithDto<NumberDto>(new NumberDto(pendingRequestsCount));
-                }
-            ),
-            message => new FailureWithMessage(message));
+        var pendingRequestCount = await context.FriendConnections
+            .Where(rfr => rfr.ReceiverId == userId && rfr.Status == FriendStatus.Pending)
+            .CountAsync();
+        
+        return new SuccessWithDto<NumberDto>(new NumberDto(pendingRequestCount));
     }
 
     private async Task<bool> AlreadySentFriendRequest(FriendRequest request)
@@ -151,53 +128,43 @@ public class FriendConnectionService(
                 .Any(fc => fc.ReceiverId == receiverGuid && fc.SenderId == senderGuid));
     }
 
-    public async Task<ResponseBase> AcceptReceivedFriendRequestAsync(string userId, string requestId)
+    public async Task<ResponseBase> AcceptReceivedFriendRequestAsync(Guid userId, Guid requestId)
     {
-        return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
-            UserIdentifierType.UserId,
-            userId,
-            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser =>
-                {
-                    if (!Guid.TryParse(requestId, out var requestGuid))
-                    {
-                        return new FailureWithMessage("Invalid request ID format.");
-                    }
+        var existingRequest = await context.FriendConnections!.FindAsync(requestId);
+        if (existingRequest == null)
+        {
+            return new FailureWithMessage("Request not found.");
+        }
 
-                    var existingRequest = await context.FriendConnections!.FindAsync(requestGuid);
-                    if (existingRequest == null)
-                    {
-                        return new FailureWithMessage("Request not found.");
-                    }
+        await using var transaction = await context.Database.BeginTransactionAsync();
 
-                    await using var transaction = await context.Database.BeginTransactionAsync();
+        existingRequest.SetStatusToAccepted();
 
-                    existingRequest.SetStatusToAccepted();
+        var linkResult = await LinkUsersAsFriendsAsync(userId, existingRequest.SenderId);
+        if (linkResult is Failure)
+        {
+            await transaction.RollbackAsync();
+            return linkResult;
+        }
 
-                    var linkResult = await LinkUsersAsFriendsAsync(existingUser.Id, existingRequest.SenderId);
-                    if (linkResult is Failure)
-                    {
-                        await transaction.RollbackAsync();
-                        return linkResult;
-                    }
+        var affectedRows = await context.SaveChangesAsync();
+        if (affectedRows == 0)
+        {
+            await transaction.RollbackAsync();
+            return new FailureWithMessage("Failed to persist friend request acceptance.");
+        }
 
-                    var affectedRows = await context.SaveChangesAsync();
-                    if (affectedRows == 0)
-                    {
-                        await transaction.RollbackAsync();
-                        return new FailureWithMessage("Failed to persist friend request acceptance.");
-                    }
-
-                    await transaction.CommitAsync();
-                    return new Success();
-                }
-            ),
-            message => new FailureWithMessage(message));
+        await transaction.CommitAsync();
+        return new Success();
     }
 
     private async Task<ResponseBase> LinkUsersAsFriendsAsync(Guid receiverId, Guid senderId)
     {
-        var user = await context.Users.Include(u => u.Friends).FirstOrDefaultAsync(u => u.Id == receiverId);
-        var friend = await context.Users.Include(u => u.Friends).FirstOrDefaultAsync(u => u.Id == senderId);
+        var user = await context.Users
+            .Include(u => u.Friends).FirstOrDefaultAsync(u => u.Id == receiverId);
+        
+        var friend = await context.Users
+            .Include(u => u.Friends).FirstOrDefaultAsync(u => u.Id == senderId);
 
         if (user == null || friend == null)
         {
@@ -210,22 +177,17 @@ public class FriendConnectionService(
         return new Success();
     }
 
-    public async Task<ResponseBase> DeleteFriendRequestAsync(string userId, string userType, string requestId)
+    public async Task<ResponseBase> DeleteFriendRequestAsync(Guid userId, UserType userType, Guid requestId)
     {
-        if (!Guid.TryParse(requestId, out var requestGuid))
-        {
-            return new FailureWithMessage("Invalid request ID format.");
-        }
-
         return userType switch
         {
-            "receiver" => await DeleteReceivedFriendRequestAsync(requestGuid, userId!),
-            "sender" => await DeleteSentFriendRequestAsync(requestGuid, userId!),
+            UserType.Receiver => await DeleteReceivedFriendRequestAsync(requestId, userId!),
+            UserType.Sender => await DeleteSentFriendRequestAsync(requestId, userId!),
             _ => new FailureWithMessage("Invalid user type.")
         };
     }
 
-    private async Task<ResponseBase> DeleteSentFriendRequestAsync(Guid requestId, string senderId)
+    private async Task<ResponseBase> DeleteSentFriendRequestAsync(Guid requestId, Guid senderId)
     {
         var user = await userServices.GetUserWithSentRequestsAsync(senderId);
 
@@ -246,7 +208,7 @@ public class FriendConnectionService(
         return new Success();
     }
 
-    private async Task<ResponseBase> DeleteReceivedFriendRequestAsync(Guid requestId, string receiverId)
+    private async Task<ResponseBase> DeleteReceivedFriendRequestAsync(Guid requestId, Guid receiverId)
     {
         var user = await userServices.GetUserWithReceivedRequestsAsync(receiverId);
 
@@ -267,32 +229,21 @@ public class FriendConnectionService(
         return new Success();
     }
 
-    public async Task<ResponseBase> GetFriendsAsync(string userId)
+    public async Task<ResponseBase> GetFriendsAsync(Guid userId)
     {
-        return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
-            UserIdentifierType.UserIdIncludeFriends,
-            userId,
-            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser =>
-                {
-                    var friends = new List<ShowFriendRequestDto>();
+        var returningDto = await context.FriendConnections
+            .Where(fr => fr.Receiver!.Id == userId || fr.Sender!.Id == userId)
+            .Select(fr => new ShowFriendRequestDto(
+                fr.ConnectionId,
+                fr.Receiver!.UserName!,
+                fr.ReceiverId,
+                fr.AcceptedTime,
+                fr.Sender!.UserName!,
+                fr.SenderId
+                ))
+            .ToArrayAsync();
 
-                    foreach (var fr in existingUser.Friends)
-                    {
-                        var connection = await GetConnectionIdAsync(existingUser.Id, fr.Id);
-                        friends.Add(new ShowFriendRequestDto(
-                            connection!.ConnectionId,
-                            existingUser.UserName!,
-                            existingUser.Id,
-                            connection.AcceptedTime,
-                            fr.UserName!,
-                            fr.Id
-                        ));
-                    }
-
-                    return new SuccessWithDto<List<ShowFriendRequestDto>>(friends);
-                }
-            ),
-            message => new FailureWithMessage(message));
+        return new SuccessWithDto<ShowFriendRequestDto[]>(returningDto);
     }
 
     public async Task<FriendConnection?> GetConnectionIdAsync(Guid userId, Guid friendId)
@@ -301,25 +252,19 @@ public class FriendConnectionService(
             fc.ReceiverId == userId && fc.SenderId == friendId || fc.ReceiverId == friendId && fc.SenderId == userId);
     }
 
-    public async Task<ResponseBase> DeleteFriendAsync(string userId, string connectionId)
+    public async Task<ResponseBase> DeleteFriendAsync(Guid userId, Guid connectionId)
     {
-        if (!Guid.TryParse(connectionId, out var connectionGuid))
-        {
-            throw new ArgumentException("Invalid connectionId format.");
-        }
-        var userGuid = Guid.Parse(userId);
-
         var friendConnection = await context.FriendConnections!
             .Include(fc => fc.Sender)
             .Include(fc => fc.Receiver)
-            .FirstOrDefaultAsync(fc => fc.ConnectionId == connectionGuid);
+            .FirstOrDefaultAsync(fc => fc.ConnectionId == connectionId);
 
         if (friendConnection == null)
         {
             return new FailureWithMessage("Cannot find friend connection.");
         }
 
-        if (userGuid != friendConnection.SenderId && userGuid != friendConnection.ReceiverId)
+        if (userId != friendConnection.SenderId && userId != friendConnection.ReceiverId)
         {
             return new FailureWithMessage("You don't have permission for deletion.");
         }

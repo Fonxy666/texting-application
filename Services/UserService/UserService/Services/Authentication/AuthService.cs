@@ -18,8 +18,7 @@ public class AuthService(
     IPrivateKeyService keyService,
     ILogger<AuthService> logger,
     IPrivateKeyService privateKeyService,
-    MainDatabaseContext context,
-    IUserHelper userHelper
+    MainDatabaseContext context
     ) : IAuthService
 {
     public async Task<ResponseBase> RegisterAsync(RegistrationRequest request, string imagePath)
@@ -40,7 +39,7 @@ public class AuthService(
                 return userCreationResult;
             }
 
-            var saveKeyResult = await SavePrivateKey(request, (userCreationResult as SuccessWithDto<UserIdDto>).Data.Id);
+            var saveKeyResult = await SavePrivateKey(request, (userCreationResult as SuccessWithDto<UserIdDto>)!.Data!.Id);
             if (saveKeyResult is FailureWithMessage)
             {
                 return saveKeyResult;
@@ -140,7 +139,7 @@ public class AuthService(
 
         var existingUser = await userManager.FindByNameAsync(userName);
 
-        var codeExamineResult = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(existingUser!.Email!, token, "login");
+        var codeExamineResult = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(existingUser!.Email!, token, EmailType.Login);
 
         if (!codeExamineResult)
         {
@@ -148,7 +147,7 @@ public class AuthService(
             return new FailureWithMessage("The provided login code is not correct.");
         }
 
-        var keyRetrievalResult = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser.Id.ToString());
+        var keyRetrievalResult = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser.Id);
         if (keyRetrievalResult is Failure)
         {
             logger.LogError("Cannot find User private key.");
@@ -177,61 +176,57 @@ public class AuthService(
 
     public async Task<ResponseBase> LoginWithExternal(string emailAddress)
     {
-        return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
-            UserIdentifierType.UserEmail,
-            emailAddress,
-            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser =>
-                {
-                    var roles = await userManager.GetRolesAsync(existingUser);
-                    var accessToken = tokenService.CreateJwtToken(existingUser, roles[0], true);
+        var existingUser = await userManager.FindByEmailAsync(emailAddress);
+        if (existingUser is null)
+        {
+            return new FailureWithMessage("User not found");
+        }
         
-                    cookieService.SetRefreshToken(existingUser);
-                    await userManager.UpdateAsync(existingUser);
+        var roles = await userManager.GetRolesAsync(existingUser);
+        var accessToken = tokenService.CreateJwtToken(existingUser, roles[0], true);
+        
+        cookieService.SetRefreshToken(existingUser);
+        await userManager.UpdateAsync(existingUser);
 
-                    cookieService.SetRememberMeCookie(true);
-                    cookieService.SetPublicKey(true, existingUser.PublicKey);
-                    cookieService.SetUserId(existingUser.Id, true);
-                    cookieService.SetAnimateAndAnonymous(true);
-                    await cookieService.SetJwtToken(accessToken, true);
+        cookieService.SetRememberMeCookie(true);
+        cookieService.SetPublicKey(true, existingUser.PublicKey);
+        cookieService.SetUserId(existingUser.Id, true);
+        cookieService.SetAnimateAndAnonymous(true);
+        await cookieService.SetJwtToken(accessToken, true);
         
-                    return new SuccessWithDto<UserIdDto>(new UserIdDto(existingUser.Id));
-                }
-            ),
-            message => new FailureWithMessage(message));
+        return new SuccessWithDto<UserIdDto>(new UserIdDto(existingUser.Id));
     }
 
-    public async Task<ResponseBase> ExamineLoginCredentialsAsync(string username, string password)
+    public async Task<ResponseBase> ExamineLoginCredentialsAsync(string userName, string password)
     {
-        return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
-            UserIdentifierType.Username,
-            username,
-            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser =>
-                {
-                    var lockoutResult = await ExamineLockoutEnabled(existingUser);
+        var existingUser = await userManager.FindByNameAsync(userName);
+        if (existingUser is null)
+        {
+            return new FailureWithMessage($"{userName} is not registered.");
+        }
+        
+        var lockoutResult = await ExamineLockoutEnabled(existingUser);
 
-                    if (lockoutResult is FailureWithMessage error)
-                    {
-                        logger.LogError(error.Message);
-                        return lockoutResult;
-                    }
+        if (lockoutResult is FailureWithMessage error)
+        {
+            logger.LogError(error.Message);
+            return lockoutResult;
+        }
 
-                    var isPasswordValid = await userManager.CheckPasswordAsync(existingUser, password);
+        var isPasswordValid = await userManager.CheckPasswordAsync(existingUser, password);
 
-                    if (!isPasswordValid)
-                    {
-                        await userManager.AccessFailedAsync(existingUser);
-                        var accessFailedCount = await userManager.GetAccessFailedCountAsync(existingUser);
-                        logger.LogError("Invalid password.");
-                        return new FailureWithMessage($"Invalid credentials, u have {5 - accessFailedCount} more tries.");
-                    }
+        if (!isPasswordValid)
+        {
+            await userManager.AccessFailedAsync(existingUser);
+            var accessFailedCount = await userManager.GetAccessFailedCountAsync(existingUser);
+            logger.LogError("Invalid password.");
+            return new FailureWithMessage($"Invalid credentials, u have {5 - accessFailedCount} more tries.");
+        }
 
 
-                    await userManager.ResetAccessFailedCountAsync(existingUser);
+        await userManager.ResetAccessFailedCountAsync(existingUser);
 
-                    return new SuccessWithDto<UserNameEmailDto>(new UserNameEmailDto(existingUser.Id.ToString(), existingUser.Email!));
-                }
-            ),
-            message => new FailureWithMessage(message));
+        return new SuccessWithDto<UserEmailDto>(new UserEmailDto(existingUser.Email!));
     }
 
     private async Task<ResponseBase> ExamineLockoutEnabled(ApplicationUser user)
@@ -257,21 +252,19 @@ public class AuthService(
         return new Success();
     }
 
-    public async Task<ResponseBase> LogOutAsync(string userId)
+    public async Task<ResponseBase> LogOutAsync(Guid userId)
     {
-        return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
-            UserIdentifierType.UserId,
-            userId,
-            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser =>
-                {
-                    existingUser.SetRefreshToken(string.Empty);
-                    existingUser.SetRefreshTokenCreated(null);
-                    existingUser.SetRefreshTokenExpires(null);
-                    await userManager.UpdateAsync(existingUser);
-                    cookieService.DeleteCookies();
-                    return new Success();
-                }
-            ),
-            message => new FailureWithMessage(message));
+        var existingUser = await userManager.FindByIdAsync(userId.ToString());
+        if (existingUser is null)
+        {
+            return new FailureWithMessage("User not found");
+        }
+        
+        existingUser.SetRefreshToken(string.Empty);
+        existingUser.SetRefreshTokenCreated(null);
+        existingUser.SetRefreshTokenExpires(null);
+        await userManager.UpdateAsync(existingUser);
+        cookieService.DeleteCookies();
+        return new Success();
     }
 }

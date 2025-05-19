@@ -13,4 +13,4 @@ public record UserIdAndEmailDto(Guid Id, string Email);
 public record UserIdDto(Guid Id);
 public record UserIdAndConnectionIdDto(Guid UserId, string ConnectionId);
 public record NumberDto(int Count);
-public record KeysDto(string PubblicKey, string PrivateKey);
+public record KeysDto(string PublicKey, string PrivateKey);

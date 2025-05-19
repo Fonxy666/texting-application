@@ -80,30 +80,30 @@ public class FriendConnectionTests : IAsyncLifetime
     {
         // Success test
         var result =
-            await _friendService.SendFriendRequestAsync("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "TestUsername2");
+            await _friendService.SendFriendRequestAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"), "TestUsername2");
         Assert.That(result, Is.InstanceOf<SuccessWithDto<ShowFriendRequestDto>>());
         
         // Bad request with not existing user id
         var notExistingUserResult =
-            await _friendService.SendFriendRequestAsync("38db530c-b6bb-4e8a-9c19-a5cd4d0fa915", "TestUsername2");
+            await _friendService.SendFriendRequestAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa915"), "TestUsername2");
 
         Assert.That(notExistingUserResult, Is.EqualTo(new FailureWithMessage("User not found.")));
         
         // Cannot send friend request to yourself
         var friendRequestToYourself =
-            await _friendService.SendFriendRequestAsync("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "TestUsername1");
+            await _friendService.SendFriendRequestAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"), "TestUsername1");
 
         Assert.That(friendRequestToYourself, Is.EqualTo(new FailureWithMessage("You cannot send friend request to yourself.")));
         
         // Bad request with not existing new friend
         var notExistingNewFriend =
-            await _friendService.SendFriendRequestAsync("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "NotExistingUser");
+            await _friendService.SendFriendRequestAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"), "NotExistingUser");
 
         Assert.That(notExistingNewFriend, Is.EqualTo(new FailureWithMessage("New friend not found.")));
         
         // Sending request again not saving to db
         var replyResult =
-            await _friendService.SendFriendRequestAsync("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "TestUsername2");
+            await _friendService.SendFriendRequestAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"), "TestUsername2");
 
         Assert.That(replyResult, Is.EqualTo(new FailureWithMessage("You already sent a friend request to this user!")));
     }
@@ -112,20 +112,20 @@ public class FriendConnectionTests : IAsyncLifetime
     public async Task AcceptReceivedFriendRequest_HandlesValidRequest_AndPreventsEdgeCases()
     {
         // Success test
-        await _friendService.SendFriendRequestAsync("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916", "TestUsername2");
+        await _friendService.SendFriendRequestAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"), "TestUsername2");
         
-        var requestId = _context.FriendConnections.FirstOrDefaultAsync(fc => fc.SenderId == Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916") && fc.Receiver.UserName == "TestUsername2").Result.ConnectionId.ToString();
+        var requestId = _context.FriendConnections.FirstOrDefaultAsync(fc => fc.SenderId == Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916") && fc.Receiver.UserName == "TestUsername2").Result.ConnectionId;
         
-        var result = await _friendService.AcceptReceivedFriendRequestAsync("10f96e12-e245-420a-8bad-b61fb21c4b2d", requestId);
+        var result = await _friendService.AcceptReceivedFriendRequestAsync(Guid.Parse("10f96e12-e245-420a-8bad-b61fb21c4b2d"), requestId);
         _testOutputHelper.WriteLine(result.ToString());
         Assert.That(result, Is.InstanceOf<Success>());
         
         // Bad requestId format
-        var badRequestId = await _friendService.AcceptReceivedFriendRequestAsync("10f96e12-e245-420a-8bad-b61fb21c4b2d", "10f9612-e25-40a-8ba-bfb214bd");
+        var badRequestId = await _friendService.AcceptReceivedFriendRequestAsync(Guid.Parse("10f96e12-e245-420a-8bad-b61fb21c4b2d"), Guid.Parse("10f9612-e25-40a-8ba-bfb214bd"));
         Assert.That(badRequestId, Is.EqualTo(new FailureWithMessage("Invalid request ID format.")));
         
         // Not existing requestId
-        var notExistingRequest = await _friendService.AcceptReceivedFriendRequestAsync("10f96e12-e245-420a-8bad-b61fb21c4b2d", Guid.NewGuid().ToString());
+        var notExistingRequest = await _friendService.AcceptReceivedFriendRequestAsync(Guid.Parse("10f96e12-e245-420a-8bad-b61fb21c4b2d"), Guid.NewGuid());
         Assert.That(notExistingRequest, Is.EqualTo(new FailureWithMessage("Request not found.")));
     }
 }

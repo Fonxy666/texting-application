@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.EntityFrameworkCore;
 using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
 using UserService.Services.Authentication;
 using UserService.Services.EmailSender;
 using Textinger.Shared.Responses;
-using UserService.Helpers;
 
 namespace UserService.Services.User;
 
@@ -15,312 +15,309 @@ public class ApplicationUserService(
     IConfiguration configuration,
     MainDatabaseContext context,
     IEmailSender emailSender,
-    IAuthService authService,
-    IUserHelper userHelper
+    IAuthService authService
     ) : IApplicationUserService
 {
     
-    
-    public async Task<ResponseBase> GetUserNameAsync(string userId)
+    public async Task<ResponseBase> GetUserNameAsync(Guid userId)
     {
-        return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
-            UserIdentifierType.UserId,
-            userId,
-            (Func<UserNameDto, ResponseBase>)(dto => 
-                new SuccessWithDto<UserNameDto>(dto)
-            ),
-            message => new FailureWithMessage(message)
-        );
-    }
+        var userNameDto = await context.Users
+            .Where(u => u.Id ==  userId)
+            .Select(u => 
+                new UserNameDto(u.UserName!))
+            .FirstOrDefaultAsync();
 
-    public async Task<ResponseBase> GetImageWithIdAsync(string userId)
-    {
-        return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UserId,
-            userId,
-            (Func<UserNameDto, Task<ResponseBase>>)(async userNameDto =>
-            {
-                var folderPath = configuration["ImageFolderPath"] ?? 
-                                 Path.Combine(Directory.GetCurrentDirectory(), "Avatars");
-
-                var imagePath = Path.Combine(folderPath, $"{userNameDto.UserName}.png");
-
-                if (!File.Exists(imagePath))
-                {
-                    return new FailureWithMessage("User image not found.");
-                }
-
-                var imageBytes = await File.ReadAllBytesAsync(imagePath);
-                var contentType = GetContentType(imagePath);
-
-                return new SuccessWithDto<ImageDto>(new ImageDto(imageBytes, contentType));
-            }),
-            message => new FailureWithMessage(message)
-        );
-    }
-
-    public async Task<ResponseBase> GetUserCredentialsAsync(string userId)
-    {
-        return await userHelper.GetUserOrFailureResponseAsync<ResponseBase>(
-            UserIdentifierType.UserId,
-            userId,
-            (Func<UsernameUserEmailAndTwoFactorEnabledDto, ResponseBase>)(dto =>
-                new SuccessWithDto<UsernameUserEmailAndTwoFactorEnabledDto>(dto)
-                ),
-            message => new FailureWithMessage(message)
-        );
-    }
-
-    public async Task<ResponseBase> GetUserWithSentRequestsAsync(string userId)
-    {
-        return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UserIdIncludeSentRequests,
-            userId,
-            (Func<ApplicationUser, ResponseBase>)(existingUser => 
-                new SuccessWithDto<ApplicationUser>(existingUser)
-            ),
-            message => new FailureWithMessage(message)
-        );
-    }
-
-    public async Task<ResponseBase> GetUserWithReceivedRequestsAsync(string userId)
-    {
-        return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UserIdIncludeReceivedRequests,
-            userId,
-            (Func<ApplicationUser, ResponseBase>)(existingUser =>
-                new SuccessWithDto<ApplicationUser>(existingUser)
-            ),
-            message => new FailureWithMessage(message)
-        );
-    }
-    
-    public async Task<ResponseBase> GetUserPrivatekeyForRoomAsync(string userId, string roomId)
-    {
-        if (!Guid.TryParse(roomId, out var roomGuid))
+        if (userNameDto is null)
         {
-            return new FailureWithMessage("Invalid Roomid format.");
+            return new FailureWithMessage("User not found.");
+        }
+        
+        return new SuccessWithDto<UserNameDto>(userNameDto);
+    }
+
+    public async Task<ResponseBase> GetImageWithIdAsync(Guid userId)
+    {
+        var userName = await context.Users
+            .Where(u => u.Id ==  userId)
+            .Select(u => u.UserName)
+            .FirstOrDefaultAsync();
+
+        if (userName is null)
+        {
+            return new FailureWithMessage("User not found.");
+        }
+        
+        var folderPath = configuration["ImageFolderPath"] ?? 
+                        Path.Combine(Directory.GetCurrentDirectory(), "Avatars");
+
+        var imagePath = Path.Combine(folderPath, $"{userName}.png");
+
+        if (!File.Exists(imagePath))
+        {
+            return new FailureWithMessage("User image not found.");
         }
 
-        var userResponse = await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UserIdIncludeSymmetricKeys,
-            userId,
-            (Func<ApplicationUser, ResponseBase>)(existingUser => 
-            {
-                var userKey = existingUser.UserSymmetricKeys.FirstOrDefault(key => key.RoomId == roomGuid);
+        var imageBytes = await File.ReadAllBytesAsync(imagePath);
+        var contentType = GetContentType(imagePath);
 
-                if (userKey != null)
-                {
-                    return new SuccessWithDto<UserPrivateKeyDto>(
-                        new UserPrivateKeyDto(userKey.EncryptedKey)
-                    );
-                }
-                
-                return new FailureWithMessage($"No symmetric key found for room: {roomId}");
-            }),
-            message => new FailureWithMessage(message)
-        );
-    
-        if (userResponse is FailureWithMessage failure)
+        return new SuccessWithDto<ImageDto>(new ImageDto(imageBytes, contentType));
+    }
+
+    public async Task<ResponseBase> GetUserCredentialsAsync(Guid userId)
+    {
+        var userCredentials = await context.Users
+            .Where(u => u.Id ==  userId)
+            .Select(u => 
+                new UsernameUserEmailAndTwoFactorEnabledDto(u.UserName!, u.Email!, u.TwoFactorEnabled))
+            .FirstOrDefaultAsync();
+
+        if (userCredentials is null)
         {
-            return failure;
+            return new FailureWithMessage("User not found.");
+        }
+        
+        return new SuccessWithDto<UsernameUserEmailAndTwoFactorEnabledDto>(userCredentials);
+    }
+
+    public async Task<ResponseBase> GetUserWithSentRequestsAsync(Guid userId)
+    {
+        var existingUser = await context.Users
+            .Include(u => u.SentFriendRequests)
+            .Where(u => u.Id ==  userId)
+            .FirstOrDefaultAsync();
+        
+        if (existingUser is null)
+        {
+            return new FailureWithMessage("User not found.");
         }
 
-        return userResponse;
+        return new SuccessWithDto<ApplicationUser>(existingUser);
+    }
+
+    public async Task<ResponseBase> GetUserWithReceivedRequestsAsync(Guid userId)
+    {
+        var existingUser = await context.Users
+            .Include(u => u.ReceivedFriendRequests)
+            .Where(u => u.Id ==  userId)
+            .FirstOrDefaultAsync();
+        
+        if (existingUser is null)
+        {
+            return new FailureWithMessage("User not found.");
+        }
+
+        return new SuccessWithDto<ApplicationUser>(existingUser);
+    }
+    
+    public async Task<ResponseBase> GetUserPrivatekeyForRoomAsync(Guid userId, Guid roomId)
+    {
+        var userKeyDto = await context.Users
+            .Include(u => u.UserSymmetricKeys)
+            .Where(u => u.Id == userId &&
+                        u.UserSymmetricKeys.Any(esk => esk.RoomId == roomId))
+            .Select(u => new UserPrivateKeyDto(
+                u.UserSymmetricKeys.First(k => k.RoomId == roomId).EncryptedKey))
+            .FirstOrDefaultAsync();
+        
+        if (userKeyDto is null)
+        {
+            return new FailureWithMessage("User with the desired key not found.");
+        }
+
+        return new SuccessWithDto<UserPrivateKeyDto>(userKeyDto);
     }
 
     public async Task<ResponseBase> GetRoommatePublicKey(string userName)
     {
-        return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.Username,
-            userName,
-            (Func<ApplicationUser, ResponseBase>)(existingUser => 
-                new SuccessWithDto<UserPublicKeyDto>(new UserPublicKeyDto(existingUser.PublicKey)
-            )),
-            message => new FailureWithMessage(message)
-        );
-    }
-    public async Task<ResponseBase> ExamineIfUserHaveSymmetricKeyForRoom(string userName, string roomId)
-    {
-        if (!Guid.TryParse(roomId, out var roomGuid))
+        var publicKey = await context.Users
+            .Where(u => u.UserName ==  userName)
+            .Select(u => new UserPublicKeyDto(u.PublicKey))
+            .FirstOrDefaultAsync();
+
+        if (publicKey is null)
         {
-            return new FailureWithMessage("Invalid Roomid format.");
+            return new FailureWithMessage("Key not found for the desired user.");
+        }
+        
+        return new SuccessWithDto<UserPublicKeyDto>(publicKey);
+    }
+    public async Task<ResponseBase> ExamineIfUserHaveSymmetricKeyForRoom(string userName, Guid roomId)
+    {
+        var result = await context.Users
+            .Include(u => u.UserSymmetricKeys)
+            .AnyAsync(u => u.UserName == userName && u.UserSymmetricKeys.Any(esk => esk.RoomId == roomId));
+
+        if (!result)
+        {
+            return new FailureWithMessage("THe user don't have the key.");
         }
 
-        return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UsernameExamineSymmetricKeys,
-            userName,
-            (Func<ApplicationUser, ResponseBase>)(_ =>  new Success()),
-            message => new FailureWithMessage(message),
-            roomGuid);
+        return new Success();
     }
     public async Task<ResponseBase> SendForgotPasswordEmailAsync(string email)
     {
-        return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UserEmail,
-            email,
-            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser => 
-            {
-                var token = await userManager.GeneratePasswordResetTokenAsync(existingUser);
-                EmailSenderCodeGenerator.StorePasswordResetCode(email, token);
-                var emailResult = await emailSender.SendEmailWithLinkAsync(email, "Password reset", token);
+        var existingUser = await userManager.FindByEmailAsync(email);
+        if (existingUser is null)
+        {
+            return new FailureWithMessage("User not found.");
+        }
+        
+        var token = await userManager.GeneratePasswordResetTokenAsync(existingUser);
+        EmailSenderCodeGenerator.StorePasswordResetCode(email, token);
+        var emailResult = await emailSender.SendEmailWithLinkAsync(email, "Password reset", token);
 
-                if (emailResult is FailureWithMessage)
-                {
-                    return new FailureWithMessage("Email service is currently unavailable.");
-                }
+        if (emailResult is FailureWithMessage)
+        {
+            return new FailureWithMessage("Email service is currently unavailable.");
+        }
 
-                return new SuccessWithMessage("Successfully sent.");
-            }),
-            message => new FailureWithMessage(message));
+        return new SuccessWithMessage("Successfully sent.");
     }
 
     public async Task<ResponseBase> SetNewPasswordAfterResetEmailAsync(string resetId, PasswordResetRequest request)
     {
-        var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(request.Email, resetId, "passwordReset");
+        var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(request.Email, resetId, EmailType.PasswordReset);
         if (!examine)
         {
             return new FailureWithMessage("Invalid or expired reset code.");
         }
+        
+        var existingUser = await userManager.FindByEmailAsync(request.Email);
+        if (existingUser is null)
+        {
+            return new FailureWithMessage("User not found.");
+        }
+        
+        var token = await userManager.GeneratePasswordResetTokenAsync(existingUser);
+        var resetResult = await userManager.ResetPasswordAsync(existingUser, token, request.NewPassword);
 
-        return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UserEmail,
-            request.Email,
-            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser => 
-            {
-                var token = await userManager.GeneratePasswordResetTokenAsync(existingUser);
-                var resetResult = await userManager.ResetPasswordAsync(existingUser, token, request.NewPassword);
+        if (!resetResult.Succeeded)
+        {
+            return new FailureWithMessage("Failed to save new password change.");
+        }
 
-                if (!resetResult.Succeeded)
-                {
-                    return new FailureWithMessage("Failed to save new password change.");
-                }
-
-                return new Success();
-            }),
-            message => new FailureWithMessage(message));
+        return new Success();
     }
 
-    public async Task<ResponseBase> ChangeUserEmailAsync(ChangeEmailRequest request, string userId)
+    public async Task<ResponseBase> ChangeUserEmailAsync(ChangeEmailRequest request, Guid userId)
     {
-        return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UserId,
-            userId,
-            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser => 
-            {
-                if (!existingUser!.TwoFactorEnabled)
-                {
-                    return new FailureWithMessage($"2FA not enabled for user.");
-                }
+        var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (existingUser is null)
+        {
+            return new FailureWithMessage("User not found.");
+        }
+        
+        if (!existingUser!.TwoFactorEnabled)
+        {
+            return new FailureWithMessage($"2FA not enabled for user.");
+        }
 
-                if (existingUser.Email != request.OldEmail)
-                {
-                    return new FailureWithMessage("E-mail address not valid.");
-                }
+        if (existingUser.Email != request.OldEmail)
+        {
+            return new FailureWithMessage("E-mail address not valid.");
+        }
 
-                if (userManager.Users.Any(user => user.Email == request.NewEmail))
-                {
-                    return new FailureWithMessage("This email is already in use.");
-                }
+        if (userManager.Users.Any(user => user.Email == request.NewEmail))
+        {
+            return new FailureWithMessage("This email is already in use.");
+        }
 
-                var token = await userManager.GenerateChangeEmailTokenAsync(existingUser, request.NewEmail);
-                var changeResult = await userManager.ChangeEmailAsync(existingUser, request.NewEmail, token);
+        var token = await userManager.GenerateChangeEmailTokenAsync(existingUser, request.NewEmail);
+        var changeResult = await userManager.ChangeEmailAsync(existingUser, request.NewEmail, token);
 
-                if (!changeResult.Succeeded)
-                {
-                    return new FailureWithMessage("Failed to change Email.");
-                }
+        if (!changeResult.Succeeded)
+        {
+            return new FailureWithMessage("Failed to change Email.");
+        }
 
-                return new SuccessWithDto<UserEmailDto>(new UserEmailDto( request.NewEmail ));
-            }),
-            message => new FailureWithMessage(message));
+        return new SuccessWithDto<UserEmailDto>(new UserEmailDto( request.NewEmail ));
     }
 
-    public async Task<ResponseBase> ChangeUserPasswordAsync(ChangePasswordRequest request, string userId)
+    public async Task<ResponseBase> ChangeUserPasswordAsync(ChangePasswordRequest request, Guid userId)
     {
-        return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UserId,
-            userId,
-            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser => 
+        var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (existingUser is null)
+        {
+            return new FailureWithMessage("User not found.");
+        }
+        
+        var correctPassword = await authService.ExamineLoginCredentialsAsync(existingUser!.UserName!, request.OldPassword);
+        if (correctPassword is FailureWithMessage)
+        {
+            if ((correctPassword as FailureWithMessage)!.Message.Contains("Account is locked"))
             {
-                var correctPassword = await authService.ExamineLoginCredentialsAsync(existingUser!.UserName!, request.OldPassword);
-                if (correctPassword is FailureWithMessage)
-                {
-                    if ((correctPassword as FailureWithMessage)!.Message.Contains("Account is locked"))
-                    {
-                        await authService.LogOutAsync(userId);
-                    }
+                await authService.LogOutAsync(userId);
+            }
 
-                    return correctPassword;
-                }
+            return correctPassword;
+        }
 
-                var changeResult = await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.Password);
+        var changeResult = await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.Password);
 
-                if (!changeResult.Succeeded)
-                {
-                    var errorMessages = string.Join(", ", changeResult.Errors.Select(e => e.Description));
-                    return new FailureWithMessage("Failed to change Password.");
-                }
+        if (!changeResult.Succeeded)
+        {
+            var errorMessages = string.Join(", ", changeResult.Errors.Select(e => e.Description));
+            return new FailureWithMessage("Failed to change Password.");
+        }
 
-                return new SuccessWithDto<UserNameEmailDto>(new UserNameEmailDto(existingUser.UserName!, existingUser.Email!));
-            }),
-            message => new FailureWithMessage(message));
+        return new SuccessWithDto<UserNameEmailDto>(new UserNameEmailDto(existingUser.UserName!, existingUser.Email!));
     }
 
-    public async Task<ResponseBase> ChangeUserAvatarAsync(string userId, string image)
+    public async Task<ResponseBase> ChangeUserAvatarAsync(Guid userId, string image)
     {
-        return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UserId,
-            userId,
-            (Func<ApplicationUser, ResponseBase>)(existingUser => 
-            {
-                var imageSaveResult = SaveImageLocally(existingUser.UserName!, image);
+        var userName = await context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => u.UserName)
+            .FirstOrDefaultAsync();
+        if (userName is null)
+        {
+            return new FailureWithMessage("User not found.");
+        }
+        
+        var imageSaveResult = SaveImageLocally(userName, image);
 
-                return imageSaveResult;
-            }),
-            message => new FailureWithMessage(message));
+        return imageSaveResult;
     }
 
-    public async Task<ResponseBase> DeleteUserAsync(string userId, string password)
+    public async Task<ResponseBase> DeleteUserAsync(Guid userId, string password)
     {
-        return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UserId,
-            userId,
-            (Func<ApplicationUser, Task<ResponseBase>>)(async existingUser => 
-            {
-                await using var transaction = await context.Database.BeginTransactionAsync();
+        var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (existingUser is null)
+        {
+            return new FailureWithMessage("User not found.");
+        }
+        
+        await using var transaction = await context.Database.BeginTransactionAsync();
 
-                if (!await userManager.CheckPasswordAsync(existingUser, password))
-                {
-                    return new FailureWithMessage("Invalid credentials.");
-                }
+        if (!await userManager.CheckPasswordAsync(existingUser, password))
+        {
+            return new FailureWithMessage("Invalid credentials.");
+        }
 
-                var removeFriendsResult = await RemoveFriendConnectionsAsync(existingUser);
+        var removeFriendsResult = await RemoveFriendConnectionsAsync(existingUser);
 
-                if (removeFriendsResult is Failure)
-                {
-                    await transaction.RollbackAsync();
-                    return removeFriendsResult;
-                }
+        if (removeFriendsResult is Failure)
+        {
+            await transaction.RollbackAsync();
+            return removeFriendsResult;
+        }
 
-                var identityResult = await userManager.DeleteAsync(existingUser);
-                if (!identityResult.Succeeded)
-                {
-                    await transaction.RollbackAsync();
-                    return new FailureWithMessage("Failed to delete user.");
-                }
+        var identityResult = await userManager.DeleteAsync(existingUser);
+        if (!identityResult.Succeeded)
+        {
+            await transaction.RollbackAsync();
+            return new FailureWithMessage("Failed to delete user.");
+        }
 
-                var affectedRows = await context.SaveChangesAsync();
-                if (affectedRows == 0)
-                {
-                    await transaction.RollbackAsync();
-                    return new FailureWithMessage("Failed to save changes.");
-                }
+        var affectedRows = await context.SaveChangesAsync();
+        if (affectedRows == 0)
+        {
+            await transaction.RollbackAsync();
+            return new FailureWithMessage("Failed to save changes.");
+        }
 
-                await transaction.CommitAsync();
-                return new SuccessWithDto<UserNameEmailDto>(new UserNameEmailDto(existingUser.UserName!, existingUser.Email!));
-            }),
-            message => new FailureWithMessage(message));
+        await transaction.CommitAsync();
+        return new SuccessWithDto<UserNameEmailDto>(new UserNameEmailDto(existingUser.UserName!, existingUser.Email!));
     }
 
     private async Task<ResponseBase> RemoveFriendConnectionsAsync(ApplicationUser existingUser)

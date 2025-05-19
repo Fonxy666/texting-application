@@ -18,7 +18,7 @@ public class PrivateKeyService : IPrivateKeyService
         _vaultAddress = configuration["HashiCorpAddress"] ?? throw new Exception("Vault address missing!");
     }
 
-    public async Task<ResponseBase> GetEncryptedKeyByUserIdAsync(string userId)
+    public async Task<ResponseBase> GetEncryptedKeyByUserIdAsync(Guid userId)
     {
         try
         {
@@ -92,7 +92,7 @@ public class PrivateKeyService : IPrivateKeyService
         }
     }
 
-    public async Task<ResponseBase> DeleteKey(string userId)
+    public async Task<ResponseBase> DeleteKey(Guid userId)
     {
         try
         {

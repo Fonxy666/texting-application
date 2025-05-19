@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Mail;
 using Textinger.Shared.Responses;
+using UserService.Models;
 
 namespace UserService.Services.EmailSender;
 
@@ -14,12 +15,12 @@ public class EmailSender(IConfiguration configuration, ILogger<EmailSender> logg
         EnableSsl = true
     });
 
-    public async Task<ResponseBase> SendEmailAsync(string userEmail, string tokenType)
+    public async Task<ResponseBase> SendEmailAsync(string userEmail, EmailType tokenType)
     {
         var message = tokenType switch
         {
-            "registration" => $"Verification code: {EmailSenderCodeGenerator.GenerateLongToken(userEmail, "registration")}",
-            "login" => $"Login code: {EmailSenderCodeGenerator.GenerateShortToken(userEmail, "login")}",
+            EmailType.Registration => $"Verification code: {EmailSenderCodeGenerator.GenerateLongToken(userEmail, tokenType)}",
+            EmailType.Login => $"Login code: {EmailSenderCodeGenerator.GenerateShortToken(userEmail, tokenType)}",
             _ => throw new ArgumentException("Invalid token type", nameof(tokenType))
         };
 
@@ -33,19 +34,19 @@ public class EmailSender(IConfiguration configuration, ILogger<EmailSender> logg
         }
         catch (Exception e)
         {
-            logger.LogError($"Failed to send email: {e.Message}");
+            logger.LogError("Failed to send email: {Placeholder}", e.Message);
             return new FailureWithMessage("Cannot send e-mail to this address.");
         }
     }
 
-    public async Task<ResponseBase> SendEmailWithLinkAsync(string email, string subject, string resetId)
+    public async Task<ResponseBase> SendEmailWithLinkAsync(string email, string subject, string token)
     {
         try
         {
             var client = SmtpClientFactory();
             client.Credentials = new NetworkCredential(_developerMail, _developerPw);
 
-            var resetLink = $"http://localhost:4200/password-reset/{WebUtility.UrlEncode(resetId)}/{email}";
+            var resetLink = $"http://localhost:4200/password-reset/{WebUtility.UrlEncode(token)}/{email}";
             var htmlMessage = $"<br/><a href=\"{resetLink}\">Reset Password</a>";
 
             await client.SendMailAsync(new MailMessage(_developerMail, email, subject, htmlMessage)

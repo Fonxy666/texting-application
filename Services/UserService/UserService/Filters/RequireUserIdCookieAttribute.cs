@@ -17,6 +17,6 @@ public class RequireUserIdCookieAttribute : Attribute, IAuthorizationFilter
             return;
         }
 
-        context.HttpContext.Items["UserId"] = userIdClaim;
+        context.HttpContext.Items["UserId"] = userId;
     }
 }

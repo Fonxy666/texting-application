@@ -38,7 +38,10 @@ export class FriendService {
         .configureLogging(signalR.LogLevel.Critical)
         .build();
         
-        this.initializeConnection();
+        let userId = this.cookieService.get("UserId");
+        if (userId !== "") {
+            this.initializeConnection();
+        }
         
         if (this.loggedIn) {
             this.loadInitialData();

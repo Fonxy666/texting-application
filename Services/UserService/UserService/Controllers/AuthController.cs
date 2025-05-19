@@ -11,6 +11,7 @@ using UserService.Services.Authentication;
 using UserService.Models.Requests;
 using UserService.Filters;
 using Textinger.Shared.Responses;
+using UserService.Models;
 
 namespace UserService.Controllers;
 
@@ -28,7 +29,7 @@ public class AuthController(
     {
         try
         {
-            var emailResponse = await emailSender.SendEmailAsync(receiver.Email, "registration");
+            var emailResponse = await emailSender.SendEmailAsync(receiver.Email, EmailType.Registration);
             if (emailResponse is Failure)
             {
                 return BadRequest(emailResponse);
@@ -48,13 +49,13 @@ public class AuthController(
     {
         try
         {
-            var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(credentials.Email, credentials.VerifyCode, "registration");
+            var result =  EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(credentials.Email, credentials.VerifyCode, EmailType.Registration);
             if (!result)
             {
                 return await Task.FromResult<ActionResult<ResponseBase>>(BadRequest(new FailureWithMessage("Invalid token.")));
             }
             
-            EmailSenderCodeGenerator.RemoveVerificationCode(credentials.Email, "registration");
+            EmailSenderCodeGenerator.RemoveVerificationCode(credentials.Email, EmailType.Registration);
             return await Task.FromResult<ActionResult<ResponseBase>>(Ok(new Success()));
         }
         catch (Exception e)
@@ -82,6 +83,11 @@ public class AuthController(
             {
                 return StatusCode(500, result);
             }
+            
+            if (result is FailureWithMessage)
+            {
+                return BadRequest(result);
+            }
 
             return Ok(new Success());
         }
@@ -108,9 +114,9 @@ public class AuthController(
                 };
             }
         
-            var userEmail = (result as SuccessWithDto<UserNameEmailDto>)!.Data!.Email;
+            var userEmail = (result as SuccessWithDto<UserEmailDto>)!.Data!.Email;
 
-            var sentEmail = await emailSender.SendEmailAsync(userEmail, "login");
+            var sentEmail = await emailSender.SendEmailAsync(userEmail, EmailType.Login);
 
             if (sentEmail is Failure)
             {
@@ -135,7 +141,7 @@ public class AuthController(
 
             if (loginResult is FailureWithMessage)
             {
-                return BadRequest(loginResult);
+                return BadRequest(new FailureWithMessage("And error occured during login."));
             }
 
             return Ok(loginResult);
@@ -257,9 +263,8 @@ public class AuthController(
     {
         try
         {
-            Console.WriteLine(HttpContext.Items["UserId"]);
-            var userId = (string)HttpContext.Items["UserId"]!;
-            var logoutResult = await authenticationService.LogOutAsync(userId!);
+            var userId = (Guid)HttpContext.Items["UserId"]!;
+            var logoutResult = await authenticationService.LogOutAsync(userId);
 
             return Ok(logoutResult);
         }

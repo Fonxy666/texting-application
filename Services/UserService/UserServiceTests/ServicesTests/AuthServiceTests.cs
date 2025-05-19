@@ -114,7 +114,7 @@ public class AuthServiceTests : IAsyncLifetime
     [Fact]
     public async Task LoginAsync_HandlesValidLogin_AndPreventsLoginWithInvalidData()
     {
-        var token = EmailSenderCodeGenerator.GenerateShortToken("test1@hotmail.com", "login");
+        var token = EmailSenderCodeGenerator.GenerateShortToken("test1@hotmail.com", EmailType.Login);
         // Success test
         var successRequest = new LoginAuth( "TestUsername1", true, token);
 
@@ -123,7 +123,7 @@ public class AuthServiceTests : IAsyncLifetime
         Assert.That(successResult, Is.InstanceOf<SuccessWithDto<KeysDto>>());
         
         // Failure with wrong token
-        var wrongToken = EmailSenderCodeGenerator.GenerateShortToken("bad@hotmail.com", "login");
+        var wrongToken = EmailSenderCodeGenerator.GenerateShortToken("bad@hotmail.com", EmailType.Login);
         var wrongWIthBBadTokenRequest = new LoginAuth( "TestUsername1", true, wrongToken);
         var failureWIthWrongTokenResult = await _authService.LoginAsync(wrongWIthBBadTokenRequest);
 

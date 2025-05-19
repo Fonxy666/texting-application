@@ -99,7 +99,11 @@ public class Startup(IConfiguration configuration)
         services.AddGrpc();
         services.AddSingleton<IVaultClient>(vaultClient);
 
-        services.AddDbContext<MainDatabaseContext>(options => options.UseNpgsql(connection));
+        services.AddDbContext<MainDatabaseContext>(options =>
+            options.UseNpgsql(connection, o =>
+            {
+                o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+            }));
 
         services.AddDistributedMemoryCache();
 

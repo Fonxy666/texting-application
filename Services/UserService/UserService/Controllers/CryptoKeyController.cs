@@ -26,11 +26,7 @@ public class CryptoKeyController(
     {
         try
         {
-            var userId = (string)HttpContext.Items["UserId"]!;
-            if (userId == null)
-            {
-                return BadRequest(new FailureWithMessage("There is no Userid provided."));
-            }
+            var userId = (Guid)HttpContext.Items["UserId"]!;
 
             var privateKeyResponse = await privateKeyService.GetEncryptedKeyByUserIdAsync(userId);
 
@@ -55,9 +51,13 @@ public class CryptoKeyController(
     {
         try
         {
-            var userId = (string)HttpContext.Items["UserId"]!;
+            var userId = (Guid)HttpContext.Items["UserId"]!;
+            if (!Guid.TryParse(roomId, out var roomGuid))
+            {
+                return BadRequest(new FailureWithMessage("Invalid room ID format."));
+            }
 
-            var getKeyResponse = await userService.GetUserPrivatekeyForRoomAsync(userId!, roomId);
+            var getKeyResponse = await userService.GetUserPrivatekeyForRoomAsync(userId, roomGuid);
 
             if (getKeyResponse is FailureWithMessage)
             {
@@ -80,11 +80,13 @@ public class CryptoKeyController(
     {
         try
         {
-            var userId = (string)HttpContext.Items["UserId"]!;
-            var userGuid = Guid.Parse(userId);
-            var roomGuid = new Guid(data.RoomId);
+            var userId = (Guid)HttpContext.Items["UserId"]!;
+            if (!Guid.TryParse(data.RoomId, out var roomGuid))
+            {
+                return BadRequest(new FailureWithMessage("Invalid room ID format."));
+            }
 
-            var newKey = new EncryptedSymmetricKey(userGuid, data.EncryptedKey, roomGuid);
+            var newKey = new EncryptedSymmetricKey(userId, data.EncryptedKey, roomGuid);
 
             var result = await keyService.SaveNewKeyAndLinkToUserAsync(newKey);
 
@@ -130,7 +132,11 @@ public class CryptoKeyController(
     {
         try
         {
-            var keyExisting = await userService.ExamineIfUserHaveSymmetricKeyForRoom(userName, roomId);
+            if (!Guid.TryParse(roomId, out var roomGuid))
+            {
+                return BadRequest(new FailureWithMessage("Invalid room ID format."));
+            }
+            var keyExisting = await userService.ExamineIfUserHaveSymmetricKeyForRoom(userName, roomGuid);
 
             if (keyExisting is FailureWithMessage)
             {

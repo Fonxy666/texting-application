@@ -1,6 +1,10 @@
-export interface AuthResponseSuccess<T> {
+export type AuthResponseSuccess<T> = T extends string ?
+{
     isSuccess: true;
-    data: T;
+    message: T;
+} : {
+    isSuccess: true;
+    message: T
 }
   
 export interface AuthResponseFailure {
@@ -18,4 +22,4 @@ export interface UserCredentials {
     Email: string;
 }
   
-export type AuthResponse<T> = AuthResponseSuccess<T> | AuthResponseFailure;
+export type AuthResponse<T> = AuthResponseSuccess<T> | AuthResponseFailure; 

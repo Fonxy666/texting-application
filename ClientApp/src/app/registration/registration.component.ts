@@ -8,7 +8,6 @@ import { RegistrationRequest, TokenValidatorRequest } from '../model/auth-reques
 @Component({
   selector: 'app-registration',
   templateUrl: './registration.component.html',
-  providers: [ MessageService ],
 })
 
 export class RegistrationComponent {
@@ -17,7 +16,7 @@ export class RegistrationComponent {
         private messageService: MessageService,
         private authService: AuthService
     ) { }
-
+    
     isLoading: boolean = false;
     user: RegistrationRequest | undefined;
     showVerifyPage: boolean = false;
@@ -37,7 +36,7 @@ export class RegistrationComponent {
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Success',
-                    detail: `${response.data}`,
+                    detail: `${response.message}`,
                     styleClass: 'ui-toast-message-success'
                 });
             } else if (!response.isSuccess) {
@@ -56,6 +55,8 @@ export class RegistrationComponent {
     }
 
     getVerifyTokenAndSendRegistration(verifyCode: String) {
+        if (this.isLoading) return;
+
         this.isLoading = true;
         const request: TokenValidatorRequest = { email: this.user!.email, verifyCode: verifyCode.toString() };
         this.authService.examineVerifyToken(request)
@@ -63,22 +64,9 @@ export class RegistrationComponent {
             if (response.isSuccess) {
                 this.sendRegistration();
                 this.isLoading = false;
-                this.router.navigate(['login'], { queryParams: { registrationSuccess: 'true' } });
-            } else if (!response.isSuccess) {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: `${response.message}`
-                });
             }
         },
         (error) => {
-            this.isLoading = false;
-            this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'Wrong token.'
-            });
             console.error("An error occurred:", error);
         });
     }
@@ -89,16 +77,19 @@ export class RegistrationComponent {
         .subscribe((response: AuthResponse<string>) => {
             if (response.isSuccess) {
                 this.router.navigate(['login'], { queryParams: { registrationSuccess: 'true' } });
-            } else {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: `${response.message}`
-                });
             }
         },
         (error) => {
             this.isLoading = false;
+            console.log(error);
+            this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: `${error.error.message || 'Registration failed.'}`
+                });
+            setTimeout(() => {
+               this.router.navigate(['login'], { queryParams: { registrationSuccess: 'false' } }); 
+            }, 3000);
             console.error("An error occurred:", error);
         });
     }

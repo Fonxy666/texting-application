@@ -5,19 +5,19 @@ namespace UserService.Services.User;
 
 public interface IApplicationUserService
 {
-    Task<ResponseBase> GetUserNameAsync(string userId);
-    Task<ResponseBase> GetImageWithIdAsync(string userId);
-    Task<ResponseBase> GetUserCredentialsAsync(string userId);
-    Task<ResponseBase> GetUserWithSentRequestsAsync(string userId);
-    Task<ResponseBase> GetUserWithReceivedRequestsAsync(string userId);
-    Task<ResponseBase> GetUserPrivatekeyForRoomAsync(string userId, string roomId);
-    Task<ResponseBase> GetRoommatePublicKey(string username);
-    Task<ResponseBase> ExamineIfUserHaveSymmetricKeyForRoom(string username, string roomId);
+    Task<ResponseBase> GetUserNameAsync(Guid userId);
+    Task<ResponseBase> GetImageWithIdAsync(Guid userId);
+    Task<ResponseBase> GetUserCredentialsAsync(Guid userId);
+    Task<ResponseBase> GetUserWithSentRequestsAsync(Guid userId);
+    Task<ResponseBase> GetUserWithReceivedRequestsAsync(Guid userId);
+    Task<ResponseBase> GetUserPrivatekeyForRoomAsync(Guid userId, Guid roomId);
+    Task<ResponseBase> GetRoommatePublicKey(string userName);
+    Task<ResponseBase> ExamineIfUserHaveSymmetricKeyForRoom(string userName, Guid roomId);
     Task<ResponseBase> SendForgotPasswordEmailAsync(string email);
     Task<ResponseBase> SetNewPasswordAfterResetEmailAsync(string resetId, PasswordResetRequest request);
-    Task<ResponseBase> ChangeUserEmailAsync(ChangeEmailRequest request, string userId);
-    Task<ResponseBase> ChangeUserPasswordAsync(ChangePasswordRequest request, string userId);
-    Task<ResponseBase> ChangeUserAvatarAsync(string userId, string image);
-    Task<ResponseBase> DeleteUserAsync(string userId, string password);
-    ResponseBase SaveImageLocally(string usernameFileName, string base64Image);
+    Task<ResponseBase> ChangeUserEmailAsync(ChangeEmailRequest request, Guid userId);
+    Task<ResponseBase> ChangeUserPasswordAsync(ChangePasswordRequest request, Guid userId);
+    Task<ResponseBase> ChangeUserAvatarAsync(Guid userId, string image);
+    Task<ResponseBase> DeleteUserAsync(Guid userId, string password);
+    ResponseBase SaveImageLocally(string userNameFileName, string base64Image);
 }

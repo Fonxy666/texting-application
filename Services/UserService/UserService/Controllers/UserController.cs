@@ -9,6 +9,7 @@ using UserService.Filters;
 using UserService.Models.Requests;
 using UserService.Services.Authentication;
 using Textinger.Shared.Responses;
+using UserService.Models;
 
 namespace UserService.Controllers;
 
@@ -28,7 +29,11 @@ public class UserController(
     {
         try
         {
-            var userNameResponse = await userService.GetUserNameAsync(userId);
+            if (!Guid.TryParse(userId, out var userGuid))
+            {
+                return BadRequest(new FailureWithMessage("Invalid user id from get username."));
+            }
+            var userNameResponse = await userService.GetUserNameAsync(userGuid);
 
             if (userNameResponse is FailureWithMessage)
             {
@@ -51,7 +56,7 @@ public class UserController(
     {
         try
         {
-            var userId = (string)HttpContext.Items["UserId"]!;
+            var userId = (Guid)HttpContext.Items["UserId"]!;
 
             var userResponse = await userService.GetUserCredentialsAsync(userId);
 
@@ -99,7 +104,7 @@ public class UserController(
     {
         try
         {
-            var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(email, resetId, "passwordReset");
+            var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(email, resetId, EmailType.PasswordReset);
 
             if (!examine)
             {
@@ -144,7 +149,12 @@ public class UserController(
     {
         try
         {
-            var getImageResult = await userService.GetImageWithIdAsync(userId);
+            if (!Guid.TryParse(userId, out var userGuid))
+            {
+                return BadRequest(new FailureWithMessage("Invalid user id from get image."));
+            }
+            
+            var getImageResult = await userService.GetImageWithIdAsync(userGuid);
 
             if (getImageResult is FailureWithMessage)
             {
@@ -170,7 +180,7 @@ public class UserController(
     {
         try
         {
-            var userId = (string)HttpContext.Items["UserId"]!;
+            var userId = (Guid)HttpContext.Items["UserId"]!;
 
             var changeEmailResponse = await userService.ChangeUserEmailAsync(request, userId);
 
@@ -199,7 +209,7 @@ public class UserController(
     {
         try
         {
-            var userId = (string)HttpContext.Items["UserId"]!;
+            var userId = (Guid)HttpContext.Items["UserId"]!;
 
             var changePasswordResult = await userService.ChangeUserPasswordAsync(request, userId);
 
@@ -228,7 +238,7 @@ public class UserController(
     {
         try
         {
-            var userId = (string)HttpContext.Items["UserId"]!;
+            var userId = (Guid)HttpContext.Items["UserId"]!;
             var imageSaveResult = await userService.ChangeUserAvatarAsync(userId, image);
 
             if (imageSaveResult is FailureWithMessage error)
@@ -256,7 +266,7 @@ public class UserController(
     {
         try
         {
-            var userId = (string)HttpContext.Items["UserId"]!;
+            var userId = (Guid)HttpContext.Items["UserId"]!;
 
             await authenticationService.LogOutAsync(userId!);
 
@@ -287,7 +297,7 @@ public class UserController(
     {
         try
         {
-            var userId = (string)HttpContext.Items["UserId"]!;
+            var userId = (Guid)HttpContext.Items["UserId"]!;
 
             var sendFriendRequestResult = await friendConnectionService.SendFriendRequestAsync(userId, friendName);
 
@@ -318,7 +328,7 @@ public class UserController(
     {
         try
         {
-            var userId = (string)HttpContext.Items["UserId"]!;
+            var userId = (Guid)HttpContext.Items["UserId"]!;
 
             var result = await friendConnectionService.GetPendingRequestCountAsync(userId!);
 
@@ -343,7 +353,7 @@ public class UserController(
     {
         try
         {
-            var userId = (string)HttpContext.Items["UserId"]!;
+            var userId = (Guid)HttpContext.Items["UserId"]!;
 
             var requests = await friendConnectionService.GetAllPendingRequestsAsync(userId);
 
@@ -368,9 +378,13 @@ public class UserController(
     {
         try
         {
-            var userId = (string)HttpContext.Items["UserId"]!;
+            var userId = (Guid)HttpContext.Items["UserId"]!;
+            if (!Guid.TryParse(requestId, out var requestGuid))
+            {
+                return BadRequest(new FailureWithMessage("Invalid room ID format."));
+            }
 
-            var acceptFriendRequestResult = await friendConnectionService.AcceptReceivedFriendRequestAsync(userId, requestId);
+            var acceptFriendRequestResult = await friendConnectionService.AcceptReceivedFriendRequestAsync(userId, requestGuid);
 
             if (acceptFriendRequestResult is FailureWithMessage error)
             {
@@ -398,9 +412,26 @@ public class UserController(
     {
         try
         {
-            var userId = (string)HttpContext.Items["UserId"]!;
+            var userId = (Guid)HttpContext.Items["UserId"]!;
+            
+            UserType? parsedUserType = userType switch
+            {
+                "receiver" => UserType.Receiver,
+                "sender" => UserType.Sender,
+                _ => null
+            };
+            
+            if (parsedUserType is null)
+            {
+                return BadRequest(new FailureWithMessage("Invalid user type."));
+            }
+            
+            if (!Guid.TryParse(requestId, out var requestGuid))
+            {
+                return BadRequest(new FailureWithMessage("Invalid room ID format."));
+            }
 
-            var deleteFriendRequestResult = await friendConnectionService.DeleteFriendRequestAsync(userId, userType, requestId);
+            var deleteFriendRequestResult = await friendConnectionService.DeleteFriendRequestAsync(userId, parsedUserType.Value, requestGuid);
 
             if (deleteFriendRequestResult is FailureWithMessage error)
             {
@@ -428,9 +459,9 @@ public class UserController(
     {
         try
         {
-            var userId = (string)HttpContext.Items["UserId"]!;
+            var userId = (Guid)HttpContext.Items["UserId"]!;
 
-            var getFriendsResult = await friendConnectionService.GetFriendsAsync(userId!);
+            var getFriendsResult = await friendConnectionService.GetFriendsAsync(userId);
 
             if (getFriendsResult is FailureWithMessage)
             {
@@ -453,9 +484,13 @@ public class UserController(
     {
         try
         {
-            var userId = (string)HttpContext.Items["UserId"]!;
+            var userId = (Guid)HttpContext.Items["UserId"]!;
+            if (!Guid.TryParse(requestId, out var requestGuid))
+            {
+                return BadRequest(new FailureWithMessage("Invalid room ID format."));
+            }
             
-            var friendDeletionResult = await friendConnectionService.DeleteFriendAsync(userId, requestId);
+            var friendDeletionResult = await friendConnectionService.DeleteFriendAsync(userId, requestGuid);
 
             if (friendDeletionResult is FailureWithMessage error)
             {

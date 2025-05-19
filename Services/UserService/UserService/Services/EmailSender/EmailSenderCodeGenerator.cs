@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using UserService.Models;
 
 namespace UserService.Services.EmailSender;
 
@@ -9,7 +10,7 @@ public static class EmailSenderCodeGenerator
     private static readonly Dictionary<string, (string Code, DateTime Timestamp)> PasswordResetCodes = new();
     private const int CodeExpirationMinutes = 2;
     
-    public static string GenerateLongToken(string email, string type)
+    public static string GenerateLongToken(string email, EmailType type)
     {
         const string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -32,7 +33,7 @@ public static class EmailSenderCodeGenerator
         return new string(token);
     }
     
-    public static string GenerateShortToken(string email, string type)
+    public static string GenerateShortToken(string email, EmailType type)
     {
         const string characters = "0123456789";
 
@@ -50,65 +51,56 @@ public static class EmailSenderCodeGenerator
 
     public static void StorePasswordResetCode(string email, string token)
     {
-        StoreVerificationCode(email, token, "passwordReset");
+        StoreVerificationCode(email, token, EmailType.PasswordReset);
     }
     
-    private static void StoreVerificationCode(string email, string code, string type)
+    private static void StoreVerificationCode(string email, string code, EmailType type)
     {
         var timestamp = DateTime.UtcNow;
         switch (type)
         {
-            case "registration":
+            case EmailType.Registration:
                 RegVerificationCodes[email] = (code, timestamp);
                 break;
-            case "login":
+            case EmailType.Login:
                 LoginVerificationCodes[email] = (code, timestamp);
                 break;
-            case "passwordReset":
+            case EmailType.PasswordReset:
                 PasswordResetCodes[email] = (code, timestamp);
                 break;
         }
     }
 
-    public static bool ExamineIfTheCodeWasOk(string email, string verifyCode, string type)
+    public static bool ExamineIfTheCodeWasOk(string email, string verifyCode, EmailType type)
     {
         var timestamp = DateTime.UtcNow;
         var verificationCodes = type switch
         {
-            "registration" => RegVerificationCodes,
-            "login" => LoginVerificationCodes,
-            "passwordReset" => PasswordResetCodes
+            EmailType.Registration => RegVerificationCodes,
+            EmailType.Login => LoginVerificationCodes,
+            EmailType.PasswordReset => PasswordResetCodes
         };
 
         if (!verificationCodes.TryGetValue(email, out var value)) return false;
-        var decodedCode = type == "passwordReset" ? WebUtility.UrlDecode(value.Code) : value.Code;
+        var decodedCode = type == EmailType.PasswordReset ? WebUtility.UrlDecode(value.Code) : value.Code;
 
         if (decodedCode != verifyCode) return false;
         return (timestamp - value.Timestamp).TotalMinutes <= CodeExpirationMinutes;
     }
 
-    public static void RemoveVerificationCode(string email, string type)
+    public static void RemoveVerificationCode(string email, EmailType type)
     {
-        if (type == "registration")
+        switch (type)
         {
-            if (RegVerificationCodes.ContainsKey(email))
-            {
+            case EmailType.Registration:
                 RegVerificationCodes.Remove(email);
-            }
-        }
-        else if (type == "login")
-        {
-            if (LoginVerificationCodes.ContainsKey(email))
-            {
+                break;
+            case EmailType.Login:
                 LoginVerificationCodes.Remove(email);
-            }
-        }
-        else if (type == "passwordReset")
-        {
-            if (PasswordResetCodes.ContainsKey(email))
-            {
+                break;
+            case EmailType.PasswordReset:
                 PasswordResetCodes.Remove(email);
-            }
+                break;
         }
     }
 }

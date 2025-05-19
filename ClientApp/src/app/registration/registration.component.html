@@ -1,11 +1,11 @@
 <div>
-    <p-toast></p-toast>
     <app-loading-screen *ngIf="isLoading"/>
     <ng-container *ngIf="this.showVerifyPage === false">
         <app-create-registration-request [ngClass]="{'blur-content': isLoading}"
             (SendRegistrationRequest)="getVerifyTokenAndGoToVerifyPage($event)"/>
     </ng-container>
     <ng-container *ngIf="this.showVerifyPage === true">
+        <p-toast position="top-center"></p-toast>
         <app-token-provide [ngClass]="{'blur-content': isLoading}"
             background="true"
             pageName="Registration"

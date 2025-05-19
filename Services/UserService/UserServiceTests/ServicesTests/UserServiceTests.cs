@@ -75,14 +75,14 @@ public class UserServiceTest : IAsyncLifetime
     public async Task RegisterAsync_HandlesValidRegistration_AndPreventsDuplicateEmailUsernamePhone()
     {
         // Success test
-        const string userIdForSuccess = "38db530c-b6bb-4e8a-9c19-a5cd4d0fa916";
+        var userIdForSuccess = Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916");
 
         var successResult = await _userService.GetUserNameAsync(userIdForSuccess);
 
         Assert.That(successResult, Is.InstanceOf<SuccessWithDto<UserNameDto>>());
         
         // Failed test
-        const string userIdForNotFound = "38db530c-b6bb-4e8a-9c19-a5cd4d0fa915";
+        var userIdForNotFound = Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa915");
 
         var notFoundResult = await _userService.GetUserNameAsync(userIdForNotFound);
 

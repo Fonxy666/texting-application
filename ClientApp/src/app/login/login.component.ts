@@ -116,13 +116,12 @@ export class LoginComponent implements OnInit {
             }
         }, 
         (error) => {
-            console.log(error);
             this.isLoading = false;
             if (error.status === 400) {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: `${error.error}`
+                    detail: `${error.error.message}`
                 });
             } else {
                 this.messageService.add({
