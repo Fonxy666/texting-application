@@ -305,8 +305,8 @@ public class UserController(
             {
                 return error.Message switch
                 {
-                    var msg when msg == "User not found." => NotFound(error),
-                    "New friend not found." => NotFound(error),
+                    var msg when msg == $"There is no User with this username: {friendName}" => NotFound(error),
+                    "You cannot send friend request to yourself." => BadRequest(error),
                     "Failed to save changes." => StatusCode(500, error),
                     _ => BadRequest(error)
                 };

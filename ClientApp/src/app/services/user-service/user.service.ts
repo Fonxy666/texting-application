@@ -3,7 +3,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
-import { GetUserCredentials, UserResponse } from '../../model/responses/user-responses.model';
+import { GetUserCredentials, UserName, UserResponse } from '../../model/responses/user-responses.model';
 import { ChangeEmailRequest, ChangePasswordRequestForUser, ResetPasswordRequest } from '../../model/user-credential-requests/user-credentials-requests';
 import { AuthResponse } from '../../model/responses/auth-responses.model';
 
@@ -21,7 +21,7 @@ export class UserService {
         if (userId !== "") {
             this.getUsername(userId).subscribe(response => {
                 if (response.isSuccess) {
-                    this.userName = response.data;
+                    this.userName = response.data.userName;
                 } else {
                     this.userName = "Username"
                 }
@@ -49,9 +49,9 @@ export class UserService {
         )
     }
 
-    getUsername(userId: string): Observable<UserResponse<string>> {
+    getUsername(userId: string): Observable<UserResponse<UserName>> {
         return this.errorHandler.handleErrors(
-            this.http.get<UserResponse<string>>(`/api/v1/User/GetUsername?userId=${userId}`, { withCredentials: true})
+            this.http.get<UserResponse<UserName>>(`/api/v1/User/GetUsername?userId=${userId}`, { withCredentials: true})
         )
     };
 

@@ -26,12 +26,20 @@ public class FriendConnection
         SentTime = DateTime.UtcNow;
         AcceptedTime = null;
     }
+    
+    public FriendConnection(Guid connectionId, Guid senderId, Guid receiverId, DateTime sentTime, DateTime acceptedTime)
+    {
+        ConnectionId = connectionId;
+        SenderId = senderId;
+        ReceiverId = receiverId;
+        Status = FriendStatus.Accepted;
+        SentTime = sentTime;
+        AcceptedTime = acceptedTime;
+    }
 
     public void SetStatusToAccepted()
     {
         Status = FriendStatus.Accepted;
         AcceptedTime = DateTime.UtcNow;
     }
-
-    public void ResetSentTime() => SentTime = DateTime.UtcNow;
 }

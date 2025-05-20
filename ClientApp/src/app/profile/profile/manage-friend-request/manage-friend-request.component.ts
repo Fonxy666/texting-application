@@ -7,6 +7,7 @@ import { MediaService } from '../../../services/media-service/media.service';
 import { DisplayService } from '../../../services/display-service/display.service';
 import { ShowFriendRequestData, UserResponse, UserResponseFailure } from '../../../model/responses/user-responses.model';
 import { DeleteFriendRequest } from '../../../model/friend-requests/friend-requests.model';
+import { UserService } from '../../../services/user-service/user.service';
 
 @Component({
   selector: 'app-manage-friend-request',
@@ -26,7 +27,8 @@ export class ManageFriendRequestComponent implements OnInit {
         private messageService: MessageService,
         private cookieService: CookieService,
         private mediaService: MediaService,
-        public displayService: DisplayService
+        public displayService: DisplayService,
+        private userService: UserService
     ) { }
 
     friendName!: FormGroup;
@@ -64,6 +66,15 @@ export class ManageFriendRequestComponent implements OnInit {
 
     OnFormSubmit() {
         const friendName = this.friendName.get('userName')?.value;
+        console.log( typeof(this.userService.userName))
+        if (this.userService.userName === friendName) {
+            this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: `You can not send friend request to yourself.`
+                });
+            return;
+        }
         this.friendService.sendFriendRequestHttp(friendName)
         .subscribe(
             (response: UserResponse<ShowFriendRequestData>) => {

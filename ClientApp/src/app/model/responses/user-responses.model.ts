@@ -15,6 +15,10 @@ export interface UserKeys {
     privateKey: string;
 }
 
+export interface UserName {
+    userName: string;
+}
+
 export interface GetUserCredentials {
     userName: string;
     email: string;
