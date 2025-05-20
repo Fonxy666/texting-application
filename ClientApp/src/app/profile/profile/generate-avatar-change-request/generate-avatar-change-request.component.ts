@@ -75,7 +75,7 @@ export class GenerateAvatarChangeRequestComponent {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: response.error?.message
+                    detail: response.error!.message
                 });
             }
         });

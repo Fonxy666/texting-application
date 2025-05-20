@@ -3,8 +3,8 @@ import { CookieService } from 'ngx-cookie-service';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../services/auth-service/auth.service';
-import { AuthResponse } from '../model/responses/auth-responses.model';
 import { LoginAuthTokenRequest, LoginRequest } from '../model/auth-requests/auth-requests';
+import { ServerResponse } from '../model/responses/shared-response.model';
 
 @Component({
     selector: 'app-login',
@@ -66,7 +66,7 @@ export class LoginComponent implements OnInit {
     createTask(form: LoginRequest) {
         this.isLoading = true;
         this.authService.sendLoginToken(form)
-        .subscribe((response: AuthResponse<string>) => {
+        .subscribe((response: ServerResponse<string>) => {
             if (response.isSuccess) {
                 this.loginRequest.userName = form.userName;
                 this.loginRequest.rememberMe = form.rememberMe;
@@ -82,7 +82,7 @@ export class LoginComponent implements OnInit {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: `${error.error}`
+                    detail: `${error.error.message}`
                 });
 
             } else {
@@ -108,7 +108,7 @@ export class LoginComponent implements OnInit {
     };
 
         this.authService.login(request)
-        .subscribe((response: AuthResponse<string>) => {
+        .subscribe((response: ServerResponse<string>) => {
             if (response.isSuccess) {
                 this.loginStarted = false;
                 this.isLoading = false;

@@ -30,6 +30,11 @@ export interface UserPrivateKeyAndIv {
     iv: string;
 }
 
+export interface UserCredentials {
+    Id: string;
+    Email: string;
+}
+
 export interface UserEncryptedPrivateKeyAndIv {
     encryptedPrivateKey: string;
     iv: string;

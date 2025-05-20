@@ -1,11 +1,17 @@
-export interface ResponseSuccess<T> {
+export type ResponseSuccess<T> = T extends string ?
+{
     isSuccess: true;
-    data: T;
+    message: T;
+} : {
+    isSuccess: true;
+    data: T
 }
   
 export interface ResponseFailure {
     isSuccess: false;
-    message?: string;
+    error?: {
+        message: string
+    }
 }
   
-export type Response<T> = ResponseSuccess<T> | ResponseFailure;
+export type ServerResponse<T> = ResponseSuccess<T> | ResponseFailure;

@@ -38,7 +38,7 @@ export class ForgotPasswordComponent {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: response.message
+                    detail: response.error!.message
                 });
             }
         },

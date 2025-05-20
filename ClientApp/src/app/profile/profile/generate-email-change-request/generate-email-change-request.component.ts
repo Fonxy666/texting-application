@@ -62,7 +62,7 @@ export class GenerateEmailChangeRequestComponent implements OnInit {
                     this.messageService.add({
                         severity: 'error',
                         summary: 'Error',
-                        detail: response.error?.message,
+                        detail: response.error!.message,
                     });
                 }
             }, 

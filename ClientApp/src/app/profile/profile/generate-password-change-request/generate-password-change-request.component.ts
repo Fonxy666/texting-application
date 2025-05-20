@@ -102,12 +102,13 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: response.error?.message
+                    detail: response.error!.message
                 });
             }
         },
         (error) => {
-            if (error.error.includes("Account is locked")) {
+            console.log(error)
+            if (error.error.message.includes("Account is locked")) {
                 this.router.navigate(['/'], { queryParams: { logout: 'true' } });
                 console.log("OKE");
             }
@@ -115,7 +116,7 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
             this.messageService.add({
                 severity: 'error',
                 summary: 'Error',
-                detail: error.error
+                detail: error.error.message
             });
         });
     }

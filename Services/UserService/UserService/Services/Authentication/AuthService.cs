@@ -220,7 +220,7 @@ public class AuthService(
             await userManager.AccessFailedAsync(existingUser);
             var accessFailedCount = await userManager.GetAccessFailedCountAsync(existingUser);
             logger.LogError("Invalid password.");
-            return new FailureWithMessage($"Invalid credentials, u have {5 - accessFailedCount} more tries.");
+            return new FailureWithMessage($"Invalid credentials, u have {5 - accessFailedCount} more trie(s).");
         }
 
 

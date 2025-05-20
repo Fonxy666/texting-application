@@ -3,9 +3,9 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
-import { GetUserCredentials, UserName, UserResponse } from '../../model/responses/user-responses.model';
+import { GetUserCredentials, UserName } from '../../model/responses/user-responses.model';
 import { ChangeEmailRequest, ChangePasswordRequestForUser, ResetPasswordRequest } from '../../model/user-credential-requests/user-credentials-requests';
-import { AuthResponse } from '../../model/responses/auth-responses.model';
+import { ServerResponse } from '../../model/responses/shared-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -43,57 +43,57 @@ export class UserService {
         this.imageSubject.next(image);
     }
 
-    getUserCredentials(): Observable<UserResponse<GetUserCredentials>> {
+    getUserCredentials(): Observable<ServerResponse<GetUserCredentials>> {
         return this.errorHandler.handleErrors(
-            this.http.get<UserResponse<GetUserCredentials>>(`/api/v1/User/GetUserCredentials`, { withCredentials: true })
+            this.http.get<ServerResponse<GetUserCredentials>>(`/api/v1/User/GetUserCredentials`, { withCredentials: true })
         )
     }
 
-    getUsername(userId: string): Observable<UserResponse<UserName>> {
+    getUsername(userId: string): Observable<ServerResponse<UserName>> {
         return this.errorHandler.handleErrors(
-            this.http.get<UserResponse<UserName>>(`/api/v1/User/GetUsername?userId=${userId}`, { withCredentials: true})
+            this.http.get<ServerResponse<UserName>>(`/api/v1/User/GetUsername?userId=${userId}`, { withCredentials: true})
         )
     };
 
-    forgotPassword(email: string): Observable<AuthResponse<string>> {
+    forgotPassword(email: string): Observable<ServerResponse<string>> {
         return this.errorHandler.handleErrors(
-            this.http.get<AuthResponse<string>>(`/api/v1/User/SendForgotPasswordToken?email=${email}`)
+            this.http.get<ServerResponse<string>>(`/api/v1/User/SendForgotPasswordToken?email=${email}`)
         )
     }
 
-    examinePasswordResetLink(emailParam: string, idParam: string): Observable<AuthResponse<void>> {
+    examinePasswordResetLink(emailParam: string, idParam: string): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.get<AuthResponse<void>>(`/api/v1/User/ExaminePasswordResetLink?email=${emailParam}&resetId=${idParam}`)
+            this.http.get<ServerResponse<void>>(`/api/v1/User/ExaminePasswordResetLink?email=${emailParam}&resetId=${idParam}`)
         )
     }
 
-    setNewPassword(idParam: string, newPasswordRequest: ResetPasswordRequest): Observable<AuthResponse<void>> {
+    setNewPassword(idParam: string, newPasswordRequest: ResetPasswordRequest): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.post<AuthResponse<void>>(`/api/v1/User/SetNewPassword?resetId=${idParam}`, newPasswordRequest)
+            this.http.post<ServerResponse<void>>(`/api/v1/User/SetNewPassword?resetId=${idParam}`, newPasswordRequest)
         );
     }
 
-    getFriendRequestCount(): Observable<UserResponse<number>> {
+    getFriendRequestCount(): Observable<ServerResponse<number>> {
         return this.errorHandler.handleErrors(
-            this.http.get<UserResponse<number>>(`/api/v1/User/GetFriendRequestCount`, { withCredentials: true })
+            this.http.get<ServerResponse<number>>(`/api/v1/User/GetFriendRequestCount`, { withCredentials: true })
         )
     }
 
-    changePassword(form: ChangePasswordRequestForUser): Observable<UserResponse<void>> {
+    changePassword(form: ChangePasswordRequestForUser): Observable<ServerResponse<void>> {
         return this. errorHandler.handleErrors(
-            this.http.patch<UserResponse<void>>(`/api/v1/User/ChangePassword`, form, { withCredentials: true })
+            this.http.patch<ServerResponse<void>>(`/api/v1/User/ChangePassword`, form, { withCredentials: true })
         )
     }
 
-    changeEmail(form: ChangeEmailRequest): Observable<UserResponse<string>> {
+    changeEmail(form: ChangeEmailRequest): Observable<ServerResponse<string>> {
         return this. errorHandler.handleErrors(
-            this.http.patch<UserResponse<string>>(`/api/v1/User/ChangeEmail`, form, { withCredentials: true})
+            this.http.patch<ServerResponse<string>>(`/api/v1/User/ChangeEmail`, form, { withCredentials: true})
         )
     }
 
-    changeAvatar(image: string): Observable<UserResponse<string>> {
+    changeAvatar(image: string): Observable<ServerResponse<string>> {
         return this. errorHandler.handleErrors(
-            this.http.patch<UserResponse<string>>(`/api/v1/User/ChangeAvatar`, image, {
+            this.http.patch<ServerResponse<string>>(`/api/v1/User/ChangeAvatar`, image, {
                 headers: {
                     'Content-Type': 'application/json'
                 },
