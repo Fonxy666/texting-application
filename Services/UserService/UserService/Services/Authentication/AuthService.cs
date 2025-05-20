@@ -179,7 +179,13 @@ public class AuthService(
         var existingUser = await userManager.FindByEmailAsync(emailAddress);
         if (existingUser is null)
         {
-            return new FailureWithMessage("User not found");
+            return new FailureWithMessage("This account is not registered.");
+        }
+        var keyRetrievalResult = await privateKeyService.GetEncryptedKeyByUserIdAsync(existingUser.Id);
+        if (keyRetrievalResult is Failure)
+        {
+            logger.LogError("Cannot find User private key.");
+            return new FailureWithMessage("Internal server error, try again later.");
         }
         
         var roles = await userManager.GetRolesAsync(existingUser);

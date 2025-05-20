@@ -191,7 +191,12 @@ public class AuthController(
                 var splittedClaim = claim.Type.Split("/");
                 if (splittedClaim[^1] == "emailaddress")
                 {
-                    await authenticationService.LoginWithExternal(claim.Value);
+                    var loginResponse = await authenticationService.LoginWithExternal(claim.Value);
+                    if (loginResponse is FailureWithMessage error)
+                    {
+                        var message = Uri.EscapeDataString(error.Message);
+                        return Redirect($"{configuration["FrontendUrlAndPort"]}?loginSuccess=false&errorMessage={message}");
+                    }
                     break;
                 }
             }
@@ -243,7 +248,12 @@ public class AuthController(
                 var splittedClaim = claim.Type.Split("/");
                 if (splittedClaim[^1] == "emailaddress")
                 {
-                    await authenticationService.LoginWithExternal(claim.Value);
+                    var loginResponse = await authenticationService.LoginWithExternal(claim.Value);
+                    if (loginResponse is FailureWithMessage error)
+                    {
+                        var message = Uri.EscapeDataString(error.Message);
+                        return Redirect($"{configuration["FrontendUrlAndPort"]}?loginSuccess=false&errorMessage={message}");
+                    }
                     break;
                 }
             }

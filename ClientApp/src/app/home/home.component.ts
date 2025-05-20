@@ -26,6 +26,7 @@ export class HomeComponent implements OnInit {
         setTimeout(() => {
             const urlParams = new URLSearchParams(window.location.search);
             const loginSuccessParam = urlParams.get('loginSuccess');
+            const loginErrorMessageParam = urlParams.get('errorMessage');
             const logoutParam = urlParams.get('logout');
 
             if (logoutParam == 'true') {
@@ -36,14 +37,20 @@ export class HomeComponent implements OnInit {
                     styleClass: 'ui-toast-message-info'
                 });
             }
-
+            
             if (loginSuccessParam == 'true') {
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Success', detail: 'Successful login.',
                     styleClass: 'ui-toast-message-success'
                 });
-            } else if (loginSuccessParam === 'false') {
+            } else if (loginErrorMessageParam !== null) {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: `${loginErrorMessageParam}`
+                });
+            } else if (loginSuccessParam === 'false' && loginErrorMessageParam === null) {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
@@ -51,7 +58,11 @@ export class HomeComponent implements OnInit {
                 });
             }
 
-            const newUrl = window.location.pathname + window.location.search.replace('?loginSuccess=true', '').replace('?loginSuccess=false', '').replace('?logout=true', '');
+            const newUrl = window.location.pathname + window.location.search
+                .replace('?loginSuccess=true', '')
+                .replace('?loginSuccess=false', '')
+                .replace('?logout=true', '')
+                .replace('?errorMessage', '');
             history.replaceState({}, document.title, newUrl);
         }, 0);
     }
