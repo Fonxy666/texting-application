@@ -238,18 +238,5 @@ public class Startup(IConfiguration configuration)
         });
 
         PopulateDbAndAddRoles.AddRolesAndAdminSync(app, configuration);
-
-        if (!env.IsEnvironment("Test")) return;
-
-        PopulateDbAndAddRoles.CreateTestUsersSync(app, 5);
-
-        lifetime.ApplicationStopping.Register(() =>
-        {
-            using var scope = app.ApplicationServices.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<MainDatabaseContext>();
-
-            Console.WriteLine("Cleaning up test users...");
-            PopulateDbAndAddRoles.CleanupTestUsers(dbContext);
-        });
     }
 }

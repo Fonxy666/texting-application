@@ -57,6 +57,13 @@
 	  <Folder Include="Vault_Data\Logs\" />
 	</ItemGroup>
 
+	<!-- This copies the Avatars folder to the build output directory -->
+	<ItemGroup>
+		<Content Include="Avatars\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
 	<ItemGroup>
 	  <Reference Include="Textinger.Shared">
 	    <HintPath>..\..\..\Textinger.Shared\bin\Release\net8.0\Textinger.Shared.dll</HintPath>

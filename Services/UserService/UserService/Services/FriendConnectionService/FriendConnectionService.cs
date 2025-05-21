@@ -32,6 +32,11 @@ public class FriendConnectionService(
             return new FailureWithMessage($"There is no User with this username: {friendName}");
         }
         
+        if (friendName == existingUserName)
+        {
+            return new Failure();
+        }
+        
         if (await AlreadySentFriendRequest(new FriendRequest(userId.ToString(), existingNewFriendId.ToString())))
         {
             return new FailureWithMessage("You already sent a friend request to this user!");
@@ -290,7 +295,6 @@ public class FriendConnectionService(
 
        await using var transaction = await context.Database.BeginTransactionAsync();
 
-       /*context.FriendConnections.Attach(connectionAndReceiverAndSenderAppUser.Connection); */
         context.FriendConnections.Remove(connection);
 
         var unlinkResult = UnlinkFriendsAsync(connection.Sender, connection.Receiver);

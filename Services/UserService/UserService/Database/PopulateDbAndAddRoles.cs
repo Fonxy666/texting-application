@@ -111,7 +111,13 @@ public static class PopulateDbAndAddRoles
                     continue;
                 }
 
-                var testUser = new ApplicationUser("-")
+                var imageUrl = "";
+                if (i == 1)
+                {
+                    var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Avatars");
+                    imageUrl = Path.Combine(folderPath, $"TestUsername{i}.png");
+                }
+                var testUser = new ApplicationUser(imageUrl)
                 {
                     Id = i switch
                     {
