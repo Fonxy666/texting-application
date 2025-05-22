@@ -184,47 +184,50 @@ public class FriendConnectionService(
 
     public async Task<ResponseBase> DeleteFriendRequestAsync(Guid userId, UserType userType, Guid requestId)
     {
-        return userType switch
+        Func<ApplicationUser, IEnumerable<FriendConnection>> getRequests;
+        Func<Guid, Task<ResponseBase>> getUserWithRequests;
+
+        switch (userType)
         {
-            UserType.Receiver => await DeleteReceivedFriendRequestAsync(requestId, userId!),
-            UserType.Sender => await DeleteSentFriendRequestAsync(requestId, userId!),
-            _ => new FailureWithMessage("Invalid user type.")
-        };
+            case UserType.Receiver:
+                getRequests = user => user.ReceivedFriendRequests;
+                getUserWithRequests = id => userServices.GetUserWithFriendRequestsAsync(id, u => u.ReceivedFriendRequests);
+                break;
+
+            case UserType.Sender:
+                getRequests = user => user.SentFriendRequests;
+                getUserWithRequests = id => userServices.GetUserWithFriendRequestsAsync(id, u => u.SentFriendRequests);
+                break;
+
+            default:
+                return new FailureWithMessage("Invalid user type.");
+        }
+
+        return await DeleteFriendRequestInternalAsync(userId, requestId, getUserWithRequests, getRequests);
     }
 
-    private async Task<ResponseBase> DeleteSentFriendRequestAsync(Guid requestId, Guid senderId)
+    private async Task<ResponseBase> DeleteFriendRequestInternalAsync(
+        Guid userId,
+        Guid requestId,
+        Func<Guid, Task<ResponseBase>> getUserWithRequests,
+        Func<ApplicationUser, IEnumerable<FriendConnection>> getRequests)
     {
-        var user = await userServices.GetUserWithSentRequestsAsync(senderId);
+        var result = await getUserWithRequests(userId);
 
-        var request = (user as SuccessWithDto<ApplicationUser>)!.Data!.SentFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestId);
+        if (result is not SuccessWithDto<ApplicationUser> success || success.Data is null)
+        {
+            return new FailureWithMessage("User not found.");
+        }
+
+        var request = getRequests(success.Data).FirstOrDefault(fc => fc.ConnectionId == requestId);
 
         if (request == null)
         {
             return new FailureWithMessage("Cannot find the request.");
         }
-        
-        context.FriendConnections!.Remove(request);
-        var affectedRows = await context.SaveChangesAsync();
-        if (affectedRows == 0)
-        {
-            return new FailureWithMessage("Failed to update connections.");
-        }
-
-        return new Success();
-    }
-
-    private async Task<ResponseBase> DeleteReceivedFriendRequestAsync(Guid requestId, Guid receiverId)
-    {
-        var user = await userServices.GetUserWithReceivedRequestsAsync(receiverId);
-
-        var request = (user as SuccessWithDto<ApplicationUser>)!.Data!.ReceivedFriendRequests.FirstOrDefault(fc => fc.ConnectionId == requestId);
-
-        if (request == null)
-        {
-            return new FailureWithMessage("Cannot find the request.");
-        }
 
         context.FriendConnections!.Remove(request);
+
         var affectedRows = await context.SaveChangesAsync();
         if (affectedRows == 0)
         {

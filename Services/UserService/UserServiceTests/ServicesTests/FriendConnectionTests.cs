@@ -117,4 +117,28 @@ public class FriendConnectionTests : IAsyncLifetime
         var notExistingRequest = await _friendService.AcceptReceivedFriendRequestAsync(Guid.Parse("10f96e12-e245-420a-8bad-b61fb21c4b2d"), Guid.NewGuid());
         Assert.That(notExistingRequest, Is.EqualTo(new FailureWithMessage("Request not found.")));
     }
+
+    [Fact]
+    public async Task GetPendingRequessts_HandlesValidRequest()
+    {
+        var result = await _friendService.GetPendingRequestCountAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"));
+        Assert.That(result, Is.InstanceOf<SuccessWithDto<NumberDto>>());
+    }
+
+    [Fact]
+    public async Task DeleteFriendRequestAsync_HandlesValidRequest_AndPreventsEdgeCases()
+    {
+        // Success delete if sender
+        await _friendService.SendFriendRequestAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"), "TestUsername2");
+        var sendRequestId = _context.FriendConnections.FirstOrDefaultAsync(fc => fc.SenderId == Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916") && fc.Receiver.UserName == "TestUsername2").Result.ConnectionId;
+        
+        var sentDeleteResult = await _friendService.DeleteFriendRequestAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"), UserType.Sender, sendRequestId);
+        Assert.That(sentDeleteResult, Is.InstanceOf<Success>());
+        // Success delete if receiver
+        await _friendService.SendFriendRequestAsync(Guid.Parse("10f96e12-e245-420a-8bad-b61fb21c4b2d"), "TestUsername1");
+        var receiverRequestId = _context.FriendConnections.FirstOrDefaultAsync(fc => fc.SenderId == Guid.Parse("10f96e12-e245-420a-8bad-b61fb21c4b2d") && fc.Receiver.UserName == "TestUsername1").Result.ConnectionId;
+        
+        var receiverResult = await _friendService.DeleteFriendRequestAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"), UserType.Receiver, receiverRequestId);
+        Assert.That(receiverResult, Is.InstanceOf<Success>());
+    }
 }

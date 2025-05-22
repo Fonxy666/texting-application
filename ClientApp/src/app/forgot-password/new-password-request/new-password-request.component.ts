@@ -112,6 +112,7 @@ export class NewPasswordRequestComponent implements OnInit {
 
         this.userService.setNewPassword(this.idParam, resetRequest)
         .subscribe((response) => {
+            console.log(response);
             if (response.isSuccess) {
                 this.messageService.add({
                     severity: 'success',

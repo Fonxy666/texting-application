@@ -168,17 +168,17 @@ public class UserServiceTest : IAsyncLifetime
     {
         // Success test
         var userIdForSuccess = Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916");
-        var successResult = await _userService.GetUserWithSentRequestsAsync(userIdForSuccess) as SuccessWithDto<ApplicationUser>;
+        var successResult = await _userService.GetUserWithFriendRequestsAsync(userIdForSuccess, u => u.SentFriendRequests) as SuccessWithDto<ApplicationUser>;
         Assert.That(0, Is.EqualTo(successResult.Data.SentFriendRequests.Count));
         
         await _friendConnectionService.SendFriendRequestAsync(userIdForSuccess, "TestUsername2");
         // After a friend request sent, the value will be +1
-        var successResultAfterFriendSend = await _userService.GetUserWithSentRequestsAsync(userIdForSuccess) as SuccessWithDto<ApplicationUser>;
+        var successResultAfterFriendSend = await _userService.GetUserWithFriendRequestsAsync(userIdForSuccess, u => u.SentFriendRequests) as SuccessWithDto<ApplicationUser>;
         Assert.That(1, Is.EqualTo(successResultAfterFriendSend.Data.SentFriendRequests.Count));
         
         // Failure, not existing user
         var userIdForFailure = Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa915");
-        var failureResult = await _userService.GetUserWithSentRequestsAsync(userIdForFailure);
+        var failureResult = await _userService.GetUserWithFriendRequestsAsync(userIdForFailure, u => u.SentFriendRequests);
         Assert.That(failureResult, Is.EqualTo(new FailureWithMessage("User not found.")));
     }
     
@@ -187,17 +187,17 @@ public class UserServiceTest : IAsyncLifetime
     {
         // Success test
         var userIdForSuccess = Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916");
-        var successResult = await _userService.GetUserWithReceivedRequestsAsync(userIdForSuccess) as SuccessWithDto<ApplicationUser>;
+        var successResult = await _userService.GetUserWithFriendRequestsAsync(userIdForSuccess, u => u.ReceivedFriendRequests) as SuccessWithDto<ApplicationUser>;
         Assert.That(0, Is.EqualTo(successResult.Data.ReceivedFriendRequests.Count));
         
         await _friendConnectionService.SendFriendRequestAsync(new Guid("10f96e12-e245-420a-8bad-b61fb21c4b2d"), "TestUsername1");
         // After a friend request sent, the value will be +1
-        var successResultAfterFriendSend = await _userService.GetUserWithReceivedRequestsAsync(userIdForSuccess) as SuccessWithDto<ApplicationUser>;
+        var successResultAfterFriendSend = await _userService.GetUserWithFriendRequestsAsync(userIdForSuccess, u => u.ReceivedFriendRequests) as SuccessWithDto<ApplicationUser>;
         Assert.That(1, Is.EqualTo(successResultAfterFriendSend.Data.ReceivedFriendRequests.Count));
         
         // Failure, not existing user
         var userIdForFailure = Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa915");
-        var failureResult = await _userService.GetUserWithReceivedRequestsAsync(userIdForFailure);
+        var failureResult = await _userService.GetUserWithFriendRequestsAsync(userIdForFailure, u => u.ReceivedFriendRequests);
         Assert.That(failureResult, Is.EqualTo(new FailureWithMessage("User not found.")));
     }
 

@@ -1,5 +1,7 @@
-﻿using UserService.Models.Requests;
+﻿using System.Linq.Expressions;
+using UserService.Models.Requests;
 using Textinger.Shared.Responses;
+using UserService.Models;
 
 namespace UserService.Services.User;
 
@@ -8,8 +10,7 @@ public interface IApplicationUserService
     Task<ResponseBase> GetUserNameAsync(Guid userId);
     Task<ResponseBase> GetImageWithIdAsync(Guid userId);
     Task<ResponseBase> GetUserCredentialsAsync(Guid userId);
-    Task<ResponseBase> GetUserWithSentRequestsAsync(Guid userId);
-    Task<ResponseBase> GetUserWithReceivedRequestsAsync(Guid userId);
+    Task<ResponseBase> GetUserWithFriendRequestsAsync(Guid userId, Expression<Func<ApplicationUser, object>> includeNavigation);
     Task<ResponseBase> GetUserPrivatekeyForRoomAsync(Guid userId, Guid roomId);
     Task<ResponseBase> GetRoommatePublicKey(string userName);
     Task<ResponseBase> ExamineIfUserHaveSymmetricKeyForRoom(string userName, Guid roomId);

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Linq.Expressions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using UserService.Models;
@@ -79,34 +80,20 @@ public class ApplicationUserService(
         return new SuccessWithDto<UsernameUserEmailAndTwoFactorEnabledDto>(userCredentials);
     }
 
-    public async Task<ResponseBase> GetUserWithSentRequestsAsync(Guid userId)
+    public async Task<ResponseBase> GetUserWithFriendRequestsAsync(
+        Guid userId,
+        Expression<Func<ApplicationUser, object>> includeNavigation)
     {
-        var existingUser = await context.Users
-            .Include(u => u.SentFriendRequests)
-            .Where(u => u.Id ==  userId)
-            .FirstOrDefaultAsync();
-        
-        if (existingUser is null)
+        var user = await context.Users
+            .Include(includeNavigation)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null)
         {
             return new FailureWithMessage("User not found.");
         }
 
-        return new SuccessWithDto<ApplicationUser>(existingUser);
-    }
-
-    public async Task<ResponseBase> GetUserWithReceivedRequestsAsync(Guid userId)
-    {
-        var existingUser = await context.Users
-            .Include(u => u.ReceivedFriendRequests)
-            .Where(u => u.Id ==  userId)
-            .FirstOrDefaultAsync();
-        
-        if (existingUser is null)
-        {
-            return new FailureWithMessage("User not found.");
-        }
-
-        return new SuccessWithDto<ApplicationUser>(existingUser);
+        return new SuccessWithDto<ApplicationUser>(user);
     }
     
     public async Task<ResponseBase> GetUserPrivatekeyForRoomAsync(Guid userId, Guid roomId)
