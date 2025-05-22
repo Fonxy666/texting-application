@@ -4,7 +4,11 @@ namespace UserService.Models.Requests;
 
 public record AuthRequest(
     [Required(ErrorMessage = "Username cannot be null.")] string UserName,
-    [Required(ErrorMessage = "Password cannot be null.")] string Password
+    [Required(ErrorMessage = "Password cannot be null.")]
+    [MinLength(8, ErrorMessage = "Password must be at least 8 characters long.")]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W).+$",
+        ErrorMessage = "Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character.")]
+    string Password
 );
 
 public record GetEmailForVerificationRequest(
@@ -22,7 +26,11 @@ public record LoginAuth(
 public record RegistrationRequest(
     [Required(ErrorMessage = "E-mail cannot be null.")][EmailAddress(ErrorMessage = "The provided string is not an e-mail.")] string Email,
     [Required(ErrorMessage = "Username cannot be null.")] string Username,
-    [Required(ErrorMessage = "Password cannot be null.")] string Password,
+    [Required(ErrorMessage = "Password cannot be null.")]
+    [MinLength(8, ErrorMessage = "Password must be at least 8 characters long.")]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W).+$",
+        ErrorMessage = "Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character.")]
+    string Password,
     string Image,
     [Required(ErrorMessage = "Phone number cannot be null.")] string PhoneNumber,
     [Required(ErrorMessage = "Public key cannot be null.")] string PublicKey,

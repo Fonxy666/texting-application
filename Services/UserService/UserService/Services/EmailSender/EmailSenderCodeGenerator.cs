@@ -81,10 +81,12 @@ public static class EmailSenderCodeGenerator
             EmailType.PasswordReset => PasswordResetCodes
         };
 
-        if (!verificationCodes.TryGetValue(email, out var value)) return false;
-        var decodedCode = type == EmailType.PasswordReset ? WebUtility.UrlDecode(value.Code) : value.Code;
+        if (!verificationCodes.TryGetValue(email, out var value))
+        {
+            return false;
+        }
 
-        if (decodedCode != verifyCode) return false;
+        if (value.Code != verifyCode) return false;
         return (timestamp - value.Timestamp).TotalMinutes <= CodeExpirationMinutes;
     }
 

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Services.FriendConnectionService;
@@ -125,7 +126,8 @@ public class UserController(
     {
         try
         {
-            var newPasswordResult = await userService.SetNewPasswordAfterResetEmailAsync(resetId, request);
+            var decodedToken = resetId.Replace(" ", "+");
+            var newPasswordResult = await userService.SetNewPasswordAfterResetEmailAsync(decodedToken, request);
 
             if (newPasswordResult is FailureWithMessage)
             {

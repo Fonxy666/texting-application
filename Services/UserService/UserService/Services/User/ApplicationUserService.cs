@@ -133,11 +133,6 @@ public class ApplicationUserService(
             .Where(u => u.UserName ==  userName)
             .Select(u => new UserPublicKeyDto(u.PublicKey))
             .FirstOrDefaultAsync();
-
-        if (publicKey is null)
-        {
-            return new FailureWithMessage("Key not found for the desired user.");
-        }
         
         return new SuccessWithDto<UserPublicKeyDto>(publicKey);
     }
@@ -149,7 +144,7 @@ public class ApplicationUserService(
 
         if (!result)
         {
-            return new FailureWithMessage("THe user don't have the key.");
+            return new FailureWithMessage("The user don't have the key.");
         }
 
         return new Success();
@@ -163,6 +158,7 @@ public class ApplicationUserService(
         }
         
         var token = await userManager.GeneratePasswordResetTokenAsync(existingUser);
+        Console.WriteLine(token);
         EmailSenderCodeGenerator.StorePasswordResetCode(email, token);
         var emailResult = await emailSender.SendEmailWithLinkAsync(email, "Password reset", token);
 
@@ -187,9 +183,8 @@ public class ApplicationUserService(
         {
             return new FailureWithMessage("User not found.");
         }
-        
-        var token = await userManager.GeneratePasswordResetTokenAsync(existingUser);
-        var resetResult = await userManager.ResetPasswordAsync(existingUser, token, request.NewPassword);
+
+        var resetResult = await userManager.ResetPasswordAsync(existingUser, resetId, request.NewPassword);
 
         if (!resetResult.Succeeded)
         {
@@ -205,12 +200,7 @@ public class ApplicationUserService(
         if (existingUser is null)
         {
             return new FailureWithMessage("User not found.");
-        }
-        
-        if (!existingUser!.TwoFactorEnabled)
-        {
-            return new FailureWithMessage($"2FA not enabled for user.");
-        }
+        } 
 
         if (existingUser.Email != request.OldEmail)
         {
@@ -242,14 +232,14 @@ public class ApplicationUserService(
         }
         
         var correctPassword = await authService.ExamineLoginCredentialsAsync(existingUser!.UserName!, request.OldPassword);
-        if (correctPassword is FailureWithMessage)
+        if (correctPassword is FailureWithMessage error)
         {
-            if ((correctPassword as FailureWithMessage)!.Message.Contains("Account is locked"))
+            if (error.Message.Contains("Account is locked"))
             {
                 await authService.LogOutAsync(userId);
             }
 
-            return correctPassword;
+            return error;
         }
 
         var changeResult = await userManager.ChangePasswordAsync(existingUser, request.OldPassword, request.Password);
@@ -307,13 +297,6 @@ public class ApplicationUserService(
         {
             await transaction.RollbackAsync();
             return new FailureWithMessage("Failed to delete user.");
-        }
-
-        var affectedRows = await context.SaveChangesAsync();
-        if (affectedRows == 0)
-        {
-            await transaction.RollbackAsync();
-            return new FailureWithMessage("Failed to save changes.");
         }
 
         await transaction.CommitAsync();

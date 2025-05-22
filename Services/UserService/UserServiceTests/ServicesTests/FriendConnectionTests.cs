@@ -66,7 +66,7 @@ public class FriendConnectionTests : IAsyncLifetime
         
         var app = _provider.GetRequiredService<IApplicationBuilder>();
         PopulateDbAndAddRoles.AddRolesAndAdminSync(app, _configuration);
-        PopulateDbAndAddRoles.CreateTestUsersSync(app, 2);
+        PopulateDbAndAddRoles.CreateTestUsersSync(app, 2, _context);
     }
 
     public Task DisposeAsync()

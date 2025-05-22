@@ -25,7 +25,7 @@ public record FriendRequest(
 
 public record PasswordResetRequest(
     [Required(ErrorMessage = "E-mail cannot be null.")] string Email,
-    [Required(ErrorMessage = "New password cannot be null.")] string NewPassword
+    [Required(ErrorMessage = "Password cannot be null.")] string NewPassword
 );
 
 public record StoreRoomKeyRequest(

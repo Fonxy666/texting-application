@@ -87,7 +87,7 @@ public static class PopulateDbAndAddRoles
         }
     }
 
-    public static void CreateTestUsersSync(IApplicationBuilder app, int numberOfTestUsers)
+    public static void CreateTestUsersSync(IApplicationBuilder app, int numberOfTestUsers, MainDatabaseContext context)
     {
         lock (LockObject)
         {
@@ -131,7 +131,7 @@ public static class PopulateDbAndAddRoles
                     TwoFactorEnabled = i != 3,
                     PublicKey = keysForTestUser.PublicKey
                 };
-
+                
                 var encryptedData = EncryptPrivateKey(keysForTestUser.PrivateKey, "123456");
 
                 keyManager.SaveKeyAsync(new PrivateKey(encryptedData.EncryptedData.ToString()!, encryptedData.Iv.ToString()!), testUser.Id);
@@ -144,6 +144,15 @@ public static class PopulateDbAndAddRoles
 
                     if (roleResult.Succeeded)
                     {
+                        if (i == 1)
+                        {
+                            var roomGuid = new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916");
+                            var symmetricKey = new EncryptedSymmetricKey(new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"), "testKey", roomGuid);
+                            context.EncryptedSymmetricKeys.AddAsync(symmetricKey);
+                            context.SaveChangesAsync().Wait();
+                            testUser.AddToUserSymmetricKeyIds(symmetricKey);
+                            userManager.UpdateAsync(testUser).Wait();
+                        }
                         Console.WriteLine($"Successfully created test user {testUsername}.");
                     }
                     else
@@ -157,13 +166,6 @@ public static class PopulateDbAndAddRoles
                 }
             }
         }
-    }
-
-    public static void CleanupTestUsers(MainDatabaseContext dbContext)
-    {
-        var testUsers = dbContext.Users.Where(u => u.UserName.Contains("TestUsername")).ToList();
-        dbContext.Users.RemoveRange(testUsers);
-        dbContext.SaveChanges();
     }
 
     private static AsymmetricKey GenerateAsymmetricKeys()

@@ -9,10 +9,10 @@ public class ApplicationUser : IdentityUser<Guid>
     public DateTime? RefreshTokenCreated { get; private set; }
     public DateTime? RefreshTokenExpires { get; private set; }
     public string PublicKey { get; set; }
-    public ICollection<FriendConnection> SentFriendRequests { get; private set; }
-    public ICollection<FriendConnection> ReceivedFriendRequests { get; private set; }
-    public ICollection<ApplicationUser> Friends { get; private set; }
-    public ICollection<EncryptedSymmetricKey> UserSymmetricKeys { get; private set; }
+    public ICollection<FriendConnection> SentFriendRequests { get; private set; } = new List<FriendConnection>();
+    public ICollection<FriendConnection> ReceivedFriendRequests { get; private set; } = new List<FriendConnection>();
+    public ICollection<ApplicationUser> Friends { get; private set; } = new List<ApplicationUser>();
+    public ICollection<EncryptedSymmetricKey> UserSymmetricKeys { get; private set; } =  new List<EncryptedSymmetricKey>();
 
     public ApplicationUser() { }
     
