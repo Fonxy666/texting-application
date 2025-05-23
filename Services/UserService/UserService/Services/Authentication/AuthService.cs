@@ -7,7 +7,7 @@ using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
 using UserService.Services.PrivateKeyFolder;
 using Textinger.Shared.Responses;
-using UserService.Helpers;
+using UserService.Services.MediaService;
 
 namespace UserService.Services.Authentication;
 
@@ -18,10 +18,11 @@ public class AuthService(
     IPrivateKeyService keyService,
     ILogger<AuthService> logger,
     IPrivateKeyService privateKeyService,
-    MainDatabaseContext context
+    MainDatabaseContext context,
+    IImageService imageService
     ) : IAuthService
 {
-    public async Task<ResponseBase> RegisterAsync(RegistrationRequest request, string imagePath)
+    public async Task<ResponseBase> RegisterAsync(RegistrationRequest request)
     {
         var validateUserInputResult = await ValidateUserInput(request);
         if (validateUserInputResult is FailureWithMessage)
@@ -33,7 +34,13 @@ public class AuthService(
 
         try
         {
-            var userCreationResult = await CreateUser(request, imagePath);
+            var saveImageResult = imageService.SaveImageLocally(request.Username, request.Image);
+            if (saveImageResult is FailureWithMessage)
+            {
+                return saveImageResult;
+            }
+            
+            var userCreationResult = await CreateUser(request, (saveImageResult as SuccessWithMessage)!.Message);
             if (userCreationResult is FailureWithMessage)
             {
                 return userCreationResult;

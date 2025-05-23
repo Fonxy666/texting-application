@@ -14,3 +14,4 @@ public record UserIdDto(Guid Id);
 public record UserIdAndConnectionIdDto(Guid UserId, string ConnectionId);
 public record NumberDto(int Count);
 public record KeysDto(string PublicKey, string PrivateKey);
+public record ConnectionIdAndAcceptedTimeDto(Guid ConnectionId, DateTime AcceptedTime);

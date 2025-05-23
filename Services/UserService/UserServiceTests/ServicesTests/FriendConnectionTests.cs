@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Textinger.Shared.Responses;
 using UserService.Database;
-using UserService.Helpers;
 using UserService.Models;
 using UserService.Models.Responses;
 using UserService.Services.Authentication;
 using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
 using UserService.Services.FriendConnectionService;
+using UserService.Services.MediaService;
 using UserService.Services.PrivateKeyFolder;
 using UserService.Services.User;
 using Xunit;
@@ -46,7 +46,7 @@ public class FriendConnectionTests : IAsyncLifetime
         services.AddScoped<IPrivateKeyService, FakeKeyService>();
         services.AddScoped<ICookieService, FakeCookieService>();
         services.AddScoped<IApplicationUserService, ApplicationUserService>();
-        services.AddScoped<IUserHelper, UserHelper>();
+        services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IEmailSender, EmailSender>();
         services.AddScoped<IFriendConnectionService, FriendConnectionService>();
         services.AddScoped<ITokenService, TokenService>();
@@ -66,7 +66,7 @@ public class FriendConnectionTests : IAsyncLifetime
         
         var app = _provider.GetRequiredService<IApplicationBuilder>();
         PopulateDbAndAddRoles.AddRolesAndAdminSync(app, _configuration);
-        PopulateDbAndAddRoles.CreateTestUsersSync(app, 2, _context);
+        PopulateDbAndAddRoles.CreateTestUsersSync(app, 3, _context);
     }
 
     public Task DisposeAsync()
@@ -119,7 +119,7 @@ public class FriendConnectionTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetPendingRequessts_HandlesValidRequest()
+    public async Task GetPendingRequests_HandlesValidRequest()
     {
         var result = await _friendService.GetPendingRequestCountAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"));
         Assert.That(result, Is.InstanceOf<SuccessWithDto<NumberDto>>());
@@ -134,11 +134,76 @@ public class FriendConnectionTests : IAsyncLifetime
         
         var sentDeleteResult = await _friendService.DeleteFriendRequestAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"), UserType.Sender, sendRequestId);
         Assert.That(sentDeleteResult, Is.InstanceOf<Success>());
+        
         // Success delete if receiver
         await _friendService.SendFriendRequestAsync(Guid.Parse("10f96e12-e245-420a-8bad-b61fb21c4b2d"), "TestUsername1");
         var receiverRequestId = _context.FriendConnections.FirstOrDefaultAsync(fc => fc.SenderId == Guid.Parse("10f96e12-e245-420a-8bad-b61fb21c4b2d") && fc.Receiver.UserName == "TestUsername1").Result.ConnectionId;
         
         var receiverResult = await _friendService.DeleteFriendRequestAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"), UserType.Receiver, receiverRequestId);
         Assert.That(receiverResult, Is.InstanceOf<Success>());
+        
+        // Failure: User not found
+        var invalidUserId = Guid.NewGuid();
+        var resultUserNotFound = await _friendService.DeleteFriendRequestAsync(invalidUserId, UserType.Sender, Guid.NewGuid());
+        Assert.That(((FailureWithMessage)resultUserNotFound).Message, Is.EqualTo("User not found."));
+        
+        // Failure: Invalid user type
+        var resultInvalidType = await _friendService.DeleteFriendRequestAsync(Guid.NewGuid(), (UserType)999, Guid.NewGuid());
+        Assert.That(((FailureWithMessage)resultInvalidType).Message, Is.EqualTo("Invalid user type."));
+        
+        // Failure: Request not found
+        var validUserId = Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916");
+        var nonExistentRequestId = Guid.NewGuid();
+        var resultRequestNotFound = await _friendService.DeleteFriendRequestAsync(validUserId, UserType.Sender, nonExistentRequestId);
+        Assert.That(((FailureWithMessage)resultRequestNotFound).Message, Is.EqualTo("Cannot find the request."));
+    }
+    
+    [Fact]
+    public async Task GetFriendsAsync_HandlesValidRequest_AndPreventsEdgeCases()
+    {
+        // Success test
+        var userId = Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916");
+        var existingUserBeforeNewFriend = await _friendService.GetFriendsAsync(userId) as SuccessWithDto<IList<ShowFriendRequestDto>>;
+        
+        Assert.That(existingUserBeforeNewFriend.Data.Count, Is.EqualTo(0));
+        
+        await _friendService.SendFriendRequestAsync(userId, "TestUsername2"); // send friend request
+        var sendtRequest = await _context.FriendConnections.FirstOrDefaultAsync(fc => fc.SenderId == Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916") && fc.Receiver!.UserName == "TestUsername2");
+        await _friendService.AcceptReceivedFriendRequestAsync(userId, sendtRequest!.ConnectionId); // accept request
+        
+        var existingUserAfterNewFriend = await _friendService.GetFriendsAsync(userId) as SuccessWithDto<IList<ShowFriendRequestDto>>;
+        Assert.That(existingUserAfterNewFriend!.Data!.Count, Is.EqualTo(1));
+        
+        var notExistingUser = await _friendService.GetFriendsAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa915"));
+        Assert.That(((FailureWithMessage)notExistingUser).Message, Is.EqualTo("User not found."));
+    }
+    
+    [Fact]
+    public async Task DeleteFriendAsync_HandlesValidRequest_AndPreventsEdgeCases()
+    {
+        // Success test
+        var userId = Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916");
+        await _friendService.SendFriendRequestAsync(userId, "TestUsername2"); // send friend request
+        var sentRequest = await _context.FriendConnections.FirstOrDefaultAsync(fc => fc.SenderId == Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916") && fc.Receiver!.UserName == "TestUsername2");
+        await _friendService.AcceptReceivedFriendRequestAsync(userId, sentRequest!.ConnectionId); // accept request
+        
+        var existingUserAfterNewFriend = await _friendService.GetFriendsAsync(userId) as SuccessWithDto<IList<ShowFriendRequestDto>>;
+        Assert.That(existingUserAfterNewFriend!.Data!.Count, Is.EqualTo(1));
+
+        var deleteFriendResponse = await _friendService.DeleteFriendAsync(userId, sentRequest!.ConnectionId);
+        Assert.That(deleteFriendResponse, Is.InstanceOf<Success>());
+        var existingUserAfterNewFriendDeletion = await _friendService.GetFriendsAsync(userId) as SuccessWithDto<IList<ShowFriendRequestDto>>;
+        Assert.That(existingUserAfterNewFriendDeletion!.Data!.Count, Is.EqualTo(0));
+        
+        // Failure test
+        var notExistingUser = await _friendService.DeleteFriendAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa915"), sentRequest!.ConnectionId);
+        Assert.That(((FailureWithMessage)notExistingUser).Message, Is.EqualTo("Cannot find friend connection."));
+        
+        // Failure no permission
+        await _friendService.SendFriendRequestAsync(userId, "TestUsername2"); // send friend request
+        var sentRequestAgain = await _context.FriendConnections.FirstOrDefaultAsync(fc => fc.SenderId == Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916") && fc.Receiver!.UserName == "TestUsername2");
+        await _friendService.AcceptReceivedFriendRequestAsync(userId, sentRequestAgain!.ConnectionId); // accept request
+        var noPermissionResult = await _friendService.DeleteFriendAsync(new Guid("995f04da-d4d3-447c-9c69-fab370bca312"), sentRequestAgain!.ConnectionId);
+        Assert.That(((FailureWithMessage)noPermissionResult).Message, Is.EqualTo("You don't have permission for deletion."));
     }
 }

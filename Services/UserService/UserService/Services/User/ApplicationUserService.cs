@@ -1,6 +1,5 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using UserService.Models;
 using UserService.Models.Requests;
@@ -8,6 +7,7 @@ using UserService.Models.Responses;
 using UserService.Services.Authentication;
 using UserService.Services.EmailSender;
 using Textinger.Shared.Responses;
+using UserService.Services.MediaService;
 
 namespace UserService.Services.User;
 
@@ -16,7 +16,8 @@ public class ApplicationUserService(
     IConfiguration configuration,
     MainDatabaseContext context,
     IEmailSender emailSender,
-    IAuthService authService
+    IAuthService authService,
+    IImageService imageService
     ) : IApplicationUserService
 {
     
@@ -59,7 +60,7 @@ public class ApplicationUserService(
         }
 
         var imageBytes = await File.ReadAllBytesAsync(imagePath);
-        var contentType = GetContentType(imagePath);
+        var contentType = imageService.GetContentType(imagePath);
 
         return new SuccessWithDto<ImageDto>(new ImageDto(imageBytes, contentType));
     }
@@ -251,7 +252,7 @@ public class ApplicationUserService(
             return new FailureWithMessage("User not found.");
         }
         
-        var imageSaveResult = SaveImageLocally(userName, image);
+        var imageSaveResult = imageService.SaveImageLocally(userName, image);
 
         return imageSaveResult;
     }
@@ -324,51 +325,5 @@ public class ApplicationUserService(
         context.FriendConnections!.RemoveRange(sentFriendRequests);
         context.FriendConnections!.RemoveRange(receivedFriendRequests);
         return new Success();
-    }
-
-    public ResponseBase SaveImageLocally(string usernameFileName, string base64Image)
-    {
-        var folderPath = configuration["ImageFolderPath"]??Path.Combine(Directory.GetCurrentDirectory(), "Avatars");
-        
-        if (!Directory.Exists(folderPath))
-        {
-            Directory.CreateDirectory(folderPath);
-        }
-
-        var imageName = usernameFileName + ".png";
-        var imagePath = Path.Combine(folderPath, imageName);
-
-        if (base64Image.Length <= 1)
-        {
-            return new FailureWithMessage("No image provided.");
-        }
-
-        try
-        {
-            base64Image = base64Image.Replace("data:image/png;base64,", "");
-            var imageBytes = Convert.FromBase64String(base64Image);
-
-            using (var fileStream = new FileStream(imagePath, FileMode.Create))
-            {
-                fileStream.Write(imageBytes, 0, imageBytes.Length);
-            }
-
-            return new SuccessWithMessage(imagePath);
-        }
-        catch (FormatException ex)
-        {
-            Console.WriteLine($"Error decoding base64 image: {ex.Message}");
-            return new FailureWithMessage("Error decoding base64 image.");
-        }
-    }
-
-    private string GetContentType(string filePath)
-    {
-        var provider = new FileExtensionContentTypeProvider();
-        if (!provider.TryGetContentType(filePath, out var contentType))
-        {
-            contentType = "application/octet-stream";
-        }
-        return contentType;
     }
 }

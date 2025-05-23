@@ -21,7 +21,7 @@ using UserService.Services.EncryptedSymmetricKeyService;
 using UserService.Filters;
 using UserService.Services.FriendConnectionService;
 using Textinger.Shared.JwtRefreshTokenValidation;
-using UserService.Helpers;
+using UserService.Services.MediaService;
 
 namespace UserService;
 
@@ -93,8 +93,8 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<ICookieService, CookieService>();
         services.AddScoped<IFriendConnectionService, FriendConnectionService>(); 
         services.AddScoped<IPrivateKeyService, PrivateKeyService>();
+        services.AddScoped<IImageService, ImageService>();
         services.AddScoped<ISymmetricKeyService, SymmetricKeyService>();
-        services.AddScoped<IUserHelper, UserHelper>();
         services.AddTransient<IEmailSender, EmailSender>();
         services.AddGrpc();
         services.AddSingleton<IVaultClient>(vaultClient);

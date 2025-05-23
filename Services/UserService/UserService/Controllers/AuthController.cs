@@ -19,7 +19,6 @@ namespace UserService.Controllers;
 [Route("api/v1/[controller]")]
 public class AuthController(
     IAuthService authenticationService,
-    IApplicationUserService userServices,
     IEmailSender emailSender,
     ILogger<AuthController> logger,
     IConfiguration configuration) : ControllerBase
@@ -70,16 +69,9 @@ public class AuthController(
     {
         try
         {
-            var imagePathResult = userServices.SaveImageLocally(request.Username, request.Image);
-
-            if (imagePathResult is FailureWithMessage)
-            {
-                return BadRequest(imagePathResult);
-            }
-
-            var result = await authenticationService.RegisterAsync(request, (imagePathResult as SuccessWithMessage)!.Message);
-
-            if (result is Failure)
+            var result = await authenticationService.RegisterAsync(request);
+            
+            if (result is Failure || result is FailureWithMessage) 
             {
                 return StatusCode(500, result);
             }

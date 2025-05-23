@@ -1,19 +1,13 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using UserService.Models.Requests;
 using UserService.Services.User;
 using UserService.Models;
 using UserService.Models.Responses;
 using Textinger.Shared.Responses;
-using UserService.Helpers;
 
 namespace UserService.Services.FriendConnectionService;
 
-public class FriendConnectionService(
-    MainDatabaseContext context,
-    IApplicationUserService userServices,
-    UserManager<ApplicationUser> userManager,
-    IUserHelper userHelper) : IFriendConnectionService
+public class FriendConnectionService(MainDatabaseContext context, IApplicationUserService userServices) : IFriendConnectionService
 {
     public async Task<ResponseBase> SendFriendRequestAsync(Guid userId, string friendName)
     {
@@ -239,28 +233,44 @@ public class FriendConnectionService(
 
     public async Task<ResponseBase> GetFriendsAsync(Guid userId)
     {
-        var returningDto = await context.FriendConnections
-            .Where(fr => 
-                (fr.Receiver!.Id == userId || fr.Sender!.Id == userId)
-                && fr.Status == FriendStatus.Accepted)
-            .Select(fr => new ShowFriendRequestDto(
-                fr.ConnectionId,
-                fr.Receiver!.UserName!,
-                fr.ReceiverId,
-                fr.AcceptedTime,
-                fr.Sender!.UserName!,
-                fr.SenderId
-                ))
-            .ToArrayAsync();
-        Console.WriteLine(returningDto.Length);
+        var userWithFriends = await context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => new
+            {
+                Friends = context.FriendConnections
+                    .Where(fr => (fr.ReceiverId == u.Id || fr.SenderId == u.Id) && fr.Status == FriendStatus.Accepted)
+                    .Select(fr => new ShowFriendRequestDto(
+                        fr.ConnectionId,
+                        fr.Receiver!.UserName!,
+                        fr.ReceiverId,
+                        fr.AcceptedTime,
+                        fr.Sender!.UserName!,
+                        fr.SenderId))
+                    .ToList()
+            })
+            .SingleOrDefaultAsync();
 
-        return new SuccessWithDto<ShowFriendRequestDto[]>(returningDto);
+        if (userWithFriends is null)
+        {
+            return new FailureWithMessage("User not found.");
+        }
+
+        return new SuccessWithDto<IList<ShowFriendRequestDto>>(userWithFriends.Friends);
     }
 
-    public async Task<FriendConnection?> GetConnectionIdAsync(Guid userId, Guid friendId)
+    public async Task<ResponseBase> GetConnectionIdAsync(Guid userId, Guid friendId)
     {
-        return await context.FriendConnections!.FirstOrDefaultAsync(fc =>
-            fc.ReceiverId == userId && fc.SenderId == friendId || fc.ReceiverId == friendId && fc.SenderId == userId);
+        var connectionDto = await context.FriendConnections
+            .Where(fc => fc.ReceiverId == userId && fc.SenderId == friendId ||  fc.ReceiverId == friendId && fc.SenderId == userId)
+            .Select(fc => new ConnectionIdAndAcceptedTimeDto(fc.ConnectionId, fc.AcceptedTime!.Value))
+            .SingleOrDefaultAsync();
+
+        if (connectionDto is null)
+        {
+            return new FailureWithMessage("Connection not found.");
+        }
+
+        return new SuccessWithDto<ConnectionIdAndAcceptedTimeDto>(connectionDto);
     }
 
     public async Task<ResponseBase> DeleteFriendAsync(Guid userId, Guid connectionId)

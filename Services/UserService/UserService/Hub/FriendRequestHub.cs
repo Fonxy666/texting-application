@@ -5,12 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
-using UserService.Services.FriendConnectionService;
 using Textinger.Shared.Responses;
 
 namespace UserService.Hub;
 
-public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendConnectionService friendConnectionService) : Microsoft.AspNetCore.SignalR.Hub
+public class FriendRequestHub(UserManager<ApplicationUser> userManager, MainDatabaseContext databaseContext) : Microsoft.AspNetCore.SignalR.Hub
 {
     public static ConcurrentDictionary<string, string> Connections = new();
 
@@ -27,28 +26,29 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
     
     public async Task GetOnlineFriends(string userId)
     {
-        var onlineFriendList = new List<ShowFriendRequestDto>();
-        var userWithFriends = await userManager.Users
-            .Include(user => user.Friends)
-            .FirstOrDefaultAsync(user => user.Id == new Guid(userId));
-
-        foreach (var friend in userWithFriends.Friends)
-        {
-            if (Connections.TryGetValue(friend.Id.ToString(), out var receiverConnectionId))
+        var userGuid = Guid.Parse(userId);
+        var userFriends =  await databaseContext.Users
+            .Where(u => u.Id == userGuid)
+            .Select(u => new
             {
-                var connection = await friendConnectionService.GetConnectionIdAsync(userWithFriends.Id, friend.Id);
-                onlineFriendList.Add(new ShowFriendRequestDto(
-                    connection!.ConnectionId,
-                    userWithFriends.UserName!,
-                    userWithFriends.Id,
-                    connection.AcceptedTime,
-                    friend.UserName!,
-                    friend.Id
-                ));
-            }
-        }
+                FriendConnection = databaseContext.FriendConnections
+                    .Where(fr => (fr.ReceiverId == u.Id || fr.SenderId == u.Id) && fr.Status == FriendStatus.Accepted)
+                    .Select(fr => new ShowFriendRequestDto(
+                        fr.ConnectionId,
+                        fr.Receiver!.UserName!,
+                        fr.ReceiverId,
+                        fr.AcceptedTime,
+                        fr.Sender!.UserName!,
+                        fr.SenderId))
+            })
+            .SingleOrDefaultAsync();
+
+        var onlineFriends = userFriends.FriendConnection.ToList()
+            .Where(fc =>
+                (fc.ReceiverId != userGuid && Connections.TryGetValue(fc.ReceiverId.ToString(), out var _)) ||
+                (fc.SenderId != userGuid && Connections.TryGetValue(fc.SenderId.ToString(), out var _)));
         
-        await Clients.Client(Connections[userId]).SendAsync("ReceiveOnlineFriends", onlineFriendList);
+        await Clients.Client(Connections[userId]).SendAsync("ReceiveOnlineFriends", onlineFriends);
     }
 
     public async Task<SuccessWithDto<UserIdAndConnectionIdDto>> JoinToHub(string userId)
@@ -73,7 +73,6 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
     
     public async Task AcceptFriendRequest(ManageFriendRequest request)
     {
-        var receiverId = userManager.FindByNameAsync(request.ReceiverName).Result!.Id.ToString();
         if (Connections.TryGetValue(request.SenderId, out var connectionId))
         {
             await Clients.Client(connectionId).SendAsync("AcceptFriendRequest", request);
@@ -115,9 +114,12 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, IFriendC
 
     public async Task SendChatRoomInvite(ChatRoomInviteRequest request)
     {
-        var receiverId = userManager.FindByNameAsync(request.ReceiverName).Result!.Id.ToString();
+        var receiverId = await databaseContext.Users
+            .Where(u => u.UserName == request.ReceiverName)
+            .Select(u => u.Id)
+            .FirstOrDefaultAsync();
         
-        if (Connections.TryGetValue(receiverId, out var connectionId))
+        if (Connections.TryGetValue(receiverId.ToString(), out var connectionId))
         {
             if (request.RoomKey != null)
             {

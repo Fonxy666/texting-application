@@ -1,94 +1,72 @@
 ﻿using Grpc.Core;
+using Microsoft.AspNetCore.Identity;
 using UserService.Models;
 using UserService.Services.EncryptedSymmetricKeyService;
-using UserService.Helpers;
 
 namespace UserService.Services.gRPCServices;
 
-public class UserGrpcService(ISymmetricKeyService keyService, IUserHelper userHelper) : GrpcUserService.GrpcUserServiceBase
+public class UserGrpcService(UserManager<ApplicationUser> userManager, ISymmetricKeyService keyService) : GrpcUserService.GrpcUserServiceBase
 {
     public override async Task<BoolResponseWithMessage> UserExisting(UserIdRequest request, ServerCallContext context)
     {
-        BoolResponseWithMessage OnSuccess(ApplicationUser existingUser) => new() { Success = true, Message = "User exists" };
-
-        BoolResponseWithMessage OnFailure(string message) => new() { Success = false, Message = message };
         
-        return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UserId,
-            request.Id,
-            (Func<ApplicationUser, BoolResponseWithMessage>)OnSuccess,
-            (Func<string, BoolResponseWithMessage>)OnFailure
-        );
-    }
-    
-    public override async Task<BoolResponseWithMessage> SendEncryptedRoomIdForUser(EncryptedRoomIdWithUserId request, ServerCallContext context)
-    {
-        async Task<BoolResponseWithMessage> OnSuccess(ApplicationUser existingUser)
+        var userExists = await userManager.FindByIdAsync(request.Id);
+        if (userExists == null)
         {
-            var userGuid = Guid.Parse(request.UserId);
-            var roomGuid = Guid.Parse(request.RoomId);
-            var newKey = new EncryptedSymmetricKey(userGuid, request.RoomKey, roomGuid);
-
-            try
-            {
-                await keyService.SaveNewKeyAndLinkToUserAsync(newKey);
-                return new BoolResponseWithMessage { Success = true, Message = "Key successfully saved." };
-            }
-            catch (Exception ex)
-            {
-                return new BoolResponseWithMessage { Success = false, Message = $"Error: {ex.Message}" };
-            }
+            return new BoolResponseWithMessage { Success = false, Message = "User not exists." };
         }
 
-        BoolResponseWithMessage OnFailure(string message) => new() { Success = false, Message = message };
+        return new BoolResponseWithMessage {  Success = true, Message = "User existing" };
+    }
 
-        return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UserId,
-            request.UserId,
-            OnSuccess,
-            OnFailure
-        );
+    public override async Task<BoolResponseWithMessage> SendEncryptedRoomIdForUser(EncryptedRoomIdWithUserId request, ServerCallContext context)
+    {
+        var existingUser = await userManager.FindByIdAsync(request.UserId);
+        if (existingUser == null)
+        {
+            return new BoolResponseWithMessage { Success = false, Message = "User not exists." };
+        }
+
+        var userGuid = Guid.Parse(request.UserId);
+        var roomGuid = Guid.Parse(request.RoomId);
+        var newKey = new EncryptedSymmetricKey(userGuid, request.RoomKey, roomGuid);
+
+        try
+        {
+            await keyService.SaveNewKeyAndLinkToUserAsync(newKey);
+            return new BoolResponseWithMessage { Success = true, Message = "Key successfully saved." };
+        }
+        catch (Exception ex)
+        {
+            return new BoolResponseWithMessage { Success = false, Message = $"Error: {ex.Message}" };
+        }
     }
 
     public override async Task<UserIdAndPublicKeyResponse> SendUserPublicKeyAndId(UserIdRequest request, ServerCallContext context)
     {
-        UserIdAndPublicKeyResponse OnSuccess(ApplicationUser existingUser) => new() { UserId = existingUser.Id.ToString(), PublicKey = existingUser.PublicKey };
+        var existingUser = await userManager.FindByIdAsync(request.Id);
+        if (existingUser == null)
+        {
+            return new UserIdAndPublicKeyResponse { };
+        }
 
-        UserIdAndPublicKeyResponse OnFailure(string message) => new();
-        
-        return await userHelper.GetUserOrFailureResponseAsync(
-            UserIdentifierType.UserId,
-            request.Id,
-            OnSuccess,
-            OnFailure
-        );
+        return new UserIdAndPublicKeyResponse { UserId = existingUser.Id.ToString(), PublicKey = existingUser.PublicKey};
     }
 
     public override async Task<UsersResponse> SendUserNamesAndGetIds(UserNamesRequest request, ServerCallContext context)
     {
         var userIdsAndNames = new List<UserIdAndName>();
 
-        Task<BoolResponseWithMessage> OnSuccess(ApplicationUser user)
-        {
-            userIdsAndNames.Add(new UserIdAndName { Name = user.UserName, Id = user.Id.ToString() });
-            return Task.FromResult(new BoolResponseWithMessage { Success = true, Message = "User found" });
-        }
-        
-        BoolResponseWithMessage OnFailure(string message) => new() { Success = false, Message = message };
-
-        if (request.Name == null || request.Name.Count == 0)
-        {
-            return new UsersResponse();
-        }
-        
         foreach (var name in request.Name)
         {
-            await userHelper.GetUserOrFailureResponseAsync(
-                UserIdentifierType.Username,
-                name,
-                OnSuccess,
-                OnFailure
-            );
+            var existingUser = await userManager.FindByNameAsync(name);
+
+            if (existingUser == null)
+            {
+                continue;
+            }
+
+            userIdsAndNames.Add(new UserIdAndName { Name = existingUser.UserName, Id = existingUser.Id.ToString() });
         }
 
         var response = new UsersResponse

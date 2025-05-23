@@ -1,5 +1,4 @@
-﻿using System.Net;
-using UserService.Models;
+﻿using UserService.Models;
 
 namespace UserService.Services.EmailSender;
 

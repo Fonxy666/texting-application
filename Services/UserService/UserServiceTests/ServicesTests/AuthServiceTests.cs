@@ -3,14 +3,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Textinger.Shared.Responses;
 using UserService.Database;
-using UserService.Helpers;
 using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
 using UserService.Services.Authentication;
 using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
+using UserService.Services.MediaService;
 using UserService.Services.PrivateKeyFolder;
+using UserService.Services.User;
 using Xunit;
 using Assert = NUnit.Framework.Assert;
 
@@ -39,12 +40,14 @@ public class AuthServiceTests : IAsyncLifetime
             .AddEntityFrameworkStores<MainDatabaseContext>();
 
         services.AddSingleton(_configuration);
-        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IApplicationUserService, ApplicationUserService>();
         services.AddScoped<IPrivateKeyService, FakeKeyService>();
         services.AddScoped<ICookieService, FakeCookieService>();
         services.AddScoped<ITokenService, TokenService>();
-        services.AddScoped<IUserHelper, UserHelper>();
+        services.AddScoped<IImageService, FakeImageService>();
         services.AddScoped<IApplicationBuilder, ApplicationBuilder>();
+        services.AddScoped<IEmailSender, EmailSender>();
+        services.AddScoped<IAuthService, AuthService>();
         services.AddLogging();
 
         _provider = services.BuildServiceProvider();
@@ -76,9 +79,9 @@ public class AuthServiceTests : IAsyncLifetime
         var request = new RegistrationRequest("test1@example.com", "testUserName", "Password123!", "IMAGE",
             "06201234567", "publicKeyHere", "encryptedPrivateKeyHere", "ivDataHere");
 
-        string imagePath = "fake/image/path.jpg";
+        var imagePath = "fake/image/path.jpg";
 
-        var result = await _authService.RegisterAsync(request, imagePath);
+        var result = await _authService.RegisterAsync(request);
 
         Assert.That(result, Is.InstanceOf<Success>());
 
@@ -90,7 +93,7 @@ public class AuthServiceTests : IAsyncLifetime
         var existingEmailRequest = new RegistrationRequest("test1@example.com", "newTestUserName", "Password123!", "IMAGE",
             "06201234568", "publicKeyHere", "encryptedPrivateKeyHere", "ivDataHere");
 
-        var existingEmailResult = await _authService.RegisterAsync(existingEmailRequest, imagePath);
+        var existingEmailResult = await _authService.RegisterAsync(existingEmailRequest);
 
         Assert.That(existingEmailResult, Is.EqualTo(new FailureWithMessage("Email is already taken")));
         
@@ -98,7 +101,7 @@ public class AuthServiceTests : IAsyncLifetime
         var existingUsernameRequest = new RegistrationRequest("test2@example.com", "testUserName", "Password123!", "IMAGE",
             "06201234568", "publicKeyHere", "encryptedPrivateKeyHere", "ivDataHere");
 
-        var existingUsernameResult = await _authService.RegisterAsync(existingUsernameRequest, imagePath);
+        var existingUsernameResult = await _authService.RegisterAsync(existingUsernameRequest);
 
         Assert.That(existingUsernameResult, Is.EqualTo(new FailureWithMessage("Username is already taken")));
         
@@ -106,7 +109,7 @@ public class AuthServiceTests : IAsyncLifetime
         var existingPhoneNumberRequest = new RegistrationRequest("test2@example.com", "newTestUserName", "Password123!", "IMAGE",
             "06201234567", "publicKeyHere", "encryptedPrivateKeyHere", "ivDataHere");
 
-        var existingPhoneNumberResult = await _authService.RegisterAsync(existingPhoneNumberRequest, imagePath);
+        var existingPhoneNumberResult = await _authService.RegisterAsync(existingPhoneNumberRequest);
         
         Assert.That(existingPhoneNumberResult, Is.EqualTo(new FailureWithMessage("Phone number is already taken")));
     }

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Textinger.Shared.Responses;
 using UserService.Database;
-using UserService.Helpers;
 using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
@@ -11,12 +10,12 @@ using UserService.Services.Authentication;
 using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
 using UserService.Services.FriendConnectionService;
+using UserService.Services.MediaService;
 using UserService.Services.PrivateKeyFolder;
 using UserService.Services.User;
 using Xunit;
 using Xunit.Abstractions;
 using Assert = NUnit.Framework.Assert;
-using UserServiceTests;
 
 namespace UserServiceTests.ServicesTests;
 
@@ -51,10 +50,10 @@ public class UserServiceTest : IAsyncLifetime
         services.AddScoped<IPrivateKeyService, FakeKeyService>();
         services.AddScoped<ICookieService, FakeCookieService>();
         services.AddScoped<IApplicationUserService, ApplicationUserService>();
+        services.AddScoped<IImageService, ImageService>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IFriendConnectionService, FriendConnectionService>();
         services.AddScoped<IEmailSender, FakeEmailSender>();
-        services.AddScoped<IUserHelper, UserHelper>();
         services.AddScoped<IApplicationBuilder, ApplicationBuilder>();
         services.AddScoped<UserManager<ApplicationUser>>();
         services.AddLogging();
