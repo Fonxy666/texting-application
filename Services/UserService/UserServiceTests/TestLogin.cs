@@ -4,7 +4,7 @@ using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Services.EmailSender;
 
-namespace Tests;
+namespace UserServiceTests;
 
 public static class TestLogin
 {

@@ -10,11 +10,11 @@ public static class PopulateDbAndAddRoles
 {
     private static readonly object LockObject = new();
 
-    public static void AddRolesAndAdminSync(IApplicationBuilder app, IConfiguration configuration)
+    public static void AddRolesAndAdminSync(IServiceProvider services, IConfiguration configuration)
     {
         lock (LockObject)
         {
-            using var scope = app.ApplicationServices.CreateScope();
+            using var scope = services.CreateScope();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
@@ -87,11 +87,11 @@ public static class PopulateDbAndAddRoles
         }
     }
 
-    public static void CreateTestUsersSync(IApplicationBuilder app, int numberOfTestUsers, MainDatabaseContext context)
+    public static void CreateTestUsersSync(IServiceProvider services, int numberOfTestUsers, MainDatabaseContext context)
     {
         lock (LockObject)
         {
-            using var scope = app.ApplicationServices.CreateScope();
+            using var scope = services.CreateScope();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var keyManager = scope.ServiceProvider.GetRequiredService<IPrivateKeyService>();
 

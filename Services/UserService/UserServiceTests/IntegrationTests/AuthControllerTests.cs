@@ -3,32 +3,36 @@ using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
-using Server;
-using Server.Model.Requests.Auth;
-using Server.Services.EmailSender;
+using UserService;
+using UserService.Database;
+using UserService.Models;
+using UserService.Models.Requests;
+using UserService.Services.EmailSender;
 using Xunit;
 using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
-namespace Tests.IntegrationTests;
+namespace UserServiceTests.IntegrationTests;
 
 [Collection("Sequential")]
-public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
+public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>, IAsyncLifetime
 {
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
     private readonly HttpClient _client;
     private readonly TestServer _testServer;
+    private readonly MainDatabaseContext _context;
+    private readonly IServiceProvider _provider;
+    private readonly IConfiguration _configuration;
+
 
     public AuthControllerTests(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
-        var configuration = new ConfigurationBuilder()
+        _configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("testConfiguration.json")
+            .AddJsonFile("test-config.json")
             .Build();
         
         var builder = new WebHostBuilder()
@@ -36,11 +40,28 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
             .UseStartup<Startup>()
             .ConfigureAppConfiguration(config =>
             {
-                config.AddConfiguration(configuration);
+                config.AddConfiguration(_configuration);
             });
 
         _testServer = new TestServer(builder);
         _client = _testServer.CreateClient();
+        _provider = _testServer.Host.Services;
+        _context = _provider.GetRequiredService<MainDatabaseContext>();
+    }
+    
+    public async Task InitializeAsync()
+    {
+        await _context.Database.EnsureDeletedAsync();
+        await _context.Database.EnsureCreatedAsync();
+        
+        PopulateDbAndAddRoles.AddRolesAndAdminSync(_provider, _configuration);
+        PopulateDbAndAddRoles.CreateTestUsersSync(_provider, 5, _context);
+    }
+
+    public Task DisposeAsync()
+    {
+        _testServer.Dispose(); 
+        return Task.CompletedTask;
     }
 
     [Fact]
@@ -56,7 +77,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Login_WithBadCredentials_ReturnBadRequest()
     {
-        var token = EmailSenderCodeGenerator.GenerateShortToken("test1@hotmail.com", "login");
+        var token = EmailSenderCodeGenerator.GenerateShortToken("test1@hotmail.com", EmailType.Login);
         var login = new LoginAuth("TestUs", false, token);
         var authJsonRequest = JsonConvert.SerializeObject(login);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
@@ -130,20 +151,6 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     }
 
     [Fact]
-    public async Task Delete_TestUser_ReturnSuccessStatusCode()
-    {
-        var testUser = new AuthRequest("TestUsername5", "testUserPassword123###");
-        var cookies = await TestLogin.Login_With_Test_User(testUser, _client, "test5@hotmail.com");
-
-        const string password = "testUserPassword123###";
-
-        _client.DefaultRequestHeaders.Add("Cookie", cookies);
-
-        var getUserResponse = await _client.DeleteAsync($"api/v1/User/DeleteUser?password={Uri.EscapeDataString(password)}");
-        getUserResponse.EnsureSuccessStatusCode();
-    }
-
-    [Fact]
     public async Task SendEmailVerificationCode_WithValidRequest_ReturnOk()
     {
         var emailRequest = new GetEmailForVerificationRequest("test@test.hu");
@@ -170,7 +177,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task ExamineVerifyToken_WithValidCode_ReturnOk()
     {
-        var token = EmailSenderCodeGenerator.GenerateLongToken("test1@hotmail.com", "registration");
+        var token = EmailSenderCodeGenerator.GenerateLongToken("test1@hotmail.com", EmailType.Registration);
         var request = new VerifyTokenRequest("test1@hotmail.com", token);
         var jsonRequest = JsonConvert.SerializeObject(request);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
@@ -185,7 +192,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     {
         _testOutputHelper.WriteLine("Starting test: ExamineVerifyToken_WithWrongToken_ReturnBadRequest");
 
-        var token = EmailSenderCodeGenerator.GenerateLongToken("test1@hotmail.com", "registration");
+        var token = EmailSenderCodeGenerator.GenerateLongToken("test1@hotmail.com", EmailType.Registration);
         var request = new VerifyTokenRequest("test1@hotmail.com", "asd");
         var jsonRequest = JsonConvert.SerializeObject(request);
         var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");

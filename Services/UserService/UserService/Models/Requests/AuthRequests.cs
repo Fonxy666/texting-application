@@ -13,13 +13,12 @@ public record AuthRequest(
 
 public record GetEmailForVerificationRequest(
     [Required(ErrorMessage = "E-mail cannot be null.")]
-    [EmailAddress(ErrorMessage = "The provided string is not an e-mail.")] string Email,
-    [Required(ErrorMessage = "Username cannot be null.")] string Username
+    [EmailAddress(ErrorMessage = "The provided string is not an e-mail.")] string Email
 );
 
 public record LoginAuth(
     [Required(ErrorMessage = "Username cannot be null.")] string UserName,
-    [Required(ErrorMessage = "You need to provide a 'rememberme' boolean.")] bool RememberMe,
+    [Required(ErrorMessage = "You need to provide a 'Remember me' boolean.")] bool RememberMe,
     [Required(ErrorMessage = "Token cannot be null.")] string Token
 );
 

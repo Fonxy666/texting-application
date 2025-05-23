@@ -268,10 +268,6 @@ public class AuthService(
     public async Task<ResponseBase> LogOutAsync(Guid userId)
     {
         var existingUser = await userManager.FindByIdAsync(userId.ToString());
-        if (existingUser is null)
-        {
-            return new FailureWithMessage("User not found");
-        }
         
         existingUser.SetRefreshToken(string.Empty);
         existingUser.SetRefreshTokenCreated(null);

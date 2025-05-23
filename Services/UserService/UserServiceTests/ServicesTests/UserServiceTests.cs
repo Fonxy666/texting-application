@@ -90,9 +90,8 @@ public class UserServiceTest : IAsyncLifetime
         await _context.Database.EnsureDeletedAsync();
         await _context.Database.EnsureCreatedAsync();
 
-        var app = _provider.GetRequiredService<IApplicationBuilder>();
-        PopulateDbAndAddRoles.AddRolesAndAdminSync(app, _configuration);
-        PopulateDbAndAddRoles.CreateTestUsersSync(app, testUserNumber, _context);
+        PopulateDbAndAddRoles.AddRolesAndAdminSync(_provider, _configuration);
+        PopulateDbAndAddRoles.CreateTestUsersSync(_provider, testUserNumber, _context);
     }
 
     public Task DisposeAsync()

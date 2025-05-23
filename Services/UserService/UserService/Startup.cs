@@ -237,6 +237,6 @@ public class Startup(IConfiguration configuration)
             endpoints.MapGrpcService<AuthGrpcService>();
         });
 
-        PopulateDbAndAddRoles.AddRolesAndAdminSync(app, configuration);
+        PopulateDbAndAddRoles.AddRolesAndAdminSync(app.ApplicationServices, configuration);
     }
 }

@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Models.Responses;
-using UserService.Services.User;
 using UserService.Services.EmailSender;
 using UserService.Services.Authentication;
 using UserService.Models.Requests;
@@ -267,6 +266,7 @@ public class AuthController(
         {
             var userId = (Guid)HttpContext.Items["UserId"]!;
             var logoutResult = await authenticationService.LogOutAsync(userId);
+            
 
             return Ok(logoutResult);
         }

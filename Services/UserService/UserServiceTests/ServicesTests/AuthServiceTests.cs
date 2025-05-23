@@ -61,9 +61,8 @@ public class AuthServiceTests : IAsyncLifetime
         await _context.Database.EnsureDeletedAsync();
         await _context.Database.EnsureCreatedAsync();
         
-        var app = _provider.GetRequiredService<IApplicationBuilder>();
-        PopulateDbAndAddRoles.AddRolesAndAdminSync(app, _configuration);
-        PopulateDbAndAddRoles.CreateTestUsersSync(app, 1, _context);
+        PopulateDbAndAddRoles.AddRolesAndAdminSync(_provider, _configuration);
+        PopulateDbAndAddRoles.CreateTestUsersSync(_provider, 1, _context);
     }
 
     public Task DisposeAsync()
