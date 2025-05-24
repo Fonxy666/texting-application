@@ -8,21 +8,22 @@ namespace UserService.Services.PrivateKeyFolder;
 
 public class PrivateKeyService : IPrivateKeyService
 {
-    private readonly HttpClient _httpClient = new ();
+    private readonly HttpClient _httpClient;
     private readonly string _vaultToken;
     private readonly string _vaultAddress;
 
-    public PrivateKeyService(IConfiguration configuration)
+    public PrivateKeyService(HttpClient httpClient, string vaultToken, string vaultAddress)
     {
-        _vaultToken = configuration["HashiCorpToken"] ?? throw new Exception("Vault token missing!");
-        _vaultAddress = configuration["HashiCorpAddress"] ?? throw new Exception("Vault address missing!");
+        _httpClient = httpClient;
+        _vaultToken = vaultToken ?? throw new ArgumentNullException(nameof(vaultToken));
+        _vaultAddress = vaultAddress ?? throw new ArgumentNullException(nameof(vaultAddress));
     }
 
     public async Task<ResponseBase> GetEncryptedKeyByUserIdAsync(Guid userId)
     {
         try
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"{_vaultAddress}/v1/kv/data/private_keys/{userId}");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{_vaultAddress}/v1/secret/data/private_keys/{userId}");
             request.Headers.Add("X-Vault-Token", _vaultToken);
 
             var response = await _httpClient.SendAsync(request);
@@ -73,7 +74,7 @@ public class PrivateKeyService : IPrivateKeyService
             };
 
             var jsonPayload = JsonSerializer.Serialize(payload);
-            using var request = new HttpRequestMessage(HttpMethod.Post, $"{_vaultAddress}/v1/kv/data/private_keys/{userId}")
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"{_vaultAddress}/v1/secret/data/private_keys/{userId}")
             {
                 Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json")
             };

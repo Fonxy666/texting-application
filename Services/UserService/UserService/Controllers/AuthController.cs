@@ -70,7 +70,7 @@ public class AuthController(
         {
             var result = await authenticationService.RegisterAsync(request);
             
-            if (result is Failure || result is FailureWithMessage) 
+            if (result is Failure or FailureWithMessage) 
             {
                 return StatusCode(500, result);
             }

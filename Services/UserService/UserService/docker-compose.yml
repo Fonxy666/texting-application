@@ -21,18 +21,18 @@ services:
     image: hashicorp/vault:latest
     container_name: test_private_key_vault
     ports:
-      - "8201:8201"
+      - "8201:8200"
     restart: always
     environment:
       - VAULT_DEV_MODE=true
       - VAULT_DEV_ROOT_TOKEN_ID=root
     cap_add:
       - IPC_LOCK
-    command: vault server -dev
+    command: vault server -dev -dev-listen-address="0.0.0.0:8200"
     networks:
       - test-network
     healthcheck:
-      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:8201/v1/sys/health" ]
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:8200/v1/sys/health" ]
       interval: 5s
       timeout: 3s
       retries: 10

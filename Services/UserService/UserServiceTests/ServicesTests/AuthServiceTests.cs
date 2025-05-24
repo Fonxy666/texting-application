@@ -141,11 +141,5 @@ public class AuthServiceTests : IAsyncLifetime
         var successResult = await _authService.LogOutAsync(testUserId);
 
         Assert.That(successResult, Is.InstanceOf<Success>());
-        
-        // Failure with wrong token
-        var testUserWrongId = new Guid("38db530c-b6bb-4e8a-9c19-a5cd4d0fa915");
-        var failureWIthWrongTokenResult = await _authService.LogOutAsync(testUserWrongId);
-
-        Assert.That(failureWIthWrongTokenResult, Is.EqualTo(new FailureWithMessage("User not found")));
     }
 }

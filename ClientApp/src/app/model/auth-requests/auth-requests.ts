@@ -10,6 +10,10 @@ export interface LoginRequest {
     rememberMe: boolean
 }
 
+export interface EmailRequest {
+    email: string;
+}
+
 export interface LoginRoomRequest {
     roomName: string;
     password: string;

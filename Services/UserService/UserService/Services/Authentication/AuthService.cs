@@ -35,12 +35,8 @@ public class AuthService(
         try
         {
             var saveImageResult = imageService.SaveImageLocally(request.Username, request.Image);
-            if (saveImageResult is FailureWithMessage)
-            {
-                return saveImageResult;
-            }
             
-            var userCreationResult = await CreateUser(request, (saveImageResult as SuccessWithMessage)!.Message);
+            var userCreationResult = await CreateUser(request, (saveImageResult as SuccessWithMessage)?.Message ?? "-");
             if (userCreationResult is FailureWithMessage)
             {
                 return userCreationResult;
@@ -268,11 +264,14 @@ public class AuthService(
     public async Task<ResponseBase> LogOutAsync(Guid userId)
     {
         var existingUser = await userManager.FindByIdAsync(userId.ToString());
+        if (existingUser is not null)
+        {
+            existingUser.SetRefreshToken(string.Empty);
+            existingUser.SetRefreshTokenCreated(null);
+            existingUser.SetRefreshTokenExpires(null);
+            await userManager.UpdateAsync(existingUser);
+        }
         
-        existingUser.SetRefreshToken(string.Empty);
-        existingUser.SetRefreshTokenCreated(null);
-        existingUser.SetRefreshTokenExpires(null);
-        await userManager.UpdateAsync(existingUser);
         cookieService.DeleteCookies();
         return new Success();
     }

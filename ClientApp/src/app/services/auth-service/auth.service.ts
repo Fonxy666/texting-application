@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { EmailAndUserNameRequest, LoginAuthTokenRequest, LoginRequest, RegistrationRequest, TokenValidatorRequest } from '../../model/auth-requests/auth-requests';
+import { EmailAndUserNameRequest, EmailRequest, LoginAuthTokenRequest, LoginRequest, RegistrationRequest, TokenValidatorRequest } from '../../model/auth-requests/auth-requests';
 import { ServerResponse } from '../../model/responses/shared-response.model';
 
 @Injectable({
@@ -21,7 +21,7 @@ export class AuthService {
         return this.http.post<ServerResponse<string>>(`/api/v1/Auth/SendLoginToken`, form, { withCredentials: true });
     }
 
-    sendVerifyEmail(form: EmailAndUserNameRequest): Observable<ServerResponse<string>> {
+    sendVerifyEmail(form: EmailRequest): Observable<ServerResponse<string>> {
         return this.http.post<ServerResponse<string>>(`/api/v1/Auth/SendEmailVerificationToken`, form )
     }
 
