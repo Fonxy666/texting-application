@@ -7,6 +7,7 @@ using UserService.Models.Responses;
 using UserService.Services.Authentication;
 using UserService.Services.EmailSender;
 using Textinger.Shared.Responses;
+using UserService.Repository;
 using UserService.Services.MediaService;
 
 namespace UserService.Services.User;
@@ -17,17 +18,14 @@ public class ApplicationUserService(
     MainDatabaseContext context,
     IEmailSender emailSender,
     IAuthService authService,
-    IImageService imageService
+    IImageService imageService,
+    IUserRepository userRepository
     ) : IApplicationUserService
 {
     
     public async Task<ResponseBase> GetUserNameAsync(Guid userId)
     {
-        var userNameDto = await context.Users
-            .Where(u => u.Id ==  userId)
-            .Select(u => 
-                new UserNameDto(u.UserName!))
-            .FirstOrDefaultAsync();
+        var userNameDto = await userRepository.GetUsernameAsync(userId);                
 
         if (userNameDto is null)
         {
@@ -39,10 +37,7 @@ public class ApplicationUserService(
 
     public async Task<ResponseBase> GetImageWithIdAsync(Guid userId)
     {
-        var userName = await context.Users
-            .Where(u => u.Id ==  userId)
-            .Select(u => u.UserName)
-            .FirstOrDefaultAsync();
+        var userName = await userRepository.GetUsernameAsync(userId);
 
         if (userName is null)
         {
@@ -67,11 +62,7 @@ public class ApplicationUserService(
 
     public async Task<ResponseBase> GetUserCredentialsAsync(Guid userId)
     {
-        var userCredentials = await context.Users
-            .Where(u => u.Id ==  userId)
-            .Select(u => 
-                new UsernameUserEmailAndTwoFactorEnabledDto(u.UserName!, u.Email!, u.TwoFactorEnabled))
-            .FirstOrDefaultAsync();
+        var userCredentials = await userRepository.GetUsernameUserEmailAndTwoFactorEnabledAsync(userId);
 
         if (userCredentials is null)
         {
@@ -85,9 +76,7 @@ public class ApplicationUserService(
         Guid userId,
         Expression<Func<ApplicationUser, object>> includeNavigation)
     {
-        var user = await context.Users
-            .Include(includeNavigation)
-            .FirstOrDefaultAsync(u => u.Id == userId);
+        var user = await userRepository.GetUserWithIncludeAsync(userId, includeNavigation);
 
         if (user == null)
         {
@@ -99,14 +88,7 @@ public class ApplicationUserService(
     
     public async Task<ResponseBase> GetUserPrivatekeyForRoomAsync(Guid userId, Guid roomId)
     {
-        var userKeyDto = await context.Users
-            .Include(u => u.UserSymmetricKeys)
-            .Where(u => u.Id == userId &&
-                        u.UserSymmetricKeys.Any(esk => esk.RoomId == roomId))
-            .Select(u => new UserPrivateKeyDto(
-                u.UserSymmetricKeys.First(k => k.RoomId == roomId).EncryptedKey))
-            .FirstOrDefaultAsync();
-        
+        var userKeyDto = await userRepository.GetUserPrivateKeyAsync(userId, roomId);
         if (userKeyDto is null)
         {
             return new FailureWithMessage("User with the desired key not found.");
@@ -117,18 +99,13 @@ public class ApplicationUserService(
 
     public async Task<ResponseBase> GetRoommatePublicKey(string userName)
     {
-        var publicKey = await context.Users
-            .Where(u => u.UserName ==  userName)
-            .Select(u => new UserPublicKeyDto(u.PublicKey))
-            .FirstOrDefaultAsync();
+        var publicKey = await userRepository.GetUserPublicKeyAsync(userName);
         
         return new SuccessWithDto<UserPublicKeyDto>(publicKey);
     }
     public async Task<ResponseBase> ExamineIfUserHaveSymmetricKeyForRoom(string userName, Guid roomId)
     {
-        var result = await context.Users
-            .Include(u => u.UserSymmetricKeys)
-            .AnyAsync(u => u.UserName == userName && u.UserSymmetricKeys.Any(esk => esk.RoomId == roomId));
+        var result = await userRepository.IsUserHaveSymmetricKeyForRoom(userName, roomId);
 
         if (!result)
         {
@@ -245,16 +222,14 @@ public class ApplicationUserService(
 
     public async Task<ResponseBase> ChangeUserAvatarAsync(Guid userId, string image)
     {
-        var userName = await context.Users
-            .Where(u => u.Id == userId)
-            .Select(u => u.UserName)
-            .FirstOrDefaultAsync();
-        if (userName is null)
+        var userNameDto = await userRepository.GetUsernameAsync(userId);
+        
+        if (userNameDto is null)
         {
             return new FailureWithMessage("User not found.");
         }
         
-        var imageSaveResult = imageService.SaveImageLocally(userName, image);
+        var imageSaveResult = imageService.SaveImageLocally(userNameDto.UserName, image);
 
         return imageSaveResult;
     }
