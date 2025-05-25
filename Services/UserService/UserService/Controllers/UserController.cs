@@ -105,7 +105,8 @@ public class UserController(
     {
         try
         {
-            var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(email, resetId, EmailType.PasswordReset);
+            var decodedToken = resetId.Replace(" ", "+");
+            var examine = EmailSenderCodeGenerator.ExamineIfTheCodeWasOk(email, decodedToken, EmailType.PasswordReset);
 
             if (!examine)
             {
@@ -489,7 +490,7 @@ public class UserController(
             var userId = (Guid)HttpContext.Items["UserId"]!;
             if (!Guid.TryParse(requestId, out var requestGuid))
             {
-                return BadRequest(new FailureWithMessage("Invalid room ID format."));
+                return BadRequest(new FailureWithMessage("Invalid request ID format."));
             }
             
             var friendDeletionResult = await friendConnectionService.DeleteFriendAsync(userId, requestGuid);

@@ -166,6 +166,8 @@ public class ApplicationUserService(
             return new FailureWithMessage("Invalid or expired reset code.");
         }
         
+        EmailSenderCodeGenerator.RemoveVerificationCode(request.Email, EmailType.PasswordReset);
+        
         var existingUser = await userManager.FindByEmailAsync(request.Email);
         if (existingUser is null)
         {

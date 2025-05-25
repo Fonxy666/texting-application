@@ -28,7 +28,7 @@ public class FriendConnectionService(MainDatabaseContext context, IApplicationUs
         
         if (friendName == existingUserName)
         {
-            return new Failure();
+            return new FailureWithMessage("You cannot send friend request to yourself.");
         }
         
         if (await AlreadySentFriendRequest(new FriendRequest(userId.ToString(), existingNewFriendId.ToString())))

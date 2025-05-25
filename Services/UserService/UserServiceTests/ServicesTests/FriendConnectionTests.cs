@@ -82,11 +82,11 @@ public class FriendConnectionTests : IAsyncLifetime
             await _friendService.SendFriendRequestAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"), "TestUsername2");
         Assert.That(result, Is.InstanceOf<SuccessWithDto<ShowFriendRequestDto>>());
         
-        // Bad request with not existing user id
+        // Bad request to yourself
         var notExistingUserResult =
             await _friendService.SendFriendRequestAsync(Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916"), "TestUsername1");
 
-        Assert.That(notExistingUserResult, Is.EqualTo(new Failure()));
+        Assert.That(notExistingUserResult, Is.EqualTo(new FailureWithMessage("You cannot send friend request to yourself.")));
         
         // Bad request with not existing new friend
         var notExistingNewFriend =
