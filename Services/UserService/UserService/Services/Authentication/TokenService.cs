@@ -9,13 +9,13 @@ using UserService.Models;
 
 namespace UserService.Services.Authentication;
 
-public class TokenService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor) : ITokenService
+public class TokenService(IConfiguration configuration) : ITokenService
 {
     public const int ExpirationHours = 2;
         
     public string CreateJwtToken(IdentityUser<Guid> user, string? role, bool rememberMe)
     {
-        var expiration = rememberMe? DateTime.UtcNow.AddHours(3) : (DateTime?)null;
+        var expiration = rememberMe? DateTime.UtcNow.AddHours(ExpirationHours) : (DateTime?)null;
         var token = CreateJwtToken(CreateClaims(user, role), CreateSigningCredentials(), expiration);
 
         var tokenHandler = new JwtSecurityTokenHandler();

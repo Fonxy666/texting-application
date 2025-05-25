@@ -5,6 +5,7 @@ using Textinger.Shared.Responses;
 using UserService.Database;
 using UserService.Models;
 using UserService.Models.Responses;
+using UserService.Repository;
 using UserService.Services.Authentication;
 using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
@@ -19,15 +20,13 @@ using Assert = NUnit.Framework.Assert;
 namespace UserServiceTests.ServicesTests;
 public class FriendConnectionTests : IAsyncLifetime
 {
-    private readonly ITestOutputHelper _testOutputHelper;
     private readonly ServiceProvider _provider;
     private readonly IFriendConnectionService _friendService;
     private readonly MainDatabaseContext _context;
     private readonly IConfiguration _configuration;
 
-    public FriendConnectionTests(ITestOutputHelper testOutputHelper)
+    public FriendConnectionTests()
     {
-        _testOutputHelper = testOutputHelper;
         var services = new ServiceCollection();
         
         _configuration = new ConfigurationBuilder()
@@ -51,6 +50,8 @@ public class FriendConnectionTests : IAsyncLifetime
         services.AddScoped<IFriendConnectionService, FriendConnectionService>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IApplicationBuilder, ApplicationBuilder>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        
         services.AddLogging();
 
         _provider = services.BuildServiceProvider();

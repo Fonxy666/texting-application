@@ -7,6 +7,7 @@ using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
 using UserService.Services.PrivateKeyFolder;
 using Textinger.Shared.Responses;
+using UserService.Repository;
 using UserService.Services.MediaService;
 
 namespace UserService.Services.Authentication;
@@ -19,7 +20,8 @@ public class AuthService(
     ILogger<AuthService> logger,
     IPrivateKeyService privateKeyService,
     MainDatabaseContext context,
-    IImageService imageService
+    IImageService imageService,
+    IUserRepository userRepository
     ) : IAuthService
 {
     public async Task<ResponseBase> RegisterAsync(RegistrationRequest request)
@@ -61,11 +63,7 @@ public class AuthService(
 
     private async Task<ResponseBase> ValidateUserInput(RegistrationRequest request)
     {
-        var conflictingUser = await context.Users
-            .Where(u => u.Email == request.Email 
-                        || u.UserName == request.Username 
-                        || u.PhoneNumber == request.PhoneNumber)
-            .FirstOrDefaultAsync();
+        var conflictingUser = await userRepository.ValidateUserInputAsync(request);
 
         if (conflictingUser != null)
         {

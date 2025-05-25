@@ -6,6 +6,7 @@ using UserService.Database;
 using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
+using UserService.Repository;
 using UserService.Services.Authentication;
 using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
@@ -29,7 +30,7 @@ public class UserServiceTest : IAsyncLifetime
     private readonly UserManager<ApplicationUser> _userManager;
     private int testUserNumber = 2;
 
-    public UserServiceTest(ITestOutputHelper testOutputHelper)
+    public UserServiceTest()
     {
         var services = new ServiceCollection();
 
@@ -56,6 +57,7 @@ public class UserServiceTest : IAsyncLifetime
         services.AddScoped<IEmailSender, FakeEmailSender>();
         services.AddScoped<IApplicationBuilder, ApplicationBuilder>();
         services.AddScoped<UserManager<ApplicationUser>>();
+        services.AddScoped<IUserRepository, UserRepository>();
         services.AddLogging();
         services.AddIdentityCore<ApplicationUser>(options =>
             {

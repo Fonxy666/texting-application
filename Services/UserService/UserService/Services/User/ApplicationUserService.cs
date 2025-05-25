@@ -37,9 +37,9 @@ public class ApplicationUserService(
 
     public async Task<ResponseBase> GetImageWithIdAsync(Guid userId)
     {
-        var userName = await userRepository.GetUsernameAsync(userId);
+        var userNameDto = await userRepository.GetUsernameAsync(userId);
 
-        if (userName is null)
+        if (userNameDto is null)
         {
             return new FailureWithMessage("User not found.");
         }
@@ -47,7 +47,7 @@ public class ApplicationUserService(
         var folderPath = configuration["ImageFolderPath"] ?? 
                         Path.Combine(Directory.GetCurrentDirectory(), "Avatars");
 
-        var imagePath = Path.Combine(folderPath, $"{userName}.png");
+        var imagePath = Path.Combine(folderPath, $"{userNameDto.UserName}.png");
 
         if (!File.Exists(imagePath))
         {
@@ -105,7 +105,7 @@ public class ApplicationUserService(
     }
     public async Task<ResponseBase> ExamineIfUserHaveSymmetricKeyForRoom(string userName, Guid roomId)
     {
-        var result = await userRepository.IsUserHaveSymmetricKeyForRoom(userName, roomId);
+        var result = await userRepository.IsUserHaveSymmetricKeyForRoomAsync(userName, roomId);
 
         if (!result)
         {

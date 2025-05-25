@@ -1,34 +1,44 @@
 ﻿using Grpc.Core;
 using Microsoft.AspNetCore.Identity;
 using UserService.Models;
+using UserService.Repository;
 using UserService.Services.EncryptedSymmetricKeyService;
 
 namespace UserService.Services.gRPCServices;
 
-public class UserGrpcService(UserManager<ApplicationUser> userManager, ISymmetricKeyService keyService) : GrpcUserService.GrpcUserServiceBase
+public class UserGrpcService(UserManager<ApplicationUser> userManager, ISymmetricKeyService keyService, IUserRepository userRepository) : GrpcUserService.GrpcUserServiceBase
 {
     public override async Task<BoolResponseWithMessage> UserExisting(UserIdRequest request, ServerCallContext context)
     {
-        
-        var userExists = await userManager.FindByIdAsync(request.Id);
-        if (userExists == null)
+        if (!Guid.TryParse(request.Id, out var userGuid))
+        {
+            return new BoolResponseWithMessage { Success = false, Message = "Invalid user id." };
+        }
+        var userExists = await userRepository.IsUserExistingAsync(userGuid);
+        if (!userExists)
         {
             return new BoolResponseWithMessage { Success = false, Message = "User not exists." };
         }
 
-        return new BoolResponseWithMessage {  Success = true, Message = "User existing" };
+        return new BoolResponseWithMessage { Success = true, Message = "User existing" };
     }
 
     public override async Task<BoolResponseWithMessage> SendEncryptedRoomIdForUser(EncryptedRoomIdWithUserId request, ServerCallContext context)
     {
-        var existingUser = await userManager.FindByIdAsync(request.UserId);
-        if (existingUser == null)
+        if (!Guid.TryParse(request.UserId, out var userGuid))
+        {
+            return new BoolResponseWithMessage { Success = true, Message = "Invalid user id." };
+        }
+        if (!Guid.TryParse(request.RoomId, out var roomGuid))
+        {
+            return new BoolResponseWithMessage { Success = true, Message = "Invalid room id." };
+        }
+        var existingUser = await userRepository.IsUserExistingAsync(userGuid);
+        if (existingUser)
         {
             return new BoolResponseWithMessage { Success = false, Message = "User not exists." };
         }
 
-        var userGuid = Guid.Parse(request.UserId);
-        var roomGuid = Guid.Parse(request.RoomId);
         var newKey = new EncryptedSymmetricKey(userGuid, request.RoomKey, roomGuid);
 
         try
@@ -44,13 +54,18 @@ public class UserGrpcService(UserManager<ApplicationUser> userManager, ISymmetri
 
     public override async Task<UserIdAndPublicKeyResponse> SendUserPublicKeyAndId(UserIdRequest request, ServerCallContext context)
     {
-        var existingUser = await userManager.FindByIdAsync(request.Id);
-        if (existingUser == null)
+        if (!Guid.TryParse(request.Id, out var userGuid))
         {
-            return new UserIdAndPublicKeyResponse { };
+            return new UserIdAndPublicKeyResponse();
         }
 
-        return new UserIdAndPublicKeyResponse { UserId = existingUser.Id.ToString(), PublicKey = existingUser.PublicKey};
+        var userIdAndPublicKey = await userRepository.GetUserIdAndPublicKeyAsync(userGuid);
+        if (userIdAndPublicKey is null)
+        {
+            return new UserIdAndPublicKeyResponse();
+        }
+
+        return new UserIdAndPublicKeyResponse { UserId = userIdAndPublicKey.Id.ToString(), PublicKey = userIdAndPublicKey.PublicKey };
     }
 
     public override async Task<UsersResponse> SendUserNamesAndGetIds(UserNamesRequest request, ServerCallContext context)
@@ -59,9 +74,9 @@ public class UserGrpcService(UserManager<ApplicationUser> userManager, ISymmetri
 
         foreach (var name in request.Name)
         {
-            var existingUser = await userManager.FindByNameAsync(name);
+            var existingUser = await userRepository.GetUserIdAndUserNameAsync(name);
 
-            if (existingUser == null)
+            if (existingUser is null)
             {
                 continue;
             }

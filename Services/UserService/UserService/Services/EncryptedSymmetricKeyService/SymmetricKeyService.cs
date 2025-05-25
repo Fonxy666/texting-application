@@ -1,10 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using UserService.Models;
 using Textinger.Shared.Responses;
+using UserService.Repository;
 
 namespace UserService.Services.EncryptedSymmetricKeyService;
 
-public class SymmetricKeyService(MainDatabaseContext context) : ISymmetricKeyService
+public class SymmetricKeyService(MainDatabaseContext context, IUserRepository userRepository) : ISymmetricKeyService
 {
     public async Task<ResponseBase> SaveNewKeyAndLinkToUserAsync(EncryptedSymmetricKey symmetricKey)
     {
@@ -17,7 +19,9 @@ public class SymmetricKeyService(MainDatabaseContext context) : ISymmetricKeySer
 
             context.EncryptedSymmetricKeys.Attach(symmetricKey);
 
-            var user = await context.Users.Include(u => u.UserSymmetricKeys).FirstOrDefaultAsync(u => u.Id == symmetricKey.UserId);
+            Expression<Func<ApplicationUser, object>> navigation = u => u.UserSymmetricKeys;
+            var user = await userRepository.GetUserWithIncludeAsync(symmetricKey.UserId, navigation);
+            
             if (user == null)
             {
                 return new Failure();

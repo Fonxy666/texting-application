@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using UserService.Models;
+using UserService.Models.Requests;
 using UserService.Models.Responses;
 
 namespace UserService.Repository;
@@ -51,11 +52,41 @@ public class UserRepository(MainDatabaseContext context) : IUserRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<bool> IsUserHaveSymmetricKeyForRoom(string userName, Guid roomId)
+    public async Task<bool> IsUserHaveSymmetricKeyForRoomAsync(string userName, Guid roomId)
     {
         return await context.Users
             .Include(u => u.UserSymmetricKeys)
             .AnyAsync(u => u.UserName == userName && u.UserSymmetricKeys
                 .Any(esk => esk.RoomId == roomId));
+    }
+
+    public async Task<ApplicationUser?> ValidateUserInputAsync(RegistrationRequest request)
+    {
+        return await context.Users
+            .Where(u => u.Email == request.Email 
+                        || u.UserName == request.Username 
+                        || u.PhoneNumber == request.PhoneNumber)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<bool> IsUserExistingAsync(Guid userId)
+    {
+        return await context.Users.AnyAsync(u => u.Id == userId);
+    }
+
+    public async Task<UserIdAndPublicKeyDto?> GetUserIdAndPublicKeyAsync(Guid userId)
+    {
+        return await context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => new UserIdAndPublicKeyDto(u.Id, u.PublicKey))
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<UserIdAndUserNameDto?> GetUserIdAndUserNameAsync(string userName)
+    {
+        return await context.Users
+            .Where(u => u.UserName == userName)
+            .Select(u => new UserIdAndUserNameDto(u.Id, u.UserName!))
+            .FirstOrDefaultAsync();
     }
 }

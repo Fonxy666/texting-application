@@ -14,6 +14,7 @@ using UserService.Database;
 using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
+using UserService.Repository;
 using UserService.Services.EmailSender;
 using UserService.Services.FriendConnectionService;
 using UserService.Services.PrivateKeyFolder;
