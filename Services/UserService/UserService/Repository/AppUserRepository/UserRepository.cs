@@ -4,16 +4,34 @@ using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
 
-namespace UserService.Repository;
+namespace UserService.Repository.AppUserRepository;
 
 public class UserRepository(MainDatabaseContext context) : IUserRepository
 {
-    public async Task<UserNameDto?> GetUsernameAsync(Guid userId)
+    public async Task<UserNameDto?> GetUsernameDtoAsync(Guid userId)
     {
         return await context.Users
             .Where(u => u.Id ==  userId)
             .Select(u => 
                 new UserNameDto(u.UserName!))
+            .FirstOrDefaultAsync();
+    }
+    
+    public async Task<UserNameDto?> GetUsernameDtoAsync(string userName)
+    {
+        return await context.Users
+            .Where(u => u.UserName ==  userName)
+            .Select(u => 
+                new UserNameDto(u.UserName!))
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<UserIdDto?> GetUserIdDtoAsync(string userName)
+    {
+        return await context.Users
+            .Where(u => u.UserName ==  userName)
+            .Select(u => 
+                new UserIdDto(u.Id))
             .FirstOrDefaultAsync();
     }
 

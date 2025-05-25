@@ -6,6 +6,7 @@ using UserService.Database;
 using UserService.Models;
 using UserService.Models.Responses;
 using UserService.Repository;
+using UserService.Repository.AppUserRepository;
 using UserService.Services.Authentication;
 using UserService.Services.Cookie;
 using UserService.Services.EmailSender;

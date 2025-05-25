@@ -4,39 +4,37 @@ using UserService.Services.User;
 using UserService.Models;
 using UserService.Models.Responses;
 using Textinger.Shared.Responses;
+using UserService.Repository.AppUserRepository;
 
 namespace UserService.Services.FriendConnectionService;
 
-public class FriendConnectionService(MainDatabaseContext context, IApplicationUserService userServices) : IFriendConnectionService
+public class FriendConnectionService(
+    MainDatabaseContext context,
+    IApplicationUserService userServices,
+    IUserRepository userRepository
+    ) : IFriendConnectionService
 {
     public async Task<ResponseBase> SendFriendRequestAsync(Guid userId, string friendName)
     {
-        var existingUserName = await context.Users
-            .Where(u => u.Id == userId)
-            .Select(u => u.UserName)
-            .FirstOrDefaultAsync();
+        var existingUserNameDto = await userRepository.GetUsernameDtoAsync(userId);
+        var existingNewFriendIdDto = await userRepository.GetUserIdDtoAsync(friendName);
         
-        var existingNewFriendId = await context.Users
-            .Where(u => u.UserName == friendName)
-            .Select(u => u.Id)
-            .FirstOrDefaultAsync();
-        
-        if (existingNewFriendId == Guid.Empty)
+        if (existingNewFriendIdDto is null)
         {
             return new FailureWithMessage($"There is no User with this username: {friendName}");
         }
         
-        if (friendName == existingUserName)
+        if (friendName == existingUserNameDto.UserName)
         {
             return new FailureWithMessage("You cannot send friend request to yourself.");
         }
         
-        if (await AlreadySentFriendRequest(new FriendRequest(userId.ToString(), existingNewFriendId.ToString())))
+        if (await AlreadySentFriendRequest(new FriendRequest(userId.ToString(), existingNewFriendIdDto.Id.ToString())))
         {
             return new FailureWithMessage("You already sent a friend request to this user!");
         }
         
-        var friendRequest = new FriendConnection(userId, existingNewFriendId);
+        var friendRequest = new FriendConnection(userId, existingNewFriendIdDto.Id);
 
         var savedRequest = await context.FriendConnections.AddAsync(friendRequest);
         var affectedRows = await context.SaveChangesAsync();
@@ -47,11 +45,11 @@ public class FriendConnectionService(MainDatabaseContext context, IApplicationUs
 
         return new SuccessWithDto<ShowFriendRequestDto>(new ShowFriendRequestDto(
             savedRequest.Entity.ConnectionId,
-            existingUserName!,
+            existingUserNameDto.UserName,
             userId,
             savedRequest.Entity.SentTime,
             friendName,
-            existingNewFriendId));
+            existingNewFriendIdDto.Id));
     }
 
     public async Task<ResponseBase> GetAllPendingRequestsAsync(Guid userId)

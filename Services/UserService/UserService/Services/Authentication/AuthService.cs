@@ -8,6 +8,7 @@ using UserService.Services.EmailSender;
 using UserService.Services.PrivateKeyFolder;
 using Textinger.Shared.Responses;
 using UserService.Repository;
+using UserService.Repository.AppUserRepository;
 using UserService.Services.MediaService;
 
 namespace UserService.Services.Authentication;

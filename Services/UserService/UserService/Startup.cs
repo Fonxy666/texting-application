@@ -22,6 +22,7 @@ using UserService.Filters;
 using UserService.Services.FriendConnectionService;
 using Textinger.Shared.JwtRefreshTokenValidation;
 using UserService.Repository;
+using UserService.Repository.AppUserRepository;
 using UserService.Services.MediaService;
 
 namespace UserService;

@@ -1,14 +1,15 @@
 ﻿using System.Linq.Expressions;
-using Grpc.Core;
 using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
 
-namespace UserService.Repository;
+namespace UserService.Repository.AppUserRepository;
 
 public interface IUserRepository
 {
-    Task<UserNameDto?> GetUsernameAsync(Guid userId);
+    Task<UserNameDto?> GetUsernameDtoAsync(Guid userId);
+    Task<UserNameDto?> GetUsernameDtoAsync(string userName);
+    Task<UserIdDto?> GetUserIdDtoAsync(string userName);
     Task<UsernameUserEmailAndTwoFactorEnabledDto?> GetUsernameUserEmailAndTwoFactorEnabledAsync(Guid userId);
     Task<ApplicationUser?> GetUserWithIncludeAsync(Guid userId, Expression<Func<ApplicationUser, object>> includeNavigation);
     Task<UserPrivateKeyDto?> GetUserPrivateKeyAsync(Guid userId, Guid roomId);

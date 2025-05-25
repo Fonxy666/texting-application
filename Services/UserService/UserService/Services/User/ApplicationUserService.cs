@@ -8,6 +8,7 @@ using UserService.Services.Authentication;
 using UserService.Services.EmailSender;
 using Textinger.Shared.Responses;
 using UserService.Repository;
+using UserService.Repository.AppUserRepository;
 using UserService.Services.MediaService;
 
 namespace UserService.Services.User;
@@ -25,7 +26,7 @@ public class ApplicationUserService(
     
     public async Task<ResponseBase> GetUserNameAsync(Guid userId)
     {
-        var userNameDto = await userRepository.GetUsernameAsync(userId);                
+        var userNameDto = await userRepository.GetUsernameDtoAsync(userId);                
 
         if (userNameDto is null)
         {
@@ -37,7 +38,7 @@ public class ApplicationUserService(
 
     public async Task<ResponseBase> GetImageWithIdAsync(Guid userId)
     {
-        var userNameDto = await userRepository.GetUsernameAsync(userId);
+        var userNameDto = await userRepository.GetUsernameDtoAsync(userId);
 
         if (userNameDto is null)
         {
@@ -222,7 +223,7 @@ public class ApplicationUserService(
 
     public async Task<ResponseBase> ChangeUserAvatarAsync(Guid userId, string image)
     {
-        var userNameDto = await userRepository.GetUsernameAsync(userId);
+        var userNameDto = await userRepository.GetUsernameDtoAsync(userId);
         
         if (userNameDto is null)
         {
