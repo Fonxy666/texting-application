@@ -1,17 +1,21 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using UserService.Models.Requests;
 using UserService.Services.User;
 using UserService.Models;
 using UserService.Models.Responses;
 using Textinger.Shared.Responses;
+using UserService.Database;
 using UserService.Repository.AppUserRepository;
+using UserService.Repository.FConnectionRepository;
 
 namespace UserService.Services.FriendConnectionService;
 
 public class FriendConnectionService(
     MainDatabaseContext context,
     IApplicationUserService userServices,
-    IUserRepository userRepository
+    IUserRepository userRepository,
+    IFriendConnectionRepository friendRepository
     ) : IFriendConnectionService
 {
     public async Task<ResponseBase> SendFriendRequestAsync(Guid userId, string friendName)
@@ -24,7 +28,7 @@ public class FriendConnectionService(
             return new FailureWithMessage($"There is no User with this username: {friendName}");
         }
         
-        if (friendName == existingUserNameDto.UserName)
+        if (friendName == existingUserNameDto!.UserName)
         {
             return new FailureWithMessage("You cannot send friend request to yourself.");
         }
@@ -54,50 +58,15 @@ public class FriendConnectionService(
 
     public async Task<ResponseBase> GetAllPendingRequestsAsync(Guid userId)
     {
-        var rawFriendConnection = await context.Users
-            .Where(u => u.Id == userId)
-            .Select(u => new
-            {
-                Received = u.ReceivedFriendRequests
-                    .Where(rfr => rfr.Status == FriendStatus.Pending)
-                    .Select(rfr => new
-                    {
-                        rfr.ConnectionId,
-                        SenderId = rfr.Sender!.Id,
-                        SenderUserName = rfr.Sender!.UserName!,
-                        rfr.SentTime,
-                        ReceiverUserName = rfr.Receiver!.UserName!,
-                        ReceiverId = rfr.Receiver.Id
-                    }),
-                Sent = u.SentFriendRequests
-                    .Where(rfr => rfr.Status == FriendStatus.Pending)
-                    .Select(rfr => new
-                    {
-                        rfr.ConnectionId,
-                        SenderId = rfr.Sender!.Id,
-                        SenderUserName = rfr.Sender!.UserName!,
-                        rfr.SentTime,
-                        ReceiverUserName = rfr.Receiver!.UserName!,
-                        ReceiverId = rfr.Receiver.Id
-                    })
-            })
-            .FirstOrDefaultAsync();
+        var rawFriendConnection = await friendRepository.GetAllPendingRequestsAsync(userId);
         
         if (rawFriendConnection == null)
         {
             return new FailureWithMessage("User not found.");
         }
-        
+
         var friendRequestsDto = rawFriendConnection.Received
             .Concat(rawFriendConnection.Sent)
-            .Select(rfr => new ShowFriendRequestDto(
-                rfr.ConnectionId,
-                rfr.SenderUserName,
-                rfr.SenderId,
-                rfr.SentTime,
-                rfr.ReceiverUserName,
-                rfr.ReceiverId
-            ))
             .ToList();
         
 
@@ -106,9 +75,7 @@ public class FriendConnectionService(
     
     public async Task<ResponseBase> GetPendingRequestCountAsync(Guid userId)
     {
-        var pendingRequestCount = await context.FriendConnections
-            .Where(rfr => rfr.ReceiverId == userId && rfr.Status == FriendStatus.Pending)
-            .CountAsync();
+        var pendingRequestCount = await friendRepository.GetPendingRequestsCountAsync(userId);
         
         return new SuccessWithDto<NumberDto>(new NumberDto(pendingRequestCount));
     }
@@ -120,9 +87,7 @@ public class FriendConnectionService(
             throw new ArgumentException("Invalid Receiver or SenderId format.");
         }
 
-        return await context.Users
-            .AnyAsync(u => u.ReceivedFriendRequests
-                .Any(fc => fc.ReceiverId == receiverGuid && fc.SenderId == senderGuid));
+        return await friendRepository.IsFriendRequestAlreadySentAsync(receiverGuid, senderGuid);
     }
 
     public async Task<ResponseBase> AcceptReceivedFriendRequestAsync(Guid userId, Guid requestId)
@@ -157,11 +122,9 @@ public class FriendConnectionService(
 
     private async Task<ResponseBase> LinkUsersAsFriendsAsync(Guid receiverId, Guid senderId)
     {
-        var user = await context.Users
-            .Include(u => u.Friends).FirstOrDefaultAsync(u => u.Id == receiverId);
-        
-        var friend = await context.Users
-            .Include(u => u.Friends).FirstOrDefaultAsync(u => u.Id == senderId);
+        Expression<Func<ApplicationUser, object>> expression = u => u.Friends;
+        var user = await userRepository.GetUserWithIncludeAsync(receiverId, expression);
+        var friend = await userRepository.GetUserWithIncludeAsync(senderId, expression);
 
         if (user == null || friend == null)
         {
@@ -231,7 +194,13 @@ public class FriendConnectionService(
 
     public async Task<ResponseBase> GetFriendsAsync(Guid userId)
     {
-        var userWithFriends = await context.Users
+        var userFriends = await friendRepository.GetFriendsAsync(userId);
+
+        if (userFriends is null)
+        {
+            return new FailureWithMessage("User not found.");
+        }
+        /* var userWithFriends = await context.Users
             .Where(u => u.Id == userId)
             .Select(u => new
             {
@@ -251,17 +220,18 @@ public class FriendConnectionService(
         if (userWithFriends is null)
         {
             return new FailureWithMessage("User not found.");
-        }
+        } */
 
-        return new SuccessWithDto<IList<ShowFriendRequestDto>>(userWithFriends.Friends);
+        return new SuccessWithDto<IList<ShowFriendRequestDto>>(userFriends);
     }
 
     public async Task<ResponseBase> GetConnectionIdAsync(Guid userId, Guid friendId)
     {
-        var connectionDto = await context.FriendConnections
+        /* var connectionDto = await context.FriendConnections
             .Where(fc => fc.ReceiverId == userId && fc.SenderId == friendId ||  fc.ReceiverId == friendId && fc.SenderId == userId)
             .Select(fc => new ConnectionIdAndAcceptedTimeDto(fc.ConnectionId, fc.AcceptedTime!.Value))
-            .SingleOrDefaultAsync();
+            .SingleOrDefaultAsync(); */
+        var connectionDto = await friendRepository.GetConnectionIdAndAcceptedTimeAsync(userId, friendId);
 
         if (connectionDto is null)
         {
@@ -273,42 +243,23 @@ public class FriendConnectionService(
 
     public async Task<ResponseBase> DeleteFriendAsync(Guid userId, Guid connectionId)
     {
-        var connection = await context.FriendConnections
-            .Include(fc => fc.Sender)
-                .ThenInclude(u => u.Friends)
-            .Include(fc => fc.Receiver)
-                .ThenInclude(u => u.Friends)
-            .FirstOrDefaultAsync(fc => fc.ConnectionId == connectionId);
+        var connection = await friendRepository.GetFriendConnectionWithSenderAndReceiverAsync(userId, connectionId);
         
         if (connection == null)
         {
             return new FailureWithMessage("Cannot find friend connection.");
         }
-        
-        await context.Entry(connection.Sender)
-            .Collection(u => u.Friends)
-            .Query()
-            .Where(f => f.Id == connection.ReceiverId)
-            .AsSingleQuery()
-            .LoadAsync();
-        
-        await context.Entry(connection.Receiver)
-            .Collection(u => u.Friends)
-            .Query()
-            .Where(f => f.Id == connection.SenderId)
-            .AsSingleQuery()
-            .LoadAsync();
 
-       if (userId != connection.Sender.Id && userId != connection.Receiver.Id)
-       {
-           return new FailureWithMessage("You don't have permission for deletion.");
-       }
+        if (userId != connection.Sender!.Id && userId != connection.Receiver!.Id)
+        {
+            return new FailureWithMessage("You don't have permission for deletion.");
+        }
 
-       await using var transaction = await context.Database.BeginTransactionAsync();
+        await using var transaction = await context.Database.BeginTransactionAsync();
 
         context.FriendConnections.Remove(connection);
 
-        var unlinkResult = UnlinkFriendsAsync(connection.Sender, connection.Receiver);
+        var unlinkResult = UnlinkFriendsAsync(connection.Sender, connection.Receiver!);
         if (unlinkResult is FailureWithMessage)
         {
             await transaction.RollbackAsync();

@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using UserService.Database;
 using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
@@ -20,7 +21,7 @@ public class UserRepository(MainDatabaseContext context) : IUserRepository
     public async Task<UserNameDto?> GetUsernameDtoAsync(string userName)
     {
         return await context.Users
-            .Where(u => u.UserName ==  userName)
+            .Where(u => u.NormalizedUserName! == userName.ToUpperInvariant())
             .Select(u => 
                 new UserNameDto(u.UserName!))
             .FirstOrDefaultAsync();
@@ -29,7 +30,7 @@ public class UserRepository(MainDatabaseContext context) : IUserRepository
     public async Task<UserIdDto?> GetUserIdDtoAsync(string userName)
     {
         return await context.Users
-            .Where(u => u.UserName ==  userName)
+            .Where(u => u.NormalizedUserName! == userName.ToUpperInvariant())
             .Select(u => 
                 new UserIdDto(u.Id))
             .FirstOrDefaultAsync();
@@ -65,7 +66,7 @@ public class UserRepository(MainDatabaseContext context) : IUserRepository
     public async Task<UserPublicKeyDto?> GetUserPublicKeyAsync(string userName)
     {
         return await context.Users
-            .Where(u => u.UserName ==  userName)
+            .Where(u => u.NormalizedUserName! == userName.ToUpperInvariant() )
             .Select(u => new UserPublicKeyDto(u.PublicKey))
             .FirstOrDefaultAsync();
     }
@@ -74,15 +75,16 @@ public class UserRepository(MainDatabaseContext context) : IUserRepository
     {
         return await context.Users
             .Include(u => u.UserSymmetricKeys)
-            .AnyAsync(u => u.UserName == userName && u.UserSymmetricKeys
-                .Any(esk => esk.RoomId == roomId));
+            .AnyAsync(u => u.NormalizedUserName! == userName.ToUpperInvariant()
+                && u.UserSymmetricKeys
+                    .Any(esk => esk.RoomId == roomId));
     }
 
     public async Task<ApplicationUser?> ValidateUserInputAsync(RegistrationRequest request)
     {
         return await context.Users
-            .Where(u => u.Email == request.Email 
-                        || u.UserName == request.Username 
+            .Where(u => u.NormalizedEmail! == request.Email.ToUpperInvariant()
+                        || u.NormalizedUserName! == request.Username.ToUpperInvariant()
                         || u.PhoneNumber == request.PhoneNumber)
             .FirstOrDefaultAsync();
     }
@@ -103,7 +105,7 @@ public class UserRepository(MainDatabaseContext context) : IUserRepository
     public async Task<UserIdAndUserNameDto?> GetUserIdAndUserNameAsync(string userName)
     {
         return await context.Users
-            .Where(u => u.UserName == userName)
+            .Where(u => u.NormalizedUserName! == userName.ToUpperInvariant())
             .Select(u => new UserIdAndUserNameDto(u.Id, u.UserName!))
             .FirstOrDefaultAsync();
     }

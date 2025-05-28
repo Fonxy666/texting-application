@@ -33,5 +33,11 @@ public class FriendConnectionConfiguration : IEntityTypeConfiguration<FriendConn
                .WithMany(u => u.ReceivedFriendRequests)
                .HasForeignKey(fc => fc.ReceiverId)
                .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(fc => fc.Status);
+        
+        builder.HasIndex(fc => new { fc.ReceiverId, fc.SenderId });
+
+        builder.HasIndex(fc => new { fc.ReceiverId, fc.Status });
     }
 }

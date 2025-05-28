@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
+using UserService.Database;
 using UserService.Hub;
 using UserService.Models;
 using UserService.Models.Requests;

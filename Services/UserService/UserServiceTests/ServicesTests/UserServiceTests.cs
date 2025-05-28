@@ -8,6 +8,7 @@ using UserService.Models.Requests;
 using UserService.Models.Responses;
 using UserService.Repository;
 using UserService.Repository.AppUserRepository;
+using UserService.Repository.FConnectionRepository;
 using UserService.Services.Authentication;
 using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
@@ -59,6 +60,7 @@ public class UserServiceTest : IAsyncLifetime
         services.AddScoped<IApplicationBuilder, ApplicationBuilder>();
         services.AddScoped<UserManager<ApplicationUser>>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IFriendConnectionRepository, FriendConnectionRepository>();
         services.AddLogging();
         services.AddIdentityCore<ApplicationUser>(options =>
             {

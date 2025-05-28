@@ -6,6 +6,7 @@ using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
 using Textinger.Shared.Responses;
+using UserService.Database;
 
 namespace UserService.Hub;
 

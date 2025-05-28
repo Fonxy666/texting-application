@@ -47,5 +47,7 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
                     j.ToTable("UserFriends");
                 }
             );
+
+        builder.HasIndex(u => u.PhoneNumber).IsUnique();
     }
 }

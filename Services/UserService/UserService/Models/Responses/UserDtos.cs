@@ -17,3 +17,4 @@ public record KeysDto(string PublicKey, string PrivateKey);
 public record ConnectionIdAndAcceptedTimeDto(Guid ConnectionId, DateTime AcceptedTime);
 public record UserIdAndPublicKeyDto(Guid Id, string PublicKey);
 public record UserIdAndUserNameDto(Guid Id, string UserName);
+public record ReceivedAndSentFriendRequestsDto(IList<ShowFriendRequestDto> Received, IList<ShowFriendRequestDto> Sent);       

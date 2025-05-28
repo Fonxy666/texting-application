@@ -21,8 +21,8 @@ using UserService.Services.EncryptedSymmetricKeyService;
 using UserService.Filters;
 using UserService.Services.FriendConnectionService;
 using Textinger.Shared.JwtRefreshTokenValidation;
-using UserService.Repository;
 using UserService.Repository.AppUserRepository;
+using UserService.Repository.FConnectionRepository;
 using UserService.Services.MediaService;
 
 namespace UserService;
@@ -94,13 +94,19 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IApplicationUserService, ApplicationUserService>();
         services.AddScoped<ICookieService, CookieService>();
         services.AddScoped<IFriendConnectionService, FriendConnectionService>(); 
-        services.AddScoped<IPrivateKeyService, PrivateKeyService>();
+        services.AddScoped<IPrivateKeyService, PrivateKeyService>(sp =>
+        {
+            var httpClient = sp.GetRequiredService<HttpClient>();
+            return new PrivateKeyService(httpClient, vaultToken!, vaultAddress!);
+        });
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IFriendConnectionRepository, FriendConnectionRepository>();
         services.AddScoped<ISymmetricKeyService, SymmetricKeyService>();
         services.AddTransient<IEmailSender, EmailSender>();
         services.AddGrpc();
         services.AddSingleton<IVaultClient>(vaultClient);
+        services.AddHttpClient();
 
         services.AddDbContext<MainDatabaseContext>(options =>
             options.UseNpgsql(connection, o =>

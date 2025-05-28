@@ -19,5 +19,7 @@ public class EncryptedSymmetricKeyConfiguration : IEntityTypeConfiguration<Encry
                .WithMany(u => u.UserSymmetricKeys)
                .HasForeignKey(k => k.UserId)
                .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.HasIndex(k => new { k.UserId, k.RoomId });
     }
 }

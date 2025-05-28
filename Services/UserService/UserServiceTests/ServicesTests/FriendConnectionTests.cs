@@ -5,8 +5,8 @@ using Textinger.Shared.Responses;
 using UserService.Database;
 using UserService.Models;
 using UserService.Models.Responses;
-using UserService.Repository;
 using UserService.Repository.AppUserRepository;
+using UserService.Repository.FConnectionRepository;
 using UserService.Services.Authentication;
 using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
@@ -15,7 +15,6 @@ using UserService.Services.MediaService;
 using UserService.Services.PrivateKeyFolder;
 using UserService.Services.User;
 using Xunit;
-using Xunit.Abstractions;
 using Assert = NUnit.Framework.Assert;
 
 namespace UserServiceTests.ServicesTests;
@@ -52,6 +51,7 @@ public class FriendConnectionTests : IAsyncLifetime
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IApplicationBuilder, ApplicationBuilder>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IFriendConnectionRepository, FriendConnectionRepository>();
         
         services.AddLogging();
 

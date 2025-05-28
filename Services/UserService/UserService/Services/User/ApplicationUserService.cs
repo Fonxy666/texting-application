@@ -7,6 +7,7 @@ using UserService.Models.Responses;
 using UserService.Services.Authentication;
 using UserService.Services.EmailSender;
 using Textinger.Shared.Responses;
+using UserService.Database;
 using UserService.Repository;
 using UserService.Repository.AppUserRepository;
 using UserService.Services.MediaService;
