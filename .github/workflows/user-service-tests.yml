@@ -54,9 +54,6 @@ jobs:
     - name: Install jq
       run: sudo apt-get update && sudo apt-get install -y jq
 
-    - name: Validate JSON syntax
-      run: jq . test-config.json
-
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
@@ -69,6 +66,9 @@ jobs:
       shell: bash
       run: |
         printf '%s' "${{ secrets.TEST_CONFIG_JSON }}" > test-config.json
+
+    - name: Validate JSON syntax
+      run: jq . test-config.json
 
     - name: Set up test configuration
       run: echo "${{ secrets.TEST_CONFIG_JSON }}" > test-config.json
