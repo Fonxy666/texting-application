@@ -75,8 +75,14 @@ jobs:
       working-directory: Services/UserService/UserService
       run: dotnet build --configuration Release --no-restore
 
-    - name: Print connection string env var
-      run: echo $CONNECTION_STRING 
+    - name: Print parts of the connection string
+      run: |
+        echo "Extracted host:"
+        echo "$CONNECTION_STRING" | tr ';' '\n' | grep -i 'Host=' | cut -d'=' -f2
+        echo "Extracted port:"
+        echo "$CONNECTION_STRING" | tr ';' '\n' | grep -i 'Port=' | cut -d'=' -f2
+      env:
+        CONNECTION_STRING: ${{ secrets.CONNECTION_STRING }}
 
     - name: Update database for MainDatabaseContext
       run: dotnet ef database update --context MainDatabaseContext --project Services/UserService/UserService --startup-project Services/UserService/UserService --verbose
