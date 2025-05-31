@@ -51,9 +51,6 @@ jobs:
     - name: Install EF Core tools
       run: dotnet tool install --global dotnet-ef --version 8.0.1
 
-    #- name: Install jq
-      #run: sudo apt-get update && sudo apt-get install -y jq
-
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
@@ -65,9 +62,6 @@ jobs:
     - name: Set up test configuration
       run: echo "${{ secrets.TEST_CONFIG_JSON }}" > test-config.json
 
-    #- name: Set up test configuration
-      #run: echo '${{ secrets.TEST_CONFIG_JSON }}' | jq . > test-config.json
-
     - name: Copy test configuration to project directory
       run: cp test-config.json Services/UserService/UserServiceTests
 
@@ -77,11 +71,11 @@ jobs:
 
     - name: Update test database for MainDatabaseContext
       run: >
-        dotnet ef database update --context MainDatabaseContext 
+        dotnet ef database update 
+        --context MainDatabaseContext 
         --project Services/UserService/UserService 
-        --startup-project Services/UserService/UserService
-      env:
-        ConnectionStrings__DefaultConnection: Host=localhost;Port=5434;Username=postgres;Password=testPassword123@;Database=test_user_db
+        --startup-project Services/UserService/UserService 
+        --connection "Host=localhost;Port=5434;Username=postgres;Password=testPassword123@;Database=test_user_db"
 
     - name: Test
       working-directory: Services/UserService/UserServiceTests
