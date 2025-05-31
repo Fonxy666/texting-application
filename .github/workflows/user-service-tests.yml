@@ -75,17 +75,13 @@ jobs:
       working-directory: Services/UserService/UserService
       run: dotnet build --configuration Release --no-restore
 
-    - name: Print parts of the connection string
-      run: |
-        echo "Extracted host:"
-        echo "$CONNECTION_STRING" | tr ';' '\n' | grep -i 'Host=' | cut -d'=' -f2
-        echo "Extracted port:"
-        echo "$CONNECTION_STRING" | tr ';' '\n' | grep -i 'Port=' | cut -d'=' -f2
+    - name: Update test database for MainDatabaseContext
+      run: >
+        dotnet ef database update --context MainDatabaseContext 
+        --project Services/UserService/UserService 
+        --startup-project Services/UserService/UserService
       env:
-        CONNECTION_STRING: ${{ secrets.CONNECTION_STRING }}
-
-    - name: Update database for MainDatabaseContext
-      run: dotnet ef database update --context MainDatabaseContext --project Services/UserService/UserService --startup-project Services/UserService/UserService --verbose
+        ConnectionStrings__DefaultConnection: Host=localhost;Port=5434;Username=postgres;Password=testPassword123@;Database=test_user_db
 
     - name: Test
       working-directory: Services/UserService/UserServiceTests
