@@ -43,7 +43,7 @@ public class CookiesControllerTests : IClassFixture<WebApplicationFactory<Startu
             .AddConfiguration(baseConfig)
             .AddInMemoryCollection(new Dictionary<string, string>
             {
-                { "ConnectionStrings:DefaultConnection", "Host=localhost;Port=5434;Username=postgres;Password=testPassword123@;Database=test_user_db;SSL Mode=Disable;" }
+                { "ConnectionStrings:DefaultConnection", _testConnectionString }
             }!)
             .Build();
         

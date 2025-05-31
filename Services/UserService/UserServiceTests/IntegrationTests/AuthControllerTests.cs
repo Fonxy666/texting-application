@@ -12,6 +12,7 @@ using UserService.Models.Requests;
 using UserService.Services.EmailSender;
 using UserService.Services.PrivateKeyFolder;
 using Xunit;
+using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
 namespace UserServiceTests.IntegrationTests;
@@ -19,6 +20,7 @@ namespace UserServiceTests.IntegrationTests;
 [Collection("Sequential")]
 public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>, IAsyncLifetime
 {
+    private readonly ITestOutputHelper _testOutputHelper;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
     private readonly HttpClient _client;
     private readonly TestServer _testServer;
@@ -30,8 +32,9 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     private readonly string _hashiCorpTestAddress;
     private readonly string _hashiCorpTestToken;
 
-    public AuthControllerTests()
+    public AuthControllerTests(ITestOutputHelper testOutputHelper)
     {
+        _testOutputHelper = testOutputHelper;
         var baseConfig  = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("test-config.json")
@@ -45,7 +48,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
             .AddConfiguration(baseConfig)
             .AddInMemoryCollection(new Dictionary<string, string>
             {
-                { "ConnectionStrings:DefaultConnection", "Host=localhost;Port=5434;Username=postgres;Password=testPassword123@;Database=test_user_db;SSL Mode=Disable;" }
+                { "ConnectionStrings:DefaultConnection", _testConnectionString }
             }!)
             .Build();
         
@@ -87,6 +90,21 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     {
         _testServer.Dispose(); 
         return Task.CompletedTask;
+    }
+    
+    [Fact]
+    public void DumpConnectionString()
+    {
+        _testOutputHelper.WriteLine($"Connection String: {_testConnectionString}");
+        Console.WriteLine($"Connection String: {_testConnectionString}");
+        Assert.False(string.IsNullOrEmpty(_testConnectionString));
+    }
+    
+    [Fact]
+    public void ConfigFileExists()
+    {
+        var path = Path.Combine(Directory.GetCurrentDirectory(), "test-config.json");
+        Assert.True(File.Exists(path), $"Config file not found at {path}");
     }
 
     [Fact]
