@@ -40,13 +40,6 @@ jobs:
       run: |
         echo "ADMIN_PASSWORD=${AdminPassword}" >> .env
         docker compose up -d --build
-
-    - name: Wait for TestPostgreSQL
-      run: |
-        until docker exec test_user_db pg_isready; do
-          echo "Waiting for DB..."
-          sleep 2
-        done
         
     - name: Install EF Core tools
       run: dotnet tool install --global dotnet-ef --version 8.0.1
