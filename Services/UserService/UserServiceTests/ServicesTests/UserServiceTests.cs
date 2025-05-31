@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿/*using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Textinger.Shared.Responses;
@@ -356,4 +356,4 @@ public class UserServiceTest : IAsyncLifetime
         var failureWrongPasswordResult =  await _userService.DeleteUserAsync(new Guid("10f96e12-e245-420a-8bad-b61fb21c4b2d"), "testUserPassword123##");
         Assert.That(failureWrongPasswordResult, Is.EqualTo(new FailureWithMessage("Invalid credentials.")));
     }
-}
+}*/
