@@ -6,7 +6,6 @@ using UserService.Database;
 using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
-using UserService.Repository;
 using UserService.Repository.AppUserRepository;
 using UserService.Services.Authentication;
 using UserService.Services.Cookie;
@@ -25,18 +24,29 @@ public class AuthServiceTests : IAsyncLifetime
     private readonly IAuthService _authService;
     private readonly MainDatabaseContext _context;
     private readonly IConfiguration _configuration;
+    private readonly string _testConnectionString;
 
     public AuthServiceTests()
     {
         var services = new ServiceCollection();
         
-        _configuration = new ConfigurationBuilder()
+        var baseConfig  = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("test-config.json")
             .Build();
+        
+        _testConnectionString = baseConfig["TestConnectionString"]!;
+        
+        _configuration = new ConfigurationBuilder()
+            .AddConfiguration(baseConfig)
+            .AddInMemoryCollection(new Dictionary<string, string>
+            {
+                { "ConnectionStrings:DefaultConnection", _testConnectionString }
+            }!)
+            .Build();
 
         services.AddDbContext<MainDatabaseContext>(options =>
-            options.UseNpgsql("Host=localhost;Port=5434;Username=postgres;Password=testPassword123@;Database=test_user_db;SSL Mode=Disable;"));
+            options.UseNpgsql(_testConnectionString));
 
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
             .AddEntityFrameworkStores<MainDatabaseContext>();

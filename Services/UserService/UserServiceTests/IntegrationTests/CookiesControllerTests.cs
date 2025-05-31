@@ -10,7 +10,6 @@ using UserService.Database;
 using UserService.Models.Requests;
 using UserService.Services.PrivateKeyFolder;
 using Xunit;
-using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
 namespace UserServiceTests.IntegrationTests;
@@ -18,7 +17,6 @@ namespace UserServiceTests.IntegrationTests;
 [Collection("Sequential")]
 public class CookiesControllerTests : IClassFixture<WebApplicationFactory<Startup>>, IAsyncLifetime
 {
-    private readonly ITestOutputHelper _testOutputHelper;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
     private readonly HttpClient _client;
     private readonly TestServer _testServer;
@@ -26,18 +24,32 @@ public class CookiesControllerTests : IClassFixture<WebApplicationFactory<Startu
     private readonly IConfiguration _configuration;
     private readonly HttpClient _vaultClient;
     private readonly MainDatabaseContext _context;
+    private readonly string _testConnectionString;
+    private readonly string _hashiCorpTestToken;
+    private readonly string _hashiCorpTestAddress;
     
-    public CookiesControllerTests(ITestOutputHelper testOutputHelper)
+    public CookiesControllerTests()
     {
-        _testOutputHelper = testOutputHelper;
-        _configuration = new ConfigurationBuilder()
+        var baseConfig  = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("test-config.json")
             .Build();
         
+        _testConnectionString = baseConfig["TestConnectionString"]!;
+        _hashiCorpTestAddress = baseConfig["HashiCorpTestAddress"]!;
+        _hashiCorpTestToken = baseConfig["HashiCorpTestToken"]!;
+        
+        _configuration = new ConfigurationBuilder()
+            .AddConfiguration(baseConfig)
+            .AddInMemoryCollection(new Dictionary<string, string>
+            {
+                { "ConnectionStrings:DefaultConnection", _testConnectionString }
+            }!)
+            .Build();
+        
         _vaultClient = new HttpClient
         {
-            BaseAddress = new Uri("http://127.0.0.1:8201")
+            BaseAddress = new Uri(_hashiCorpTestAddress)
         };
         
         var builder = new WebHostBuilder()
@@ -49,12 +61,9 @@ public class CookiesControllerTests : IClassFixture<WebApplicationFactory<Startu
             })
             .ConfigureTestServices(services =>
             {
-                var token = "root"; // for test only
-                var address = "http://127.0.0.1:8201";
-
                 services.RemoveAll<IPrivateKeyService>();
                 services.AddScoped<IPrivateKeyService>(_ =>
-                    new PrivateKeyService(_vaultClient!, token, address));
+                    new PrivateKeyService(_vaultClient!, _hashiCorpTestToken, _hashiCorpTestAddress));
             });
         
         _testServer = new TestServer(builder);

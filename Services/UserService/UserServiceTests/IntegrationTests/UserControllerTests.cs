@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -14,12 +13,10 @@ using UserService.Database;
 using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
-using UserService.Repository;
 using UserService.Services.EmailSender;
 using UserService.Services.FriendConnectionService;
 using UserService.Services.PrivateKeyFolder;
 using Xunit;
-using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
 namespace UserServiceTests.IntegrationTests;
@@ -27,7 +24,6 @@ namespace UserServiceTests.IntegrationTests;
 [Collection("Sequential")]
 public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>, IAsyncLifetime
 {
-    private readonly ITestOutputHelper _testOutputHelper;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
     private readonly HttpClient _client;
     private readonly TestServer _testServer;
@@ -36,18 +32,32 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     private readonly MainDatabaseContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IFriendConnectionService _friendConnectionService;
+    private readonly string _testConnectionString;
+    private readonly string _hashiCorpTestAddress;
+    private readonly string _hashiCorpTestToken;
     
-    public UserControllerTests(ITestOutputHelper testOutputHelper)
+    public UserControllerTests()
     {
-        _testOutputHelper = testOutputHelper;
-        _configuration = new ConfigurationBuilder()
+        var baseConfig  = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("test-config.json")
             .Build();
         
+        _testConnectionString = baseConfig["TestConnectionString"]!;
+        _hashiCorpTestAddress = baseConfig["HashiCorpTestAddress"]!;
+        _hashiCorpTestToken = baseConfig["HashiCorpTestToken"]!;
+        
+        _configuration = new ConfigurationBuilder()
+            .AddConfiguration(baseConfig)
+            .AddInMemoryCollection(new Dictionary<string, string>
+            {
+                { "ConnectionStrings:DefaultConnection", _testConnectionString }
+            }!)
+            .Build();
+        
         var vaultClient = new HttpClient
         {
-            BaseAddress = new Uri("http://127.0.0.1:8201")
+            BaseAddress = new Uri(_hashiCorpTestAddress)
         };
         
         var builder = new WebHostBuilder()
@@ -59,12 +69,9 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
             })
             .ConfigureTestServices(services =>
             {
-                const string token = "root"; // for test only
-                const string address = "http://127.0.0.1:8201";
-
                 services.RemoveAll<IPrivateKeyService>();
                 services.AddScoped<IPrivateKeyService>(_ =>
-                    new PrivateKeyService(vaultClient!, token, address));
+                    new PrivateKeyService(vaultClient!, _hashiCorpTestToken, _hashiCorpTestAddress));
             });
         
         _testServer = new TestServer(builder);
@@ -261,7 +268,6 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     public async Task ForgotPassword_WitInvalidEmail_ReturnNotFound()
     {
         var existingUser = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername1");
-        _testOutputHelper.WriteLine(existingUser.UserName);
 
         const string email = "test@hotmail.com";
 
@@ -328,8 +334,6 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         if (wrongToken == null) throw new ArgumentNullException(nameof(wrongToken));
         
         EmailSenderCodeGenerator.StorePasswordResetCode(existingUser.Email, token);
-        
-        _testOutputHelper.WriteLine(existingUser.PasswordHash!);
 
         var getUserResponse = await _client.PostAsync($"api/v1/User/SetNewPassword?resetId={wrongToken}", resetPasswordJson);
 
@@ -366,7 +370,6 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var jsonRequest = JsonConvert.SerializeObject(request);
         var sendFriendRequest = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
         var existingUser = await _context.Users.Where(u => u.UserName == request).FirstOrDefaultAsync();
-        _client.DefaultRequestHeaders.GetValues("Cookie").ToList().ForEach(cookie => _testOutputHelper.WriteLine(cookie));  
         
         var getFriendResponse = await _client.PostAsync("api/v1/User/SendFriendRequest", sendFriendRequest);
 

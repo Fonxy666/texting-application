@@ -6,7 +6,6 @@ using UserService.Database;
 using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
-using UserService.Repository;
 using UserService.Repository.AppUserRepository;
 using UserService.Repository.FConnectionRepository;
 using UserService.Services.Authentication;
@@ -17,7 +16,6 @@ using UserService.Services.MediaService;
 using UserService.Services.PrivateKeyFolder;
 using UserService.Services.User;
 using Xunit;
-using Xunit.Abstractions;
 using Assert = NUnit.Framework.Assert;
 
 namespace UserServiceTests.ServicesTests;
@@ -31,19 +29,30 @@ public class UserServiceTest : IAsyncLifetime
     private readonly IConfiguration _configuration;
     private readonly UserManager<ApplicationUser> _userManager;
     private int testUserNumber = 2;
+    private readonly string _testConnectionString;
 
     public UserServiceTest()
     {
         var services = new ServiceCollection();
 
-        _configuration = new ConfigurationBuilder()
+        var baseConfig  = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("test-config.json")
+            .Build();
+        
+        _testConnectionString = baseConfig["TestConnectionString"]!;
+        
+        _configuration = new ConfigurationBuilder()
+            .AddConfiguration(baseConfig)
+            .AddInMemoryCollection(new Dictionary<string, string>
+            {
+                { "ConnectionStrings:DefaultConnection", _testConnectionString }
+            }!)
             .Build();
 
         services.AddDbContext<MainDatabaseContext>(options =>
             options.UseNpgsql(
-                "Host=localhost;Port=5434;Username=postgres;Password=testPassword123@;Database=test_user_db;SSL Mode=Disable;"));
+                _testConnectionString));
 
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
             .AddEntityFrameworkStores<MainDatabaseContext>();

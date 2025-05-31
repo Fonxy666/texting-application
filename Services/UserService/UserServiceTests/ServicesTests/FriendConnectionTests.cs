@@ -24,18 +24,29 @@ public class FriendConnectionTests : IAsyncLifetime
     private readonly IFriendConnectionService _friendService;
     private readonly MainDatabaseContext _context;
     private readonly IConfiguration _configuration;
+    private readonly string _testConnectionString;
 
     public FriendConnectionTests()
     {
         var services = new ServiceCollection();
         
-        _configuration = new ConfigurationBuilder()
+        var baseConfig  = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("test-config.json")
             .Build();
+        
+        _testConnectionString = baseConfig["TestConnectionString"]!;
+        
+        _configuration = new ConfigurationBuilder()
+            .AddConfiguration(baseConfig)
+            .AddInMemoryCollection(new Dictionary<string, string>
+            {
+                { "ConnectionStrings:DefaultConnection", _testConnectionString }
+            }!)
+            .Build();
 
         services.AddDbContext<MainDatabaseContext>(options =>
-            options.UseNpgsql("Host=localhost;Port=5434;Username=postgres;Password=testPassword123@;Database=test_user_db;SSL Mode=Disable;"));
+            options.UseNpgsql(_testConnectionString));
 
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
             .AddEntityFrameworkStores<MainDatabaseContext>();
