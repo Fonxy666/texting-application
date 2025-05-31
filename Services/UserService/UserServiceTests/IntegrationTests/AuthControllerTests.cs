@@ -12,7 +12,6 @@ using UserService.Models.Requests;
 using UserService.Services.EmailSender;
 using UserService.Services.PrivateKeyFolder;
 using Xunit;
-using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 
 namespace UserServiceTests.IntegrationTests;
@@ -20,7 +19,6 @@ namespace UserServiceTests.IntegrationTests;
 [Collection("Sequential")]
 public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>, IAsyncLifetime
 {
-    private readonly ITestOutputHelper _testOutputHelper;
     private readonly AuthRequest _testUser = new ("TestUsername1", "testUserPassword123###");
     private readonly HttpClient _client;
     private readonly TestServer _testServer;
@@ -32,9 +30,8 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     private readonly string _hashiCorpTestAddress;
     private readonly string _hashiCorpTestToken;
 
-    public AuthControllerTests(ITestOutputHelper testOutputHelper)
+    public AuthControllerTests()
     {
-        _testOutputHelper = testOutputHelper;
         var baseConfig  = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("test-config.json")
@@ -48,7 +45,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
             .AddConfiguration(baseConfig)
             .AddInMemoryCollection(new Dictionary<string, string>
             {
-                { "ConnectionStrings:DefaultConnection", _testConnectionString }
+                { "ConnectionStrings:DefaultConnection", "Host=localhost;Port=5434;Username=postgres;Password=testPassword123@;Database=test_user_db;SSL Mode=Disable;" }
             }!)
             .Build();
         
@@ -95,15 +92,12 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task Login_WithInvalidUser_ReturnBadRequestStatusCode()
     {
-        Console.WriteLine(_testConnectionString);
-        _testOutputHelper.WriteLine(_testConnectionString);
         var request = new AuthRequest("", "");
         var authJsonRequest = JsonConvert.SerializeObject(request);
         var authContent = new StringContent(authJsonRequest, Encoding.UTF8, "application/json");
         var authResponse = await _client.PostAsync("api/v1/Auth/Login", authContent);
         Assert.Equal(HttpStatusCode.BadRequest, authResponse.StatusCode);
     }
-    /*
 
     [Fact]
     public async Task Login_WithBadAuthToken_ReturnBadRequest()
@@ -254,5 +248,5 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         var response = await _client.GetAsync($"api/v1/Auth/Logout");
         response.EnsureSuccessStatusCode();
-    }*/
+    }
 }

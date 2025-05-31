@@ -1,4 +1,4 @@
-﻿/*using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Textinger.Shared.Responses;
@@ -46,7 +46,7 @@ public class FriendConnectionTests : IAsyncLifetime
             .Build();
 
         services.AddDbContext<MainDatabaseContext>(options =>
-            options.UseNpgsql(_testConnectionString));
+            options.UseNpgsql("Host=localhost;Port=5434;Username=postgres;Password=testPassword123@;Database=test_user_db;SSL Mode=Disable;"));
 
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
             .AddEntityFrameworkStores<MainDatabaseContext>();
@@ -218,4 +218,4 @@ public class FriendConnectionTests : IAsyncLifetime
         var noPermissionResult = await _friendService.DeleteFriendAsync(new Guid("995f04da-d4d3-447c-9c69-fab370bca312"), sentRequestAgain!.ConnectionId);
         Assert.That(((FailureWithMessage)noPermissionResult).Message, Is.EqualTo("You don't have permission for deletion."));
     }
-}*/
+}

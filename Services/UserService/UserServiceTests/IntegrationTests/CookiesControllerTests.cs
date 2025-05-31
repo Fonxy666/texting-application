@@ -1,4 +1,4 @@
-﻿/*using System.Net;
+﻿using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -43,7 +43,7 @@ public class CookiesControllerTests : IClassFixture<WebApplicationFactory<Startu
             .AddConfiguration(baseConfig)
             .AddInMemoryCollection(new Dictionary<string, string>
             {
-                { "ConnectionStrings:DefaultConnection", _testConnectionString }
+                { "ConnectionStrings:DefaultConnection", "Host=localhost;Port=5434;Username=postgres;Password=testPassword123@;Database=test_user_db;SSL Mode=Disable;" }
             }!)
             .Build();
         
@@ -118,4 +118,4 @@ public class CookiesControllerTests : IClassFixture<WebApplicationFactory<Startu
         var roomRegistrationResponse = await _client.PostAsync("api/v1/Cookie/ChangeCookies?request=asd", contentRegister);
         Assert.Equal(HttpStatusCode.BadRequest, roomRegistrationResponse.StatusCode);
     }
-}*/
+}

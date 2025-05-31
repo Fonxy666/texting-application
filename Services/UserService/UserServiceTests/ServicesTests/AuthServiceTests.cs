@@ -1,4 +1,4 @@
-﻿/*using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Textinger.Shared.Responses;
@@ -46,7 +46,7 @@ public class AuthServiceTests : IAsyncLifetime
             .Build();
 
         services.AddDbContext<MainDatabaseContext>(options =>
-            options.UseNpgsql(_testConnectionString));
+            options.UseNpgsql("Host=localhost;Port=5434;Username=postgres;Password=testPassword123@;Database=test_user_db;SSL Mode=Disable;"));
 
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
             .AddEntityFrameworkStores<MainDatabaseContext>();
@@ -155,4 +155,4 @@ public class AuthServiceTests : IAsyncLifetime
 
         Assert.That(successResult, Is.InstanceOf<Success>());
     }
-}*/
+}

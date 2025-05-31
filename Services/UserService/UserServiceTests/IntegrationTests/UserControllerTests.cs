@@ -1,4 +1,4 @@
-﻿/*using System.Net;
+﻿using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -547,4 +547,4 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         Assert.Equal(HttpStatusCode.BadRequest, deleteFriendResponseWithInvalidConnectionId.StatusCode);
     }
-}*/
+}
