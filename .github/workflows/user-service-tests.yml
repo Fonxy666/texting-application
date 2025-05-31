@@ -47,13 +47,6 @@ jobs:
           echo "Waiting for DB..."
           sleep 2
         done
-
-    - name: Wait for TestVault
-      run: |
-        until docker exec test_private_key_vault pg_isready; do
-          echo "Waiting for DB..."
-          sleep 2
-        done
         
     - name: Install EF Core tools
       run: dotnet tool install --global dotnet-ef --version 8.0.1
