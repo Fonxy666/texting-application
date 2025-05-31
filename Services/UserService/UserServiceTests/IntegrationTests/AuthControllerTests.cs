@@ -91,21 +91,6 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         _testServer.Dispose(); 
         return Task.CompletedTask;
     }
-    
-    [Fact]
-    public void DumpConnectionString()
-    {
-        _testOutputHelper.WriteLine($"Connection String: {_testConnectionString}");
-        Console.WriteLine($"Connection String: {_testConnectionString}");
-        Assert.False(string.IsNullOrEmpty(_testConnectionString));
-    }
-    
-    [Fact]
-    public void ConfigFileExists()
-    {
-        var path = Path.Combine(Directory.GetCurrentDirectory(), "test-config.json");
-        Assert.True(File.Exists(path), $"Config file not found at {path}");
-    }
 
     [Fact]
     public async Task Login_WithInvalidUser_ReturnBadRequestStatusCode()
