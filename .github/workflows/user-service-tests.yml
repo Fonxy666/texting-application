@@ -75,6 +75,9 @@ jobs:
       working-directory: Services/UserService/UserService
       run: dotnet build --configuration Release --no-restore
 
+    - name: Print connection string env var
+      run: echo $CONNECTION_STRING 
+
     - name: Update database for MainDatabaseContext
       run: dotnet ef database update --context MainDatabaseContext --project Services/UserService/UserService --startup-project Services/UserService/UserService --verbose
 
