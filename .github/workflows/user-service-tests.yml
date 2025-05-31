@@ -63,6 +63,14 @@ jobs:
       run: dotnet restore Services/UserService/UserServiceTests/UserServiceTests.csproj
 
     - name: Set up test configuration
+      shell: bash
+      run: |
+        printf '%s' "${{ secrets.TEST_CONFIG_JSON }}" > test-config.json
+
+    - name: Validate JSON syntax
+      run: jq . test-config.json
+
+    - name: Set up test configuration
       run: echo "${{ secrets.TEST_CONFIG_JSON }}" > test-config.json
 
     - name: Copy test configuration to project directory
@@ -79,6 +87,9 @@ jobs:
         --project Services/UserService/UserService 
         --startup-project Services/UserService/UserService 
         --connection "Host=localhost;Port=5434;Username=postgres;Password=testPassword123@;Database=test_user_db"
+
+    - name: Show test config JSON
+      run: cat Services/UserService/UserServiceTests/test-config.json
 
     - name: Test
       working-directory: Services/UserService/UserServiceTests
