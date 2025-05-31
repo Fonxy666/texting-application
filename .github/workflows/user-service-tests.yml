@@ -54,6 +54,10 @@ jobs:
     - name: Install jq
       run: sudo apt-get update && sudo apt-get install -y jq
 
+    - name: Set up test configuration
+      run: |
+       printf '%s' "${{ secrets.TEST_CONFIG_JSON }}" > test-config.json
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
