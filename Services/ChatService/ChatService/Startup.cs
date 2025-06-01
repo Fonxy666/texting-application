@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Textinger.Shared.Filters;
 
 namespace ChatService;
 
@@ -21,11 +22,15 @@ public class Startup(IConfiguration configuration)
         var connection = configuration["ConnectionString"];
         var issueSign = configuration["IssueSign"];
         var issueAudience = configuration["IssueAudience"];
-        var grpcUri = new Uri("https://localhost:7100");
+        var grpcUrl = configuration["GrpcUrl"];
+        var grpcUri = new Uri(grpcUrl!);
 
         services.AddHttpContextAccessor();
         services.AddControllers(options =>
-            options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
+        {
+            options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+            options.Filters.Add<ValidateModelAttribute>();
+        });
 
         services.AddEndpointsApiExplorer();
 
@@ -41,7 +46,11 @@ public class Startup(IConfiguration configuration)
         services.AddSingleton<IDictionary<string, UserRoomConnection>>(opt =>
             new Dictionary<string, UserRoomConnection>());
 
-        services.AddDbContext<ChatContext>(options => options.UseNpgsql(connection));
+        services.AddDbContext<ChatContext>(options =>
+            options.UseNpgsql(connection, o =>
+            {
+                o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+            }));
 
         services.AddDistributedMemoryCache();
 
@@ -116,11 +125,6 @@ public class Startup(IConfiguration configuration)
         {
             options.Address = grpcUri;
         });
-
-        services.AddGrpcClient<GrpcAuthService.GrpcAuthServiceClient>(options =>
-        {
-            options.Address = grpcUri;
-        });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IConfiguration configuration)
@@ -145,7 +149,5 @@ public class Startup(IConfiguration configuration)
             endpoints.MapHub<ChatHub>("/chat");
             endpoints.MapControllers();
         });
-
-        if (!env.IsEnvironment("Test")) return;
     }
 }

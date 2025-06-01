@@ -46,9 +46,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Reference Include="JwtRefreshTokenLibrary">
-		  <HintPath>..\..\..\Textinger.Shared\bin\Release\net8.0\Textinger.Shared.dll</HintPath>
-	  </Reference>
+		<ProjectReference Include="..\..\..\Textinger.Shared\Textinger.Shared.csproj" />
 	</ItemGroup>
 
 </Project>
