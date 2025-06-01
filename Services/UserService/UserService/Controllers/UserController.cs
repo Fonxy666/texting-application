@@ -1,12 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Services.FriendConnectionService;
 using UserService.Services.User;
 using UserService.Services.EmailSender;
 using UserService.Models.Responses;
-using UserService.Filters;
+using Textinger.Shared.Filters;
 using UserService.Models.Requests;
 using UserService.Services.Authentication;
 using Textinger.Shared.Responses;

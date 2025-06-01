@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Textinger.Shared.Responses;
 
-namespace UserService.Filters;
+namespace Textinger.Shared.Filters;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class RequireUserIdCookieAttribute : Attribute, IAuthorizationFilter

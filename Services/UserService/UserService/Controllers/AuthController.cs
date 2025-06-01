@@ -8,7 +8,7 @@ using UserService.Models.Responses;
 using UserService.Services.EmailSender;
 using UserService.Services.Authentication;
 using UserService.Models.Requests;
-using UserService.Filters;
+using Textinger.Shared.Filters;
 using Textinger.Shared.Responses;
 using UserService.Models;
 

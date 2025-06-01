@@ -18,7 +18,7 @@ using UserService.Services.PrivateKeyFolder;
 using UserService.Services.gRPCServices;
 using UserService.Middlewares;
 using UserService.Services.EncryptedSymmetricKeyService;
-using UserService.Filters;
+using Textinger.Shared.Filters;
 using UserService.Services.FriendConnectionService;
 using Textinger.Shared.JwtRefreshTokenValidation;
 using UserService.Repository.AppUserRepository;
