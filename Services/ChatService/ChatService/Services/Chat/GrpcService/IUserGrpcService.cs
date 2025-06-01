@@ -1,4 +1,5 @@
-﻿using ChatService.Model.Requests.EncryptKey;
+﻿using ChatService.Model.Requests;
+using ChatService.Model.Requests.EncryptKey;
 
 namespace ChatService.Services.Chat.GrpcService;
 
