@@ -2,41 +2,52 @@
 using ChatService.Model.Responses.Chat;
 using ChatService.Model;
 using ChatService.Database;
+using ChatService.Model.Requests;
+using ChatService.Repository.RoomRepository;
+using ChatService.Services.Chat.GrpcService;
+using Textinger.Shared.Responses;
 
 namespace ChatService.Services.Chat.RoomService;
 
-public class RoomService(ChatContext context) : IRoomService
+public class RoomService(ChatContext context, 
+    IUserGrpcService userGrpcService,
+    IRoomRepository roomRepository
+    ) : IRoomService
 {
-    private ChatContext Context { get; } = context;
     public Task<bool> ExistingRoom(Guid id)
     {
-        return Context.Rooms!.AnyAsync(room => room.RoomId == id);
+        return context.Rooms!.AnyAsync(room => room.RoomId == id);
     }
 
     public async Task<Room?> GetRoomById(Guid roomId)
     {
-        return await Context.Rooms!.FirstOrDefaultAsync(room => room.RoomId == roomId);
+        return await context.Rooms!.FirstOrDefaultAsync(room => room.RoomId == roomId);
     }
-    
-    //private async Task<Room?> GetRoomByIdWithKeys(Guid roomId)
-    //{
-    //    return await Context.Rooms!
-    //        .Include(r => r.EncryptedSymmetricKeys)
-    //        .FirstOrDefaultAsync(room => room.RoomId == roomId);
-    //}
     
     public async Task<Room?> GetRoomByRoomName(string roomName)
     {
-        var existingRoom = await Context.Rooms!.FirstOrDefaultAsync(room => room.RoomName == roomName);
+        var existingRoom = await context.Rooms!.FirstOrDefaultAsync(room => room.RoomName == roomName);
 
         return existingRoom;
     }
 
-    public async Task<RoomResponse> RegisterRoomAsync(string roomName, string password, Guid creatorId, string encryptedSymmetricKey)
+    public async Task<ResponseBase> RegisterRoomAsync(RoomRequest request, Guid userId)
     {
-        var room = new Room(roomName, password, creatorId);
+        var existingUser = await userGrpcService.UserExisting(userId.ToString());
+        if (existingUser.Success)
+        {
+            return new FailureWithMessage("User not existing.");
+        }
         
-        switch (roomName)
+        var isRoomNameExisting = await roomRepository.IsRoomNameTakenAsync(request.RoomName);
+        if (isRoomNameExisting)
+        {
+            return new FailureWithMessage("This room already exists.");
+        }
+        
+        var room = new Room(request.RoomName, request.Password, userId);
+        
+        switch (request.RoomName)
         {
             case "test":
                 room.SetRoomIdForTests("901d40c6-c95d-47ed-a21a-88cda341d0a9");
@@ -46,45 +57,40 @@ public class RoomService(ChatContext context) : IRoomService
                 break;
         }
         
-        await Context.Rooms!.AddAsync(room);
-        await Context.SaveChangesAsync();
+        var newRoom = await context.Rooms!.AddAsync(room);
+        var affectedRows = await context.SaveChangesAsync();
+        if (affectedRows == 0)
+        {
+            return new Failure();
+        }
         
-        return new RoomResponse(true, room.RoomId.ToString(), room.RoomName);
+        var sendUserUpdateInfos = await userGrpcService.SendEncryptedRoomIdForUser(
+            new StoreRoomKeyRequest(
+                userId,
+                request.EncryptedSymmetricRoomKey,
+                newRoom.Entity.RoomId
+            )
+        );
+
+        if (!sendUserUpdateInfos.Success)
+        {
+            Console.WriteLine(sendUserUpdateInfos);
+            return new FailureWithMessage("There was an error communicating with the grpc server.");
+        }
+
+        var roomResponseDto = new RoomResponseDto(room.RoomId, room.RoomName);
+        return new SuccessWithDto<RoomResponseDto>(roomResponseDto);
     }
 
     public async Task DeleteRoomAsync(Room room)
     {
-        Context.Rooms!.Remove(room);
-        await Context.SaveChangesAsync();
-    }
-
-    public Task<RoomNameTakenResponse> RoomNameTaken(string roomName)
-    {
-        var isTaken = context.Rooms!.Any(room => room.RoomName == roomName);
-        var result = new RoomNameTakenResponse(isTaken);
-        return Task.FromResult(result);
+        context.Rooms!.Remove(room);
+        await context.SaveChangesAsync();
     }
 
     public async Task ChangePassword(Room room, string newPassword)
     {
         room.ChangePassword(newPassword);
-        await Context.SaveChangesAsync();
+        await context.SaveChangesAsync();
     }
-
-    //public async Task<bool> AddNewUserKey(Guid roomId, Guid userId, string key)
-    //{
-    //    var existingRoom = await GetRoomByIdWithKeys(roomId);
-    //    if (existingRoom == null)
-    //    {
-    //        return false;
-    //    }
-
-    //    var userKey = new EncryptedSymmetricKey(userId, key, roomId);
-
-    //    existingRoom.EncryptedSymmetricKeys.Add(userKey);
-    //    Context.Entry(userKey).State = EntityState.Added;
-
-    //    await Context.SaveChangesAsync();
-    //    return true;
-    //}
 }

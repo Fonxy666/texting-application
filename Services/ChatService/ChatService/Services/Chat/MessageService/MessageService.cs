@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ChatService.Model.Requests.Message;
 using ChatService.Model.Responses.Message;
 using ChatService.Model;
 using ChatService.Database;
+using ChatService.Model.Requests;
 
 namespace ChatService.Services.Chat.MessageService;
 

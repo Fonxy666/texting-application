@@ -1,5 +1,5 @@
 ﻿using ChatService.Model;
-using ChatService.Model.Requests.Message;
+using ChatService.Model.Requests;
 using ChatService.Model.Responses.Message;
 
 public interface IMessageService

@@ -3,6 +3,7 @@ using ChatService.Database;
 using ChatService.Hub;
 using ChatService.Middlewares;
 using ChatService.Model;
+using ChatService.Repository.RoomRepository;
 using ChatService.Services.Chat.GrpcService;
 using ChatService.Services.Chat.MessageService;
 using ChatService.Services.Chat.RoomService;
@@ -42,6 +43,7 @@ public class Startup(IConfiguration configuration)
         services.AddSingleton<IJwtRefreshTokenValidator, JwtRefreshTokenValidator>();
         services.AddScoped<IUserGrpcService, UserGrpcService>();
         services.AddScoped<IRoomService, RoomService>();
+        services.AddScoped<IRoomRepository, RoomRepository>();
         services.AddScoped<IMessageService, MessageService>();
         services.AddSingleton<IDictionary<string, UserRoomConnection>>(opt =>
             new Dictionary<string, UserRoomConnection>());

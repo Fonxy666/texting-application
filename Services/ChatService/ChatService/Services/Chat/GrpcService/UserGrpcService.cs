@@ -1,5 +1,5 @@
 ﻿using Azure;
-using ChatService.Model.Requests.EncryptKey;
+using ChatService.Model.Requests;
 using Grpc.Net.Client;
 
 namespace ChatService.Services.Chat.GrpcService;

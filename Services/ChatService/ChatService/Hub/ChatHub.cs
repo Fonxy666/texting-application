@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.SignalR;
-using ChatService.Model.Requests.Message;
 using ChatService.Model;
+using ChatService.Model.Requests;
 using ChatService.Services.Chat.GrpcService;
 using ChatService.Model.Responses.Chat;
 

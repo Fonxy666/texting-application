@@ -1,9 +1,9 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ChatService.Model.Requests.Message;
 using ChatService.Services.Chat.RoomService;
 using ChatService.Model;
+using ChatService.Model.Requests;
 using ChatService.Model.Responses.Message;
 
 namespace ChatService.Controllers;

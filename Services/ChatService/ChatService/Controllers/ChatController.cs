@@ -1,61 +1,41 @@
 ﻿using System.Security.Claims;
+using ChatService.Model.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ChatService.Model.Requests.Chat;
 using ChatService.Services.Chat.RoomService;
-using ChatService.Model.Responses.Chat;
-using ChatService.Services.Chat.GrpcService;
-using ChatService.Model.Requests.EncryptKey;
+using Textinger.Shared.Filters;
+using Textinger.Shared.Responses;
 
 namespace ChatService.Controllers;
 
 [Route("api/v1/[controller]")]
 public class ChatController(
     IRoomService roomService,
-    ILogger<ChatController> logger,
-    IUserGrpcService userGrpcService
+    ILogger<ChatController> logger
     ) : ControllerBase
 {
-    [HttpPost("RegisterRoom"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<RoomResponse>> RegisterRoom([FromBody] RoomRequest request)
+    [HttpPost("RegisterRoom")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<ResponseBase>> RegisterRoom([FromBody]RoomRequest request)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                return BadRequest(new { error = "Cannot get user id from credentials." });
-            }
-            var existingUser = await userGrpcService.UserExisting(userId);
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new { error = "New room credentials not valid." });
-            }
+            var userId = (Guid)HttpContext.Items["UserId"]!;
+            var result = await roomService.RegisterRoomAsync(request, userId);
 
-            if (roomService.RoomNameTaken(request.RoomName).Result.Result)
+            if (result is FailureWithMessage error)
             {
-                return BadRequest(new { error = "This room's name already taken." });
+                return error.Message switch
+                {
+                    "User not existing." => NotFound(error),
+                    _ => StatusCode(500, "Internal server error.")
+                };
             }
 
-            var result = await roomService.RegisterRoomAsync(request.RoomName, request.Password, new Guid(userId), request.EncryptedSymmetricRoomKey);
-
-            if (result.Success == false)
+            if (result is Failure)
             {
-                return BadRequest(new { error = "Something failed during room creation in the database." });
-            }
-
-            var sendUserUpdateInfos = await userGrpcService.SendEncryptedRoomIdForUser(
-                new StoreRoomKeyRequest(
-                    new Guid(userId),
-                    request.EncryptedSymmetricRoomKey,
-                    new Guid(result.RoomId)
-                    )
-                );
-
-            if (!sendUserUpdateInfos.Success)
-            {
-                Console.WriteLine(sendUserUpdateInfos);
-                return BadRequest(new { error = "There was an error communicating with the grpc server." });
+                return StatusCode(500, "Internal server error.");
             }
 
             return Ok(result);
@@ -63,7 +43,7 @@ public class ChatController(
         catch (Exception e)
         {
             logger.LogError(e, "Error registering the room");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
 
