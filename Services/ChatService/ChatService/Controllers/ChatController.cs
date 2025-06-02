@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using ChatService.Model.Requests;
+﻿using ChatService.Model.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ChatService.Services.Chat.RoomService;
@@ -47,25 +46,26 @@ public class ChatController(
         }
     }
 
-    [HttpGet("ExamineIfTheUserIsTheCreator"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<bool>> ExamineCreator([FromQuery] string roomId)
+    [HttpGet("ExamineIfTheUserIsTheCreator")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<bool>> ExamineCreator([FromQuery]string roomId)
     {
         try
         {
-            var existingRoom = await roomService.GetRoomById(new Guid(roomId));
-            if (existingRoom == null)
+            var userId = (Guid)HttpContext.Items["UserId"]!;
+            if (!Guid.TryParse(roomId, out var roomGuid))
             {
-                return NotFound(false);
+                return BadRequest(false);
             }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userGuid = new Guid(userId!);
+            var result = await roomService.UserIsTheCreatorAsync(userId, roomGuid);
 
-            if (!existingRoom.IsCreator(userGuid))
+            if (!result)
             {
-                return Ok(false);
+                return BadRequest(false);
             }
-
+            
             return Ok(true);
         }
         catch (Exception e)
@@ -75,30 +75,32 @@ public class ChatController(
         }
     }
 
-    [HttpDelete("DeleteRoom"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<bool>> DeleteRoom([FromQuery] string roomId)
+    [HttpDelete("DeleteRoom")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<ResponseBase>> DeleteRoom([FromQuery]string roomId)
     {
         try
         {
-            var guidRoomId = new Guid(roomId);
-
-            var existingRoom = await roomService.GetRoomById(guidRoomId);
-            if (existingRoom == null)
-            {
-                return NotFound(false);
-            }
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userGuid = new Guid(userId!);
-
-            if (!existingRoom.IsCreator(userGuid))
+            var userId = (Guid)HttpContext.Items["UserId"]!;
+            if (!Guid.TryParse(roomId, out var roomGuid))
             {
                 return BadRequest(false);
             }
-
-            await roomService.DeleteRoomAsync(existingRoom);
-
-            return Ok(true);
+            
+            var result = await roomService.DeleteRoomAsync(userId, roomGuid);
+            if (result is FailureWithMessage error)
+            {
+                return error.Message switch
+                {
+                    "Room not found." => NotFound(error),
+                    "Server error." => StatusCode(500,  "Internal server error."),
+                    "You don't have permission to delete this room." => Forbid(),
+                    _ => BadRequest(error)
+                };
+            }
+            
+            return Ok(result);
         }
         catch (Exception e)
         {
@@ -107,39 +109,28 @@ public class ChatController(
         }
     }
 
-    [HttpPatch("ChangePasswordForRoom"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<RoomResponse>> ChangePassword([FromBody] ChangeRoomPassword request)
+    [HttpPatch("ChangePasswordForRoom")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<ResponseBase>> ChangePassword([FromBody]ChangeRoomPassword request)
     {
         try
         {
-            if (!ModelState.IsValid)
+            var userId = (Guid)HttpContext.Items["UserId"]!;
+            
+            var result = await roomService.ChangePasswordAsync(request, userId);
+            if (result is FailureWithMessage error)
             {
-                return BadRequest();
+                return error.Message switch
+                {
+                    "Room not found." => NotFound(error),
+                    "Server error." => StatusCode(500,  "Internal server error."),
+                    "You don't have permission to change this room's password." => Forbid(),
+                    _ => BadRequest(error)
+                };
             }
 
-            var existingRoom = await roomService.GetRoomById(new Guid(request.Id));
-
-            if (existingRoom == null)
-            {
-                return NotFound(new { error = "There is no room with the given Room id." });
-            }
-
-            if (!existingRoom.PasswordMatch(request.OldPassword))
-            {
-                return BadRequest("Incorrect old password credentials.");
-            }
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userGuid = new Guid(userId!);
-
-            if (!existingRoom.IsCreator(userGuid))
-            {
-                return BadRequest(false);
-            }
-
-            await roomService.ChangePassword(existingRoom, request.Password);
-
-            return Ok(new RoomResponse(true, existingRoom.RoomId.ToString(), existingRoom.RoomName));
+            return Ok(result);
         }
         catch (Exception e)
         {
@@ -148,29 +139,26 @@ public class ChatController(
         }
     }
 
-    [HttpPost("JoinRoom"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<RoomResponse>> LoginRoom([FromBody] JoinRoomRequest request)
+    [HttpPost("JoinRoom")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<ResponseBase>> LoginRoom([FromBody]JoinRoomRequest request)
     {
         try
         {
-            if (!ModelState.IsValid)
+            var userId = (Guid)HttpContext.Items["UserId"]!;
+            
+            var loginResult = await roomService.LoginAsync(request, userId);
+            if (loginResult is FailureWithMessage error)
             {
-                return BadRequest();
+                return error.Message switch
+                {
+                    "Room not found" => NotFound(error),
+                    _ => BadRequest(error)
+                };
             }
 
-            var existingRoom = await roomService.GetRoomByRoomName(request.RoomName);
-
-            if (existingRoom == null)
-            {
-                return NotFound(new { error = "There is no room with the given Room name." });
-            }
-
-            if (!existingRoom.PasswordMatch(request.Password))
-            {
-                return BadRequest("Incorrect login credentials");
-            }
-
-            return Ok(new RoomResponse(true, existingRoom.RoomId.ToString(), existingRoom.RoomName));
+            return Ok(loginResult);
         }
         catch (Exception e)
         {

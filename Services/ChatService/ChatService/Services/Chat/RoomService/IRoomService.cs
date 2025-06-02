@@ -1,16 +1,13 @@
-﻿using ChatService.Model;
-using ChatService.Model.Requests;
-using ChatService.Model.Responses.Chat;
+﻿using ChatService.Model.Requests;
 using Textinger.Shared.Responses;
 
 namespace ChatService.Services.Chat.RoomService;
 
 public interface IRoomService
 {
-    Task<bool> ExistingRoom(Guid id);
-    Task<Room?> GetRoomById(Guid roomId);
-    Task<Room?> GetRoomByRoomName(string roomName);
     Task<ResponseBase> RegisterRoomAsync(RoomRequest request, Guid userId);
-    Task DeleteRoomAsync(Room room);
-    Task ChangePassword(Room room, string newPassword);
+    Task<ResponseBase> DeleteRoomAsync(Guid userId, Guid roomId);
+    Task<ResponseBase> ChangePasswordAsync(ChangeRoomPassword request, Guid userId);
+    Task<bool> UserIsTheCreatorAsync(Guid roomId, Guid userId);
+    Task<ResponseBase> LoginAsync(JoinRoomRequest request, Guid userId);
 }

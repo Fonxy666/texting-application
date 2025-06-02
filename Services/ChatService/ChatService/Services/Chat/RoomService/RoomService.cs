@@ -14,23 +14,6 @@ public class RoomService(ChatContext context,
     IRoomRepository roomRepository
     ) : IRoomService
 {
-    public Task<bool> ExistingRoom(Guid id)
-    {
-        return context.Rooms!.AnyAsync(room => room.RoomId == id);
-    }
-
-    public async Task<Room?> GetRoomById(Guid roomId)
-    {
-        return await context.Rooms!.FirstOrDefaultAsync(room => room.RoomId == roomId);
-    }
-    
-    public async Task<Room?> GetRoomByRoomName(string roomName)
-    {
-        var existingRoom = await context.Rooms!.FirstOrDefaultAsync(room => room.RoomName == roomName);
-
-        return existingRoom;
-    }
-
     public async Task<ResponseBase> RegisterRoomAsync(RoomRequest request, Guid userId)
     {
         var existingUser = await userGrpcService.UserExisting(userId.ToString());
@@ -39,7 +22,7 @@ public class RoomService(ChatContext context,
             return new FailureWithMessage("User not existing.");
         }
         
-        var isRoomNameExisting = await roomRepository.IsRoomNameTakenAsync(request.RoomName);
+        var isRoomNameExisting = await roomRepository.IsRoomExistingAsync(request.RoomName);
         if (isRoomNameExisting)
         {
             return new FailureWithMessage("This room already exists.");
@@ -82,15 +65,85 @@ public class RoomService(ChatContext context,
         return new SuccessWithDto<RoomResponseDto>(roomResponseDto);
     }
 
-    public async Task DeleteRoomAsync(Room room)
+    public async Task<ResponseBase> DeleteRoomAsync(Guid userId, Guid roomId)
     {
-        context.Rooms!.Remove(room);
-        await context.SaveChangesAsync();
+        var existingRoom = await roomRepository.GetRoomAsync(roomId);
+        if (existingRoom == null)
+        {
+            return new FailureWithMessage("Room not found.");
+        }
+
+        if (!existingRoom.IsCreator(userId))
+        {
+            return new FailureWithMessage("You don't have permission to delete this room.");
+        }
+        
+        context.Rooms!.Remove(existingRoom);
+        var affectedRows = await context.SaveChangesAsync();
+        if (affectedRows == 0)
+        {
+            return new FailureWithMessage("Server error.");
+        }
+
+        return new Success();
     }
 
-    public async Task ChangePassword(Room room, string newPassword)
+    public async Task<ResponseBase> ChangePasswordAsync(ChangeRoomPassword request, Guid userId)
     {
-        room.ChangePassword(newPassword);
-        await context.SaveChangesAsync();
+        if (!Guid.TryParse(request.Id, out var roomGuid))
+        {
+            return new FailureWithMessage("Room not found.");
+        }
+        
+        var existingRoom = await roomRepository.GetRoomAsync(roomGuid);
+        if (existingRoom is null)
+        {
+            return  new FailureWithMessage("Room not found.");
+        }
+        
+        var passwordMatch = existingRoom.PasswordMatch(request.OldPassword);
+        if (!passwordMatch)
+        {
+            return new FailureWithMessage("Wrong password.");
+        }
+        
+        var userIsTheCreator = existingRoom.IsCreator(userId);
+        if (!userIsTheCreator)
+        {
+            return new FailureWithMessage("You don't have permission to change this room's password.");
+        }
+        
+        existingRoom.ChangePassword(request.Password);
+        var affectedRows = await context.SaveChangesAsync();
+        if (affectedRows == 0)
+        {
+            return new FailureWithMessage("Server error.");
+        }
+        
+        return new Success();
+    }
+
+    public async Task<bool> UserIsTheCreatorAsync(Guid roomId, Guid userId)
+    {
+        var roomCreatorId = await roomRepository.GetRoomCreatorId(roomId);
+        return roomCreatorId == userId;
+    }
+
+    public async Task<ResponseBase> LoginAsync(JoinRoomRequest request, Guid userId)
+    {
+        var existingRoom = await roomRepository.GetRoomAsync(request.RoomName);
+        if (existingRoom is null)
+        {
+            return new FailureWithMessage("Room not found.");
+        }
+        
+        var isPasswordMatch = existingRoom.PasswordMatch(request.Password);
+        if (!isPasswordMatch)
+        {
+            return  new FailureWithMessage("Wrong password.");
+        }
+        
+        var returningDto = new RoomResponseDto(existingRoom.RoomId, existingRoom.RoomName);
+        return new SuccessWithDto<RoomResponseDto>(returningDto);
     }
 }
