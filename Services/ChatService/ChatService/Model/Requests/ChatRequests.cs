@@ -16,3 +16,8 @@ public record RoomRequest(
     [Required(ErrorMessage = "Password cannot be null.")]string Password,
     string EncryptedSymmetricRoomKey
 );
+
+public record GetMessagesRequest(
+    [Required(ErrorMessage = "Room id cannot be null.")]string RoomId,
+    [Required(ErrorMessage = "Index cannot be null.")]int Index
+);

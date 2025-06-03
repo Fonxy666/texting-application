@@ -5,6 +5,9 @@ using ChatService.Services.Chat.RoomService;
 using ChatService.Model;
 using ChatService.Model.Requests;
 using ChatService.Model.Responses.Message;
+using ChatService.Services.Chat.MessageService;
+using Textinger.Shared.Filters;
+using Textinger.Shared.Responses;
 
 namespace ChatService.Controllers;
 
@@ -15,24 +18,29 @@ public class MessageController(
     ILogger<MessageController> logger
     ) : ControllerBase
 {
-    [HttpGet("GetMessages/{roomId}"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<IQueryable<Message>>> GetMessages(string roomId)
+    [HttpGet("GetMessages/{roomId}")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
+    public async Task<ActionResult<IQueryable<Message>>> GetMessages(GetMessagesRequest request)
     {
         try
         {
-            var parsedRoomId = new Guid(roomId);
-            if (!roomService.ExistingRoom(parsedRoomId).Result)
+            if (!Guid.TryParse(request.RoomId, out var roomGuid))
             {
-                return NotFound($"There is no room with this id: {roomId}");
+                return BadRequest(new Failure());
             }
 
-            var result = await messageService.GetLast10Messages(parsedRoomId);
+            var result = await messageService.GetLast10Messages(roomGuid, request.Index);
+            if (result is FailureWithMessage)
+            {
+                return NotFound(result);
+            }
 
             return Ok(result);
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error getting messages for room: {roomId}");
+            logger.LogError(e, $"Error getting messages for room: {request.RoomId}");
             return StatusCode(500);
         }
     }

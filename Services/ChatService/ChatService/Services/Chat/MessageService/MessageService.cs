@@ -1,25 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ChatService.Model.Responses.Message;
+﻿using ChatService.Model.Responses.Message;
 using ChatService.Model;
-using ChatService.Database;
 using ChatService.Model.Requests;
+using ChatService.Repository.MessageRepository;
+using Textinger.Shared.Responses;
 
 namespace ChatService.Services.Chat.MessageService;
 
-public class MessageService(ChatContext context) : IMessageService
+public class MessageService(IMessageRepository messageRepository) : IMessageService
 {
-    private ChatContext Context { get; } = context;
-    public async Task<bool> UserIsTheSender(Guid userId, Guid messageId)
-    {
-        var message = await Context.Messages!.FirstOrDefaultAsync(m => m.MessageId == messageId);
-        return message!.SenderId == userId;
-    }
-
-    public Task<bool> MessageExisting(Guid id)
-    {
-        return Context.Messages!.AnyAsync(message => message.MessageId == id);
-    }
-
     public async Task<SaveMessageResponse> SendMessage(MessageRequest request, string userId)
     {
         var roomIdToGuid = new Guid(request.RoomId);
@@ -34,8 +22,17 @@ public class MessageService(ChatContext context) : IMessageService
         return new SaveMessageResponse(true, message, null);
     }
 
-    public async Task<IEnumerable<Message>> GetLast10Messages(Guid roomId)
+    public async Task<ResponseBase> GetLast10Messages(Guid roomId, int index)
     {
+        var messages = await messageRepository.Get10MessagesWithIndex(roomId, index);
+        if (messages is null)
+        {
+            return new FailureWithMessage("There is no room with the given id.");
+        }
+        
+        return new SuccessWithDto<IList<MessageDto>>(messages);
+        
+        
        return await Context.Messages
         .Where(m => m.RoomId == roomId)
         .OrderByDescending(m => m.SendTime)
