@@ -1,4 +1,6 @@
 ﻿using ChatService.Database;
+using ChatService.Model;
+using ChatService.Model.Requests;
 using ChatService.Model.Responses.Message;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,12 +23,18 @@ public class MessageRepository(ChatContext context) : IMessageRepository
         return await context.Messages!.AnyAsync(m => m.MessageId == messageId);
     }
 
-    public async Task<IList<MessageDto>?> Get10MessagesWithIndex(Guid roomId, int index)
+    public async Task<Message?> GetMessage(Guid messageId)
+    {
+        return await context.Messages!.FirstOrDefaultAsync(m => m.MessageId == messageId);
+    }
+
+    public async Task<IList<MessageDto>?> Get10MessagesWithIndex(GetMessagesRequest request)
     {
         return await context.Rooms!
+            .Where(m => m.RoomId == request.RoomId)
             .SelectMany(r => r.Messages)
             .OrderByDescending(m => m.SendTime)
-            .Skip((index - 1) * 10)
+            .Skip((request.Index - 1) * 10)
             .Take(10)
             .Select(m => new MessageDto(
                 m.MessageId,
@@ -36,5 +44,23 @@ public class MessageRepository(ChatContext context) : IMessageRepository
                 m.SentAsAnonymous,
                 m.Seen))
             .ToListAsync();
+    }
+
+    public async Task<bool> SaveMessage(Message message)
+    {
+        await context.Messages!.AddAsync(message);
+        return await context.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> EditMessage(Message message)
+    {
+        context.Messages!.Update(message);
+        return await context.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> DeleteMessage(Message message)
+    {
+        context.Messages!.Remove(message);
+        return await context.SaveChangesAsync() > 0;
     }
 }

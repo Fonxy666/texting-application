@@ -1,77 +1,121 @@
-﻿using ChatService.Model.Responses.Message;
+﻿using ChatService.Database;
+using ChatService.Model.Responses.Message;
 using ChatService.Model;
 using ChatService.Model.Requests;
 using ChatService.Repository.MessageRepository;
+using ChatService.Repository.RoomRepository;
+using ChatService.Services.Chat.GrpcService;
 using Textinger.Shared.Responses;
 
 namespace ChatService.Services.Chat.MessageService;
 
-public class MessageService(IMessageRepository messageRepository) : IMessageService
+public class MessageService(
+    IMessageRepository messageRepository,
+    IRoomRepository roomRepository,
+    IUserGrpcService userGrpcService
+    ) : IMessageService
 {
-    public async Task<SaveMessageResponse> SendMessage(MessageRequest request, string userId)
+    public async Task<ResponseBase> SendMessage(MessageRequest request, Guid userId)
     {
-        var roomIdToGuid = new Guid(request.RoomId);
-        var userIdToGuid = new Guid(userId);
-        var message = request.MessageId != null ? 
-            new Message(roomIdToGuid, userIdToGuid, request.Message, new Guid(request.MessageId), request.AsAnonymous, request.Iv) : 
-            new Message(roomIdToGuid, userIdToGuid, request.Message, request.AsAnonymous, request.Iv);
+        var isUserExisting = await userGrpcService.UserExisting(userId.ToString());
+        if (!isUserExisting.Success)
+        {
+            return new FailureWithMessage("User not found.");
+        }
+        var isRoomExisting = await roomRepository.IsRoomExistingAsync(request.RoomId);
+        if (!isRoomExisting)
+        {
+            return new FailureWithMessage("Room not found.");
+        }
         
-        await Context.Messages!.AddAsync(message);
-        await Context.SaveChangesAsync();
+        var message = request.MessageId != null ? 
+            new Message(request.RoomId, userId, request.Message, new Guid(request.MessageId), request.AsAnonymous, request.Iv) : 
+            new Message(request.RoomId, userId, request.Message, request.AsAnonymous, request.Iv);
+        
+        
+        var result = await messageRepository.SaveMessage(message);
+        if (!result)
+        {
+            return new FailureWithMessage("Database error.");
+        }
 
-        return new SaveMessageResponse(true, message, null);
+        return new SuccessWithDto<Message>(message);
     }
 
-    public async Task<ResponseBase> GetLast10Messages(Guid roomId, int index)
+    public async Task<ResponseBase> GetLast10Messages(GetMessagesRequest request)
     {
-        var messages = await messageRepository.Get10MessagesWithIndex(roomId, index);
+        var messages = await messageRepository.Get10MessagesWithIndex(request);
         if (messages is null)
         {
             return new FailureWithMessage("There is no room with the given id.");
         }
         
         return new SuccessWithDto<IList<MessageDto>>(messages);
-        
-        
-       return await Context.Messages
-        .Where(m => m.RoomId == roomId)
-        .OrderByDescending(m => m.SendTime)
-        .Take(10)
-        .ToListAsync();
     }
     
-    public async Task<ChatMessageResponse> EditMessage(EditMessageRequest request)
+    public async Task<ResponseBase> EditMessage(EditMessageRequest request, Guid userId)
     {
-        var existingMessage = Context.Messages!.FirstOrDefault(message => message.MessageId == request.Id);
+        var existingMessage = await messageRepository.GetMessage(request.Id);
+        if (existingMessage is null)
+        {
+            return new FailureWithMessage("There is no message with the given id.");
+        }
+
+        if (existingMessage.SenderId != userId)
+        {
+            return new FailureWithMessage("You don't have permission.");
+        }
         
-        existingMessage!.ChangeMessageText(request.Message);
-        existingMessage!.ChangeMessageIv(request.Iv);
+        existingMessage.ChangeMessageText(request.Message);
+        existingMessage.ChangeMessageIv(request.Iv);
 
-        Context.Messages!.Update(existingMessage);
-        await Context.SaveChangesAsync();
+        var result = await messageRepository.EditMessage(existingMessage);
+        if (!result)
+        {
+            return  new FailureWithMessage("Database error.");
+        }
 
-        return new ChatMessageResponse(true, "", null);
+        return new Success();
     }
 
-    public async Task<ChatMessageResponse> EditMessageSeen(EditMessageSeenRequest request, Guid userId)
+    public async Task<ResponseBase> EditMessageSeen(EditMessageSeenRequest request, Guid userId)
     {
-        var existingMessage = Context.Messages!.FirstOrDefault(message => message.MessageId == new Guid(request.MessageId));
+        var existingMessage = await messageRepository.GetMessage(request.MessageId);
+        if (existingMessage is null)
+        {
+            return new FailureWithMessage("There is no message with the given id.");
+        }
         
-        existingMessage!.AddUserToSeen(userId);
+        existingMessage.AddUserToSeen(userId);
 
-        Context.Messages!.Update(existingMessage);
-        await Context.SaveChangesAsync();
+        var result = await messageRepository.EditMessage(existingMessage);
+        if (!result)
+        {
+            return  new FailureWithMessage("Database error.");
+        }
 
-        return new ChatMessageResponse(true, "", null);
+        return new Success();
     }
 
-    public async Task<ChatMessageResponse> DeleteMessage(Guid id)
+    public async Task<ResponseBase> DeleteMessage(Guid id, Guid userId)
     {
-        var existingMessage = Context.Messages!.FirstOrDefault(message => message.MessageId == id);
+        var existingMessage = await messageRepository.GetMessage(id);
+        if (existingMessage is null)
+        {
+            return new FailureWithMessage("There is no message with the given id.");
+        }
         
-        Context.Messages!.Remove(existingMessage!);
-        await Context.SaveChangesAsync();
+        if (existingMessage.SenderId != userId)
+        {
+            return new FailureWithMessage("You don't have permission.");
+        }
 
-        return new ChatMessageResponse(true, id.ToString(), null);
+        var result = await messageRepository.DeleteMessage(existingMessage);
+        if (!result)
+        {
+            return  new FailureWithMessage("Database error.");
+        }
+
+        return new Success();
     }
 }

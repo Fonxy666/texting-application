@@ -1,7 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ChatService.Model.Responses.Chat;
+﻿using ChatService.Model.Responses.Chat;
 using ChatService.Model;
-using ChatService.Database;
 using ChatService.Model.Requests;
 using ChatService.Repository.RoomRepository;
 using ChatService.Services.Chat.GrpcService;
@@ -9,7 +7,7 @@ using Textinger.Shared.Responses;
 
 namespace ChatService.Services.Chat.RoomService;
 
-public class RoomService(ChatContext context, 
+public class RoomService(
     IUserGrpcService userGrpcService,
     IRoomRepository roomRepository
     ) : IRoomService
@@ -39,19 +37,18 @@ public class RoomService(ChatContext context,
                 room.SetRoomIdForTests("801d40c6-c95d-47ed-a21a-88cda341d0a9");
                 break;
         }
-        
-        var newRoom = await context.Rooms!.AddAsync(room);
-        var affectedRows = await context.SaveChangesAsync();
-        if (affectedRows == 0)
+
+        var roomId = await roomRepository.AddRoomAsync(room);
+        if (roomId is null)
         {
-            return new Failure();
+            return new FailureWithMessage("Database error.");
         }
         
         var sendUserUpdateInfos = await userGrpcService.SendEncryptedRoomIdForUser(
             new StoreRoomKeyRequest(
                 userId,
                 request.EncryptedSymmetricRoomKey,
-                newRoom.Entity.RoomId
+                roomId.Value
             )
         );
 
@@ -78,11 +75,10 @@ public class RoomService(ChatContext context,
             return new FailureWithMessage("You don't have permission to delete this room.");
         }
         
-        context.Rooms!.Remove(existingRoom);
-        var affectedRows = await context.SaveChangesAsync();
-        if (affectedRows == 0)
+        var deleteResult = await roomRepository.DeleteRoomAsync(existingRoom);
+        if (!deleteResult)
         {
-            return new FailureWithMessage("Server error.");
+            return new FailureWithMessage("Database error.");
         }
 
         return new Success();
@@ -90,12 +86,7 @@ public class RoomService(ChatContext context,
 
     public async Task<ResponseBase> ChangePasswordAsync(ChangeRoomPassword request, Guid userId)
     {
-        if (!Guid.TryParse(request.Id, out var roomGuid))
-        {
-            return new FailureWithMessage("Room not found.");
-        }
-        
-        var existingRoom = await roomRepository.GetRoomAsync(roomGuid);
+        var existingRoom = await roomRepository.GetRoomAsync(request.Id);
         if (existingRoom is null)
         {
             return  new FailureWithMessage("Room not found.");
@@ -114,10 +105,10 @@ public class RoomService(ChatContext context,
         }
         
         existingRoom.ChangePassword(request.Password);
-        var affectedRows = await context.SaveChangesAsync();
-        if (affectedRows == 0)
+        var updateResult = await roomRepository.UpdateRoomAsync(existingRoom);
+        if (!updateResult)
         {
-            return new FailureWithMessage("Server error.");
+            return new FailureWithMessage("Database error.");
         }
         
         return new Success();
@@ -125,7 +116,7 @@ public class RoomService(ChatContext context,
 
     public async Task<bool> UserIsTheCreatorAsync(Guid roomId, Guid userId)
     {
-        var roomCreatorId = await roomRepository.GetRoomCreatorId(roomId);
+        var roomCreatorId = await roomRepository.GetRoomCreatorIdAsync(roomId);
         return roomCreatorId == userId;
     }
 

@@ -1,8 +1,6 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ChatService.Services.Chat.RoomService;
-using ChatService.Model;
 using ChatService.Model.Requests;
 using ChatService.Model.Responses.Message;
 using ChatService.Services.Chat.MessageService;
@@ -21,16 +19,11 @@ public class MessageController(
     [HttpGet("GetMessages/{roomId}")]
     [Authorize(Roles = "User, Admin")]
     [RequireUserIdCookie]
-    public async Task<ActionResult<IQueryable<Message>>> GetMessages(GetMessagesRequest request)
+    public async Task<ActionResult<ResponseBase>> GetMessages(GetMessagesRequest request)
     {
         try
         {
-            if (!Guid.TryParse(request.RoomId, out var roomGuid))
-            {
-                return BadRequest(new Failure());
-            }
-
-            var result = await messageService.GetLast10Messages(roomGuid, request.Index);
+            var result = await messageService.GetLast10Messages(request);
             if (result is FailureWithMessage)
             {
                 return NotFound(result);
@@ -41,30 +34,29 @@ public class MessageController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error getting messages for room: {request.RoomId}");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
     
-    [HttpPost("SendMessage"), Authorize(Roles = "User, Admin")]
+    [HttpPost("SendMessage")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
     public async Task<ActionResult<ChatMessageResponse>> SendMessage([FromBody]MessageRequest request)
     {
         try
         {
-            if (!ModelState.IsValid)
+            var userId = (Guid)HttpContext.Items["UserId"]!;
+        
+            var result = await messageService.SendMessage(request, userId);
+            if (result is FailureWithMessage error)
             {
-                return BadRequest(ModelState);
+                return error.Message switch
+                {
+                    "Internal server error." => StatusCode(500, "Internal server error."),
+                    _ => NotFound(error)
+                };
             }
             
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var roomIdToGuid = new Guid(request.RoomId);
-            if (!roomService.ExistingRoom(roomIdToGuid).Result)
-            {
-                return NotFound($"There is no room with this id: {request.RoomId}");
-            }
-        
-            var result = await messageService.SendMessage(request, userId!);
-        
             return Ok(result);
         }
         catch (Exception e)
@@ -74,30 +66,25 @@ public class MessageController(
         }
     }
     
-    [HttpPatch("EditMessage"), Authorize(Roles = "User, Admin")]
+    [HttpPatch("EditMessage")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
     public async Task<ActionResult<ChatMessageResponse>> EditMessage([FromBody]EditMessageRequest request)
     {
         try
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var userId = (Guid)HttpContext.Items["UserId"]!;
             
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userGuid = new Guid(userId!);
-
-            if (!await messageService.MessageExisting(request.Id))
+            var result = await messageService.EditMessage(request, userId);
+            if (result is FailureWithMessage error)
             {
-                return NotFound($"There is no message with this given id: {request.Id}");
+                return error.Message switch
+                {
+                    "You don't have permission." => Forbid(),
+                    "There is no message with the given id." => NotFound(error),
+                    _ => StatusCode(500, "Internal server error.")
+                };
             }
-            
-            if (!await messageService.UserIsTheSender(userGuid, request.Id))
-            {
-                return BadRequest("You are not supposed to edit other user's messages.");
-            }
-            
-            var result = await messageService.EditMessage(request);
 
             return Ok(result);
         }
@@ -113,15 +100,17 @@ public class MessageController(
     {
         try
         {
-            if (!ModelState.IsValid)
+            var userId = (Guid)HttpContext.Items["UserId"]!;
+            
+            var result = await messageService.EditMessageSeen(request, userId);
+            if (result is FailureWithMessage error)
             {
-                return BadRequest(ModelState);
+                return error.Message switch
+                {
+                    "There is no message with the given id." => NotFound(error),
+                    _ => StatusCode(500, "Internal server error.")
+                };
             }
-            
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userGuid = new Guid(userId!);
-            
-            var result = await messageService.EditMessageSeen(request, userGuid);
 
             return Ok(result);
         }
@@ -133,30 +122,28 @@ public class MessageController(
     }
     
     [HttpDelete("DeleteMessage"), Authorize(Roles = "User, Admin")]
-    public async Task<ActionResult<ChatMessageResponse>> DeleteMessage([FromQuery]string id)
+    public async Task<ActionResult<ChatMessageResponse>> DeleteMessage([FromQuery]Guid messageId)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userGuid = new Guid(userId!);
-            var idToGuid = new Guid(id);
-            if (!messageService.MessageExisting(idToGuid).Result)
-            {
-                return NotFound($"There is no message with this given id: {id}");
-            }
-
-            if (!await messageService.UserIsTheSender(userGuid, idToGuid))
-            {
-                return BadRequest("You are not allowed to delete other users messages.");
-            }
+            var userId = (Guid)HttpContext.Items["UserId"]!;
             
-            await messageService.DeleteMessage(idToGuid);
+            var result = await messageService.DeleteMessage(messageId, userId);
+            if (result is FailureWithMessage error)
+            {
+                return error.Message switch
+                {
+                    "There is no message with the given id." => NotFound(error),
+                    "You don't have permission." => Forbid(),
+                    _ => StatusCode(500, "Internal server error.")
+                };
+            }
 
-            return Ok(new ChatMessageResponse(true, "", null));
+            return Ok(result);
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error deleting message with id: {id}");
+            logger.LogError(e, $"Error deleting message with id: {messageId}");
             return StatusCode(500);
         }
     }

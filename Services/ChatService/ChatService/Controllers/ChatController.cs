@@ -71,7 +71,7 @@ public class ChatController(
         catch (Exception e)
         {
             Console.WriteLine(e);
-            throw;
+            return StatusCode(500, "Internal server error.");
         }
     }
 
@@ -94,7 +94,7 @@ public class ChatController(
                 return error.Message switch
                 {
                     "Room not found." => NotFound(error),
-                    "Server error." => StatusCode(500,  "Internal server error."),
+                    "Database error." => StatusCode(500,  "Internal server error."),
                     "You don't have permission to delete this room." => Forbid(),
                     _ => BadRequest(error)
                 };
@@ -105,7 +105,7 @@ public class ChatController(
         catch (Exception e)
         {
             Console.WriteLine(e);
-            throw;
+            return StatusCode(500, "Internal server error.");
         }
     }
 
@@ -124,7 +124,7 @@ public class ChatController(
                 return error.Message switch
                 {
                     "Room not found." => NotFound(error),
-                    "Server error." => StatusCode(500,  "Internal server error."),
+                    "Database error." => StatusCode(500,  "Internal server error."),
                     "You don't have permission to change this room's password." => Forbid(),
                     _ => BadRequest(error)
                 };
@@ -135,7 +135,7 @@ public class ChatController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error changing room for {request.Id}.");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
 
@@ -163,7 +163,7 @@ public class ChatController(
         catch (Exception e)
         {
             logger.LogError(e, $"Error login into {request.RoomName} room.");
-            return StatusCode(500);
+            return StatusCode(500, "Internal server error.");
         }
     }
 }
