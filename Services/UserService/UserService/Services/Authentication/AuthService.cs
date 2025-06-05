@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
@@ -7,9 +6,8 @@ using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
 using UserService.Services.PrivateKeyFolder;
 using Textinger.Shared.Responses;
-using UserService.Database;
-using UserService.Repository;
 using UserService.Repository.AppUserRepository;
+using UserService.Repository.BaseDbRepository;
 using UserService.Services.MediaService;
 
 namespace UserService.Services.Authentication;
@@ -21,9 +19,9 @@ public class AuthService(
     IPrivateKeyService keyService,
     ILogger<AuthService> logger,
     IPrivateKeyService privateKeyService,
-    MainDatabaseContext context,
     IImageService imageService,
-    IUserRepository userRepository
+    IUserRepository userRepository,
+    IBaseDatabaseRepository baseRepository
     ) : IAuthService
 {
     public async Task<ResponseBase> RegisterAsync(RegistrationRequest request)
@@ -34,12 +32,10 @@ public class AuthService(
             return validateUserInputResult;
         }
         
-        await using var transaction = await context.Database.BeginTransactionAsync();
-
-        try
+        return await baseRepository.ExecuteInTransactionAsync(async () =>
         {
             var saveImageResult = imageService.SaveImageLocally(request.Username, request.Image);
-            
+
             var userCreationResult = await CreateUser(request, (saveImageResult as SuccessWithMessage)?.Message ?? "-");
             if (userCreationResult is FailureWithMessage)
             {
@@ -52,15 +48,8 @@ public class AuthService(
                 return saveKeyResult;
             }
 
-            await transaction.CommitAsync();
-
-            return saveKeyResult.IsSuccess ? new Success() : new Failure();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Registration failed during transaction.");
-            return new Failure();
-        }
+            return new Success();
+        });
     }
 
     private async Task<ResponseBase> ValidateUserInput(RegistrationRequest request)
