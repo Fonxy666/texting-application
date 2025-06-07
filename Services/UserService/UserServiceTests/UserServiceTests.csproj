@@ -44,9 +44,7 @@
     <ProjectReference Include="..\UserService\UserService.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Textinger.Shared">
-      <HintPath>..\..\..\Textinger.Shared\bin\Release\net8.0\Textinger.Shared.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\Textinger.Shared\Textinger.Shared.csproj" />
+	</ItemGroup>
 </Project>

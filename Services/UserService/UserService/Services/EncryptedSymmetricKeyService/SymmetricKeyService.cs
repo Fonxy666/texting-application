@@ -1,21 +1,17 @@
 ﻿using System.Linq.Expressions;
-using Microsoft.EntityFrameworkCore;
 using UserService.Models;
 using Textinger.Shared.Responses;
-using UserService.Database;
-using UserService.Repository;
 using UserService.Repository.AppUserRepository;
-using UserService.Repository.KeyReposittory;
+using UserService.Repository.BaseDbRepository;
+using UserService.Repository.KeyRepository;
 
 namespace UserService.Services.EncryptedSymmetricKeyService;
 
-public class SymmetricKeyService(MainDatabaseContext context, IUserRepository userRepository, IKeyRepository keyRepository) : ISymmetricKeyService
+public class SymmetricKeyService(IUserRepository userRepository, IKeyRepository keyRepository, IBaseDatabaseRepository baseRepository) : ISymmetricKeyService
 {
     public async Task<ResponseBase> SaveNewKeyAndLinkToUserAsync(EncryptedSymmetricKey symmetricKey)
     {
-        await using var transaction = await context.Database.BeginTransactionAsync();
-
-        try
+        return await baseRepository.ExecuteInTransactionAsync<ResponseBase>(async () =>
         {
             var result = await keyRepository.AddKeyAsync(symmetricKey);
             if (!result)
@@ -23,26 +19,23 @@ public class SymmetricKeyService(MainDatabaseContext context, IUserRepository us
                 return new FailureWithMessage("Database error.");
             }
 
-            context.EncryptedSymmetricKeys.Attach(symmetricKey);
+            keyRepository.AttachNewKey(symmetricKey);
 
             Expression<Func<ApplicationUser, object>> navigation = u => u.UserSymmetricKeys;
             var user = await userRepository.GetUserWithIncludeAsync(symmetricKey.UserId, navigation);
-            
+
             if (user == null)
             {
                 return new Failure();
             }
 
-            user.UserSymmetricKeys.Add(symmetricKey);
-            await context.SaveChangesAsync();
+            var keySaveResult = await keyRepository.AddKeyAsync(symmetricKey);
+            if (!keySaveResult)
+            {
+                return new FailureWithMessage("Database error.");
+            }
 
-            await transaction.CommitAsync();
             return new Success();
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+        });
     }
 }

@@ -7,6 +7,7 @@ using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
 using UserService.Repository.AppUserRepository;
+using UserService.Repository.BaseDbRepository;
 using UserService.Services.Authentication;
 using UserService.Services.Cookie;
 using UserService.Services.EmailSender;
@@ -60,6 +61,7 @@ public class AuthServiceTests : IAsyncLifetime
         services.AddScoped<IApplicationBuilder, ApplicationBuilder>();
         services.AddScoped<IEmailSender, EmailSender>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IBaseDatabaseRepository, BaseDatabaseRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddLogging();
 

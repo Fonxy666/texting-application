@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using UserService.Database;
 using UserService.Models;
 using UserService.Models.Responses;
@@ -113,6 +112,48 @@ public class FriendConnectionRepository(MainDatabaseContext context) : IFriendCo
             .LoadAsync();
 
         return connection;
+    }
+
+    public async Task<ConnectionIdAndSentTimeDto?> AddFriendConnectionAsync(FriendConnection friendConnection)
+    {
+        var newFriendConnection = await context.FriendConnections.AddAsync(friendConnection);
+        var result =  await context.SaveChangesAsync() > 0;
+        if (!result)
+        {
+            return null;
+        }
+        
+        return new ConnectionIdAndSentTimeDto(newFriendConnection.Entity.ConnectionId, newFriendConnection.Entity.SentTime);
+    }
+
+    public async Task<FriendConnection?> GetFriendConnectionAsync(Guid connectionId)
+    {
+        return await context.FriendConnections.FindAsync(connectionId);
+    }
+
+    public async Task<bool> RemoveFriendConnectionAsync(FriendConnection connection)
+    {
+        context.FriendConnections.Remove(connection);
+        return await context.SaveChangesAsync() > 0;
+    }
+
+    public async Task<IList<FriendConnection>> GetSentRequestsAsync(Guid userId)
+    {
+        return await context.FriendConnections
+            .Where(fc => fc.SenderId == userId)
+            .ToListAsync();
+    }
+
+    public async Task<IList<FriendConnection>> GetReceivedRequestsAsync(Guid userId)
+    {
+        return await context.FriendConnections
+            .Where(fc => fc.ReceiverId == userId)
+            .ToListAsync();
+    }
+
+    public void RemoveFriendRangeWithOutSaveChangesAsync(IList<FriendConnection> friendConnections)
+    {
+        context.FriendConnections.RemoveRange(friendConnections);
     }
 }
     

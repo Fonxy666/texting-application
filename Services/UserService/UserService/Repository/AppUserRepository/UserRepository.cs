@@ -17,15 +17,6 @@ public class UserRepository(MainDatabaseContext context) : IUserRepository
                 new UserNameDto(u.UserName!))
             .FirstOrDefaultAsync();
     }
-    
-    public async Task<UserNameDto?> GetUsernameDtoAsync(string userName)
-    {
-        return await context.Users
-            .Where(u => u.NormalizedUserName! == userName.ToUpperInvariant())
-            .Select(u => 
-                new UserNameDto(u.UserName!))
-            .FirstOrDefaultAsync();
-    }
 
     public async Task<UserIdDto?> GetUserIdDtoAsync(string userName)
     {
@@ -108,5 +99,16 @@ public class UserRepository(MainDatabaseContext context) : IUserRepository
             .Where(u => u.NormalizedUserName! == userName.ToUpperInvariant())
             .Select(u => new UserIdAndUserNameDto(u.Id, u.UserName!))
             .FirstOrDefaultAsync();
+    }
+
+    public async Task LoadFriendsAsync(ApplicationUser user)
+    {
+        await context.Entry(user).Collection(u => u.Friends).LoadAsync();
+    }
+
+    public async Task<bool> AddFriendAsync(ApplicationUser userToUpdate, ApplicationUser friendToAdd)
+    {
+        userToUpdate.Friends.Add(friendToAdd);
+        return await context.SaveChangesAsync() > 0;
     }
 }

@@ -101,7 +101,7 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, ITokenServi
             });
     }
 
-    public Task<bool> SetJwtToken(string accessToken, bool rememberMe)
+    public Task<bool> SetJwtTokenAsync(string accessToken, bool rememberMe)
     {
         Response.Cookies.Append("Authorization", accessToken, new CookieOptions
         {

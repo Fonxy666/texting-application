@@ -6,6 +6,7 @@ using UserService.Database;
 using UserService.Models;
 using UserService.Models.Responses;
 using UserService.Repository.AppUserRepository;
+using UserService.Repository.BaseDbRepository;
 using UserService.Repository.FConnectionRepository;
 using UserService.Services.Authentication;
 using UserService.Services.Cookie;
@@ -15,19 +16,22 @@ using UserService.Services.MediaService;
 using UserService.Services.PrivateKeyFolder;
 using UserService.Services.User;
 using Xunit;
+using Xunit.Abstractions;
 using Assert = NUnit.Framework.Assert;
 
 namespace UserServiceTests.ServicesTests;
 public class FriendConnectionTests : IAsyncLifetime
 {
+    private readonly ITestOutputHelper _testOutputHelper;
     private readonly ServiceProvider _provider;
     private readonly IFriendConnectionService _friendService;
     private readonly MainDatabaseContext _context;
     private readonly IConfiguration _configuration;
     private readonly string _testConnectionString;
 
-    public FriendConnectionTests()
+    public FriendConnectionTests(ITestOutputHelper testOutputHelper)
     {
+        _testOutputHelper = testOutputHelper;
         var services = new ServiceCollection();
         
         var baseConfig  = new ConfigurationBuilder()
@@ -62,6 +66,7 @@ public class FriendConnectionTests : IAsyncLifetime
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IApplicationBuilder, ApplicationBuilder>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IBaseDatabaseRepository, BaseDatabaseRepository>();
         services.AddScoped<IFriendConnectionRepository, FriendConnectionRepository>();
         
         services.AddLogging();
@@ -180,9 +185,10 @@ public class FriendConnectionTests : IAsyncLifetime
         Assert.That(existingUserBeforeNewFriend.Data.Count, Is.EqualTo(0));
         
         await _friendService.SendFriendRequestAsync(userId, "TestUsername2"); // send friend request
-        var sendtRequest = await _context.FriendConnections.FirstOrDefaultAsync(fc => fc.SenderId == Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916") && fc.Receiver!.UserName == "TestUsername2");
+        var sendtRequest = await _context.FriendConnections.FirstOrDefaultAsync(fc => fc.SenderId == userId && fc.Receiver!.UserName == "TestUsername2");
         await _friendService.AcceptReceivedFriendRequestAsync(userId, sendtRequest!.ConnectionId); // accept request
-        
+        var hehe = await _context.FriendConnections.Where(fc => fc.Status == FriendStatus.Accepted).ToListAsync();
+        _testOutputHelper.WriteLine(hehe.Count.ToString());
         var existingUserAfterNewFriend = await _friendService.GetFriendsAsync(userId) as SuccessWithDto<IList<ShowFriendRequestDto>>;
         Assert.That(existingUserAfterNewFriend!.Data!.Count, Is.EqualTo(1));
         

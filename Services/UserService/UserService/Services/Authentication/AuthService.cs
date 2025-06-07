@@ -161,12 +161,12 @@ public class AuthService(
         cookieService.SetPublicKey(rememberMe, existingUser.PublicKey);
         cookieService.SetUserId(existingUser.Id, rememberMe);
         cookieService.SetAnimateAndAnonymous(rememberMe);
-        await cookieService.SetJwtToken(accessToken, rememberMe);
+        await cookieService.SetJwtTokenAsync(accessToken, rememberMe);
         
         return new SuccessWithDto<KeysDto>(new KeysDto(existingUser.PublicKey, encryptedKey));
     }
 
-    public async Task<ResponseBase> LoginWithExternal(string emailAddress)
+    public async Task<ResponseBase> LoginWithExternalAsync(string emailAddress)
     {
         var existingUser = await userManager.FindByEmailAsync(emailAddress);
         if (existingUser is null)
@@ -190,7 +190,7 @@ public class AuthService(
         cookieService.SetPublicKey(true, existingUser.PublicKey);
         cookieService.SetUserId(existingUser.Id, true);
         cookieService.SetAnimateAndAnonymous(true);
-        await cookieService.SetJwtToken(accessToken, true);
+        await cookieService.SetJwtTokenAsync(accessToken, true);
         
         return new SuccessWithDto<UserIdDto>(new UserIdDto(existingUser.Id));
     }

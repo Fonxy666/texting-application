@@ -7,6 +7,7 @@ using UserService.Models;
 using UserService.Models.Requests;
 using UserService.Models.Responses;
 using UserService.Repository.AppUserRepository;
+using UserService.Repository.BaseDbRepository;
 using UserService.Repository.FConnectionRepository;
 using UserService.Services.Authentication;
 using UserService.Services.Cookie;
@@ -64,6 +65,7 @@ public class UserServiceTest : IAsyncLifetime
         services.AddScoped<IApplicationUserService, ApplicationUserService>();
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IBaseDatabaseRepository, BaseDatabaseRepository>();
         services.AddScoped<IFriendConnectionService, FriendConnectionService>();
         services.AddScoped<IEmailSender, FakeEmailSender>();
         services.AddScoped<IApplicationBuilder, ApplicationBuilder>();

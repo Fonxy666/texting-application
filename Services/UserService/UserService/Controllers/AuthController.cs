@@ -182,7 +182,7 @@ public class AuthController(
                 var splittedClaim = claim.Type.Split("/");
                 if (splittedClaim[^1] == "emailaddress")
                 {
-                    var loginResponse = await authenticationService.LoginWithExternal(claim.Value);
+                    var loginResponse = await authenticationService.LoginWithExternalAsync(claim.Value);
                     if (loginResponse is FailureWithMessage error)
                     {
                         var message = Uri.EscapeDataString(error.Message);
@@ -239,7 +239,7 @@ public class AuthController(
                 var splittedClaim = claim.Type.Split("/");
                 if (splittedClaim[^1] == "emailaddress")
                 {
-                    var loginResponse = await authenticationService.LoginWithExternal(claim.Value);
+                    var loginResponse = await authenticationService.LoginWithExternalAsync(claim.Value);
                     if (loginResponse is FailureWithMessage error)
                     {
                         var message = Uri.EscapeDataString(error.Message);

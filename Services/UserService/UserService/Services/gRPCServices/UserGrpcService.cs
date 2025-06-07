@@ -1,13 +1,11 @@
 ﻿using Grpc.Core;
-using Microsoft.AspNetCore.Identity;
 using UserService.Models;
-using UserService.Repository;
 using UserService.Repository.AppUserRepository;
 using UserService.Services.EncryptedSymmetricKeyService;
 
 namespace UserService.Services.gRPCServices;
 
-public class UserGrpcService(UserManager<ApplicationUser> userManager, ISymmetricKeyService keyService, IUserRepository userRepository) : GrpcUserService.GrpcUserServiceBase
+public class UserGrpcService(ISymmetricKeyService keyService, IUserRepository userRepository) : GrpcUserService.GrpcUserServiceBase
 {
     public override async Task<BoolResponseWithMessage> UserExisting(UserIdRequest request, ServerCallContext context)
     {

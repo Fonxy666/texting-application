@@ -9,7 +9,7 @@ public interface ICookieService
     public void SetAnimateAndAnonymous(bool rememberMe);
     public void ChangeAnimation();
     public void ChangeUserAnonymous();
-    public Task<bool> SetJwtToken(string accessToken, bool rememberMe);
+    public Task<bool> SetJwtTokenAsync(string accessToken, bool rememberMe);
     public void DeleteCookies();
     public void SetRememberMeCookie(bool rememberMe);
     public void SetPublicKey(bool rememberMe, string publicKey);

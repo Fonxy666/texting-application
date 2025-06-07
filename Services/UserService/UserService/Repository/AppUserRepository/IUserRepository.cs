@@ -8,7 +8,6 @@ namespace UserService.Repository.AppUserRepository;
 public interface IUserRepository
 {
     Task<UserNameDto?> GetUsernameDtoAsync(Guid userId);
-    Task<UserNameDto?> GetUsernameDtoAsync(string userName);
     Task<UserIdDto?> GetUserIdDtoAsync(string userName);
     Task<UsernameUserEmailAndTwoFactorEnabledDto?> GetUsernameUserEmailAndTwoFactorEnabledAsync(Guid userId);
     Task<ApplicationUser?> GetUserWithIncludeAsync(Guid userId, Expression<Func<ApplicationUser, object>> includeNavigation);
@@ -19,4 +18,6 @@ public interface IUserRepository
     Task<bool> IsUserExistingAsync(Guid userId);
     Task<UserIdAndPublicKeyDto?> GetUserIdAndPublicKeyAsync(Guid userId);
     Task<UserIdAndUserNameDto?> GetUserIdAndUserNameAsync(string userName);
+    Task LoadFriendsAsync(ApplicationUser user);
+    Task<bool> AddFriendAsync(ApplicationUser userToUpdate, ApplicationUser friendToAdd);
 }

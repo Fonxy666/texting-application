@@ -22,7 +22,9 @@ using Textinger.Shared.Filters;
 using UserService.Services.FriendConnectionService;
 using Textinger.Shared.JwtRefreshTokenValidation;
 using UserService.Repository.AppUserRepository;
+using UserService.Repository.BaseDbRepository;
 using UserService.Repository.FConnectionRepository;
+using UserService.Repository.KeyRepository;
 using UserService.Services.MediaService;
 
 namespace UserService;
@@ -100,8 +102,11 @@ public class Startup(IConfiguration configuration)
             return new PrivateKeyService(httpClient, vaultToken!, vaultAddress!);
         });
         services.AddScoped<IImageService, ImageService>();
+        services.AddScoped<IKeyRepository, KeyRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IFriendConnectionRepository, FriendConnectionRepository>();
+        services.AddScoped<ISymmetricKeyService, SymmetricKeyService>();
+        services.AddScoped<IBaseDatabaseRepository, BaseDatabaseRepository>();
         services.AddScoped<ISymmetricKeyService, SymmetricKeyService>();
         services.AddTransient<IEmailSender, EmailSender>();
         services.AddGrpc();

@@ -11,7 +11,7 @@ namespace UserService.Services.Authentication;
 
 public class TokenService(IConfiguration configuration) : ITokenService
 {
-    public const int ExpirationHours = 2;
+    private const int ExpirationHours = 2;
         
     public string CreateJwtToken(IdentityUser<Guid> user, string? role, bool rememberMe)
     {
@@ -43,7 +43,7 @@ public class TokenService(IConfiguration configuration) : ITokenService
         );
     }
 
-    public List<Claim> CreateClaims(IdentityUser<Guid> user, string? role)
+    private List<Claim> CreateClaims(IdentityUser<Guid> user, string? role)
     {
         var claims = new List<Claim>
         {

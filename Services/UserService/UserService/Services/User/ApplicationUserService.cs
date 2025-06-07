@@ -10,6 +10,8 @@ using Textinger.Shared.Responses;
 using UserService.Database;
 using UserService.Repository;
 using UserService.Repository.AppUserRepository;
+using UserService.Repository.BaseDbRepository;
+using UserService.Repository.FConnectionRepository;
 using UserService.Services.MediaService;
 
 namespace UserService.Services.User;
@@ -17,11 +19,13 @@ namespace UserService.Services.User;
 public class ApplicationUserService(
     UserManager<ApplicationUser> userManager,
     IConfiguration configuration,
-    MainDatabaseContext context,
     IEmailSender emailSender,
     IAuthService authService,
     IImageService imageService,
-    IUserRepository userRepository
+    IUserRepository userRepository,
+    IBaseDatabaseRepository baseRepository,
+    IFriendConnectionRepository friendRepository,
+    MainDatabaseContext context
     ) : IApplicationUserService
 {
     
@@ -165,7 +169,7 @@ public class ApplicationUserService(
 
     public async Task<ResponseBase> ChangeUserEmailAsync(ChangeEmailRequest request, Guid userId)
     {
-        var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        var existingUser = await userManager.FindByIdAsync(userId.ToString());
         if (existingUser is null)
         {
             return new FailureWithMessage("User not found.");
@@ -194,13 +198,13 @@ public class ApplicationUserService(
 
     public async Task<ResponseBase> ChangeUserPasswordAsync(ChangePasswordRequest request, Guid userId)
     {
-        var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        var existingUser = await userManager.FindByIdAsync(userId.ToString());
         if (existingUser is null)
         {
             return new FailureWithMessage("User not found.");
         }
         
-        var correctPassword = await authService.ExamineLoginCredentialsAsync(existingUser!.UserName!, request.OldPassword);
+        var correctPassword = await authService.ExamineLoginCredentialsAsync(existingUser.UserName!, request.OldPassword);
         if (correctPassword is FailureWithMessage error)
         {
             if (error.Message.Contains("Account is locked"))
@@ -238,49 +242,47 @@ public class ApplicationUserService(
 
     public async Task<ResponseBase> DeleteUserAsync(Guid userId, string password)
     {
-        var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        var existingUser = await userManager.FindByIdAsync(userId.ToString());
         if (existingUser is null)
         {
             return new FailureWithMessage("User not found.");
         }
-        
-        await using var transaction = await context.Database.BeginTransactionAsync();
 
-        if (!await userManager.CheckPasswordAsync(existingUser, password))
+        return await baseRepository.ExecuteInTransactionAsync(async () =>
         {
-            return new FailureWithMessage("Invalid credentials.");
-        }
+            if (!await userManager.CheckPasswordAsync(existingUser, password))
+            {
+                return new FailureWithMessage("Invalid credentials.");
+            }
 
-        var removeFriendsResult = await RemoveFriendConnectionsAsync(existingUser);
+            var removeFriendsResult = await RemoveFriendConnectionsAsync(existingUser);
 
-        if (removeFriendsResult is Failure)
-        {
-            await transaction.RollbackAsync();
-            return removeFriendsResult;
-        }
+            if (removeFriendsResult is Failure)
+            {
+                return removeFriendsResult;
+            }
 
-        var identityResult = await userManager.DeleteAsync(existingUser);
-        if (!identityResult.Succeeded)
-        {
-            await transaction.RollbackAsync();
-            return new FailureWithMessage("Failed to delete user.");
-        }
-
-        await transaction.CommitAsync();
-        return new SuccessWithDto<UserNameEmailDto>(new UserNameEmailDto(existingUser.UserName!, existingUser.Email!));
+            var identityResult = await userManager.DeleteAsync(existingUser);
+            if (!identityResult.Succeeded)
+            {
+                return new FailureWithMessage("Failed to delete user.");
+            }
+            
+            return new SuccessWithDto<UserNameEmailDto>(new UserNameEmailDto(existingUser.UserName!, existingUser.Email!));
+        });
     }
 
     private async Task<ResponseBase> RemoveFriendConnectionsAsync(ApplicationUser existingUser)
     {
-        var sentFriendRequests = context.FriendConnections!.Where(fc => fc.SenderId == existingUser.Id);
-        var receivedFriendRequests = context.FriendConnections!.Where(fc => fc.ReceiverId == existingUser.Id);
+        var sentFriendRequests = await friendRepository.GetSentRequestsAsync(existingUser.Id);
+        var receivedFriendRequests = await friendRepository.GetReceivedRequestsAsync(existingUser.Id);
 
         foreach (var friendRequest in sentFriendRequests)
         {
             var receiver = await userManager.FindByIdAsync(friendRequest.ReceiverId.ToString());
             if (receiver != null)
             {
-                await context.Entry(receiver).Collection(u => u.Friends).LoadAsync();
+                await userRepository.LoadFriendsAsync(receiver);
                 if (!receiver.Friends.Remove(existingUser))
                 {
                     return new Failure();
@@ -293,7 +295,7 @@ public class ApplicationUserService(
             var sender = await userManager.FindByIdAsync(friendRequest.SenderId.ToString());
             if (sender != null)
             {
-                await context.Entry(sender).Collection(u => u.Friends).LoadAsync();
+                await userRepository.LoadFriendsAsync(sender);
                 if (!sender.Friends.Remove(existingUser))
                 {
                     return new Failure();
@@ -301,8 +303,9 @@ public class ApplicationUserService(
             }
         }
 
-        context.FriendConnections!.RemoveRange(sentFriendRequests);
-        context.FriendConnections!.RemoveRange(receivedFriendRequests);
+        friendRepository.RemoveFriendRangeWithOutSaveChangesAsync(sentFriendRequests);
+        friendRepository.RemoveFriendRangeWithOutSaveChangesAsync(receivedFriendRequests);
+        
         return new Success();
     }
 }

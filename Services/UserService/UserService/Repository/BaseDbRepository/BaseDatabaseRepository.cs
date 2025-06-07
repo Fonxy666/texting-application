@@ -13,7 +13,7 @@ public class BaseDatabaseRepository(ILogger<BaseDatabaseRepository> logger, Main
         {
             var result = await operation();
 
-            if (result is not Failure)
+            if (result is not Failure or FailureWithMessage)
             {
                 await transaction.CommitAsync();
             }

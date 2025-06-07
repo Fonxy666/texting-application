@@ -31,7 +31,7 @@ public class JwtRefreshMiddleware(RequestDelegate next)
         var user = userManager.Users.FirstOrDefault(user => user.Id.ToString() == userId);
         var newToken = tokenService.CreateJwtToken(user!, "User", rememberMe);
 
-        await cookieService.SetJwtToken(newToken, rememberMe);
+        await cookieService.SetJwtTokenAsync(newToken, rememberMe);
     }
 
     private async Task RefreshToken(HttpContext context, ITokenService tokenService, UserManager<ApplicationUser> userManager, ICookieService cookieService, IJwtRefreshTokenValidator jwtMiddleware)
@@ -45,7 +45,7 @@ public class JwtRefreshMiddleware(RequestDelegate next)
             var role = jwtMiddleware.GetRoleFromToken(token!);
             var newToken = tokenService.CreateJwtToken(user, role, rememberMe);
 
-            await cookieService.SetJwtToken(newToken, rememberMe);
+            await cookieService.SetJwtTokenAsync(newToken, rememberMe);
         }
         else
         {
