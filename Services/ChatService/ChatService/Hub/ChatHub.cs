@@ -14,51 +14,75 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IUserGr
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, userConnection.Room!);
         connection[Context.ConnectionId] = userConnection;
-        await Clients.Group(userConnection.Room!).SendAsync("ReceiveMessage", "Textinger bot", $"{userConnection.User} has joined the room!", DateTime.UtcNow, null, null, null, userConnection.Room);
+        var response = new ReceiveMessageResponseForBot(
+            "Textinger bot",
+            $"{userConnection.User} has joined the room!",
+            DateTime.UtcNow,
+            Guid.Parse(userConnection.Room!)
+        );
+        await Clients.Group(userConnection.Room!)
+            .SendAsync("ReceiveMessage", response);
         await SendConnectedUser(userConnection.Room!);
         return Context.ConnectionId;
     }
 
     public int GetConnectedUsers(string roomId)
     {
-        return connection.Values.Where(user => user.Room == roomId).Select(connection => connection.User).Count();
+        return connection.Values.
+            Where(user => user.Room == roomId)
+            .Select(urc => urc.User)
+            .Count();
     }
-
-    public async Task KeyRequest(string roomId, string connectionId, string roomName)
+    
+    public async Task KeyRequest(KeyRequest request)
     {
         var userId = Context.User!.FindFirstValue(ClaimTypes.NameIdentifier);
         var userIdAndPublicKey = await userService.SendUserPublicKeyAndId(new UserIdRequest { Id = userId } );
         var userConnection = connection.Values
-            .Where(user => user.Room == roomId)
+            .Where(user => user.Room == request.RoomId.ToString())
             .Select(user => connection.FirstOrDefault(c => c.Value == user))
             .FirstOrDefault();
-        
-        await Clients.Client(userConnection.Key).SendAsync("KeyRequest", new KeyRequestResponse(userIdAndPublicKey!.PublicKey, new Guid(userIdAndPublicKey.UserId), roomId, connectionId, roomName));
-    }
 
-    public async Task SendSymmetricKeyToRequestUser(string encryptedRoomKey, string connectionId, string roomId, string roomName)
+        var response = new KeyRequestResponse(
+            userIdAndPublicKey!.PublicKey,
+            new Guid(userIdAndPublicKey.UserId),
+            request.RoomId,
+            request.ConnectionId,
+            request.RoomName
+        );
+        
+        await Clients.Client(userConnection.Key).SendAsync("KeyRequest", response);
+    }
+    
+    public async Task SendSymmetricKeyToRequestUser(GetSymmetricKeyRequest request)
     {
-        await Clients.Client(connectionId).SendAsync("GetSymmetricKey", encryptedRoomKey, roomId, roomName);
+        var response = new SendKeyResponse(request.EncryptedRoomKey, request.RoomId, request.RoomName);
+        await Clients.Client(request.ConnectionId.ToString()).SendAsync("GetSymmetricKey", response);
     }
 
     public async Task SendMessage(MessageRequest request)
     {
         var userId = Context.User!.FindFirstValue(ClaimTypes.NameIdentifier);
+        var parsedUserId = Guid.Parse(userId!);
+        var parsedMessageId = Guid.Parse(request.Message);
         
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
         {
-            await Clients.Group(userRoomConnection.Room!).SendAsync("ReceiveMessage",
-                userRoomConnection.User,
+            var response = new ReceiveMessageResponse(
+                userRoomConnection.User!,
                 request.Message,
                 DateTime.UtcNow,
-                userId,
-                request.MessageId,
-                new List<string>
+                parsedUserId,
+                parsedMessageId,
+                new List<Guid>
                 {
-                    userId!
+                    parsedUserId
                 },
                 request.RoomId,
                 request.Iv
+            );
+            await Clients.Group(userRoomConnection.Room!).SendAsync("ReceiveMessage",
+                response
                 );
         }
     }
@@ -67,7 +91,8 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IUserGr
     {
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
         {
-            await Clients.Group(userRoomConnection.Room!).SendAsync("ModifyMessage", request.Id, request.Message);
+            var response = new EditMessageResponse(request.Id, request.Message);
+            await Clients.Group(userRoomConnection.Room!).SendAsync("ModifyMessage", response);
         }
     }
     

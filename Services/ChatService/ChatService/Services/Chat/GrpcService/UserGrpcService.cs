@@ -1,5 +1,4 @@
-﻿using Azure;
-using ChatService.Model.Requests;
+﻿using ChatService.Model.Requests;
 using Grpc.Net.Client;
 
 namespace ChatService.Services.Chat.GrpcService;

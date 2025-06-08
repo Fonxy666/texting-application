@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ChatService.Services.Chat.RoomService;
 using ChatService.Model.Requests;
 using ChatService.Model.Responses.Message;
 using ChatService.Services.Chat.MessageService;
@@ -12,7 +11,6 @@ namespace ChatService.Controllers;
 [Route("api/v1/[controller]")]
 public class MessageController(
     IMessageService messageService,
-    IRoomService roomService,
     ILogger<MessageController> logger
     ) : ControllerBase
 {
