@@ -17,6 +17,7 @@ import { CryptoService } from '../crypto-service/crypto.service';
 import { IndexedDBService } from '../db-service/indexed-dbservice.service';
 import { StoreRoomSymmetricKey } from '../../model/room-requests/StoreRoomSymmetricKey';
 import { ChangeMessageRequest } from '../../model/user-credential-requests/user-credentials-requests';
+import { ReceiveMessageResponse } from '../../model/responses/chat-responses.model';
 @Injectable({
     providedIn: 'root'
 })
@@ -51,7 +52,8 @@ export class ChatService {
             this.initializeConnection();
         }
 
-        this.connection.on("ReceiveMessage", async (user: string, message: string, messageTime: string, userId: string, messageId: string, seenList: string[], roomId: string, iv: string) => {
+        this.connection.on("ReceiveMessage", async (response: ReceiveMessageResponse) => {
+            const { user, message, messageTime, userId, messageId, seenList, roomId, iv } = response;
             if (!this.messages[roomId]) {
                 this.messages[roomId] = [];
                 this.messagesInitialized$.next(roomId);
@@ -62,7 +64,7 @@ export class ChatService {
         
                 if (user === "Textinger bot") {
                     setTimeout(() => {
-                        this.removeBotMessage(roomId, messageId);
+                        this.removeBotMessage(roomId, messageId!);
                     }, 5000);
                 }
               }
