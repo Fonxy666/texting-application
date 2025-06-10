@@ -605,7 +605,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     }
 
                     const keyToArrayBuffer = await this.cryptoService.exportCryptoKey(decryptedRoomKey!);
-                    const receiverPublicKey = receiverObject.data;
+                    const receiverPublicKey = receiverObject.message;
                     const cryptoKeyUserPublicKey = await this.cryptoService.importPublicKeyFromBase64(receiverPublicKey);
                     const encryptRoomKeyForUser = await this.cryptoService.encryptSymmetricKey(keyToArrayBuffer, cryptoKeyUserPublicKey);
                     const bufferToBase64 = this.cryptoService.bufferToBase64(encryptRoomKeyForUser);

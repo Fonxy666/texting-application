@@ -9,7 +9,8 @@ import { filter } from 'rxjs';
 import { FriendService } from '../../services/friend-service/friend.service';
 import { MediaService } from '../../services/media-service/media.service';
 import { UserService } from '../../services/user-service/user.service';
-import { GetUserCredentials, UserResponse } from '../../model/responses/user-responses.model';
+import { GetUserCredentials } from '../../model/responses/user-responses.model';
+import { ServerResponse } from '../../model/responses/shared-response.model';
 
 @Component({
     selector: 'app-profile',
@@ -86,7 +87,7 @@ export class ProfileComponent implements OnInit {
 
     getUser() {
         this.userService.getUserCredentials()
-        .subscribe((response: UserResponse<GetUserCredentials>) => {
+        .subscribe((response: ServerResponse<GetUserCredentials>) => {
             if (response.isSuccess) {
                 this.user.name = response.data.userName;
                 this.user.email = response.data.email;

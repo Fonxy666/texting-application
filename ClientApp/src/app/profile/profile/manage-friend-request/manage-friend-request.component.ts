@@ -5,9 +5,10 @@ import { CookieService } from 'ngx-cookie-service';
 import { FriendService } from '../../../services/friend-service/friend.service';
 import { MediaService } from '../../../services/media-service/media.service';
 import { DisplayService } from '../../../services/display-service/display.service';
-import { ShowFriendRequestData, UserResponse, UserResponseFailure } from '../../../model/responses/user-responses.model';
+import { ShowFriendRequestData, UserResponseFailure } from '../../../model/responses/user-responses.model';
 import { DeleteFriendRequest } from '../../../model/friend-requests/friend-requests.model';
 import { UserService } from '../../../services/user-service/user.service';
+import { ServerResponse } from '../../../model/responses/shared-response.model';
 
 @Component({
   selector: 'app-manage-friend-request',
@@ -77,7 +78,7 @@ export class ManageFriendRequestComponent implements OnInit {
         }
         this.friendService.sendFriendRequestHttp(friendName)
         .subscribe(
-            (response: UserResponse<ShowFriendRequestData>) => {
+            (response: ServerResponse<ShowFriendRequestData>) => {
                 if (response.isSuccess) {
                     this.messageService.add({
                         severity: 'success',
@@ -111,7 +112,7 @@ export class ManageFriendRequestComponent implements OnInit {
     handleFriendRequestAccept(request: ShowFriendRequestData) {
         this.friendService.acceptFriendRequestHttp(request.requestId)
         .subscribe(
-            (response: UserResponse<void>) => {
+            (response: ServerResponse<void>) => {
                 if (response.isSuccess) {
                     let newRequest: ShowFriendRequestData = {
                         requestId: request.requestId,
@@ -136,7 +137,7 @@ export class ManageFriendRequestComponent implements OnInit {
         }
         this.friendService.friendRequestDecline(requestId, userType)
         .subscribe(
-            (response: UserResponse<void>) => {
+            (response: ServerResponse<void>) => {
                 if (response.isSuccess) {
                     this.friendService.deleteFriendRequest(declineRequest);
                 }
@@ -152,7 +153,7 @@ export class ManageFriendRequestComponent implements OnInit {
         }
         this.friendService.deleteFriendHttp(requestId)
         .subscribe(
-            (response: UserResponse<void>) => {
+            (response: ServerResponse<void>) => {
                 if (response.isSuccess) {
                     this.friendService.deleteFriend(declineRequest);
                 }

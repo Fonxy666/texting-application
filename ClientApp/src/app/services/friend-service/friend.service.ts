@@ -7,8 +7,9 @@ import { HttpClient } from '@angular/common/http';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { CryptoService } from '../crypto-service/crypto.service';
 import { StoreRoomSymmetricKey } from '../../model/room-requests/StoreRoomSymmetricKey';
-import { ShowFriendRequestData, UserResponse } from '../../model/responses/user-responses.model';
+import { ShowFriendRequestData } from '../../model/responses/user-responses.model';
 import { ChatRoomInviteRequest, DeleteFriendRequest, FriendRequestManage } from '../../model/friend-requests/friend-requests.model';
+import { ServerResponse } from '../../model/responses/shared-response.model';
 
 @Injectable({
     providedIn: 'root'
@@ -295,7 +296,7 @@ export class FriendService {
 
         this.getPendingFriendRequests()
         .subscribe(
-            (response: UserResponse<ShowFriendRequestData[]>) => {
+            (response: ServerResponse<ShowFriendRequestData[]>) => {
                 if (!this.friends[userId]) {
                     this.friends[userId] = [];
                 }
@@ -328,7 +329,7 @@ export class FriendService {
 
         this.getFriends()
         .subscribe(
-            (response: UserResponse<ShowFriendRequestData[]>) => {
+            (response: ServerResponse<ShowFriendRequestData[]>) => {
                 if (!this.friends[userId]) {
                     this.friends[userId] = [];
                 }
@@ -352,9 +353,9 @@ export class FriendService {
         );
     }
 
-    sendFriendRequestHttp(friendName: string): Observable<UserResponse<ShowFriendRequestData>> {
+    sendFriendRequestHttp(friendName: string): Observable<ServerResponse<ShowFriendRequestData>> {
         return this.errorHandler.handleErrors(
-            this.http.post<UserResponse<ShowFriendRequestData>>(`/api/v1/User/SendFriendRequest`, JSON.stringify(friendName), {
+            this.http.post<ServerResponse<ShowFriendRequestData>>(`/api/v1/User/SendFriendRequest`, JSON.stringify(friendName), {
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -363,21 +364,21 @@ export class FriendService {
         )
     }
 
-    getPendingFriendRequests(): Observable<UserResponse<ShowFriendRequestData[]>> {
+    getPendingFriendRequests(): Observable<ServerResponse<ShowFriendRequestData[]>> {
         return this.errorHandler.handleErrors(
-            this.http.get<UserResponse<ShowFriendRequestData[]>>(`/api/v1/User/GetFriendRequests`, { withCredentials: true })
+            this.http.get<ServerResponse<ShowFriendRequestData[]>>(`/api/v1/User/GetFriendRequests`, { withCredentials: true })
         )
     }
 
-    private getFriends(): Observable<UserResponse<ShowFriendRequestData[]>> {
+    private getFriends(): Observable<ServerResponse<ShowFriendRequestData[]>> {
         return this.errorHandler.handleErrors(
-            this.http.get<UserResponse<ShowFriendRequestData[]>>(`/api/v1/User/GetFriends`, { withCredentials: true })
+            this.http.get<ServerResponse<ShowFriendRequestData[]>>(`/api/v1/User/GetFriends`, { withCredentials: true })
         )
     }
 
-    acceptFriendRequestHttp(requestId: string): Observable<UserResponse<void>> {
+    acceptFriendRequestHttp(requestId: string): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.patch<UserResponse<void>>(`/api/v1/User/AcceptReceivedFriendRequest`, JSON.stringify(requestId), { 
+            this.http.patch<ServerResponse<void>>(`/api/v1/User/AcceptReceivedFriendRequest`, JSON.stringify(requestId), { 
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -386,9 +387,9 @@ export class FriendService {
         )
     }
 
-    friendRequestDecline(requestId: string, userType: string): Observable<UserResponse<void>> {
+    friendRequestDecline(requestId: string, userType: string): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.delete<UserResponse<void>>(`/api/v1/User/DeleteFriendRequest?requestId=${requestId}&userType=${userType}`, { 
+            this.http.delete<ServerResponse<void>>(`/api/v1/User/DeleteFriendRequest?requestId=${requestId}&userType=${userType}`, { 
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -397,9 +398,9 @@ export class FriendService {
         )
     }
 
-    deleteFriendHttp(requestId: string): Observable<UserResponse<void>> {
+    deleteFriendHttp(requestId: string): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.delete<UserResponse<void>>(`/api/v1/User/DeleteFriend?requestId=${requestId}`, { withCredentials: true })
+            this.http.delete<ServerResponse<void>>(`/api/v1/User/DeleteFriend?requestId=${requestId}`, { withCredentials: true })
         )
     }
 }

@@ -48,5 +48,3 @@ export interface ShowFriendRequestData {
     receiverName: string;
     receiverId: string;
 }
-  
-export type UserResponse<T> = UserResponseSuccess<T> | UserResponseFailure;

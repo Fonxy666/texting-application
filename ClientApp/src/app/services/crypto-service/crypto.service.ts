@@ -3,8 +3,9 @@ import { ErrorHandlerService } from '../error-handler-service/error-handler.serv
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, Observable } from 'rxjs';
 import { StoreRoomSymmetricKey } from '../../model/room-requests/StoreRoomSymmetricKey';
-import { UserEncryptedPrivateKeyAndIv, UserPrivateKeyAndIv, UserResponse } from '../../model/responses/user-responses.model';
+import { UserEncryptedPrivateKeyAndIv, UserPrivateKeyAndIv } from '../../model/responses/user-responses.model';
 import { MessageService } from 'primeng/api';
+import { ServerResponse } from '../../model/responses/shared-response.model';
 
 @Injectable({
     providedIn: 'root'
@@ -279,33 +280,33 @@ export class CryptoService {
         return null;
     }
 
-    getUserPrivateKeyAndIv(): Observable<UserResponse<UserPrivateKeyAndIv>> {
+    getUserPrivateKeyAndIv(): Observable<ServerResponse<UserPrivateKeyAndIv>> {
         return this.errorHandler.handleErrors(
-            this.http.get<UserResponse<UserPrivateKeyAndIv>>(`/api/v1/CryptoKey/GetPrivateKeyAndIv`, { withCredentials: true })
+            this.http.get<ServerResponse<UserPrivateKeyAndIv>>(`/api/v1/CryptoKey/GetPrivateKeyAndIv`, { withCredentials: true })
         )
     }
 
-    getUserPrivateKeyForRoom(roomId: string): Observable<UserResponse<UserEncryptedPrivateKeyAndIv>> {
+    getUserPrivateKeyForRoom(roomId: string): Observable<ServerResponse<UserEncryptedPrivateKeyAndIv>> {
         return this.errorHandler.handleErrors(
-            this.http.get<UserResponse<UserEncryptedPrivateKeyAndIv>>(`/api/v1/CryptoKey/GetPrivateUserKey?roomId=${roomId}`, { withCredentials: true })
+            this.http.get<ServerResponse<UserEncryptedPrivateKeyAndIv>>(`/api/v1/CryptoKey/GetPrivateUserKey?roomId=${roomId}`, { withCredentials: true })
         )
     }
 
-    sendEncryptedRoomKey(data: StoreRoomSymmetricKey): Observable<UserResponse<string>> {
+    sendEncryptedRoomKey(data: StoreRoomSymmetricKey): Observable<ServerResponse<string>> {
         return this.errorHandler.handleErrors(
-            this.http.post<UserResponse<string>>(`/api/v1/CryptoKey/SaveEncryptedRoomKey`, data, { withCredentials: true })
+            this.http.post<ServerResponse<string>>(`/api/v1/CryptoKey/SaveEncryptedRoomKey`, data, { withCredentials: true })
         )
     }
 
-    getPublicKey(userName: string): Observable<UserResponse<string>> {
+    getPublicKey(userName: string): Observable<ServerResponse<string>> {
         return this.errorHandler.handleErrors(
-            this.http.get<UserResponse<string>>(`/api/v1/CryptoKey/GetPublicKey?userName=${userName}`, { withCredentials: true })
+            this.http.get<ServerResponse<string>>(`/api/v1/CryptoKey/GetPublicKey?userName=${userName}`, { withCredentials: true })
         )
     }
 
-    userHaveKeyForRoom(userName: string, roomId: string): Observable<UserResponse<void>> {
+    userHaveKeyForRoom(userName: string, roomId: string): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.get<UserResponse<void>>(`/api/v1/CryptoKey/ExamineIfUserHaveSymmetricKeyForRoom?userName=${userName}&roomId=${roomId}`, { withCredentials: true })
+            this.http.get<ServerResponse<void>>(`/api/v1/CryptoKey/ExamineIfUserHaveSymmetricKeyForRoom?userName=${userName}&roomId=${roomId}`, { withCredentials: true })
         )
     }
 }
