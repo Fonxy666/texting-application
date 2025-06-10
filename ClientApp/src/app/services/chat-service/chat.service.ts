@@ -17,7 +17,8 @@ import { CryptoService } from '../crypto-service/crypto.service';
 import { IndexedDBService } from '../db-service/indexed-dbservice.service';
 import { StoreRoomSymmetricKey } from '../../model/room-requests/StoreRoomSymmetricKey';
 import { ChangeMessageRequest } from '../../model/user-credential-requests/user-credentials-requests';
-import { ReceiveMessageResponse } from '../../model/responses/chat-responses.model';
+import { ReceiveMessageResponse, RoomIdAndRoomNameResponse } from '../../model/responses/chat-responses.model';
+import { ServerResponse } from '../../model/responses/shared-response.model';
 @Injectable({
     providedIn: 'root'
 })
@@ -314,63 +315,63 @@ export class ChatService {
         return false;
     }
 
-    registerRoom(form: CreateRoomRequest): Observable<any> {
+    registerRoom(form: CreateRoomRequest): Observable<ServerResponse<RoomIdAndRoomNameResponse>> {
         return this.errorHandler.handleErrors(
-            this.http.post(`/api/v1/Chat/RegisterRoom`, form, { withCredentials: true })
+            this.http.post<ServerResponse<RoomIdAndRoomNameResponse>>(`/api/v1/Chat/RegisterRoom`, form, { withCredentials: true })
         )
     }
 
-    joinToRoom(form: JoinRoomRequest): Observable<any> {
+    joinToRoom(form: JoinRoomRequest): Observable<ServerResponse<RoomIdAndRoomNameResponse>> {
         return this.errorHandler.handleErrors(
-            this.http.post(`/api/v1/Chat/JoinRoom`, form, { withCredentials: true })
+            this.http.post<ServerResponse<RoomIdAndRoomNameResponse>>(`/api/v1/Chat/JoinRoom`, form, { withCredentials: true })
         )
     }
 
-    saveMessage(form: MessageRequest): Observable<any> {
+    saveMessage(form: MessageRequest): Observable<ServerResponse<ReceiveMessageResponse>> {
         return this.errorHandler.handleErrors(
-            this.http.post(`api/v1/Message/SendMessage`, form, { withCredentials: true})
+            this.http.post<ServerResponse<ReceiveMessageResponse>>(`api/v1/Message/SendMessage`, form, { withCredentials: true})
         )
     }
 
-    getMessages(roomId: string): Observable<any> {
+    getMessages(roomId: string): Observable<ServerResponse<ReceiveMessageResponse>> {
         return this.errorHandler.handleErrors(
-            this.http.get(`/api/v1/Message/GetMessages/${roomId}`, { withCredentials: true })
+            this.http.get<ServerResponse<ReceiveMessageResponse>>(`/api/v1/Message/GetMessages/${roomId}`, { withCredentials: true })
         )
     }
 
-    editMessage(request: ChangeMessageRequest): Observable<any> {
+    editMessage(request: ChangeMessageRequest): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.patch(`/api/v1/Message/EditMessage`, request, { withCredentials: true })
+            this.http.patch<ServerResponse<void>>(`/api/v1/Message/EditMessage`, request, { withCredentials: true })
         )
     }
 
-    editMessageSeen(request: ChangeMessageSeenRequest): Observable<any> {
+    editMessageSeen(request: ChangeMessageSeenRequest): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.patch(`/api/v1/Message/EditMessageSeen`, request, { withCredentials: true })
+            this.http.patch<ServerResponse<void>>(`/api/v1/Message/EditMessageSeen`, request, { withCredentials: true })
         )
     }
 
-    messageDelete(messageId: string): Observable<any> {
+    messageDelete(messageId: string): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.delete(`/api/v1/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
+            this.http.delete<ServerResponse<void>>(`/api/v1/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
         )
     }
 
-    userIsTheCreator(roomId: string): Observable<any> {
+    userIsTheCreator(roomId: string): Observable<ServerResponse<boolean>> {
         return this.errorHandler.handleErrors(
-            this.http.get(`/api/v1/Chat/ExamineIfTheUserIsTheCreator?roomId=${roomId}`, { withCredentials: true})
+            this.http.get<ServerResponse<boolean>>(`/api/v1/Chat/ExamineIfTheUserIsTheCreator?roomId=${roomId}`, { withCredentials: true})
         )
     }
 
-    deleteRoomHttpRequest(roomId: string): Observable<any> {
+    deleteRoomHttpRequest(roomId: string): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.delete(`/api/v1/Chat/DeleteRoom?roomId=${roomId}`, { withCredentials: true})
+            this.http.delete<ServerResponse<void>>(`/api/v1/Chat/DeleteRoom?roomId=${roomId}`, { withCredentials: true})
         )
     }
 
-    changePasswordForRoom(form: ChangePasswordRequestForRoom): Observable<any> {
+    changePasswordForRoom(form: ChangePasswordRequestForRoom): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.patch(`/api/v1/Chat/ChangePasswordForRoom`, form, { withCredentials: true})
+            this.http.patch<ServerResponse<void>>(`/api/v1/Chat/ChangePasswordForRoom`, form, { withCredentials: true})
         )
     }
 }

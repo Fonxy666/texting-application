@@ -92,7 +92,7 @@ export class CreateRoomComponent implements OnInit {
     async callSendcreateRoomRequest() {
         this.chatService.registerRoom(await this.createForm()).subscribe(
             response => {
-                if (response.success) {
+                if (response.isSuccess) {
                     this.router.navigate(['join-room'], { queryParams: { createRoom: 'true' } });
                 }
             },

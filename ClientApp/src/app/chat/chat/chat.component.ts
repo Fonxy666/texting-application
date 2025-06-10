@@ -491,7 +491,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     userIsTheCreatorMethod(){
         this.chatService.userIsTheCreator(this.roomId)
-        .subscribe((result: boolean) => {
+        .subscribe((result) => {
             if (result) {
                 this.userIsTheCreator = true;
             }

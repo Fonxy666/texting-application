@@ -8,3 +8,8 @@ export interface ReceiveMessageResponse {
     roomId: string,
     iv?: string
 }
+
+export interface RoomIdAndRoomNameResponse {
+    RoomId: string,
+    RoomName: string
+}

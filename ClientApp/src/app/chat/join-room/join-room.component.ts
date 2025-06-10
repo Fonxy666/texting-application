@@ -112,11 +112,12 @@ export class JoinRoomComponent implements OnInit {
     joinRoom() {
         this.chatService.joinToRoom(this.createForm()).subscribe(
             async response => {
-                if (response.success) {
+                if (response.isSuccess) {
+                    const { RoomId, RoomName } = response.data;
                     const userId = this.cookieService.get("UserId");
-                    const usersInRoom = await this.chatService.getUsersInSpecificRoom(response.roomId);
+                    const usersInRoom = await this.chatService.getUsersInSpecificRoom(RoomId);
                     const keyResponse = await firstValueFrom(
-                        this.cryptoService.getUserPrivateKeyForRoom(response.roomId).pipe(
+                        this.cryptoService.getUserPrivateKeyForRoom(RoomId).pipe(
                             catchError(err => {
                                 return of(null);
                             })
@@ -144,9 +145,9 @@ export class JoinRoomComponent implements OnInit {
                                 detail: 'First you need to leave the actual room.'
                             });
                         }
-                        this.chatService.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
+                        this.chatService.setRoomCredentialsAndNavigate(RoomName, RoomId);
                     } else if (keyResponse == null && usersInRoom > 0) {
-                        this.chatService.requestSymmetricRoomKey(response.roomId, this.chatService.connection.connectionId!, response.roomName);
+                        this.chatService.requestSymmetricRoomKey(RoomId, this.chatService.connection.connectionId!, RoomName);
                     } else if (keyResponse == null && usersInRoom === 0) {
                         this.messageService.add({
                             severity: 'error',
