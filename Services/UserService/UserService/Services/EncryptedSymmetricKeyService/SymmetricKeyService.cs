@@ -29,12 +29,6 @@ public class SymmetricKeyService(IUserRepository userRepository, IKeyRepository 
                 return new Failure();
             }
 
-            var keySaveResult = await keyRepository.AddKeyAsync(symmetricKey);
-            if (!keySaveResult)
-            {
-                return new FailureWithMessage("Database error.");
-            }
-
             return new Success();
         });
     }
