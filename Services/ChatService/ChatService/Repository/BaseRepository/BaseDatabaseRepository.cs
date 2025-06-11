@@ -1,9 +1,9 @@
-﻿using Textinger.Shared.Responses;
-using UserService.Database;
+﻿using ChatService.Database;
+using Textinger.Shared.Responses;
 
-namespace UserService.Repository.BaseDbRepository;
+namespace ChatService.Repository.BaseRepository;
 
-public class BaseDatabaseRepository(ILogger<BaseDatabaseRepository> logger, MainDatabaseContext context) : IBaseDatabaseRepository
+public class BaseDatabaseRepository(ILogger<BaseDatabaseRepository> logger, ChatContext context) : IBaseDatabaseRepository
 {
     public async Task<TResult> ExecuteInTransactionAsync<TResult>(Func<Task<TResult>> operation)
     {

@@ -25,16 +25,13 @@ public class ChatController(
 
             if (result is FailureWithMessage error)
             {
+                Console.WriteLine(error.Message);
                 return error.Message switch
                 {
                     "User not existing." => NotFound(error),
+                    "This room already exists." => BadRequest(error),
                     _ => StatusCode(500, "Internal server error.")
                 };
-            }
-
-            if (result is Failure)
-            {
-                return StatusCode(500, "Internal server error.");
             }
 
             return Ok(result);

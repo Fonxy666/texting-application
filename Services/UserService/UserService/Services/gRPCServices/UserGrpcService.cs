@@ -1,4 +1,5 @@
 ﻿using Grpc.Core;
+using Textinger.Shared.Responses;
 using UserService.Models;
 using UserService.Repository.AppUserRepository;
 using UserService.Services.EncryptedSymmetricKeyService;
@@ -32,8 +33,9 @@ public class UserGrpcService(ISymmetricKeyService keyService, IUserRepository us
         {
             return new BoolResponseWithMessage { Success = true, Message = "Invalid room id." };
         }
+
         var existingUser = await userRepository.IsUserExistingAsync(userGuid);
-        if (existingUser)
+        if (!existingUser)
         {
             return new BoolResponseWithMessage { Success = false, Message = "User not exists." };
         }
@@ -42,7 +44,12 @@ public class UserGrpcService(ISymmetricKeyService keyService, IUserRepository us
 
         try
         {
-            await keyService.SaveNewKeyAndLinkToUserAsync(newKey);
+            var saveKeyResult = await keyService.SaveNewKeyAndLinkToUserAsync(newKey);
+            if (saveKeyResult is Failure or FailureWithMessage)
+            {
+                return new BoolResponseWithMessage { Success = false, Message = "Error during key save." };
+            }
+            
             return new BoolResponseWithMessage { Success = true, Message = "Key successfully saved." };
         }
         catch (Exception ex)

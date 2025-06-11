@@ -3,6 +3,7 @@ using ChatService.Database;
 using ChatService.Hub;
 using ChatService.Middlewares;
 using ChatService.Model;
+using ChatService.Repository.BaseRepository;
 using ChatService.Repository.MessageRepository;
 using ChatService.Repository.RoomRepository;
 using ChatService.Services.Chat.GrpcService;
@@ -47,6 +48,7 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IRoomRepository, RoomRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IMessageService, MessageService>();
+        services.AddScoped<IBaseDatabaseRepository, BaseDatabaseRepository>();
         services.AddSingleton<IDictionary<string, UserRoomConnection>>(opt =>
             new Dictionary<string, UserRoomConnection>());
 

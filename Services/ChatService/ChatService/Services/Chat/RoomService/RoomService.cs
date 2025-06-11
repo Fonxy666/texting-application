@@ -1,6 +1,7 @@
 ﻿using ChatService.Model.Responses.Chat;
 using ChatService.Model;
 using ChatService.Model.Requests;
+using ChatService.Repository.BaseRepository;
 using ChatService.Repository.RoomRepository;
 using ChatService.Services.Chat.GrpcService;
 using Textinger.Shared.Responses;
@@ -9,7 +10,8 @@ namespace ChatService.Services.Chat.RoomService;
 
 public class RoomService(
     IUserGrpcService userGrpcService,
-    IRoomRepository roomRepository
+    IRoomRepository roomRepository,
+    IBaseDatabaseRepository baseRepository
     ) : IRoomService
 {
     public async Task<ResponseBase> RegisterRoomAsync(RoomRequest request, Guid userId)
@@ -25,41 +27,44 @@ public class RoomService(
         {
             return new FailureWithMessage("This room already exists.");
         }
-        
-        var room = new Room(request.RoomName, request.Password, userId);
-        
-        switch (request.RoomName)
-        {
-            case "test":
-                room.SetRoomIdForTests("901d40c6-c95d-47ed-a21a-88cda341d0a9");
-                break;
-            case "TestRoom1":
-                room.SetRoomIdForTests("801d40c6-c95d-47ed-a21a-88cda341d0a9");
-                break;
-        }
 
-        var roomId = await roomRepository.AddRoomAsync(room);
-        if (roomId is null)
+        return await baseRepository.ExecuteInTransactionAsync<ResponseBase>(async () =>
         {
-            return new FailureWithMessage("Database error.");
-        }
+            var room = new Room(request.RoomName, request.Password, userId);
         
-        var sendUserUpdateInfos = await userGrpcService.SendEncryptedRoomIdForUser(
-            new StoreRoomKeyRequest(
-                userId,
-                request.EncryptedSymmetricRoomKey,
-                roomId.Value
-            )
-        );
+            switch (request.RoomName)
+            {
+                case "test":
+                    room.SetRoomIdForTests("901d40c6-c95d-47ed-a21a-88cda341d0a9");
+                    break;
+                case "TestRoom1":
+                    room.SetRoomIdForTests("801d40c6-c95d-47ed-a21a-88cda341d0a9");
+                    break;
+            }
 
-        if (!sendUserUpdateInfos.Success)
-        {
-            Console.WriteLine(sendUserUpdateInfos);
-            return new FailureWithMessage("There was an error communicating with the grpc server.");
-        }
+            var roomId = await roomRepository.AddRoomAsync(room);
+            if (roomId is null)
+            {
+                return new FailureWithMessage("Database error.");
+            }
+        
+            var sendUserUpdateInfos = await userGrpcService.SendEncryptedRoomIdForUser(
+                new StoreRoomKeyRequest(
+                    userId,
+                    request.EncryptedSymmetricRoomKey,
+                    roomId.Value
+                )
+            );
 
-        var roomResponseDto = new RoomResponseDto(room.RoomId, room.RoomName);
-        return new SuccessWithDto<RoomResponseDto>(roomResponseDto);
+            if (!sendUserUpdateInfos.Success)
+            {
+                Console.WriteLine(sendUserUpdateInfos);
+                return new FailureWithMessage("There was an error communicating with the grpc server.");
+            }
+
+            var roomResponseDto = new RoomResponseDto(room.RoomId, room.RoomName);
+            return new SuccessWithDto<RoomResponseDto>(roomResponseDto);
+        });
     }
 
     public async Task<ResponseBase> DeleteRoomAsync(Guid userId, Guid roomId)
