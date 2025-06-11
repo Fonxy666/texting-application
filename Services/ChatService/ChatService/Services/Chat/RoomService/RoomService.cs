@@ -15,7 +15,7 @@ public class RoomService(
     public async Task<ResponseBase> RegisterRoomAsync(RoomRequest request, Guid userId)
     {
         var existingUser = await userGrpcService.UserExisting(userId.ToString());
-        if (existingUser.Success)
+        if (!existingUser.Success)
         {
             return new FailureWithMessage("User not existing.");
         }

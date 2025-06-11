@@ -112,7 +112,7 @@ public class ChatController(
     [HttpPatch("ChangePasswordForRoom")]
     [Authorize(Roles = "User, Admin")]
     [RequireUserIdCookie]
-    public async Task<ActionResult<ResponseBase>> ChangePassword([FromBody]ChangeRoomPassword request)
+    public async Task<ActionResult<ResponseBase>> ChangePassword([FromBody]ChangeRoomPassword request) 
     {
         try
         {

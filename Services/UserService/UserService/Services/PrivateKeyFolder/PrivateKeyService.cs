@@ -6,27 +6,20 @@ using Textinger.Shared.Responses;
 
 namespace UserService.Services.PrivateKeyFolder;
 
-public class PrivateKeyService : IPrivateKeyService
+public class PrivateKeyService(HttpClient httpClient, string vaultToken, string vaultAddress)
+    : IPrivateKeyService
 {
-    private readonly HttpClient _httpClient;
-    private readonly string _vaultToken;
-    private readonly string _vaultAddress;
-
-    public PrivateKeyService(HttpClient httpClient, string vaultToken, string vaultAddress)
-    {
-        _httpClient = httpClient;
-        _vaultToken = vaultToken ?? throw new ArgumentNullException(nameof(vaultToken));
-        _vaultAddress = vaultAddress ?? throw new ArgumentNullException(nameof(vaultAddress));
-    }
+    private readonly string _vaultToken = vaultToken ?? throw new ArgumentNullException(nameof(vaultToken));
+    private readonly string _vaultAddress = vaultAddress ?? throw new ArgumentNullException(nameof(vaultAddress));
 
     public async Task<ResponseBase> GetEncryptedKeyByUserIdAsync(Guid userId)
     {
         try
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"{_vaultAddress}/v1/secret/data/private_keys/{userId}");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{_vaultAddress}/v1/kv/data/private_keys/{userId}");
             request.Headers.Add("X-Vault-Token", _vaultToken);
 
-            var response = await _httpClient.SendAsync(request);
+            var response = await httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -74,14 +67,14 @@ public class PrivateKeyService : IPrivateKeyService
             };
 
             var jsonPayload = JsonSerializer.Serialize(payload);
-            using var request = new HttpRequestMessage(HttpMethod.Post, $"{_vaultAddress}/v1/secret/data/private_keys/{userId}")
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"{_vaultAddress}/v1/kv/data/private_keys/{userId}")
             {
                 Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json")
             };
 
             request.Headers.Add("X-Vault-Token", _vaultToken);
 
-            using var response = await _httpClient.SendAsync(request);
+            using var response = await httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
             return new Success();

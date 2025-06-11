@@ -389,9 +389,6 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task DeclineFriendRequest_WithNotExistingUser_ReturnNotFound()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
-        _client.DefaultRequestHeaders.Add("Cookie", cookies);
-
         var existingUser1 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername1");
         var existingUser2 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername2");
         var request1 = new FriendRequest(existingUser1.Id.ToString(), existingUser2.UserName);
@@ -412,9 +409,6 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task GetFriendRequests_WithExistingUser_ReturnFriends()
     {
-        var cookies = await TestLogin.Login_With_Test_User(_testUser, _client, "test1@hotmail.com");
-        _client.DefaultRequestHeaders.Add("Cookie", cookies);
-
         var existingUser1 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername1");
         var existingUser2 = _userManager.Users.FirstOrDefault(user => user.UserName == "TestUsername2");
         var request1 = new FriendRequest(existingUser1.Id.ToString(), existingUser2.UserName);

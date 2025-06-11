@@ -28,7 +28,15 @@ services:
       - VAULT_DEV_ROOT_TOKEN_ID=root
     cap_add:
       - IPC_LOCK
-    command: vault server -dev -dev-listen-address="0.0.0.0:8200"
+    entrypoint: /bin/sh -c "
+      vault server -dev -dev-root-token-id=root -dev-listen-address=0.0.0.0:8200 & \
+      sleep 2 && \
+      export VAULT_ADDR=http://127.0.0.1:8200 && \
+      export VAULT_TOKEN=root && \
+      vault secrets disable kv || true && \
+      vault secrets enable -path=kv -version=2 kv && \
+      tail -f /dev/null
+      "
     networks:
       - test-network
     healthcheck:
