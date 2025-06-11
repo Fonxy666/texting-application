@@ -138,7 +138,7 @@ public class RoomService(
         {
             return  new FailureWithMessage("Wrong password.");
         }
-        
+
         var returningDto = new RoomResponseDto(existingRoom.RoomId, existingRoom.RoomName);
         return new SuccessWithDto<RoomResponseDto>(returningDto);
     }
