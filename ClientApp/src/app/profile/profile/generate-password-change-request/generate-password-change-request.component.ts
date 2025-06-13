@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { passwordValidator, passwordMatchValidator } from '../../../validators/ValidPasswordValidator';
 import { MessageService } from 'primeng/api';
 import { UserService } from '../../../services/user-service/user.service';
-import { ChangePasswordRequestForUser } from '../../../model/user-credential-requests/user-credentials-requests';
+import { ChangePasswordRequestForUser } from '../../../model/user-credential-requests/user-credentials-requestsmodel.';
 import { Router } from '@angular/router';
 
 @Component({

@@ -6,9 +6,9 @@ import { isEqual } from 'lodash';
 import { HttpClient } from '@angular/common/http';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { CryptoService } from '../crypto-service/crypto.service';
-import { StoreRoomSymmetricKey } from '../../model/room-requests/StoreRoomSymmetricKey';
 import { ShowFriendRequestData } from '../../model/responses/user-responses.model';
 import { ChatRoomInviteRequest, DeleteFriendRequest, FriendRequestManage } from '../../model/friend-requests/friend-requests.model';
+import { StoreRoomSymmetricKeyRequest } from '../../model/room-requests/chat-requests.model';
 import { ServerResponse } from '../../model/responses/shared-response.model';
 
 @Injectable({
@@ -84,7 +84,10 @@ export class FriendService {
 
         this.connection.on("ReceiveChatRoomInvite", async (request: ChatRoomInviteRequest) => {
             if (request.roomKey !== undefined) {
-                const keyRequest = new StoreRoomSymmetricKey(request.roomKey!, request.roomId);
+                const keyRequest: StoreRoomSymmetricKeyRequest = {
+                    encryptedKey: request.roomKey!,
+                    roomId: request.roomId
+                };
 
                 this.cryptoService.sendEncryptedRoomKey(keyRequest)
                     .subscribe(() => {

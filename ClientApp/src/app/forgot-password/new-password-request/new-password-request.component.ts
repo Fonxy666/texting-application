@@ -4,7 +4,7 @@ import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { passwordMatchValidator, passwordValidator } from '../../validators/ValidPasswordValidator';
 import { UserService } from '../../services/user-service/user.service';
-import { ResetPasswordRequest } from '../../model/user-credential-requests/user-credentials-requests';
+import { ResetPasswordRequest } from '../../model/user-credential-requests/user-credentials-requestsmodel.';
 
 @Component({
   selector: 'app-new-password-request',

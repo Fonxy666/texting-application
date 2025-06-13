@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { HttpClient } from '@angular/common/http';
 import { UserService } from '../../../services/user-service/user.service';
-import { ChangeEmailRequest } from '../../../model/user-credential-requests/user-credentials-requests';
+import { ChangeEmailRequest } from '../../../model/user-credential-requests/user-credentials-requestsmodel.';
 
 @Component({
   selector: 'app-generate-email-change-request',

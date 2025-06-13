@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, Observable } from 'rxjs';
-import { StoreRoomSymmetricKey } from '../../model/room-requests/StoreRoomSymmetricKey';
 import { UserEncryptedPrivateKeyAndIv, UserPrivateKeyAndIv } from '../../model/responses/user-responses.model';
 import { MessageService } from 'primeng/api';
 import { ServerResponse } from '../../model/responses/shared-response.model';
+import { StoreRoomSymmetricKeyRequest } from '../../model/room-requests/chat-requests.model';
 
 @Injectable({
     providedIn: 'root'
@@ -292,7 +292,7 @@ export class CryptoService {
         )
     }
 
-    sendEncryptedRoomKey(data: StoreRoomSymmetricKey): Observable<ServerResponse<string>> {
+    sendEncryptedRoomKey(data: StoreRoomSymmetricKeyRequest): Observable<ServerResponse<string>> {
         return this.errorHandler.handleErrors(
             this.http.post<ServerResponse<string>>(`/api/v1/CryptoKey/SaveEncryptedRoomKey`, data, { withCredentials: true })
         )

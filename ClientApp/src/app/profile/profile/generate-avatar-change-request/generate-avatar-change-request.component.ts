@@ -4,7 +4,7 @@ import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MessageService } from 'primeng/api';
 import { UserService } from '../../../services/user-service/user.service';
-import { ChangeAvatarRequest } from '../../../model/user-credential-requests/user-credentials-requests';
+import { ChangeAvatarRequest } from '../../../model/user-credential-requests/user-credentials-requestsmodel.';
 
 @Component({
   selector: 'app-generate-avatar-change-request',

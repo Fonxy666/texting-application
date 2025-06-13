@@ -3,11 +3,11 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { ChatService } from '../../services/chat-service/chat.service';
-import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
 import { MessageService } from 'primeng/api';
 import { CryptoService } from '../../services/crypto-service/crypto.service';
 import { catchError, firstValueFrom, from, of, tap } from 'rxjs';
 import { IndexedDBService } from '../../services/db-service/indexed-dbservice.service';
+import { JoinRoomRequest } from '../../model/room-requests/chat-requests.model';
 
 @Component({
   selector: 'app-join-room',
@@ -103,10 +103,12 @@ export class JoinRoomComponent implements OnInit {
     };
 
     createForm() {
-        return new JoinRoomRequest(
-            this.joinRoomForm.get('room')?.value,
-            this.joinRoomForm.get('password')?.value
-        )
+        const returningValue: JoinRoomRequest = {
+            roomName: this.joinRoomForm.get('room')?.value,
+            password: this.joinRoomForm.get('password')?.value
+        }
+
+        return returningValue;
     };
 
     joinRoom() {

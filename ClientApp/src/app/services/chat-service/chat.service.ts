@@ -4,21 +4,18 @@ import { BehaviorSubject, firstValueFrom, Observable, Subject } from 'rxjs';
 import { MessageRequest } from '../../model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageSeenRequest } from '../../model/message-requests/ChangeMessageSeenRequest';
-import { ConnectedUser } from '../../model/room-requests/ConnectedUser';
 import { Router } from '@angular/router';
 import { UserService } from '../user-service/user.service';
 import { FriendService } from '../friend-service/friend.service';
-import { CreateRoomRequest } from '../../model/room-requests/CreateRoomRequest';
 import { HttpClient } from '@angular/common/http';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
-import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
-import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePasswordRequestForRoom';
 import { CryptoService } from '../crypto-service/crypto.service';
 import { IndexedDBService } from '../db-service/indexed-dbservice.service';
-import { StoreRoomSymmetricKey } from '../../model/room-requests/StoreRoomSymmetricKey';
-import { ChangeMessageRequest } from '../../model/user-credential-requests/user-credentials-requests';
+import { ChangeMessageRequest } from '../../model/user-credential-requests/user-credentials-requestsmodel.';
 import { ReceiveMessageResponse, RoomIdAndRoomNameResponse } from '../../model/responses/chat-responses.model';
 import { ServerResponse } from '../../model/responses/shared-response.model';
+import { ChangePasswordForRoomRequest, CreateRoomRequest, GetMessagesRequest, JoinRoomRequest, StoreRoomSymmetricKeyRequest } from '../../model/room-requests/chat-requests.model';
+import { ConnectedUser } from '../../model/chat-models.model';
 @Injectable({
     providedIn: 'root'
 })
@@ -118,7 +115,11 @@ export class ChatService {
 
         this.connection.on("GetSymmetricKey", async (encryptedKey: string, roomId: string, roomName: string) => {
             this.setRoomCredentialsAndNavigate(roomName, roomId);
-            const data = new StoreRoomSymmetricKey(encryptedKey, roomId);
+            const data: StoreRoomSymmetricKeyRequest = {
+                encryptedKey: encryptedKey,
+                roomId: roomId
+            };
+
             await firstValueFrom(this.cryptoService.sendEncryptedRoomKey(data));
         })
     }
@@ -333,7 +334,7 @@ export class ChatService {
         )
     }
 
-    getMessages(roomId: string): Observable<ServerResponse<ReceiveMessageResponse>> {
+    getMessages(roomId: GetMessagesRequest): Observable<ServerResponse<ReceiveMessageResponse>> {
         return this.errorHandler.handleErrors(
             this.http.get<ServerResponse<ReceiveMessageResponse>>(`/api/v1/Message/GetMessages/${roomId}`, { withCredentials: true })
         )
@@ -369,7 +370,7 @@ export class ChatService {
         )
     }
 
-    changePasswordForRoom(form: ChangePasswordRequestForRoom): Observable<ServerResponse<void>> {
+    changePasswordForRoom(form: ChangePasswordForRoomRequest): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
             this.http.patch<ServerResponse<void>>(`/api/v1/Chat/ChangePasswordForRoom`, form, { withCredentials: true})
         )

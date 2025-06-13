@@ -4,7 +4,7 @@ import { ErrorHandlerService } from '../error-handler-service/error-handler.serv
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { GetUserCredentials, UserName } from '../../model/responses/user-responses.model';
-import { ChangeEmailRequest, ChangePasswordRequestForUser, ResetPasswordRequest } from '../../model/user-credential-requests/user-credentials-requests';
+import { ChangeEmailRequest, ChangePasswordRequestForUser, ResetPasswordRequest } from '../../model/user-credential-requests/user-credentials-requestsmodel.';
 import { ServerResponse } from '../../model/responses/shared-response.model';
 
 @Injectable({

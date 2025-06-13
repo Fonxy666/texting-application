@@ -2,11 +2,10 @@ import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/co
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { CreateRoomRequest } from '../../model/room-requests/CreateRoomRequest';
 import { MessageService } from 'primeng/api';
 import { ChatService } from '../../services/chat-service/chat.service';
 import { CryptoService } from '../../services/crypto-service/crypto.service';
-import { IndexedDBService } from '../../services/db-service/indexed-dbservice.service';
+import { CreateRoomRequest } from '../../model/room-requests/chat-requests.model';
 
 @Component({
   selector: 'app-create-room',
@@ -68,11 +67,11 @@ export class CreateRoomComponent implements OnInit {
             const cryptoPublicKey = await this.cryptoService.importPublicKeyFromBase64(this.publicKey);
             const encryptedSymmetricKey = await this.cryptoService.encryptSymmetricKey(symmetricKey, cryptoPublicKey);
     
-            const createRoomRequest = new CreateRoomRequest(
-                this.createRoomForm.get('roomName')?.value,
-                this.createRoomForm.get('password')?.value,
-                this.cryptoService.bufferToBase64(encryptedSymmetricKey)
-            );
+            const createRoomRequest: CreateRoomRequest = {
+                roomName: this.createRoomForm.get('roomName')?.value,
+                password: this.createRoomForm.get('password')?.value,
+                encryptedSymmetricRoomKey: this.cryptoService.bufferToBase64(encryptedSymmetricKey)
+            };
     
             return createRoomRequest;
         } catch (error) {

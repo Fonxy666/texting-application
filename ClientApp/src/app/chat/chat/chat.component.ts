@@ -6,20 +6,20 @@ import { filter, switchMap, take } from 'rxjs/operators';
 import { MessageRequest } from '../../model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageSeenRequest } from '../../model/message-requests/ChangeMessageSeenRequest';
-import { ConnectedUser } from '../../model/room-requests/ConnectedUser';
 import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { passwordMatchValidator, passwordValidator } from '../../validators/ValidPasswordValidator';
 import { FriendService } from '../../services/friend-service/friend.service';
 import { DisplayService } from '../../services/display-service/display.service';
 import { MediaService } from '../../services/media-service/media.service';
-import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePasswordRequestForRoom';
 import { UserService } from '../../services/user-service/user.service';
 import { CryptoService } from '../../services/crypto-service/crypto.service';
 import { IndexedDBService } from '../../services/db-service/indexed-dbservice.service';
 import { ShowFriendRequestData } from '../../model/responses/user-responses.model';
-import { ChangeMessageRequest } from '../../model/user-credential-requests/user-credentials-requests';
+import { ChangeMessageRequest } from '../../model/user-credential-requests/user-credentials-requestsmodel.';
 import { ChatRoomInviteRequest } from '../../model/friend-requests/friend-requests.model';
+import { ChangePasswordForRoomRequest, GetMessagesRequest } from '../../model/room-requests/chat-requests.model';
+import { ConnectedUser } from '../../model/chat-models.model';
 
 @Component({
   selector: 'app-chat',
@@ -319,9 +319,13 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             console.error("Cannot get room key.");
             return;
         }
+
+        const request: GetMessagesRequest = {
+            roomId: this.roomId,
+            index: 1
+        }
     
-        this.chatService.getMessages(this.roomId).subscribe((userNamesResponse: any) => {
-            console.log(userNamesResponse)
+        this.chatService.getMessages(request).subscribe((userNamesResponse: any) => {
             const userNames = userNamesResponse.map((element: any) =>
                 this.userService.getUsername(element.senderId)
             );
@@ -530,11 +534,12 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     }
 
     changePasswordForRoom() {
-        const changePasswordRequest = new ChangePasswordRequestForRoom(
-            this.roomId,
-            this.changePasswordRequest.get('oldPassword')?.value,
-            this.changePasswordRequest.get('newPassword')?.value
-            );
+        const changePasswordRequest: ChangePasswordForRoomRequest = {
+            id: this.roomId,
+            oldPassword: this.changePasswordRequest.get('oldPassword')?.value,
+            password: this.changePasswordRequest.get('newPassword')?.value
+        };
+
             this.chatService.changePasswordForRoom(changePasswordRequest)
             .subscribe((response: any) => {
                 if (response.success) {

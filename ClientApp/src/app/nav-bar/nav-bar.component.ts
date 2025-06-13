@@ -3,11 +3,11 @@ import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { FriendService } from '../services/friend-service/friend.service';
 import { MediaService } from '../services/media-service/media.service';
-import { ChatRoomInvite } from '../model/room-requests/ChatRoomInvite';
 import { ChatService } from '../services/chat-service/chat.service';
 import { IndexedDBService } from '../services/db-service/indexed-dbservice.service';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../services/auth-service/auth.service';
+import { ChatRoomInvite } from '../model/chat-models.model';
 
 @Component({
     selector: 'app-nav-bar',
