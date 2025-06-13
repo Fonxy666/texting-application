@@ -119,7 +119,7 @@ public class RoomService(
         return new Success();
     }
 
-    public async Task<bool> UserIsTheCreatorAsync(Guid roomId, Guid userId)
+    public async Task<bool> UserIsTheCreatorAsync(Guid userId, Guid roomId)
     {
         var roomCreatorId = await roomRepository.GetRoomCreatorIdAsync(roomId);
         return roomCreatorId == userId;

@@ -10,6 +10,6 @@ export interface ReceiveMessageResponse {
 }
 
 export interface RoomIdAndRoomNameResponse {
-    RoomId: string,
-    RoomName: string
+    roomId: string,
+    roomName: string
 }
