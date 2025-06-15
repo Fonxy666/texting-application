@@ -331,7 +331,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             );
     
             forkJoin(userNames).subscribe(async (userNameData: any) => {
-                console.log(userNameData);
                 const fetchedMessages = messagesResponse.data.map(async (element: any, index: number) => ({
                     encrypted: false,
                     messageData: {

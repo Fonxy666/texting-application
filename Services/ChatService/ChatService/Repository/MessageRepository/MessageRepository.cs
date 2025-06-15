@@ -42,7 +42,8 @@ public class MessageRepository(ChatContext context) : IMessageRepository
                 m.Text,
                 m.SendTime,
                 m.SentAsAnonymous,
-                m.Seen))
+                m.Seen,
+                m.Iv))
             .ToListAsync();
     }
 
