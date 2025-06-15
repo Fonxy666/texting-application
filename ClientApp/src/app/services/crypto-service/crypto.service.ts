@@ -251,9 +251,9 @@ export class CryptoService {
         }
     }
 
-    async getDecryptedRoomKey(userKey: string): Promise<CryptoKey | null> {
+    async getDecryptedRoomKey(userKey: string, roomId: string): Promise<CryptoKey | null> {
         const userEncryptedData = await firstValueFrom(this.getUserPrivateKeyAndIv());
-        const encryptedRoomSymmetricKey = await firstValueFrom(this.getUserPrivateKeyForRoom(sessionStorage.getItem("roomId")!));
+        const encryptedRoomSymmetricKey = await firstValueFrom(this.getUserPrivateKeyForRoom(roomId));
 
         if (userEncryptedData.isSuccess && encryptedRoomSymmetricKey.isSuccess) {
             const encryptedRoomSymmetricKeyToArrayBuffer = this.base64ToBuffer(encryptedRoomSymmetricKey.data.encryptedPrivateKey);
@@ -288,7 +288,7 @@ export class CryptoService {
 
     getUserPrivateKeyForRoom(roomId: string): Observable<ServerResponse<UserEncryptedPrivateKeyAndIv>> {
         return this.errorHandler.handleErrors(
-            this.http.get<ServerResponse<UserEncryptedPrivateKeyAndIv>>(`/api/v1/CryptoKey/GetPrivateUserKey?roomId=${roomId}`, { withCredentials: true })
+            this.http.get<ServerResponse<UserEncryptedPrivateKeyAndIv>>(`/api/v1/CryptoKey/GetPrivateUserKey/${roomId}`, { withCredentials: true })
         )
     }
 

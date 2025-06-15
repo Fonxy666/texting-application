@@ -259,7 +259,6 @@ export class ChatService {
     public async leaveChat() {
         try {
             this.removeSessionStates()
-            console.log(this.currentRoom);
             this.messages[this.currentRoom!] = [];
             await this.connection.stop();
             console.log('Chat-SignalR connection stopped.');
@@ -334,9 +333,9 @@ export class ChatService {
         )
     }
 
-    getMessages(roomId: GetMessagesRequest): Observable<ServerResponse<ReceiveMessageResponse>> {
+    getMessages(form: GetMessagesRequest): Observable<ServerResponse<ReceiveMessageResponse[]>> {
         return this.errorHandler.handleErrors(
-            this.http.get<ServerResponse<ReceiveMessageResponse>>(`/api/v1/Message/GetMessages/${roomId}`, { withCredentials: true })
+            this.http.get<ServerResponse<ReceiveMessageResponse[]>>(`/api/v1/Message/GetMessages/${form.roomId}/${form.index}`, { withCredentials: true })
         )
     }
 

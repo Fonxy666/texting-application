@@ -44,20 +44,16 @@ public class CryptoKeyController(
         }
     }
 
-    [HttpGet("GetPrivateUserKey")]
+    [HttpGet("GetPrivateUserKey/{roomId:guid}")]
     [Authorize(Roles = "User, Admin")]
     [RequireUserIdCookie]
-    public async Task<ActionResult<ResponseBase>> GetPrivateUserKey([FromQuery] string roomId)
+    public async Task<ActionResult<ResponseBase>> GetPrivateUserKey(Guid roomId)
     {
         try
         {
             var userId = (Guid)HttpContext.Items["UserId"]!;
-            if (!Guid.TryParse(roomId, out var roomGuid))
-            {
-                return BadRequest(new FailureWithMessage("Invalid room ID format."));
-            }
 
-            var getKeyResponse = await userService.GetUserPrivatekeyForRoomAsync(userId, roomGuid);
+            var getKeyResponse = await userService.GetUserPrivatekeyForRoomAsync(userId, roomId);
 
             if (getKeyResponse is FailureWithMessage)
             {
@@ -76,7 +72,7 @@ public class CryptoKeyController(
     [HttpPost("SaveEncryptedRoomKey")]
     [Authorize(Roles = "User, Admin")]
     [RequireUserIdCookie]
-    public async Task<ActionResult<ResponseBase>> SaveEncryptedRoomKey([FromBody] StoreRoomKeyRequest data)
+    public async Task<ActionResult<ResponseBase>> SaveEncryptedRoomKey([FromBody]StoreRoomKeyRequest data)
     {
         try
         {

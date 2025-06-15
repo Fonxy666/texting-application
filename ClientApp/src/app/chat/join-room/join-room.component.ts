@@ -120,11 +120,12 @@ export class JoinRoomComponent implements OnInit {
                     const usersInRoom = await this.chatService.getUsersInSpecificRoom(roomId);
                     const keyResponse = await firstValueFrom(
                         this.cryptoService.getUserPrivateKeyForRoom(roomId).pipe(
-                            catchError(err => {
+                            catchError(_ => {
                                 return of(null);
                             })
                         )
                     );
+                    
                     const awaitedUserInputKey = await firstValueFrom(
                         from(this.dbService.getEncryptionKey(userId))
                             .pipe(
@@ -139,7 +140,7 @@ export class JoinRoomComponent implements OnInit {
                             )
                     );
   
-                    if (userId && keyResponse && awaitedUserInputKey) {
+                    if (userId && keyResponse?.isSuccess && awaitedUserInputKey) {
                         if (this.chatService.userInRoom()) {
                             this.messageService.add({
                                 severity: 'error',
@@ -147,10 +148,11 @@ export class JoinRoomComponent implements OnInit {
                                 detail: 'First you need to leave the actual room.'
                             });
                         }
+                        
                         this.chatService.setRoomCredentialsAndNavigate(roomName, roomId);
-                    } else if (keyResponse == null && usersInRoom > 0) {
+                    } else if (!keyResponse?.isSuccess && usersInRoom > 0) {
                         this.chatService.requestSymmetricRoomKey(roomId, this.chatService.connection.connectionId!, roomName);
-                    } else if (keyResponse == null && usersInRoom === 0) {
+                    } else if (!keyResponse?.isSuccess && usersInRoom === 0) {
                         this.messageService.add({
                             severity: 'error',
                             summary: 'Error',

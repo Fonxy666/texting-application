@@ -14,13 +14,14 @@ public class MessageController(
     ILogger<MessageController> logger
     ) : ControllerBase
 {
-    [HttpGet("GetMessages/{roomId}")]
+    [HttpGet("GetMessages/{roomId:guid}/{index:int}")]
     [Authorize(Roles = "User, Admin")]
     [RequireUserIdCookie]
-    public async Task<ActionResult<ResponseBase>> GetMessages(GetMessagesRequest request)
+    public async Task<ActionResult<ResponseBase>> GetMessages(Guid roomId, int index)
     {
         try
         {
+            var request = new GetMessagesRequest(roomId, index);
             var result = await messageService.GetLast10Messages(request);
             if (result is FailureWithMessage)
             {
@@ -31,7 +32,7 @@ public class MessageController(
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Error getting messages for room: {request.RoomId}");
+            logger.LogError(e, $"Error getting messages for room: {roomId}");
             return StatusCode(500, "Internal server error.");
         }
     }

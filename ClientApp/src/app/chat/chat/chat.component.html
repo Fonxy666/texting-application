@@ -151,7 +151,6 @@
                                     <div class="received_withd_msg">
                                         <p> {{data.messageData.message}}</p>
                                         <div class="message-data-container">\
-                                            <div>{{this.logdata(this.data)}}</div>
                                             <span class="time_date">{{this.displayService.displayUserName(data.messageData.user)}} | {{data.messageData.messageTime | date: 'medium'}}</span>
                                             <div class="seen-images-container">
                                                 <ng-container *ngIf="data.messageData.seenList != null && data.messageData.seenList.length > 2">

@@ -20,6 +20,8 @@ import { ChangeMessageRequest } from '../../model/user-credential-requests/user-
 import { ChatRoomInviteRequest } from '../../model/friend-requests/friend-requests.model';
 import { ChangePasswordForRoomRequest, GetMessagesRequest } from '../../model/room-requests/chat-requests.model';
 import { ConnectedUser } from '../../model/chat-models.model';
+import { ReceiveMessageResponse } from '../../model/responses/chat-responses.model';
+import { ServerResponse } from '../../model/responses/shared-response.model';
 
 @Component({
   selector: 'app-chat',
@@ -88,10 +90,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 ]);
             })
             ).subscribe(async ([key, data]) => {
-
-                if (data.length < 1) return;
-            
-                const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(key);
+                if (data.length < 1 || this.roomId === null) return;
+                const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(key, this.roomId);
                 if (!decryptedRoomKey) {
                     console.error("Cannot get room key.");
                     return;
@@ -142,7 +142,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }
 
         this.chatService.connection.on("ModifyMessage", async (messageId: string, messageText: string) => {
-            const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!);
+            const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!, this.roomId);
 
             if (decryptedRoomKey === null) {
                 console.error("Cannot get room key.");
@@ -235,12 +235,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }
     };
 
-    logdata(data: any) {
-        // console.log(data);
-    }
-
     async sendMessage() {
-        const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!);
+        const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!, this.roomId);
 
         if (decryptedRoomKey === null) {
             console.error("Cannot get room key.");
@@ -314,7 +310,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             return;
         }
     
-        const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey);
+        const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey, this.roomId);
         if (decryptedRoomKey === null) {
             console.error("Cannot get room key.");
             return;
@@ -325,14 +321,18 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             index: 1
         }
     
-        this.chatService.getMessages(request).subscribe((userNamesResponse: any) => {
-            const userNames = userNamesResponse.map((element: any) =>
+        this.chatService.getMessages(request).subscribe((messagesResponse: ServerResponse<ReceiveMessageResponse[]>) => {
+            if (!messagesResponse.isSuccess) {
+                return;
+            }
+            
+            const userNames = messagesResponse.data.map((element: any) =>
                 this.userService.getUsername(element.senderId)
             );
     
             forkJoin(userNames).subscribe(async (userNameData: any) => {
                 console.log(userNameData);
-                const fetchedMessages = userNamesResponse.map(async (element: any, index: number) => ({
+                const fetchedMessages = messagesResponse.data.map(async (element: any, index: number) => ({
                     encrypted: false,
                     messageData: {
                         messageId: element.messageId,
@@ -375,7 +375,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     async sendMessageModifyHttpRequest(request: ChangeMessageRequest) {
-        const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!);
+        const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!, this.roomId);
 
         if (decryptedRoomKey === null) {
             console.error("Cannot get room key.");
@@ -603,7 +603,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
                 const receiverObject = await firstValueFrom(this.cryptoService.getPublicKey(receiverName));
                 if (receiverObject.isSuccess) {
-                    const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!);
+                    const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!, this.roomId);
 
                     if (decryptedRoomKey === null) {
                         console.error("Cannot get room key.");
