@@ -8,6 +8,7 @@ import { CryptoService } from '../../services/crypto-service/crypto.service';
 import { catchError, firstValueFrom, from, of, tap } from 'rxjs';
 import { IndexedDBService } from '../../services/db-service/indexed-dbservice.service';
 import { JoinRoomRequest } from '../../model/room-requests/chat-requests.model';
+import { RoomKeyRequest } from '../../model/key-requests/key-requests.model';
 
 @Component({
   selector: 'app-join-room',
@@ -151,7 +152,13 @@ export class JoinRoomComponent implements OnInit {
                         
                         this.chatService.setRoomCredentialsAndNavigate(roomName, roomId);
                     } else if (!keyResponse?.isSuccess && usersInRoom > 0) {
-                        this.chatService.requestSymmetricRoomKey(roomId, this.chatService.connection.connectionId!, roomName);
+                        const request: RoomKeyRequest = {
+                            RoomId: roomId,
+                            ConnectionId: this.chatService.connection.connectionId!,
+                            RoomName: roomName
+                        }
+                        
+                        this.chatService.requestSymmetricRoomKey(request);
                     } else if (!keyResponse?.isSuccess && usersInRoom === 0) {
                         this.messageService.add({
                             severity: 'error',

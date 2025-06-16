@@ -10,7 +10,7 @@ public record StoreRoomKeyRequest(
 
 public record KeyRequest(
     [Required(ErrorMessage = "Room id cannot be null.")]Guid RoomId,
-    [Required(ErrorMessage = "Connection id cannot be null.")]Guid ConnectionId,
+    [Required(ErrorMessage = "Connection id cannot be null.")]string ConnectionId,
     [Required(ErrorMessage = "Room name cannot be null.")]string RoomName
 );
 

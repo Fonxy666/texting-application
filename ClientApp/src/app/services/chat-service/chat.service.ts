@@ -16,6 +16,7 @@ import { ReceiveMessageResponse, RoomIdAndRoomNameResponse } from '../../model/r
 import { ServerResponse } from '../../model/responses/shared-response.model';
 import { ChangePasswordForRoomRequest, CreateRoomRequest, GetMessagesRequest, JoinRoomRequest, StoreRoomSymmetricKeyRequest } from '../../model/room-requests/chat-requests.model';
 import { ConnectedUser } from '../../model/chat-models.model';
+import { RoomKeyRequest } from '../../model/key-requests/key-requests.model';
 @Injectable({
     providedIn: 'root'
 })
@@ -198,9 +199,9 @@ export class ChatService {
         }
     }
 
-    public async requestSymmetricRoomKey(roomId: string, requestId: string, roomName: string) {
+    public async requestSymmetricRoomKey(request: RoomKeyRequest) {
         try {
-            await this.connection.invoke("KeyRequest", roomId, requestId, roomName);
+            await this.connection.invoke("KeyRequest", request);
         } catch (error) {
             console.error('Error get the symmetric key:', error);
         }
