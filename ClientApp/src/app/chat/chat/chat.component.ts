@@ -268,17 +268,17 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     this.chatService.messages[this.roomId].push({
                         encrypted: true,
                         messageData: {
-                            roomId: res.message.roomId,
-                            messageId: res.message.messageId,
-                            userId: res.message.senderId,
-                            message: res.message.text,
-                            messageTime: res.message.sendTime,
-                            seenList: res.message.seen,
-                            iv: res.message.iv
+                            roomId: res.data.roomId,
+                            messageId: res.data.messageId,
+                            userId: res.data.senderId,
+                            message: res.data.text,
+                            messageTime: res.data.sendTime,
+                            seenList: res.data.seen,
+                            iv: res.data.iv
                         }
                     });
 
-                    resolve(res.message.messageId);
+                    resolve(res.data.messageId);
                 },
                 (error) => {
                     reject(error);

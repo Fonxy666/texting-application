@@ -30,7 +30,7 @@ public class MessageRepository(ChatContext context) : IMessageRepository
 
     public async Task<IList<MessageDto>?> Get10MessagesWithIndex(GetMessagesRequest request)
     {
-        return await context.Rooms!
+        var messages = await context.Rooms!
             .Where(m => m.RoomId == request.RoomId)
             .SelectMany(r => r.Messages)
             .OrderByDescending(m => m.SendTime)
@@ -45,6 +45,10 @@ public class MessageRepository(ChatContext context) : IMessageRepository
                 m.Seen,
                 m.Iv))
             .ToListAsync();
+
+        return messages
+            .OrderBy(m => m.SendTime)
+            .ToList();
     }
 
     public async Task<bool> SaveMessage(Message message)

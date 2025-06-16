@@ -64,7 +64,7 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IUserGr
     {
         var userId = Context.User!.FindFirstValue(ClaimTypes.NameIdentifier);
         var parsedUserId = Guid.Parse(userId!);
-        var parsedMessageId = Guid.Parse(request.Message);
+        var parsedMessageId = Guid.Parse(request.MessageId!);
         
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
         {
