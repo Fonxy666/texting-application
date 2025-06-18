@@ -1,5 +1,12 @@
 export interface RoomKeyRequest {
-    RoomId: string;
-    ConnectionId: string;
-    RoomName: string;
+    roomId: string;
+    connectionId: string;
+    roomName: string;
+}
+
+export interface GetSymmetricKeyRequest {
+    encryptedRoomKey: string;
+    connectionId: string;
+    roomId: string;
+    roomName: string;
 }

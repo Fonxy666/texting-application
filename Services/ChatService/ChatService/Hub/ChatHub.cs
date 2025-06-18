@@ -54,10 +54,11 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IUserGr
         await Clients.Client(userConnection.Key).SendAsync("KeyRequest", response);
     }
     
-    public async Task SendSymmetricKeyToRequestUser(GetSymmetricKeyRequest request)
+    public async Task SendSymmetricKeyToRequestUser(SendSymmetricKeyRequest request)
     {
+        Console.WriteLine(request.ConnectionId);
         var response = new SendKeyResponse(request.EncryptedRoomKey, request.RoomId, request.RoomName);
-        await Clients.Client(request.ConnectionId.ToString()).SendAsync("GetSymmetricKey", response);
+        await Clients.Client(request.ConnectionId).SendAsync("GetSymmetricKey", response);
     }
 
     public async Task SendMessage(MessageRequest request)

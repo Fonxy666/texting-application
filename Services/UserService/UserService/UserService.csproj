@@ -66,11 +66,4 @@
 	  <_ContentIncludedByDefault Remove="Vault_Data\Config\vault.json" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="test_pgdata\base\16384\" />
-	  <Folder Include="test_pgdata\base\1\" />
-	  <Folder Include="test_pgdata\base\4\" />
-	  <Folder Include="test_pgdata\base\5\" />
-	</ItemGroup>
-
 </Project>

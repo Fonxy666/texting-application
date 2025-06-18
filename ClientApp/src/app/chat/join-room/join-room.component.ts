@@ -153,9 +153,9 @@ export class JoinRoomComponent implements OnInit {
                         this.chatService.setRoomCredentialsAndNavigate(roomName, roomId);
                     } else if (!keyResponse?.isSuccess && usersInRoom > 0) {
                         const request: RoomKeyRequest = {
-                            RoomId: roomId,
-                            ConnectionId: this.chatService.connection.connectionId!,
-                            RoomName: roomName
+                            roomId: roomId,
+                            connectionId: this.chatService.connection.connectionId!,
+                            roomName: roomName
                         }
                         
                         this.chatService.requestSymmetricRoomKey(request);

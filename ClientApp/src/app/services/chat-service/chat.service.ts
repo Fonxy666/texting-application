@@ -16,7 +16,7 @@ import { ReceiveMessageResponse, RoomIdAndRoomNameResponse } from '../../model/r
 import { ServerResponse } from '../../model/responses/shared-response.model';
 import { ChangePasswordForRoomRequest, CreateRoomRequest, GetMessagesRequest, JoinRoomRequest, StoreRoomSymmetricKeyRequest } from '../../model/room-requests/chat-requests.model';
 import { ConnectedUser } from '../../model/chat-models.model';
-import { RoomKeyRequest } from '../../model/key-requests/key-requests.model';
+import { GetSymmetricKeyRequest, RoomKeyRequest } from '../../model/key-requests/key-requests.model';
 @Injectable({
     providedIn: 'root'
 })
@@ -106,7 +106,17 @@ export class ChatService {
                 const keyToArrayBuffer = await this.cryptoService.exportCryptoKey(decryptedRoomKey);
                 const encryptRoomKeyForUser = await this.cryptoService.encryptSymmetricKey(keyToArrayBuffer, cryptoKeyUserPublicKey);
                 const bufferToBase64 = this.cryptoService.bufferToBase64(encryptRoomKeyForUser);
-                await this.sendRoomSymmetricKey(bufferToBase64, userData.connectionId, userData.roomId, userData.roomName);
+                console.log(`bufferToBase64: ${bufferToBase64}`)
+                console.log(`userData.connectionId: ${userData.connectionId}`)
+                console.log(`userData.roomId: ${userData.roomId}`)
+                console.log(`userData.roomName: ${userData.roomName}`)
+                const request: GetSymmetricKeyRequest = {
+                    encryptedRoomKey: bufferToBase64,
+                    connectionId: userData.connectionId,
+                    roomId: userData.roomId,
+                    roomName: userData.roomName
+                }
+                await this.sendRoomSymmetricKey(request);
             } else if (!encryptedRoomSymmetricKey.isSuccess) {
                 console.error(encryptedRoomSymmetricKey.error?.message);
             } else if (!userEncryptedData.isSuccess) {
@@ -207,9 +217,9 @@ export class ChatService {
         }
     }
 
-    public async sendRoomSymmetricKey(key: string, requestId: string, roomId: string, roomName: string) {
+    public async sendRoomSymmetricKey(request: GetSymmetricKeyRequest) {
         try {
-            await this.connection.invoke("SendSymmetricKeyToRequestUser", key, requestId, roomId, roomName);
+            await this.connection.invoke("SendSymmetricKeyToRequestUser", request);
         } catch (error) {
             console.error('Error get the symmetric key:', error);
         }

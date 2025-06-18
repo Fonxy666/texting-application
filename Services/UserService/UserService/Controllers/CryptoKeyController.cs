@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNet.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Models;
 using UserService.Services.PrivateKeyFolder;
@@ -29,7 +29,7 @@ public class CryptoKeyController(
             var userId = (Guid)HttpContext.Items["UserId"]!;
 
             var privateKeyResponse = await privateKeyService.GetEncryptedKeyByUserIdAsync(userId);
-
+    
             if (privateKeyResponse is Failure)
             {
                 return BadRequest(privateKeyResponse);

@@ -14,9 +14,9 @@ public record KeyRequest(
     [Required(ErrorMessage = "Room name cannot be null.")]string RoomName
 );
 
-public record GetSymmetricKeyRequest(
+public record SendSymmetricKeyRequest(
     [Required(ErrorMessage = "Encrypted room key cannot be null.")]string EncryptedRoomKey,
-    [Required(ErrorMessage = "Connection id cannot be null.")]Guid ConnectionId,
+    [Required(ErrorMessage = "Connection id cannot be null.")]string ConnectionId,
     [Required(ErrorMessage = "Room id cannot be null.")]Guid RoomId,
     [Required(ErrorMessage = "Room name cannot be null.")]string RoomName
 );
