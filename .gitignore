@@ -479,6 +479,7 @@ $RECYCLE.BIN/
 **/.idea/
 /Services/UserService/UserService/vault_cluster_keys.json
 /Services/UserService/UserService/.env
+/Services/UserService/UserService/Avatars/*
 /Services/UserService/UserService/pgdata
 /Services/UserService/UserService/test_pgdata
 /Services/UserService/UserService/Vault_Data
