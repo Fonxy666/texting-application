@@ -1,8 +1,8 @@
 export interface ReceiveMessageResponse {
     user: string,
-    message: string,
-    messageTime: string,
-    userId?: string,
+    text: string,
+    sendTime: string,
+    senderId?: string,
     messageId?: string,
     seenList?: string[],
     roomId: string,
@@ -10,6 +10,12 @@ export interface ReceiveMessageResponse {
 }
 
 export interface RoomIdAndRoomNameResponse {
+    roomId: string,
+    roomName: string
+}
+
+export interface SymmetricKeyResponse {
+    encryptedRoomKey: string,
     roomId: string,
     roomName: string
 }

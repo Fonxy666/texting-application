@@ -39,6 +39,7 @@ public class MessageRepository(ChatContext context) : IMessageRepository
             .Select(m => new MessageDto(
                 m.MessageId,
                 m.SenderId,
+                m.RoomId,
                 m.Text,
                 m.SendTime,
                 m.SentAsAnonymous,

@@ -100,6 +100,8 @@ public class MessageController(
         try
         {
             var userId = (Guid)HttpContext.Items["UserId"]!;
+            Console.WriteLine(userId);
+            Console.WriteLine(request.MessageId);
             
             var result = await messageService.EditMessageSeen(request, userId);
             if (result is FailureWithMessage error)

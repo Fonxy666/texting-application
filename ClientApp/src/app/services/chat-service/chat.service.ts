@@ -52,13 +52,13 @@ export class ChatService {
         }
 
         this.connection.on("ReceiveMessage", async (response: ReceiveMessageResponse) => {
-            const { user, message, messageTime, userId, messageId, seenList, roomId, iv } = response;
+            const { user, text, sendTime, messageId, seenList, roomId, iv } = response;
             if (!this.messages[roomId]) {
                 this.messages[roomId] = [];
                 this.messagesInitialized$.next(roomId);
             }
             if (userId !== this.cookieService.get("UserId")) {
-                const messageObj = { encrypted: user !== "Textinger bot", messageData: { user, message, messageTime, userId, messageId, seenList, iv } };
+                const messageObj = { encrypted: user !== "Textinger bot", messageData: { user, text, sendTime, userId, messageId, seenList, iv } };
                 this.messages[roomId].push(messageObj);
         
                 if (user === "Textinger bot") {

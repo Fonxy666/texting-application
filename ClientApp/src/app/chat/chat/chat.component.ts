@@ -325,9 +325,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             if (!messagesResponse.isSuccess) {
                 return;
             }
-            
-            const userNames = messagesResponse.data.map((element: any) =>
-                this.userService.getUsername(element.senderId)
+
+            const userNames = messagesResponse.data.map((element: ReceiveMessageResponse) =>
+                this.userService.getUsername(element.senderId!)
             );
     
             forkJoin(userNames).subscribe(async (userNameData: any) => {
@@ -335,11 +335,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     encrypted: false,
                     messageData: {
                         messageId: element.messageId,
-                        user: element.sentAsAnonymous === true ? "Anonymous" : userNameData[index].username,
+                        user: element.sentAsAnonymous === true ? "Anonymous" : userNameData[index].data.userName,
                         userId: element.senderId,
                         message: await this.cryptoService.decryptMessage(element.text, decryptedRoomKey!, element.iv),
                         messageTime: element.sendTime,
-                        seenList: element.seen
+                        seenList: element.seenList
                     }
                 }));
     
