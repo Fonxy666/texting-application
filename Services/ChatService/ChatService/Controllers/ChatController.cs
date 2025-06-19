@@ -59,7 +59,7 @@ public class ChatController(
             var result = await roomService.UserIsTheCreatorAsync(userId, roomGuid);
             if (!result)
             {
-                return BadRequest(false);
+                return Ok(false);
             }
             
             return Ok(true);

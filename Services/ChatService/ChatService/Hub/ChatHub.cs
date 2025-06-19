@@ -56,7 +56,6 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IUserGr
     
     public async Task SendSymmetricKeyToRequestUser(SendSymmetricKeyRequest request)
     {
-        Console.WriteLine(request.ConnectionId);
         var response = new SendKeyResponse(request.EncryptedRoomKey, request.RoomId, request.RoomName);
         await Clients.Client(request.ConnectionId).SendAsync("GetSymmetricKey", response);
     }

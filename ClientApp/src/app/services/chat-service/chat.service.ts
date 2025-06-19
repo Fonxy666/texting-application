@@ -12,7 +12,7 @@ import { ErrorHandlerService } from '../error-handler-service/error-handler.serv
 import { CryptoService } from '../crypto-service/crypto.service';
 import { IndexedDBService } from '../db-service/indexed-dbservice.service';
 import { ChangeMessageRequest } from '../../model/user-credential-requests/user-credentials-requestsmodel.';
-import { ReceiveMessageResponse, RoomIdAndRoomNameResponse } from '../../model/responses/chat-responses.model';
+import { ReceiveMessageResponse, RoomIdAndRoomNameResponse, SymmetricKeyResponse } from '../../model/responses/chat-responses.model';
 import { ServerResponse } from '../../model/responses/shared-response.model';
 import { ChangePasswordForRoomRequest, CreateRoomRequest, GetMessagesRequest, JoinRoomRequest, StoreRoomSymmetricKeyRequest } from '../../model/room-requests/chat-requests.model';
 import { ConnectedUser } from '../../model/chat-models.model';
@@ -124,11 +124,11 @@ export class ChatService {
             }
         })
 
-        this.connection.on("GetSymmetricKey", async (encryptedKey: string, roomId: string, roomName: string) => {
-            this.setRoomCredentialsAndNavigate(roomName, roomId);
+        this.connection.on("GetSymmetricKey", async (response: SymmetricKeyResponse) => {
+            this.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
             const data: StoreRoomSymmetricKeyRequest = {
-                encryptedKey: encryptedKey,
-                roomId: roomId
+                encryptedKey: response.encryptedRoomKey,
+                roomId: response.roomId
             };
 
             await firstValueFrom(this.cryptoService.sendEncryptedRoomKey(data));

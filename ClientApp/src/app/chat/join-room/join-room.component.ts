@@ -158,7 +158,8 @@ export class JoinRoomComponent implements OnInit {
                             roomName: roomName
                         }
                         
-                        this.chatService.requestSymmetricRoomKey(request);
+                        let request2 = await this.chatService.requestSymmetricRoomKey(request);
+                        console.log(request2);
                     } else if (!keyResponse?.isSuccess && usersInRoom === 0) {
                         this.messageService.add({
                             severity: 'error',
