@@ -70,7 +70,7 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IUserGr
         {
             var response = new ReceiveMessageResponse(
                 userRoomConnection.User!,
-                request.Message,
+                request.Text,
                 DateTime.UtcNow,
                 parsedUserId,
                 parsedMessageId,
@@ -91,7 +91,7 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IUserGr
     {
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
         {
-            var response = new EditMessageResponse(request.Id, request.Message);
+            var response = new EditMessageResponse(request.Id, request.Text);
             await Clients.Group(userRoomConnection.Room!).SendAsync("ModifyMessage", response);
         }
     }

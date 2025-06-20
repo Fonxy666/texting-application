@@ -1,11 +1,11 @@
 export class MessageRequest {
-    constructor(public roomId: string, public message: string, public asAnonymous: boolean, public iv: string, public messageId?: string) { }
+    constructor(public roomId: string, public text: string, public asAnonymous: boolean, public iv: string, public messageId?: string) { }
 
-    static createWithId(roomId: string, message: string, asAnonymous: boolean, messageId: string, iv: string): MessageRequest {
-        return new MessageRequest(roomId, message, asAnonymous, messageId, iv);
+    static createWithId(roomId: string, text: string, asAnonymous: boolean, messageId: string, iv: string): MessageRequest {
+        return new MessageRequest(roomId, text, asAnonymous, messageId, iv);
     }
 
-    static createWithoutId(roomId: string, message: string, asAnonymous: boolean, iv: string): MessageRequest {
-        return new MessageRequest(roomId, message, asAnonymous, iv);
+    static createWithoutId(roomId: string, text: string, asAnonymous: boolean, iv: string): MessageRequest {
+        return new MessageRequest(roomId, text, asAnonymous, iv);
     }
 }

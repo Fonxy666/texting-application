@@ -29,8 +29,8 @@ public class MessageService(
         }
         
         var message = request.MessageId != null ? 
-            new Message(request.RoomId, userId, request.Message, new Guid(request.MessageId), request.AsAnonymous, request.Iv) : 
-            new Message(request.RoomId, userId, request.Message, request.AsAnonymous, request.Iv);
+            new Message(request.RoomId, userId, request.Text, new Guid(request.MessageId), request.AsAnonymous, request.Iv) : 
+            new Message(request.RoomId, userId, request.Text, request.AsAnonymous, request.Iv);
         
         
         var result = await messageRepository.SaveMessage(message);
@@ -66,7 +66,7 @@ public class MessageService(
             return new FailureWithMessage("You don't have permission.");
         }
         
-        existingMessage.ChangeMessageText(request.Message);
+        existingMessage.ChangeMessageText(request.Text);
         existingMessage.ChangeMessageIv(request.Iv);
 
         var result = await messageRepository.EditMessage(existingMessage);

@@ -10,7 +10,7 @@ export interface ChangeEmailRequest {
 
 export interface ChangeMessageRequest {
     id: string;
-    message: string;
+    text: string;
     iv: string;
 }
 

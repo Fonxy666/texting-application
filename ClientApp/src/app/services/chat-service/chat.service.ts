@@ -52,23 +52,30 @@ export class ChatService {
         }
 
         this.connection.on("ReceiveMessage", async (response: ReceiveMessageResponse) => {
-            const { user, text, sendTime, messageId, seenList, roomId, iv } = response;
+            const { userName, senderId, text, sendTime, messageId, seenList, roomId, iv } = response;
+
             if (!this.messages[roomId]) {
                 this.messages[roomId] = [];
                 this.messagesInitialized$.next(roomId);
             }
-            if (userId !== this.cookieService.get("UserId")) {
-                const messageObj = { encrypted: user !== "Textinger bot", messageData: { user, text, sendTime, userId, messageId, seenList, iv } };
+
+            if (senderId !== this.cookieService.get("UserId")) {
+                const messageObj = { encrypted: senderId !== "Textinger bot", messageData: { userName, senderId, text, sendTime, userId, messageId, seenList, iv } };
+
+                if (this.messages[roomId].some(m => m.messageData.text === text)) {
+                    return;
+                }
                 this.messages[roomId].push(messageObj);
         
-                if (user === "Textinger bot") {
+                if (senderId === "Textinger bot") {
                     setTimeout(() => {
                         this.removeBotMessage(roomId, messageId!);
                     }, 5000);
                 }
-              }
+            }
+
             if (this.currentRoom === roomId) {
-                this.messages$.next([...this.messages[roomId]]);
+                this.messages$.next(JSON.parse(JSON.stringify(this.messages[roomId])));
             }
         });
 
@@ -106,10 +113,7 @@ export class ChatService {
                 const keyToArrayBuffer = await this.cryptoService.exportCryptoKey(decryptedRoomKey);
                 const encryptRoomKeyForUser = await this.cryptoService.encryptSymmetricKey(keyToArrayBuffer, cryptoKeyUserPublicKey);
                 const bufferToBase64 = this.cryptoService.bufferToBase64(encryptRoomKeyForUser);
-                console.log(`bufferToBase64: ${bufferToBase64}`)
-                console.log(`userData.connectionId: ${userData.connectionId}`)
-                console.log(`userData.roomId: ${userData.roomId}`)
-                console.log(`userData.roomName: ${userData.roomName}`)
+                
                 const request: GetSymmetricKeyRequest = {
                     encryptedRoomKey: bufferToBase64,
                     connectionId: userData.connectionId,
@@ -125,13 +129,16 @@ export class ChatService {
         })
 
         this.connection.on("GetSymmetricKey", async (response: SymmetricKeyResponse) => {
-            this.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
             const data: StoreRoomSymmetricKeyRequest = {
                 encryptedKey: response.encryptedRoomKey,
                 roomId: response.roomId
             };
 
-            await firstValueFrom(this.cryptoService.sendEncryptedRoomKey(data));
+            let result = await firstValueFrom(this.cryptoService.sendEncryptedRoomKey(data));
+            
+            if (result.isSuccess) {
+                this.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
+            }
         })
     }
 

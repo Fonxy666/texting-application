@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { ChatService } from '../../services/chat-service/chat.service';
 import { Router } from '@angular/router';
 import { combineLatest, firstValueFrom, forkJoin, from, of, Subscription } from 'rxjs';
@@ -40,7 +40,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     searchTerm: string = '';
     searchTermForFriends: string = '';
     messageModifyBool: boolean = false;
-    messageModifyRequest: ChangeMessageRequest = {id: "", message: "", iv: ""};
+    messageModifyRequest: ChangeMessageRequest = {id: "", text: "", iv: ""};
     isPageVisible = true;
     imageCount: number = 0;
     userIsTheCreator: boolean = false;
@@ -66,7 +66,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         private mediaService: MediaService,
         private userService: UserService,
         private cryptoService: CryptoService,
-        private dbService: IndexedDBService
+        private dbService: IndexedDBService,
+        private cdRef: ChangeDetectorRef
     ) { }
 
     messages: any[] = [];
@@ -101,8 +102,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
                 if (innerData.encrypted) {
                     try {
-                        innerData.messageData.message = await this.cryptoService.decryptMessage(
-                            innerData.messageData.message,
+                        innerData.messageData.text = await this.cryptoService.decryptMessage(
+                            innerData.messageData.text,
                             decryptedRoomKey,
                             innerData.messageData.iv
                         );
@@ -150,7 +151,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
             this.messages.forEach(async (data) => {
                 if (data.messageData.messageId == messageId && data.encrypted) {
-                    data.messageData.message = await this.cryptoService.decryptMessage(messageText, decryptedRoomKey!, data.messageData.iv);
+                    data.messageData.text = await this.cryptoService.decryptMessage(messageText, decryptedRoomKey!, data.messageData.iv);
                 }
             })
         });
@@ -168,7 +169,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.chatService.connection.on("DeleteMessage", (messageId: string) => {
             this.messages.forEach((data: any) => {
                 if (data.messageData.messageId == messageId) {
-                    data.messageData.message = "Deleted message.";
+                    data.messageData.text = "Deleted message.";
                 }
             });
         });
@@ -231,6 +232,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             this.mediaService.getAvatarImage(userId).subscribe(
                 (avatar) => {
                     this.avatars[userId] = avatar;
+                    this.cdRef.detectChanges();
                 })
         }
     };
@@ -270,9 +272,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                         messageData: {
                             roomId: res.data.roomId,
                             messageId: res.data.messageId,
-                            userId: res.data.senderId,
-                            message: res.data.text,
-                            messageTime: res.data.sendTime,
+                            senderId: res.data.senderId,
+                            text: res.data.text,
+                            sendTime: res.data.sendTime,
                             seenList: res.data.seen,
                             iv: res.data.iv
                         }
@@ -335,10 +337,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     encrypted: false,
                     messageData: {
                         messageId: element.messageId,
-                        user: element.sentAsAnonymous === true ? "Anonymous" : userNameData[index].data.userName,
-                        userId: element.senderId,
-                        message: await this.cryptoService.decryptMessage(element.text, decryptedRoomKey!, element.iv),
-                        messageTime: element.sendTime,
+                        userName: element.sentAsAnonymous === true ? "Anonymous" : userNameData[index].data.userName,
+                        senderId: element.senderId,
+                        text: await this.cryptoService.decryptMessage(element.text, decryptedRoomKey!, element.iv),
+                        sendTime: element.sendTime,
                         seenList: element.seenList
                     }
                 }));
@@ -475,11 +477,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         const slicedMessages = this.chatService.messages[this.roomId].slice(index + 1);
 
         for (const message of slicedMessages) {
-            if (message.seenList == null) {
+            if (message.messageData.seenList == null) {
                 continue;
             }
 
-            if (message.seenList.includes(userId)) {
+            if (message.messageData.seenList.includes(userId)) {
                 return false;
             }
         }

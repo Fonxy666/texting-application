@@ -1,5 +1,5 @@
 export interface ReceiveMessageResponse {
-    user: string,
+    userName: string,
     text: string,
     sendTime: string,
     senderId?: string,
