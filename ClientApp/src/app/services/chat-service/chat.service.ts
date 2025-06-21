@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject, firstValueFrom, Observable, Subject } from 'rxjs';
-import { MessageRequest } from '../../model/message-requests/MessageRequest';
+import { ChangeMessageSeenHtttpRequest, ChangeMessageSeenWebSocketRequest, MessageRequest } from '../../model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
-import { ChangeMessageSeenRequest } from '../../model/message-requests/ChangeMessageSeenRequest';
 import { Router } from '@angular/router';
 import { UserService } from '../user-service/user.service';
 import { FriendService } from '../friend-service/friend.service';
@@ -248,7 +247,7 @@ export class ChatService {
         }
     }
 
-    public async modifyMessageSeen(request: ChangeMessageSeenRequest) {
+    public async modifyMessageSeen(request: ChangeMessageSeenWebSocketRequest ) {
         try {
             await this.connection.invoke("ModifyMessageSeen", request);
         } catch (error) {
@@ -363,7 +362,7 @@ export class ChatService {
         )
     }
 
-    editMessageSeen(request: ChangeMessageSeenRequest): Observable<ServerResponse<void>> {
+    editMessageSeen(request: ChangeMessageSeenHtttpRequest): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
             this.http.patch<ServerResponse<void>>(`/api/v1/Message/EditMessageSeen`, request, { withCredentials: true })
         )

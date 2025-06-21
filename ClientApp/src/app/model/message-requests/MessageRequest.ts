@@ -9,3 +9,11 @@ export class MessageRequest {
         return new MessageRequest(roomId, text, asAnonymous, iv);
     }
 }
+
+export interface ChangeMessageSeenHtttpRequest {
+    messageId: string
+}
+
+export interface ChangeMessageSeenWebSocketRequest {
+    userId: string
+}

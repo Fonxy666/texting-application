@@ -3,9 +3,8 @@ import { ChatService } from '../../services/chat-service/chat.service';
 import { Router } from '@angular/router';
 import { combineLatest, firstValueFrom, forkJoin, from, of, Subscription } from 'rxjs';
 import { filter, switchMap, take } from 'rxjs/operators';
-import { MessageRequest } from '../../model/message-requests/MessageRequest';
+import { ChangeMessageSeenHtttpRequest, ChangeMessageSeenWebSocketRequest, MessageRequest } from '../../model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
-import { ChangeMessageSeenRequest } from '../../model/message-requests/ChangeMessageSeenRequest';
 import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { passwordMatchValidator, passwordValidator } from '../../validators/ValidPasswordValidator';
@@ -158,10 +157,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
         this.chatService.connection.on("ModifyMessageSeen", (userIdFromSignalR: string) => {
             this.chatService.messages[this.roomId].forEach((message) => {
-                if (!message.seenList) {
+                if (!message.messageData.seenList) {
                     return;
-                } else if (!message.seenList.includes(userIdFromSignalR)) {
-                    message.seenList.push(userIdFromSignalR);
+                } else if (!message.messageData.seenList.includes(userIdFromSignalR)) {
+                    message.messageData.seenList.push(userIdFromSignalR);
                 }
             })
         });
@@ -413,26 +412,18 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.messageModifyBool = false;
     };
 
-    sendMessageSeenModifyHttpRequest(request: ChangeMessageSeenRequest) {
+    sendMessageSeenModifyHttpRequest(request: ChangeMessageSeenHtttpRequest ) {
         this.chatService.editMessageSeen(request)
         .subscribe(() => {
             this.chatService.messages[this.roomId].forEach((message: any) => {
-                if (message.messageId == request.userId) {
+                if (message.messageId == request.messageId) {
                     this.inputMessage = "";
                     this.messageModifyBool = false;
                 }
             })
         },
         (error) => {
-            if (error.status === 400) {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'Something unusual happened.'
-                });
-            } else {
-                console.error("An error occurred:", error);
-            }
+            console.error("An error occurred:", error);
         });
     };
 
@@ -462,13 +453,18 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     onFocus(): void {
         this.chatService.messages[this.roomId].forEach((message) => {
             const userId = this.userId;
-            const anonym = this.cookieService.get("Anonymous") == "True";
-            if (!message.seenList) {
+            const anonym = this.cookieService.get("Anonymous") === "True";
+            if (!message.messageData.seenList || anonym) {
                 return;
-            } else if (!message.seenList.includes(userId)) {
-                var request = new ChangeMessageSeenRequest(userId, anonym, message.messageId);
-                this.chatService.modifyMessageSeen(request);
-                this.sendMessageSeenModifyHttpRequest(request);
+            } else if (!message.messageData.seenList.includes(userId)) {
+                const httpRequest: ChangeMessageSeenHtttpRequest = {
+                    messageId: message.messageData.messageId
+                };
+                const webbSocketRequest: ChangeMessageSeenWebSocketRequest = {
+                    userId: this.userId
+                }
+                this.chatService.modifyMessageSeen(webbSocketRequest);
+                this.sendMessageSeenModifyHttpRequest(httpRequest);
             }
         })
     };

@@ -94,7 +94,9 @@ public class MessageController(
         }
     }
     
-    [HttpPatch("EditMessageSeen"), Authorize(Roles = "User, Admin")]
+    [HttpPatch("EditMessageSeen")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
     public async Task<ActionResult<ChatMessageResponse>> ModifyMessageSeen([FromBody]EditMessageSeenRequest request)
     {
         try
@@ -122,7 +124,9 @@ public class MessageController(
         }
     }
     
-    [HttpDelete("DeleteMessage"), Authorize(Roles = "User, Admin")]
+    [HttpDelete("DeleteMessage")]
+    [Authorize(Roles = "User, Admin")]
+    [RequireUserIdCookie]
     public async Task<ActionResult<ChatMessageResponse>> DeleteMessage([FromQuery]Guid messageId)
     {
         try
