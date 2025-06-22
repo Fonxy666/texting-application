@@ -99,7 +99,9 @@ public class MessageService(
 
     public async Task<ResponseBase> DeleteMessage(Guid id, Guid userId)
     {
+        Console.WriteLine(id);
         var existingMessage = await messageRepository.GetMessage(id);
+        
         if (existingMessage is null)
         {
             return new FailureWithMessage("There is no message with the given id.");

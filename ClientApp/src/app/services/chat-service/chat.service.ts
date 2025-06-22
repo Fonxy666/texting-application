@@ -370,7 +370,7 @@ export class ChatService {
 
     messageDelete(messageId: string): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.delete<ServerResponse<void>>(`/api/v1/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
+            this.http.delete<ServerResponse<void>>(`/api/v1/Message/DeleteMessage?messageId=${messageId}`, { withCredentials: true})
         )
     }
 

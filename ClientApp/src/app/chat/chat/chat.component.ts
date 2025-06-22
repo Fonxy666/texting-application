@@ -395,15 +395,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     })
                 },
                 (error) => {
-                    if (error.status === 400) {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: 'Something unusual happened.'
-                        });
-                    } else {
-                        console.error("An error occurred:", error);
-                    }
+                    console.error("An error occurred:", error);
                 });
     };
 
@@ -427,9 +419,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         });
     };
 
-    handleMessageDelete(messageId: any) {
+    handleMessageDelete(messageId: string) {
+        console.log(messageId);
         this.chatService.messageDelete(messageId)
-        .subscribe(() => {
+        .subscribe((res) => {
+            console.log(res.isSuccess)
             this.chatService.messages[this.roomId].forEach((message: any) => {
                 if (message.messageData.messageId == messageId) {
                     this.chatService.deleteMessage(messageId);

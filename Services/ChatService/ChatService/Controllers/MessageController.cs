@@ -132,6 +132,7 @@ public class MessageController(
         try
         {
             var userId = (Guid)HttpContext.Items["UserId"]!;
+            Console.WriteLine(messageId);
             
             var result = await messageService.DeleteMessage(messageId, userId);
             if (result is FailureWithMessage error)
