@@ -101,6 +101,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
                 if (innerData.encrypted) {
                     try {
+                        console.log(innerData);
+                        console.log(innerData.messageData.text);
                         innerData.messageData.text = await this.cryptoService.decryptMessage(
                             innerData.messageData.text,
                             decryptedRoomKey,
@@ -160,6 +162,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 if (!message.messageData.seenList) {
                     return;
                 } else if (!message.messageData.seenList.includes(userIdFromSignalR)) {
+                    console.log(userIdFromSignalR)
                     message.messageData.seenList.push(userIdFromSignalR);
                 }
             })
@@ -237,6 +240,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     async sendMessage() {
+        if (this.inputMessage.trim() === "") {
+            return;
+        }
         const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!, this.roomId);
 
         if (decryptedRoomKey === null) {
@@ -330,6 +336,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             const userNames = messagesResponse.data.map((element: ReceiveMessageResponse) =>
                 this.userService.getUsername(element.senderId!)
             );
+
+            messagesResponse.data.forEach(message => {
+                this.loadAvatarsFromMessages(message.senderId!);
+            })
     
             forkJoin(userNames).subscribe(async (userNameData: any) => {
                 const fetchedMessages = messagesResponse.data.map(async (element: any, index: number) => ({
@@ -474,6 +484,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             if (message.messageData.seenList.includes(userId)) {
                 return false;
             }
+            console.log(message);
         }
 
         this.imageCount++;

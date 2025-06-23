@@ -98,9 +98,6 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IUserGr
     
     public async Task ModifyMessageSeen(MessageSeenRequest request)
     {
-        Console.WriteLine("------------");
-        Console.WriteLine($"usserId: {request.UserId}");
-        Console.WriteLine("------------");
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
         {
             await Clients.Group(userRoomConnection.Room!).SendAsync("ModifyMessageSeen", request.UserId);

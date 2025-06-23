@@ -34,12 +34,11 @@ export class JoinRoomComponent implements OnInit {
 
     backgroundVideo: string = "./assets/videos/white_black_video.mp4";
     joinRoomForm!: FormGroup;
-    isSunActive: boolean = true;
-    isMoonActive: boolean = false;
     userId: string = this.cookieService.get("UserId");
     userName: string = "";
     animation: boolean = true;
     showPassword: boolean = false;
+    isLoading: boolean = false;
 
     ngOnInit() : void {
         this.animation = this.cookieService.get("Animation") == "True";
@@ -80,10 +79,6 @@ export class JoinRoomComponent implements OnInit {
             room: ['', Validators.required],
             password: ['', Validators.required]
         })
-
-        setInterval(() => {
-            this.toggleImageClasses();
-        }, 10000);
     };
 
     togglePasswordVisibility(event: Event): void {
@@ -98,10 +93,6 @@ export class JoinRoomComponent implements OnInit {
         this.renderer.removeClass(this.passwordInputToggle.nativeElement, iconClassToRemove);
         this.renderer.addClass(this.passwordInputToggle.nativeElement, iconClassToAdd);
     }
-
-    toggleImageClasses() {
-        this.isSunActive = !this.isSunActive;
-    };
 
     createForm() {
         const returningValue: JoinRoomRequest = {
@@ -141,6 +132,7 @@ export class JoinRoomComponent implements OnInit {
                             )
                     );
   
+                    console.log(keyResponse)
                     if (userId && keyResponse?.isSuccess && awaitedUserInputKey) {
                         if (this.chatService.userInRoom()) {
                             this.messageService.add({
@@ -158,7 +150,7 @@ export class JoinRoomComponent implements OnInit {
                             roomName: roomName
                         }
                         
-                        var requestResult = await this.chatService.requestSymmetricRoomKey(request);
+                       await this.chatService.requestSymmetricRoomKey(request);
                         
                     } else if (!keyResponse?.isSuccess && usersInRoom === 0) {
                         this.messageService.add({

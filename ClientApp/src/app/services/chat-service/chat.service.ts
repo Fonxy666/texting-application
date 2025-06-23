@@ -74,7 +74,7 @@ export class ChatService {
             }
 
             if (this.currentRoom === roomId) {
-                this.messages$.next(JSON.parse(JSON.stringify(this.messages[roomId])));
+                this.messages$.next(...[this.messages[roomId]]);
             }
         });
 
@@ -136,7 +136,12 @@ export class ChatService {
             let result = await firstValueFrom(this.cryptoService.sendEncryptedRoomKey(data));
             
             if (result.isSuccess) {
-                this.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
+                const getKeyResult = await this.dbService.getEncryptionKey(userId);
+                this.cryptoService.getUserPrivateKeyForRoom(response.roomId).subscribe(res => {
+                    if (res.isSuccess && getKeyResult !== null) {
+                        this.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
+                    }
+                });
             }
         })
     }
