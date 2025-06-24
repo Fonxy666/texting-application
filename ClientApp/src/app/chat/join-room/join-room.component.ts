@@ -132,7 +132,6 @@ export class JoinRoomComponent implements OnInit {
                             )
                     );
   
-                    console.log(keyResponse)
                     if (userId && keyResponse?.isSuccess && awaitedUserInputKey) {
                         if (this.chatService.userInRoom()) {
                             this.messageService.add({

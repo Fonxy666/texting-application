@@ -40,10 +40,11 @@ export class NavBarComponent implements OnInit {
     loggedIn: boolean = false;
 
     ngOnInit(): void {
-        
         this.isLoggedIn();
         this.checkScreenSize();
-        
+
+        this.roomName = sessionStorage.getItem("room")?? "";
+        this.roomId = sessionStorage.getItem("roomId")?? "";
         this.userId = this.cookieService.get("UserId");
 
         if (this.loggedIn) {

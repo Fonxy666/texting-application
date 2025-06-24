@@ -98,26 +98,30 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 }
             
                 const decryptedMessages = await Promise.all(data.map(async innerData => {
+                    if (innerData.encrypted) {
+                        try {
+                            const decryptedText = await this.cryptoService.decryptMessage(
+                                innerData.messageData.text,
+                                decryptedRoomKey,
+                                innerData.messageData.iv
+                            );
 
-                if (innerData.encrypted) {
-                    try {
-                        console.log(innerData);
-                        console.log(innerData.messageData.text);
-                        innerData.messageData.text = await this.cryptoService.decryptMessage(
-                            innerData.messageData.text,
-                            decryptedRoomKey,
-                            innerData.messageData.iv
-                        );
-
-                        innerData.encrypted = false;
+                            return {
+                                ...innerData,
+                                encrypted: false,
+                                messageData: {
+                                    ...innerData.messageData,
+                                    text: decryptedText
+                                }
+                            };
+                        } catch (error) {
+                            console.log("Failed to decrypt message:", innerData, error);
+                            return innerData;
+                        }
+                    } else {
                         return innerData;
-                    } catch (error) {
-                        console.log("Failed to decrypt message:", innerData, error);
                     }
-                } else {
-                    return innerData;
-                }
-            }));
+                }));
         
             this.messages = decryptedMessages.filter(Boolean);
         
@@ -162,7 +166,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 if (!message.messageData.seenList) {
                     return;
                 } else if (!message.messageData.seenList.includes(userIdFromSignalR)) {
-                    console.log(userIdFromSignalR)
                     message.messageData.seenList.push(userIdFromSignalR);
                 }
             })
@@ -484,7 +487,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             if (message.messageData.seenList.includes(userId)) {
                 return false;
             }
-            console.log(message);
         }
 
         this.imageCount++;
