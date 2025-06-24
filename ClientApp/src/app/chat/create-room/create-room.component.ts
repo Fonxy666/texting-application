@@ -35,6 +35,7 @@ export class CreateRoomComponent implements OnInit {
     isMoonActive: boolean = false;
     showPassword: boolean = false;
     publicKey: string = this.cookieService.get("PublicKey");
+    isLoading: boolean = false;
 
     ngOnInit(): void {
         this.animation = this.cookieService.get("Animation") == "True";
@@ -89,13 +90,18 @@ export class CreateRoomComponent implements OnInit {
     }
 
     async callSendcreateRoomRequest() {
+        this.isLoading = true;
         this.chatService.registerRoom(await this.createForm()).subscribe(
             response => {
+                this.isLoading = false;
+
                 if (response.isSuccess) {
                     this.router.navigate(['join-room'], { queryParams: { createRoom: 'true' } });
                 }
             },
             error => {
+                this.isLoading = false;
+
                 if (error.error && error.error.error === "This room's name already taken.") {
                     this.messageService.add({
                         severity: 'error',

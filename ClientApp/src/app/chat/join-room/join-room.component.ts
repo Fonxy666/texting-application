@@ -5,7 +5,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { ChatService } from '../../services/chat-service/chat.service';
 import { MessageService } from 'primeng/api';
 import { CryptoService } from '../../services/crypto-service/crypto.service';
-import { catchError, firstValueFrom, from, of, tap } from 'rxjs';
+import { catchError, firstValueFrom, from, of } from 'rxjs';
 import { IndexedDBService } from '../../services/db-service/indexed-dbservice.service';
 import { JoinRoomRequest } from '../../model/room-requests/chat-requests.model';
 import { RoomKeyRequest } from '../../model/key-requests/key-requests.model';
@@ -104,6 +104,8 @@ export class JoinRoomComponent implements OnInit {
     };
 
     joinRoom() {
+        this.isLoading = true;
+
         this.chatService.joinToRoom(this.createForm()).subscribe(
             async response => {
                 if (response.isSuccess) {
@@ -141,6 +143,7 @@ export class JoinRoomComponent implements OnInit {
                             });
                         }
                         
+                        this.isLoading = false;
                         this.chatService.setRoomCredentialsAndNavigate(roomName, roomId);
                     } else if (!keyResponse?.isSuccess && usersInRoom > 0) {
                         const request: RoomKeyRequest = {
@@ -149,9 +152,12 @@ export class JoinRoomComponent implements OnInit {
                             roomName: roomName
                         }
                         
-                       await this.chatService.requestSymmetricRoomKey(request);
+                        this.isLoading = false;
+                        await this.chatService.requestSymmetricRoomKey(request);
                         
                     } else if (!keyResponse?.isSuccess && usersInRoom === 0) {
+                        this.isLoading = false;
+                        
                         this.messageService.add({
                             severity: 'error',
                             summary: 'Error',
@@ -161,6 +167,8 @@ export class JoinRoomComponent implements OnInit {
                 }
             },
             error => {
+                this.isLoading = false;
+
                 if (error.error === 'Incorrect login credentials') {
                     this.messageService.add({
                         severity: 'error',
