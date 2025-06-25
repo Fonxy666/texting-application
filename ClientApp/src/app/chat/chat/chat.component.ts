@@ -33,8 +33,8 @@ import { ServerResponse } from '../../model/responses/shared-response.model';
 export class ChatComponent implements OnInit, AfterViewChecked {
     userId: string = "";
     roomId: string = "";
+    roomName: string = "";
     inputMessage: string = "";
-    roomName: string = sessionStorage.getItem("room")?? "";
     connectedUsers: ConnectedUser[] = [];
     searchTerm: string = '';
     searchTermForFriends: string = '';
@@ -48,7 +48,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     private subscriptions: Subscription = new Subscription();
     onlineFriends: ShowFriendRequestData[] | undefined;
     userKey: string | null = null;
-
+    
     @ViewChild('scrollMe') public scrollContainer!: ElementRef;
     @ViewChild('messageInput') public inputElement!: ElementRef;
 
@@ -74,55 +74,52 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     changePasswordRequest!: FormGroup;
     
     ngOnInit(): void {
-        this.userId = this.cookieService.get("UserId");
-        this.roomId = sessionStorage.getItem("roomId")!;
-        this.roomName = sessionStorage.getItem("room")!;
+        this.userId = this.cookieService.get("UserId")?? "";
+        this.roomId = sessionStorage.getItem("roomId")?? "";
+        this.roomName = sessionStorage.getItem("room")?? "";
 
         this.chatService.setCurrentRoom(this.roomId);
 
-        from(this.dbService.getEncryptionKey(this.userId)).pipe(
-            filter((key): key is string => key !== null),
-            switchMap(key => {
-                this.userKey = key;
-                return combineLatest([
-                    of(key),
-                    this.chatService.messages$
-                ]);
-            })
-            ).subscribe(async ([key, data]) => {
-                if (data.length < 1 || this.roomId === null) return;
-                const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(key, this.roomId);
-                if (!decryptedRoomKey) {
-                    console.error("Cannot get room key.");
-                    return;
-                }
-            
-                const decryptedMessages = await Promise.all(data.map(async innerData => {
-                    if (innerData.encrypted) {
+        this.chatService.messages$.subscribe(async data => {
+            if (data.length < 1 || this.roomId === "") {
+                return;
+            }
+
+            const decryptedMessages = await Promise.all(
+                data.map(async message => {
+                    if (message.encrypted) {
                         try {
+                            console.log(this.roomId);
+                            const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!, this.roomId);
+                            if (!decryptedRoomKey) {
+                                console.error("Cannot get room key.");
+                                return;
+                            }
+
                             const decryptedText = await this.cryptoService.decryptMessage(
-                                innerData.messageData.text,
+                                message.messageData.text,
                                 decryptedRoomKey,
-                                innerData.messageData.iv
+                                message.messageData.iv
                             );
 
                             return {
-                                ...innerData,
+                                ...message,
                                 encrypted: false,
                                 messageData: {
-                                    ...innerData.messageData,
+                                    ...message.messageData,
                                     text: decryptedText
                                 }
                             };
                         } catch (error) {
-                            console.log("Failed to decrypt message:", innerData, error);
-                            return innerData;
+                            console.log("Failed to decrypt message:", message, error);
+                            return message;
                         }
                     } else {
-                        return innerData;
+                        return message;
                     }
-                }));
-        
+                })
+            )
+            
             this.messages = decryptedMessages.filter(Boolean);
         
             this.messages.forEach(() => {
@@ -130,7 +127,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     this.avatars[this.userId] = image;
                 });
             });
-        });
+        })
 
         if (this.roomId) {
                 this.subscriptions.add(
@@ -300,8 +297,11 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.chatService.leaveChat()
         .then(() => {
             if (deleted) {
-                this.router.navigate(['/join-room'])
+                this.router.navigate(['/join-room']);
             };
+            this.userId = "";
+            this.roomId = "";
+            this.roomName = "";
         }).catch((err) => {
             console.log(err);
         })

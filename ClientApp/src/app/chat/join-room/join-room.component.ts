@@ -145,6 +145,7 @@ export class JoinRoomComponent implements OnInit {
                         
                         this.isLoading = false;
                         this.chatService.setRoomCredentialsAndNavigate(roomName, roomId);
+                        
                     } else if (!keyResponse?.isSuccess && usersInRoom > 0) {
                         const request: RoomKeyRequest = {
                             roomId: roomId,
@@ -168,7 +169,6 @@ export class JoinRoomComponent implements OnInit {
             },
             error => {
                 this.isLoading = false;
-
                 if (error.error === 'Incorrect login credentials') {
                     this.messageService.add({
                         severity: 'error',

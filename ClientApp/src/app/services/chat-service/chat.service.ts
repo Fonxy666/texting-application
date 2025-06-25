@@ -46,6 +46,7 @@ export class ChatService {
             .build();
 
         let userId = this.cookieService.get("UserId");
+
         if (userId !== "") {
             this.initializeConnection();
         }
@@ -61,7 +62,7 @@ export class ChatService {
             if (senderId !== this.cookieService.get("UserId")) {
                 const messageObj = { encrypted: senderId !== "Textinger bot", messageData: { userName, senderId, text, sendTime, userId, messageId, seenList, iv } };
 
-                if (this.messages[roomId].some(m => m.messageData.text === text)) {
+                if (this.messages[roomId].some(m => m.messageData.messageId === messageId)) {
                     return;
                 }
                 this.messages[roomId].push(messageObj);
@@ -73,8 +74,9 @@ export class ChatService {
                 }
             }
 
+            console.log(this.currentRoom);
             if (this.currentRoom === roomId) {
-                this.messages$.next(...[this.messages[roomId]]);
+                this.messages$.next(this.messages[roomId]);
             }
         });
 
@@ -156,6 +158,7 @@ export class ChatService {
       }
 
     public setCurrentRoom(roomId: string) {
+        this.currentRoom = null;
         this.currentRoom = roomId;
         this.messages$.next(this.messages[roomId] || []);
     }
@@ -280,7 +283,7 @@ export class ChatService {
 
     public async leaveChat() {
         try {
-            this.removeSessionStates()
+            this.removeSessionStates();
             this.messages[this.currentRoom!] = [];
             await this.connection.stop();
             console.log('Chat-SignalR connection stopped.');
