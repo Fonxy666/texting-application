@@ -31,3 +31,13 @@ export interface ChatRoomInviteRequest {
     senderName: string;
     roomKey?: string;
 }
+
+export interface ChatRoomInviteResponse {
+    roomId: string;
+    roomName: string;
+    receiverName: string;
+    senderId: string;
+    receiverId: string;
+    senderName: string;
+    roomKey?: string;
+}

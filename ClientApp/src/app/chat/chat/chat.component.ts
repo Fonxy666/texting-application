@@ -418,7 +418,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
     sendMessageSeenModifyHttpRequest(request: ChangeMessageSeenHtttpRequest ) {
         this.chatService.editMessageSeen(request)
-        .subscribe(() => {
+        .subscribe(_ => {
             this.chatService.messages[this.roomId].forEach((message: any) => {
                 if (message.messageId == request.messageId) {
                     this.inputMessage = "";
@@ -435,7 +435,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         console.log(messageId);
         this.chatService.messageDelete(messageId)
         .subscribe((res) => {
-            console.log(res.isSuccess)
             this.chatService.messages[this.roomId].forEach((message: any) => {
                 if (message.messageData.messageId == messageId) {
                     this.chatService.deleteMessage(messageId);
@@ -592,14 +591,13 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         })
 
         await firstValueFrom(this.cryptoService.userHaveKeyForRoom(receiverName, sessionStorage.getItem("roomId")!))
-        .then(() => {
+        .then(_ => {
             var request: ChatRoomInviteRequest = {
                 roomId: sessionStorage.getItem("roomId")!,
                 roomName: sessionStorage.getItem("room")!,
                 receiverName: receiverName,
                 senderId: this.userId!,
                 senderName: userName
-                
             }
             this.friendService.sendChatRoomInvite(request);
         })

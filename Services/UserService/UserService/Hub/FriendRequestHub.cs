@@ -120,17 +120,13 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, MainData
             .Where(u => u.UserName == request.ReceiverName)
             .Select(u => u.Id)
             .FirstOrDefaultAsync();
+
+        var response = new ChatRoomInviteResponse(request.RoomId, request.RoomName, request.ReceiverName, receiverId.ToString(),
+            request.SenderId, request.SenderName, request.RoomKey);
         
         if (Connections.TryGetValue(receiverId.ToString(), out var connectionId))
         {
-            if (request.RoomKey != null)
-            {
-                await Clients.Client(connectionId).SendAsync("ReceiveChatRoomInvite", request);
-            }
-            else
-            {
-                await Clients.Client(connectionId).SendAsync("ReceiveChatRoomInvite", request);
-            }
+            await Clients.Client(connectionId).SendAsync("ReceiveChatRoomInvite", response);
         }
     }
 }
