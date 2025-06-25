@@ -89,7 +89,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 data.map(async message => {
                     if (message.encrypted) {
                         try {
-                            console.log(this.roomId);
                             const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!, this.roomId);
                             if (!decryptedRoomKey) {
                                 console.error("Cannot get room key.");
@@ -477,6 +476,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     examineIfNextMessageNotContainsUserId(userId: string, index: number) {
+        if (this.chatService.messages[this.roomId] === undefined) {
+            return;
+        }
+
         const slicedMessages = this.chatService.messages[this.roomId].slice(index + 1);
 
         for (const message of slicedMessages) {

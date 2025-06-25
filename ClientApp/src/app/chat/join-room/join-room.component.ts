@@ -169,13 +169,11 @@ export class JoinRoomComponent implements OnInit {
             },
             error => {
                 this.isLoading = false;
-                if (error.error === 'Incorrect login credentials') {
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: 'Invalid Roomname or password.'
-                    });
-                }
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Invalid Roomname or password.'
+                });
             }
         )
     };

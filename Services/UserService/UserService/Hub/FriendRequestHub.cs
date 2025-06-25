@@ -41,6 +41,7 @@ public class FriendRequestHub(UserManager<ApplicationUser> userManager, MainData
                         fr.AcceptedTime,
                         fr.Sender!.UserName!,
                         fr.SenderId))
+                    .ToList()
             })
             .SingleOrDefaultAsync();
 

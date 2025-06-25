@@ -74,7 +74,6 @@ export class ChatService {
                 }
             }
 
-            console.log(this.currentRoom);
             if (this.currentRoom === roomId) {
                 this.messages$.next(this.messages[roomId]);
             }
