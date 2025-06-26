@@ -590,8 +590,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
             }
         })
 
-        await firstValueFrom(this.cryptoService.userHaveKeyForRoom(receiverName, sessionStorage.getItem("roomId")!))
-        .then(_ => {
+        try {
+            await firstValueFrom(this.cryptoService.userHaveKeyForRoom(receiverName, sessionStorage.getItem("roomId")!));
+
             var request: ChatRoomInviteRequest = {
                 roomId: sessionStorage.getItem("roomId")!,
                 roomName: sessionStorage.getItem("room")!,
@@ -599,27 +600,23 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 senderId: this.userId!,
                 senderName: userName
             }
-            this.friendService.sendChatRoomInvite(request);
-        })
-            .catch(async err => {
-                if (err.error !== `There is no key or user with this Username: ${receiverName}`) {
-                    return;
-                }
 
+            this.friendService.sendChatRoomInvite(request);
+        } catch (error: any) {
+            if (error.error.message === "The user don't have the key.") {
+                const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!, this.roomId);
+                
+                if (decryptedRoomKey === null) {
+                    console.error("Cannot get room key.");
+                }
                 const receiverObject = await firstValueFrom(this.cryptoService.getPublicKey(receiverName));
                 if (receiverObject.isSuccess) {
-                    const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!, this.roomId);
-
-                    if (decryptedRoomKey === null) {
-                        console.error("Cannot get room key.");
-                    }
-
                     const keyToArrayBuffer = await this.cryptoService.exportCryptoKey(decryptedRoomKey!);
-                    const receiverPublicKey = receiverObject.message;
+                    const receiverPublicKey = receiverObject.data.publicKey;
                     const cryptoKeyUserPublicKey = await this.cryptoService.importPublicKeyFromBase64(receiverPublicKey);
                     const encryptRoomKeyForUser = await this.cryptoService.encryptSymmetricKey(keyToArrayBuffer, cryptoKeyUserPublicKey);
                     const bufferToBase64 = this.cryptoService.bufferToBase64(encryptRoomKeyForUser);
-    
+
                     var request: ChatRoomInviteRequest = {
                         roomId: sessionStorage.getItem("roomId")!,
                         roomName: sessionStorage.getItem("room")!,
@@ -630,13 +627,56 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     }
                     this.friendService.sendChatRoomInvite(request)
                 }
-            });
-
-
+            }
+        }
+        
         this.messageService.add({
             severity: 'success',
             summary: 'Success',
             detail: `Room invite successfully sent to ${receiverName}.`, styleClass: 'ui-toast-message-success'
         });
+
+        /*firstValueFrom(this.cryptoService.userHaveKeyForRoom(receiverName, sessionStorage.getItem("roomId")!))
+        .then(_ => {
+            var request: ChatRoomInviteRequest = {
+                roomId: sessionStorage.getItem("roomId")!,
+                roomName: sessionStorage.getItem("room")!,
+                receiverName: receiverName,
+                senderId: this.userId!,
+                senderName: userName
+            }
+            this.friendService.sendChatRoomInvite(request);
+        })
+        .catch(async err => {
+            if (err.error !== `There is no key or user with this Username: ${receiverName}`) {
+                return;
+            }
+            console.log("na")
+            const receiverObject = await firstValueFrom(this.cryptoService.getPublicKey(receiverName));
+            if (receiverObject.isSuccess) {
+                console.log("okes")
+                const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!, this.roomId);
+
+                if (decryptedRoomKey === null) {
+                    console.error("Cannot get room key.");
+                }
+
+                const keyToArrayBuffer = await this.cryptoService.exportCryptoKey(decryptedRoomKey!);
+                const receiverPublicKey = receiverObject.message;
+                const cryptoKeyUserPublicKey = await this.cryptoService.importPublicKeyFromBase64(receiverPublicKey);
+                const encryptRoomKeyForUser = await this.cryptoService.encryptSymmetricKey(keyToArrayBuffer, cryptoKeyUserPublicKey);
+                const bufferToBase64 = this.cryptoService.bufferToBase64(encryptRoomKeyForUser);
+
+                var request: ChatRoomInviteRequest = {
+                    roomId: sessionStorage.getItem("roomId")!,
+                    roomName: sessionStorage.getItem("room")!,
+                    receiverName: receiverName,
+                    senderId: this.userId!,
+                    senderName: userName,
+                    roomKey: bufferToBase64
+                }
+                this.friendService.sendChatRoomInvite(request)
+            }
+        });*/
     }
 }

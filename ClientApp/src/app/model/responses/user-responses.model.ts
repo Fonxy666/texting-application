@@ -48,3 +48,7 @@ export interface ShowFriendRequestData {
     receiverName: string;
     receiverId: string;
 }
+
+export interface UserPublicKey {
+    publicKey: string;
+}

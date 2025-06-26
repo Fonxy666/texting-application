@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, Observable } from 'rxjs';
-import { UserEncryptedPrivateKeyAndIv, UserPrivateKeyAndIv } from '../../model/responses/user-responses.model';
+import { UserEncryptedPrivateKeyAndIv, UserPrivateKeyAndIv, UserPublicKey } from '../../model/responses/user-responses.model';
 import { MessageService } from 'primeng/api';
 import { ServerResponse } from '../../model/responses/shared-response.model';
 import { StoreRoomSymmetricKeyRequest } from '../../model/room-requests/chat-requests.model';
@@ -298,9 +298,9 @@ export class CryptoService {
         )
     }
 
-    getPublicKey(userName: string): Observable<ServerResponse<string>> {
+    getPublicKey(userName: string): Observable<ServerResponse<UserPublicKey>> {
         return this.errorHandler.handleErrors(
-            this.http.get<ServerResponse<string>>(`/api/v1/CryptoKey/GetPublicKey?userName=${userName}`, { withCredentials: true })
+            this.http.get<ServerResponse<UserPublicKey>>(`/api/v1/CryptoKey/GetPublicKey?userName=${userName}`, { withCredentials: true })
         )
     }
 
