@@ -17,12 +17,13 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
             .IsRequired();
         
         builder.Property(r => r.RoomName)
-            .IsRequired();
+            .IsRequired()
+            .HasMaxLength(20);
         
         builder.Property(r => r.Password)
             .IsRequired()
-            .HasMaxLength(1024);
-        
-        
+            .HasMaxLength(20);
+
+        builder.HasIndex(r => r.RoomName);
     }
 }
