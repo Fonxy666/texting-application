@@ -90,6 +90,13 @@ export class CreateRoomComponent implements OnInit {
     }
 
     async callSendcreateRoomRequest() {
+        if (this.createRoomForm.get('roomName')?.value.length > 20) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Room name too long. Use a room name less than 20 characters.'
+            });
+        }
         this.isLoading = true;
         this.chatService.registerRoom(await this.createForm()).subscribe(
             response => {
@@ -101,8 +108,7 @@ export class CreateRoomComponent implements OnInit {
             },
             error => {
                 this.isLoading = false;
-
-                if (error.error && error.error.error === "This room's name already taken.") {
+                if (error.error.message === 'This room already exists.') {
                     this.messageService.add({
                         severity: 'error',
                         summary: 'Error',
