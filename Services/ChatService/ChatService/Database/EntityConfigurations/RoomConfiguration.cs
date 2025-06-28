@@ -22,7 +22,7 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
         
         builder.Property(r => r.Password)
             .IsRequired()
-            .HasMaxLength(20);
+            .HasMaxLength(1024);
 
         builder.HasIndex(r => r.RoomName);
     }
