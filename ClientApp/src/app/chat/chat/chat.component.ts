@@ -19,7 +19,7 @@ import { ChangeMessageRequest } from '../../model/user-credential-requests/user-
 import { ChatRoomInviteRequest } from '../../model/friend-requests/friend-requests.model';
 import { ChangePasswordForRoomRequest, GetMessagesRequest } from '../../model/room-requests/chat-requests.model';
 import { ConnectedUser } from '../../model/chat-models.model';
-import { ReceiveMessageResponse } from '../../model/responses/chat-responses.model';
+import { ModifyMessageResponse, ReceiveMessageResponse } from '../../model/responses/chat-responses.model';
 import { ServerResponse } from '../../model/responses/shared-response.model';
 
 @Component({
@@ -129,32 +129,38 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         })
 
         if (this.roomId) {
-                this.subscriptions.add(
-                this.chatService.messagesInitialized$
-                    .pipe(
-                        filter((initializedRoomId) => initializedRoomId === this.roomId),
-                        take(1)
-                    )
-                    .subscribe(() => {
-                        this.getMessages();
-                    })
+            this.subscriptions.add(
+            this.chatService.messagesInitialized$
+                .pipe(
+                    filter((initializedRoomId) => initializedRoomId === this.roomId),
+                    take(1)
+                )
+                .subscribe(() => {
+                    this.getMessages();
+                })
             );
         } else {
             console.error('No roomId found in session storage.');
         }
 
-        this.chatService.connection.on("ModifyMessage", async (messageId: string, messageText: string) => {
+        this.chatService.connection.on("ModifyMessage", async (messageModifyResponse: ModifyMessageResponse) => {
             const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!, this.roomId);
-
             if (decryptedRoomKey === null) {
                 console.error("Cannot get room key.");
+                return;
             }
 
-            this.messages.forEach(async (data) => {
-                if (data.messageData.messageId == messageId && data.encrypted) {
-                    data.messageData.text = await this.cryptoService.decryptMessage(messageText, decryptedRoomKey!, data.messageData.iv);
+            for (const message of this.messages) {
+                if (message.messageData.messageId === messageModifyResponse.messageId) {
+                    message.messageData.iv = messageModifyResponse.iv;
+                    message.messageData.text = await this.cryptoService.decryptMessage(
+                        messageModifyResponse.text,
+                        decryptedRoomKey,
+                        messageModifyResponse.iv
+                    );
+                    message.encrypted = false;
                 }
-            })
+            }
         });
 
         this.chatService.connection.on("ModifyMessageSeen", (userIdFromSignalR: string) => {
@@ -394,17 +400,23 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }
 
         const encryptedData = await this.cryptoService.encryptMessage(this.inputMessage, decryptedRoomKey!);
+        request.iv = encryptedData.iv;
+        request.text = encryptedData.encryptedMessage;
+
         this.chatService.editMessage(request)
-                .subscribe(() => {
-                    this.chatService.messages[this.roomId].forEach((message: any) => {
-                        if (message.messageData.messageId == request.id) {
-                            message.encrypted = true;
-                            message.messageData.iv = encryptedData.iv;
-                            this.chatService.modifyMessage(request);
-                            this.inputMessage = "";
-                            this.messageModifyBool = false;
-                        }
-                    })
+                .subscribe((response) => {
+                    if (response.isSuccess) {
+                        this.chatService.messages[this.roomId].forEach((message: any) => {
+                            if (message.messageData.messageId === request.id) {
+                                message.encrypted = true;
+                                message.messageData.iv = encryptedData.iv;
+                                message.messageData.text = encryptedData.encryptedMessage;
+                                this.chatService.modifyMessage(request);
+                                this.inputMessage = "";
+                                this.messageModifyBool = false;
+                            }
+                        })
+                    }
                 },
                 (error) => {
                     console.error("An error occurred:", error);

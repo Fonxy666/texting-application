@@ -234,6 +234,7 @@ export class CryptoService {
 
     async decryptMessage(encryptedMessage: string, symmetricKey: CryptoKey, ivBase64: string): Promise<string> {
         try {
+            console.log(encryptedMessage);
             const iv = this.base64ToBuffer(ivBase64);
             const decryptedData = await window.crypto.subtle.decrypt(
                 {
@@ -252,6 +253,9 @@ export class CryptoService {
     }
 
     async getDecryptedRoomKey(userKey: string, roomId: string): Promise<CryptoKey | null> {
+        if (roomId === "") {
+            roomId = sessionStorage.getItem("roomId")?? "";
+        }
         const userEncryptedData = await firstValueFrom(this.getUserPrivateKeyAndIv());
         const encryptedRoomSymmetricKey = await firstValueFrom(this.getUserPrivateKeyForRoom(roomId));
 

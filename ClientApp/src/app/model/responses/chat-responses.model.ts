@@ -19,3 +19,9 @@ export interface SymmetricKeyResponse {
     roomId: string,
     roomName: string
 }
+
+export interface ModifyMessageResponse {
+    messageId: string,
+    text: string,
+    iv: string
+}

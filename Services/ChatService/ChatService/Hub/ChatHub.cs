@@ -91,7 +91,7 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IUserGr
     {
         if(connection.TryGetValue(Context.ConnectionId, out UserRoomConnection userRoomConnection))
         {
-            var response = new EditMessageResponse(request.Id, request.Text);
+            var response = new EditMessageResponse(request.Id, request.Text, request.Iv);
             await Clients.Group(userRoomConnection.Room!).SendAsync("ModifyMessage", response);
         }
     }
