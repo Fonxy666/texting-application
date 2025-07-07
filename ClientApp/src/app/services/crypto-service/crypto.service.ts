@@ -234,7 +234,6 @@ export class CryptoService {
 
     async decryptMessage(encryptedMessage: string, symmetricKey: CryptoKey, ivBase64: string): Promise<string> {
         try {
-            console.log(encryptedMessage);
             const iv = this.base64ToBuffer(ivBase64);
             const decryptedData = await window.crypto.subtle.decrypt(
                 {

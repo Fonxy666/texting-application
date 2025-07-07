@@ -408,9 +408,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                     if (response.isSuccess) {
                         this.chatService.messages[this.roomId].forEach((message: any) => {
                             if (message.messageData.messageId === request.id) {
-                                message.encrypted = true;
+                                message.encrypted = false;
                                 message.messageData.iv = encryptedData.iv;
-                                message.messageData.text = encryptedData.encryptedMessage;
+                                message.messageData.text = this.inputMessage;
                                 this.chatService.modifyMessage(request);
                                 this.inputMessage = "";
                                 this.messageModifyBool = false;
