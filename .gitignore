@@ -484,9 +484,14 @@ $RECYCLE.BIN/
 /Services/UserService/UserService/test_pgdata
 /Services/UserService/UserService/Vault_Data
 /Services/UserService/UserService/Vault_Data/Avatars/*
-!/Services/UserService/UserService/Vault_Data/Avatars/TestUsernam1.jpg
+!/Services/UserService/UserService/Vault_Data/Avatars/TestUsername1.jpg
 
 /Services/UserService/UserServiceTests/test-config.json
 
 /Services/ChatService/ChatService/.env
 /Services/ChatService/ChatService/pgdata
+/Services/ChatService/ChatService/test_pgdata
+
+/Services/ChatService/ChatServiceTests/test-config.json
+
+

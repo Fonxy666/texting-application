@@ -15,3 +15,33 @@ services:
     volumes:
       - ./pgdata:/var/lib/postgresql/data
     restart: always
+    networks:
+      - normal-network
+    
+  test_postgres:
+    image: postgres:latest
+    container_name: test_chat_db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: testPassword123@
+      POSTGRES_DB: test_chat_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - ./test_pgdata:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - test-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      
+networks:
+  normal-network:
+    driver: bridge
+  test-network:
+    driver: bridge
