@@ -30,6 +30,11 @@ public class MessageRepository(ChatContext context) : IMessageRepository
 
     public async Task<IList<MessageDto>?> Get10MessagesWithIndex(GetMessagesRequest request)
     {
+        var roomExisting = await context.Rooms.AnyAsync(room => room.RoomId == request.RoomId);
+        if (!roomExisting)
+        {
+            return null;
+        }
         var messages = await context.Rooms!
             .Where(m => m.RoomId == request.RoomId)
             .SelectMany(r => r.Messages)
