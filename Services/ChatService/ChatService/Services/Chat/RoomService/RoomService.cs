@@ -31,16 +31,6 @@ public class RoomService(
         return await baseRepository.ExecuteInTransactionAsync<ResponseBase>(async () =>
         {
             var room = new Room(request.RoomName, request.Password, userId);
-        
-            switch (request.RoomName)
-            {
-                case "test":
-                    room.SetRoomIdForTests("901d40c6-c95d-47ed-a21a-88cda341d0a9");
-                    break;
-                case "TestRoom1":
-                    room.SetRoomIdForTests("801d40c6-c95d-47ed-a21a-88cda341d0a9");
-                    break;
-            }
 
             var roomId = await roomRepository.AddRoomAsync(room);
             if (roomId is null)
@@ -69,6 +59,12 @@ public class RoomService(
 
     public async Task<ResponseBase> DeleteRoomAsync(Guid userId, Guid roomId)
     {
+        var existingUser = await userGrpcService.UserExisting(userId.ToString());
+        if (!existingUser.Success)
+        {
+            return new FailureWithMessage("User not existing.");
+        }
+        
         var existingRoom = await roomRepository.GetRoomAsync(roomId);
         if (existingRoom == null)
         {
@@ -91,6 +87,12 @@ public class RoomService(
 
     public async Task<ResponseBase> ChangePasswordAsync(ChangeRoomPassword request, Guid userId)
     {
+        var existingUser = await userGrpcService.UserExisting(userId.ToString());
+        if (!existingUser.Success)
+        {
+            return new FailureWithMessage("User not existing.");
+        }
+        
         var existingRoom = await roomRepository.GetRoomAsync(request.Id);
         if (existingRoom is null)
         {
@@ -121,12 +123,24 @@ public class RoomService(
 
     public async Task<bool> UserIsTheCreatorAsync(Guid userId, Guid roomId)
     {
+        var existingUser = await userGrpcService.UserExisting(userId.ToString());
+        if (!existingUser.Success)
+        {
+            return false;
+        }
+        
         var roomCreatorId = await roomRepository.GetRoomCreatorIdAsync(roomId);
         return roomCreatorId == userId;
     }
 
     public async Task<ResponseBase> LoginAsync(JoinRoomRequest request, Guid userId)
     {
+        var existingUser = await userGrpcService.UserExisting(userId.ToString());
+        if (!existingUser.Success)
+        {
+            return new FailureWithMessage("User not existing.");
+        }
+        
         var existingRoom = await roomRepository.GetRoomAsync(request.RoomName);
         if (existingRoom is null)
         {

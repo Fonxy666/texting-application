@@ -8,17 +8,18 @@ public class FakeUserGrpcService : IUserGrpcService
     public Task<BoolResponseWithMessage> UserExisting(string userId)
     {
         var result = new BoolResponseWithMessage { Success = true };
-        if (userId != "2f1b9e96-8c0b-4a4b-8fd3-9b4c0a447e31")
+
+        if (userId != "2f1b9e96-8c0b-4a4b-8fd3-9b4c0a447e31" && userId != "3f3b1278-5c3e-4d51-842f-14d2a6581e2e")
         {
             result = new BoolResponseWithMessage { Success = false };
         }
-        
+
         return Task.FromResult(result);
     }
 
     public Task<BoolResponseWithMessage> SendEncryptedRoomIdForUser(StoreRoomKeyRequest incomingRequest)
     {
-        throw new NotImplementedException();
+        return Task.FromResult(new BoolResponseWithMessage { Success = true });
     }
 
     public Task<UserIdAndPublicKeyResponse> SendUserPublicKeyAndId(UserIdRequest request)

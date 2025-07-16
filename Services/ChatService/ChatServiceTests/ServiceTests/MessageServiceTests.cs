@@ -9,10 +9,8 @@ using ChatService.Services.Chat.MessageService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
 using Textinger.Shared.Responses;
 using Xunit;
-using Xunit.Abstractions;
 using Assert = NUnit.Framework.Assert;
 
 namespace ChatServiceTests.ServiceTests;
@@ -26,7 +24,8 @@ public class MessageServiceTests : IAsyncLifetime
     private readonly IConfiguration _configuration;
     private readonly Guid _testUserId = Guid.Parse("2f1b9e96-8c0b-4a4b-8fd3-9b4c0a447e31");
     private readonly string _testConnectionString;
-    public MessageServiceTests(ITestOutputHelper testOutputHelper)
+    
+    public MessageServiceTests()
     {
         var services = new ServiceCollection();
         
