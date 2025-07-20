@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IssueAudience: ${{ secrets.ISSUE_AUDIENCE }}
-      ConnectionString: ${{ secrets.CONNECTION_STRING }}
-      TestConnectionString: ${{ secrets.TEST_CONNECTION_STRING }}
+      UserDbConnectionString: ${{ secrets.USER_DB_CONNECTION_STRING }}
+      TestConnectionString: ${{ secrets.USER_TEST_DB_CONNECTION_STRING }}
       IssueSign: ${{ secrets.ISSUE_SIGN }}
       AdminEmail: ${{ secrets.ADMIN_EMAIL }}
       AdminUserName: ${{ secrets.ADMIN_USERNAME }}
@@ -60,7 +60,7 @@ jobs:
       run: dotnet restore Services/UserService/UserServiceTests/UserServiceTests.csproj
 
     - name: Set up test configuration
-      run: echo "${{ secrets.TEST_CONFIG_JSON }}" > test-config.json
+      run: echo "${{ secrets.USER_SERVICE_TEST_CONFIG_JSON }}" > user-service-test-config.json
 
     - name: Copy test configuration to project directory
       run: cp test-config.json Services/UserService/UserServiceTests

@@ -28,7 +28,7 @@ public class TestStartup(IConfiguration configuration)
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        var connection = configuration["TestConnectionString"];
+        var connection = configuration["ChatTestDbConnectionString"];
         var issueSign = configuration["IssueSign"];
         var issueAudience = configuration["IssueAudience"];
 

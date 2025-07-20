@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="test-config.json">
+        <None Update="chat-service-test-config.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>

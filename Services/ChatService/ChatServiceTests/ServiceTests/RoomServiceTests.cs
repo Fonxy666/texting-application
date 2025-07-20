@@ -32,10 +32,10 @@ public class RoomServiceTests : IAsyncLifetime
         
         var baseConfig  = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("test-config.json")
+            .AddJsonFile("chat-service-test-config.json")
             .Build();
         
-        _testConnectionString = baseConfig["TestConnectionString"]!;
+        _testConnectionString = baseConfig["ChatTestDbConnectionString"]!;
         
         _configuration = new ConfigurationBuilder()
             .AddConfiguration(baseConfig)

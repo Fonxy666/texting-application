@@ -40,11 +40,11 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<TestStart
         
         var baseConfig  = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("test-config.json")
+            .AddJsonFile("chat-service-test-config.json")
             .AddEnvironmentVariables()
             .Build();
         
-        _testConnectionString = baseConfig["TestConnectionString"]!;
+        _testConnectionString = baseConfig["ChatTestDbConnectionString"]!;
         
         _configuration = new ConfigurationBuilder()
             .AddConfiguration(baseConfig)

@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IssueAudience: ${{ secrets.ISSUE_AUDIENCE }}
-      ConnectionString: ${{ secrets.CONNECTION_STRING }}
+      UserDbConnectionString: ${{ secrets.USER_DB_CONNECTION_STRING }}
       IssueSign: ${{ secrets.ISSUE_SIGN }}
       AdminEmail: ${{ secrets.ADMIN_EMAIL }}
       AdminUserName: ${{ secrets.ADMIN_USERNAME }}

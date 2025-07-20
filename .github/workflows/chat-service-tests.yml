@@ -1,0 +1,77 @@
+name: .NET Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      IssueAudience: ${{ secrets.ISSUE_AUDIENCE }}
+      ChatDbConnectionString: ${{ secrets.USER_DB_CONNECTION_STRING }}
+      ChatTestDbConnectionString: ${{ secrets.USER_TEST_DB_CONNECTION_STRING }}
+      IssueSign: ${{ secrets.ISSUE_SIGN }}
+      AdminEmail: ${{ secrets.ADMIN_EMAIL }}
+      AdminUserName: ${{ secrets.ADMIN_USERNAME }}
+      AdminPassword: ${{ secrets.ADMIN_PASSWORD }}
+      FrontendUrlAndPort: ${{ secrets.FRONTEND_URL_AND_PORT }}
+      GrpcUrl: ${{ secrets.GRPC_URL }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Start docker compose with env
+      working-directory: Services/ChatService/ChatService
+      run: |
+        echo "ADMIN_PASSWORD=${AdminPassword}" >> .env
+        docker compose up -d --build
+
+    - name: Wait for TestPostgreSQL
+      run: |
+        until docker exec test_user_db pg_isready; do
+          echo "Waiting for DB..."
+          sleep 2
+        done
+        
+    - name: Install EF Core tools
+      run: dotnet tool install --global dotnet-ef --version 8.0.1
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '8.0'
+
+    - name: Restore dependencies
+      run: dotnet restore Services/ChatService/ChatServiceTests/ChatServiceTests.csproj
+
+    - name: Set up test configuration
+      run: echo "${{ secrets.CHAT_SERVICE_TEST_CONFIG_JSON }}" > chat-service-test-config.json
+
+    - name: Copy test configuration to project directory
+      run: cp test-config.json Services/ChatService/ChatServiceTests
+
+    - name: Build project
+      working-directory: Services/ChatService/ChatService
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Update test database for ChatContext
+      run: >
+        dotnet ef database update 
+        --context ChatContext 
+        --project Services/ChatService/ChatService 
+        --startup-project Services/ChatService/ChatService 
+        --connection "Host=localhost;Port=5435;Username=postgres;Password=testPassword123@;Database=test_chat_db"
+
+    - name: Test
+      working-directory: Services/ChatService/ChatServiceTests
+      run: dotnet test --no-restore --verbosity normal
+
+    - name: Shut down docker compose
+      if: always()
+      working-directory: Services/ChatService/ChatService
+      run: docker compose down --volumes

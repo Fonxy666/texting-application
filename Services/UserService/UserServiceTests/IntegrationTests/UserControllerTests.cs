@@ -40,7 +40,7 @@ public class UserControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     {
         var baseConfig  = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("test-config.json")
+            .AddJsonFile("user-service-test-config.json")
             .Build();
         
         _testConnectionString = baseConfig["UserTestDbConnectionString"]!;
