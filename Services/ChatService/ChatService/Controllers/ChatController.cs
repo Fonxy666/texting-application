@@ -7,6 +7,7 @@ using Textinger.Shared.Responses;
 
 namespace ChatService.Controllers;
 
+[ApiController]
 [Route("api/v1/[controller]")]
 public class ChatController(
     IRoomService roomService,
@@ -25,7 +26,6 @@ public class ChatController(
 
             if (result is FailureWithMessage error)
             {
-                Console.WriteLine(error.Message);
                 return error.Message switch
                 {
                     "User not existing." => NotFound(error),

@@ -1,7 +1,7 @@
 ﻿using System.Text;
+using ChatService;
 using ChatService.Database;
 using ChatService.Hub;
-using ChatService.Middlewares;
 using ChatService.Model;
 using ChatService.Repository.BaseRepository;
 using ChatService.Repository.MessageRepository;
@@ -9,36 +9,38 @@ using ChatService.Repository.RoomRepository;
 using ChatService.Services.Chat.GrpcService;
 using ChatService.Services.Chat.MessageService;
 using ChatService.Services.Chat.RoomService;
-using Textinger.Shared.JwtRefreshTokenValidation;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using Textinger.Shared.Filters;
+using Textinger.Shared.JwtRefreshTokenValidation;
 
-namespace ChatService;
+namespace ChatServiceTests;
 
-public class Startup(IConfiguration configuration)
+public class TestStartup(IConfiguration configuration)
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        var connection = configuration["ChatDbConnectionString"];
+        var connection = configuration["TestConnectionString"];
         var issueSign = configuration["IssueSign"];
         var issueAudience = configuration["IssueAudience"];
-        var grpcUrl = configuration["GrpcUrl"];
-        var grpcUri = new Uri(grpcUrl!);
 
         services.AddHttpContextAccessor();
-        services.AddControllers(options =>
-        {
-            options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
-            options.Filters.Add<ValidateModelAttribute>();
-        })
-        .AddJsonOptions(options =>
-        {
-            options.JsonSerializerOptions.DefaultIgnoreCondition =
-                System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
-        });
+        services.AddControllers()
+            .AddApplicationPart(typeof(ChatService.Controllers.ChatController).Assembly)
+            .AddApplicationPart(typeof(ChatService.Controllers.MessageController).Assembly)
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.DefaultIgnoreCondition =
+                    System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+            });
 
         services.AddEndpointsApiExplorer();
 
@@ -48,7 +50,7 @@ public class Startup(IConfiguration configuration)
         });
 
         services.AddSingleton<IJwtRefreshTokenValidator, JwtRefreshTokenValidator>();
-        services.AddScoped<IUserGrpcService, UserGrpcService>();
+        services.AddScoped<IUserGrpcService, FakeUserGrpcService>();
         services.AddScoped<IRoomService, RoomService>();
         services.AddScoped<IRoomRepository, RoomRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
@@ -137,14 +139,9 @@ public class Startup(IConfiguration configuration)
             options.AddPolicy("UserPolicy", policy => policy.RequireRole("User"));
             options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
         });
-
-        services.AddGrpcClient<GrpcUserService.GrpcUserServiceClient>(options =>
-        {
-            options.Address = grpcUri;
-        });
     }
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IConfiguration configuration)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         if (env.IsDevelopment())
         {
@@ -153,8 +150,6 @@ public class Startup(IConfiguration configuration)
 
         app.UseHttpsRedirection();
         app.UseRouting();
-
-        app.UseAuthTokenMiddleware();
 
         app.UseAuthentication();
         app.UseAuthorization();

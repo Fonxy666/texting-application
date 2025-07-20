@@ -35,7 +35,7 @@ public class CookiesControllerTests : IClassFixture<WebApplicationFactory<Startu
             .AddJsonFile("test-config.json")
             .Build();
         
-        _testConnectionString = baseConfig["TestConnectionString"]!;
+        _testConnectionString = baseConfig["UserTestDbConnectionString"]!;
         _hashiCorpTestAddress = baseConfig["HashiCorpTestAddress"]!;
         _hashiCorpTestToken = baseConfig["HashiCorpTestToken"]!;
         

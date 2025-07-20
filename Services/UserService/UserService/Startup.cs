@@ -33,7 +33,7 @@ public class Startup(IConfiguration configuration)
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        var connection = configuration["ConnectionString"];
+        var connection = configuration["UserDbConnectionString"];
         var issueSign = configuration["IssueSign"];
         var issueAudience = configuration["IssueAudience"];
         var vaultAddress = configuration["HashiCorpAddress"];

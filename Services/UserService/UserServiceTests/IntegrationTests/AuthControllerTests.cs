@@ -40,7 +40,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Startup>>
             .AddJsonFile("test-config.json")
             .Build();
         
-        _testConnectionString = baseConfig["TestConnectionString"]!;
+        _testConnectionString = baseConfig["UserTestDbConnectionString"]!;
         _hashiCorpTestAddress = baseConfig["HashiCorpTestAddress"]!;
         _hashiCorpTestToken = baseConfig["HashiCorpTestToken"]!;
         

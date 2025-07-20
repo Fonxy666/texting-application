@@ -15,6 +15,7 @@ using Assert = NUnit.Framework.Assert;
 
 namespace ChatServiceTests.ServiceTests;
 
+[Collection("Sequential")]
 public class MessageServiceTests : IAsyncLifetime
 {
     private readonly ServiceProvider _provider;

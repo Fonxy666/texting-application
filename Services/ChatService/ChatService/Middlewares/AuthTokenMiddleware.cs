@@ -13,6 +13,7 @@ public class AuthTokenMiddleware(RequestDelegate next, GrpcUserService.GrpcUserS
 
         if (userId == null || rememberMe == false)
         {
+            await next(context);
             return;
         }
 

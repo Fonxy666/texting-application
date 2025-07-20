@@ -8,6 +8,7 @@ using Textinger.Shared.Responses;
 
 namespace ChatService.Controllers;
 
+[ApiController]
 [Route("api/v1/[controller]")]
 public class MessageController(
     IMessageService messageService,

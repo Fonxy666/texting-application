@@ -41,7 +41,7 @@ public class UserServiceTest : IAsyncLifetime
             .AddJsonFile("test-config.json")
             .Build();
         
-        _testConnectionString = baseConfig["TestConnectionString"]!;
+        _testConnectionString = baseConfig["UserTestDbConnectionString"]!;
         
         _configuration = new ConfigurationBuilder()
             .AddConfiguration(baseConfig)
