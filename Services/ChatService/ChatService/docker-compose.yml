@@ -25,7 +25,7 @@ services:
       - .env
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: testPassword123@
+      POSTGRES_PASSWORD: testPassword123%
       POSTGRES_DB: test_chat_db
     ports:
       - "5435:5432"
