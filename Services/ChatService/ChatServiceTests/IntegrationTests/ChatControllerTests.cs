@@ -84,6 +84,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<TestStart
     [Fact]
     public async Task RegisterRoom_CreatesTheRoom()
     {
+        _testOutputHelper.WriteLine("Connection string length: " + _configuration["ChatTestDbConnectionString"]?.Length);
         // Arrange
         var jwt = FakeLogin.TestJwtSecurityToken(_testUserId.ToString(), _configuration);
         var jwtString = new JwtSecurityTokenHandler().WriteToken(jwt);
