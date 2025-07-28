@@ -82,7 +82,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<TestStart
     }
 
     [Fact]
-    public async Task Login_WithInvalidUser_ReturnBadRequestStatusCode()
+    public async Task RegisterRoom_CreatesTheRoom()
     {
         // Arrange
         var jwt = FakeLogin.TestJwtSecurityToken(_testUserId.ToString(), _configuration);
