@@ -3,10 +3,10 @@ name: .NET Tests
 on:
   push:
     branches:
-      - main
+      - microservice-implement
   pull_request:
     branches:
-      - main
+      - microservice-implement
 
 jobs:
   build:
