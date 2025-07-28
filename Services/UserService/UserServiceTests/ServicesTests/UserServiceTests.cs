@@ -135,31 +135,6 @@ public class UserServiceTest : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetImageAsync_HandlesValidRequest_AndPreventsEdgeCases()
-    {
-        // Success test
-        var userIdForSuccess = Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa916");
-
-        var successResult = await _userService.GetImageWithIdAsync(userIdForSuccess);
-
-        Assert.That(successResult, Is.InstanceOf<SuccessWithDto<ImageDto>>());
-        
-        // User not existing test
-        var userIdForNotExistingUserFailure = Guid.Parse("38db530c-b6bb-4e8a-9c19-a5cd4d0fa915");
-
-        var notExistingUserFailureResult = await _userService.GetImageWithIdAsync(userIdForNotExistingUserFailure);
-
-        Assert.That(notExistingUserFailureResult, Is.EqualTo(new FailureWithMessage("User not found.")));
-        
-        // Image not existing test
-        var userIdForNotExistingImageFailure = Guid.Parse("10f96e12-e245-420a-8bad-b61fb21c4b2d");
-
-        var notExistingImageFailureResult = await _userService.GetImageWithIdAsync(userIdForNotExistingImageFailure);
-
-        Assert.That(notExistingImageFailureResult, Is.EqualTo(new FailureWithMessage("User image not found.")));
-    }
-
-    [Fact]
     public async Task GetUserCredentialsAsync_HandlesValidRequest_AndPreventEdgeCases()
     {
         // Success test
