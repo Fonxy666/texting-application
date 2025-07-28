@@ -33,7 +33,7 @@ jobs:
 
     - name: Wait for TestPostgreSQL
       run: |
-        until docker exec test_user_db pg_isready; do
+        until docker exec test_chat_db pg_isready; do
           echo "Waiting for DB..."
           sleep 2
         done
