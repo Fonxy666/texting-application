@@ -63,7 +63,7 @@ jobs:
       run: echo "${{ secrets.USER_SERVICE_TEST_CONFIG_JSON }}" > user-service-test-config.json
 
     - name: Copy test configuration to project directory
-      run: cp test-config.json Services/UserService/UserServiceTests
+      run: cp user-service-test-config.json Services/UserService/UserServiceTests
 
     - name: Build project
       working-directory: Services/UserService/UserService
