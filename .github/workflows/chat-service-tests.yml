@@ -53,7 +53,7 @@ jobs:
       run: echo "${{ secrets.CHAT_SERVICE_TEST_CONFIG_JSON }}" > chat-service-test-config.json
 
     - name: Copy test configuration to project directory
-      run: cp test-config.json Services/ChatService/ChatServiceTests
+      run: cp chat-service-test-config.json Services/ChatService/ChatServiceTests
 
     - name: Build project
       working-directory: Services/ChatService/ChatService
