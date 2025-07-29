@@ -44,7 +44,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<TestStart
             .AddConfiguration(baseConfig)
             .AddInMemoryCollection(new Dictionary<string, string>
             {
-                { "ConnectionStrings:DefaultConnection", "Host=localhost;Port=5435;Username=postgres;Password=testPassword123@;Database=test_chat_db;SSL Mode=Disable" }
+                { "ConnectionStrings:DefaultConnection", _testConnectionString }
             }!)
             .Build();
 
@@ -64,8 +64,17 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<TestStart
     
     public async Task InitializeAsync()
     {
-        await _context.Database.EnsureDeletedAsync();
-        await _context.Database.EnsureCreatedAsync();
+        try
+        {
+            Console.WriteLine("Using connection string: " + _testConnectionString);
+            await _context.Database.EnsureDeletedAsync();
+            await _context.Database.EnsureCreatedAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("EXCEPTION during InitializeAsync: " + ex);
+            throw;
+        }
     }
 
     public Task DisposeAsync()
