@@ -63,8 +63,8 @@ jobs:
       run: >
         dotnet ef database update 
         --context ChatContext 
-        --project Services/ChatService/ChatService 
-        --startup-project Services/ChatService/ChatService
+        --project Services/ChatService/ChatServiceTests
+        --startup-project Services/ChatService/ChatServiceTests
         --connection "Host=localhost;Port=5435;Username=postgres;Password=testPassword123@;Database=test_chat_db"
 
     - name: Test
