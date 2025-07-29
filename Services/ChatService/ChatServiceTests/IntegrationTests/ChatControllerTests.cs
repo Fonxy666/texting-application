@@ -45,7 +45,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
             .AddConfiguration(baseConfig)
             .AddInMemoryCollection(new Dictionary<string, string>
             {
-                { "ConnectionStrings:DefaultConnection", "Host=localhost;Port=5435;Username=postgres;Password=testPassword123@;Database=test_chat_db" }
+                { "ConnectionStrings:DefaultConnection", _testConnectionString }
             }!)
             .Build();
 
