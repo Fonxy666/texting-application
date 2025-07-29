@@ -74,7 +74,7 @@ jobs:
         dotnet ef database update 
         --context MainDatabaseContext 
         --project Services/UserService/UserService 
-        --startup-project Services/UserService/UserService 
+        --startup-project Services/UserService/UserService
         --connection "Host=localhost;Port=5434;Username=postgres;Password=testPassword123@;Database=test_user_db"
 
     - name: Test
