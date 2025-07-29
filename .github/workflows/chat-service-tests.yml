@@ -56,15 +56,15 @@ jobs:
       run: cp chat-service-test-config.json Services/ChatService/ChatServiceTests
 
     - name: Build project
-      working-directory: Services/ChatService/ChatServiceTests
+      working-directory: Services/ChatService/ChatService
       run: dotnet build --configuration Release --no-restore
 
     - name: Update test database for ChatContext
       run: >
         dotnet ef database update 
         --context ChatContext 
-        --project Services/ChatService/ChatServiceTests
-        --startup-project Services/ChatService/ChatServiceTests
+        --project Services/ChatService/ChatService
+        --startup-project Services/ChatService/ChatService
         --connection "Host=localhost;Port=5435;Username=postgres;Password=testPassword123@;Database=test_chat_db"
 
     - name: Test

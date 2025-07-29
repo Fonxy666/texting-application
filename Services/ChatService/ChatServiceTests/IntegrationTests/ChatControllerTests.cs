@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Text;
+using ChatService;
 using ChatService.Database;
 using ChatService.Model.Requests;
 using ChatService.Services.Chat.GrpcService;
@@ -9,13 +10,14 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace ChatServiceTests.IntegrationTests;
 
-public class ChatControllerTests : IClassFixture<WebApplicationFactory<TestStartup>>, IAsyncLifetime
+public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>, IAsyncLifetime
 {
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _client;
@@ -50,10 +52,15 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<TestStart
 
         var builder = new WebHostBuilder()
             .UseEnvironment("Test")
-            .UseStartup<TestStartup>()
+            .UseStartup<Startup>()
             .ConfigureAppConfiguration(config =>
             {
                 config.AddConfiguration(_configuration);
+            })
+            .ConfigureTestServices(services =>
+            {
+                services.RemoveAll<IUserGrpcService>();
+                services.AddScoped<IUserGrpcService>(_ => new FakeUserGrpcService());
             });
 
         _testServer = new TestServer(builder);
@@ -66,7 +73,6 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<TestStart
     {
         try
         {
-            Console.WriteLine("Using connection string: " + _testConnectionString);
             await _context.Database.EnsureDeletedAsync();
             await _context.Database.EnsureCreatedAsync();
         }
@@ -86,7 +92,6 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<TestStart
     [Fact]
     public async Task RegisterRoom_CreatesTheRoom()
     {
-        _testOutputHelper.WriteLine("Connection string length: " + _configuration["ChatTestDbConnectionString"]?.Length);
         // Arrange
         var jwt = FakeLogin.TestJwtSecurityToken(_testUserId.ToString(), _configuration);
         var jwtString = new JwtSecurityTokenHandler().WriteToken(jwt);
