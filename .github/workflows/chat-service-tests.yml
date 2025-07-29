@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IssueAudience: ${{ secrets.ISSUE_AUDIENCE }}
-      ChatDbConnectionString: ${{ secrets.USER_DB_CONNECTION_STRING }}
-      ChatTestDbConnectionString: ${{ secrets.USER_TEST_DB_CONNECTION_STRING }}
+      ChatDbConnectionString: ${{ secrets.CHAT_DB_CONNECTION_STRING }}
+      ChatTestDbConnectionString: ${{ secrets.CHAT_TEST_DB_CONNECTION_STRING }}
       IssueSign: ${{ secrets.ISSUE_SIGN }}
       AdminEmail: ${{ secrets.ADMIN_EMAIL }}
       AdminUserName: ${{ secrets.ADMIN_USERNAME }}

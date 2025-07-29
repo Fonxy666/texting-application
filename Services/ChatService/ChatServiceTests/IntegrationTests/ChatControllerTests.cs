@@ -32,7 +32,6 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     public ChatControllerTests(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
         
         var baseConfig  = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
