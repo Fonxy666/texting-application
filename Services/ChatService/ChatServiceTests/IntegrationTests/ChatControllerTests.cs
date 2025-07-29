@@ -1,9 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
-using System.Net;
 using System.Net.Http.Headers;
-using System.Security.Claims;
 using System.Text;
-using ChatService;
 using ChatService.Database;
 using ChatService.Model.Requests;
 using ChatService.Services.Chat.GrpcService;
@@ -12,12 +9,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Identity.Client;
 using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
-using Assert = Xunit.Assert;
 
 namespace ChatServiceTests.IntegrationTests;
 
@@ -66,7 +60,6 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<TestStart
         _client = _testServer.CreateClient();
         _provider = _testServer.Host.Services;
         _context = _provider.GetRequiredService<ChatContext>();
-        _userGrpcService =  _provider.GetRequiredService<IUserGrpcService>();
     }
     
     public async Task InitializeAsync()
