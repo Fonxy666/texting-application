@@ -30,7 +30,7 @@ message UserIdAndPublicKeyResponse {
 }
 
 message UserNamesRequest {
-    repeated string name = 1;
+    repeated string names = 1;
 }
 
 message UserIdAndName {

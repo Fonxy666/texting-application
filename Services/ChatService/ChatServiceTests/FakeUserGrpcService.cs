@@ -29,6 +29,13 @@ public class FakeUserGrpcService : IUserGrpcService
 
     public Task<UsersResponse> SendUserNamesAndGetIds(UserNamesRequest request)
     {
-        throw new NotImplementedException();
+        var response = new UsersResponse();
+
+        foreach (var name in request.Names)
+        {
+            response.Users.Add(new UserIdAndName { Name = name, Id = Guid.NewGuid().ToString() });
+        }
+
+        return Task.FromResult(response);
     }
 }

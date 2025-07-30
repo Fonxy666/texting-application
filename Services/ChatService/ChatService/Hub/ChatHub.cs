@@ -135,7 +135,7 @@ public class ChatHub(IDictionary<string, UserRoomConnection> connection, IUserGr
         var userNamesRequest = new UserNamesRequest();
         foreach (var user in users)
         {
-            userNamesRequest.Name.Add(user);
+            userNamesRequest.Names.Add(user);
         }
         var userIdsAndNames = await userService.SendUserNamesAndGetIds(userNamesRequest);
 
