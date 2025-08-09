@@ -149,7 +149,7 @@ public class ChatController(
             {
                 return error.Message switch
                 {
-                    "Room not found" => NotFound(error),
+                    "Room not found." => NotFound(error),
                     _ => BadRequest(error)
                 };
             }

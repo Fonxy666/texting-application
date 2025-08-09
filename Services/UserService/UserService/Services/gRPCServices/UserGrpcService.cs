@@ -78,7 +78,7 @@ public class UserGrpcService(ISymmetricKeyService keyService, IUserRepository us
     {
         var userIdsAndNames = new List<UserIdAndName>();
 
-        foreach (var name in request.Name)
+        foreach (var name in request.Names)
         {
             var existingUser = await userRepository.GetUserIdAndUserNameAsync(name);
 
