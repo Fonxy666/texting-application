@@ -94,12 +94,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task RegisterRoom_CreatesTheRoom_AndPreventEdgeCases()
     {
-        var notExistingUserId = Guid.NewGuid();
-        var notExistingUserJwt = FakeLogin.TestJwtSecurityToken(notExistingUserId.ToString(), _configuration);
-        var notExistingUserJwtString = new JwtSecurityTokenHandler().WriteToken(notExistingUserJwt);
-        
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", notExistingUserJwtString);
-        _client.DefaultRequestHeaders.Add("Cookie", $"UserId={notExistingUserId}");
+        FakeLogin.FakeLoginToClient(_client, Guid.NewGuid(), _configuration);
         
         var notExistingUserRequest = new RoomRequest("testRoomName", "testPassword", "testEncryptedKey");
         var notExistingUserJsonRequest = JsonConvert.SerializeObject(notExistingUserRequest);
@@ -108,13 +103,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         var notExistingUserResponse = await _client.PostAsync("api/v1/Chat/RegisterRoom", notExistingUserContent);
         Assert.Equal(HttpStatusCode.NotFound, notExistingUserResponse.StatusCode);
         
-        _client.DefaultRequestHeaders.Clear();
-        
-        var jwt = FakeLogin.TestJwtSecurityToken(_testUserId.ToString(), _configuration);
-        var jwtString = new JwtSecurityTokenHandler().WriteToken(jwt);
-
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtString);
-        _client.DefaultRequestHeaders.Add("Cookie", $"UserId={_testUserId}");
+        FakeLogin.FakeLoginToClient(_client, _testUserId, _configuration);
 
         var request = new RoomRequest("testRoomName", "testPassword", "testEncryptedKey");
         var jsonRequest = JsonConvert.SerializeObject(request);
@@ -130,11 +119,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task ExamineCreator_ResponseTheValidState_AndPreventEdgeCases()
     {
-        var jwt = FakeLogin.TestJwtSecurityToken(_testUserId.ToString(), _configuration);
-        var jwtString = new JwtSecurityTokenHandler().WriteToken(jwt);
-
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtString);
-        _client.DefaultRequestHeaders.Add("Cookie", $"UserId={_testUserId}");
+        FakeLogin.FakeLoginToClient(_client, _testUserId, _configuration);
         
         var request = new RoomRequest("testRoomName", "testPassword", "testEncryptedKey");
         var jsonRequest = JsonConvert.SerializeObject(request);
@@ -156,11 +141,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task DeleteRoom_ResponseTheValidState_AndPreventEdgeCases()
     {
-        var jwt = FakeLogin.TestJwtSecurityToken(_testUserId.ToString(), _configuration);
-        var jwtString = new JwtSecurityTokenHandler().WriteToken(jwt);
-
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtString);
-        _client.DefaultRequestHeaders.Add("Cookie", $"UserId={_testUserId}");
+        FakeLogin.FakeLoginToClient(_client, _testUserId, _configuration);
         
         var request = new RoomRequest("testRoomName", "testPassword", "testEncryptedKey");
         var jsonRequest = JsonConvert.SerializeObject(request);
@@ -168,23 +149,14 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         await _client.PostAsync("api/v1/Chat/RegisterRoom", content);
         
-        _client.DefaultRequestHeaders.Clear();
-        
-        var newJwt = FakeLogin.TestJwtSecurityToken(_testUserIdForBadRequests.ToString(), _configuration);
-        var newUserJwtString = new JwtSecurityTokenHandler().WriteToken(newJwt);
-        
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", newUserJwtString);
-        _client.DefaultRequestHeaders.Add("Cookie", $"UserId={_testUserIdForBadRequests}");
+        FakeLogin.FakeLoginToClient(_client, _testUserIdForBadRequests, _configuration);
         
         var roomId = _context.Rooms.FirstOrDefault(r => r.RoomName == "testRoomName").RoomId;
         
         var forbidResponse = await _client.DeleteAsync($"api/v1/Chat/DeleteRoom?roomId={roomId}");
         Assert.Equal(HttpStatusCode.Forbidden, forbidResponse.StatusCode);
         
-        _client.DefaultRequestHeaders.Clear();
-        
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtString);
-        _client.DefaultRequestHeaders.Add("Cookie", $"UserId={_testUserId}");
+        FakeLogin.FakeLoginToClient(_client, _testUserId, _configuration);
         
         var response = await _client.DeleteAsync($"api/v1/Chat/DeleteRoom?roomId={roomId}");
         response.EnsureSuccessStatusCode();
@@ -196,11 +168,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task ChangePassword_ResponseTheValidState_AndPreventEdgeCases()
     {
-        var jwt = FakeLogin.TestJwtSecurityToken(_testUserId.ToString(), _configuration);
-        var jwtString = new JwtSecurityTokenHandler().WriteToken(jwt);
-
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtString);
-        _client.DefaultRequestHeaders.Add("Cookie", $"UserId={_testUserId}");
+        FakeLogin.FakeLoginToClient(_client, _testUserId, _configuration);
         
         var roomRequest = new RoomRequest("testRoomName", "testPassword", "testEncryptedKey");
         var roomJsonRequest = JsonConvert.SerializeObject(roomRequest);
@@ -208,13 +176,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
 
         await _client.PostAsync("api/v1/Chat/RegisterRoom", roomContent);
         
-        _client.DefaultRequestHeaders.Clear();
-        
-        var newJwt = FakeLogin.TestJwtSecurityToken(_testUserIdForBadRequests.ToString(), _configuration);
-        var newUserJwtString = new JwtSecurityTokenHandler().WriteToken(newJwt);
-        
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", newUserJwtString);
-        _client.DefaultRequestHeaders.Add("Cookie", $"UserId={_testUserIdForBadRequests}");
+        FakeLogin.FakeLoginToClient(_client, _testUserIdForBadRequests, _configuration);
         
         var roomId = _context.Rooms.FirstOrDefault(r => r.RoomName == "testRoomName").RoomId;
         var request = new ChangeRoomPassword(roomId, "testPassword", "newTestPassword");
@@ -225,10 +187,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
         
         Assert.Equal(HttpStatusCode.Forbidden, forbidResponse.StatusCode);
         
-        _client.DefaultRequestHeaders.Clear();
-        
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtString);
-        _client.DefaultRequestHeaders.Add("Cookie", $"UserId={_testUserId}");
+        FakeLogin.FakeLoginToClient(_client, _testUserId, _configuration);
         
         var response = await _client.PatchAsync("api/v1/Chat/ChangePasswordForRoom", content);
         response.EnsureSuccessStatusCode();
@@ -244,11 +203,7 @@ public class ChatControllerTests : IClassFixture<WebApplicationFactory<Startup>>
     [Fact]
     public async Task LoginRoom_ResponseTheValidState_AndPreventEdgeCases()
     {
-        var jwt = FakeLogin.TestJwtSecurityToken(_testUserId.ToString(), _configuration);
-        var jwtString = new JwtSecurityTokenHandler().WriteToken(jwt);
-
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtString);
-        _client.DefaultRequestHeaders.Add("Cookie", $"UserId={_testUserId}");
+        FakeLogin.FakeLoginToClient(_client, _testUserId, _configuration);
         
         var roomRequest = new RoomRequest("testRoomName", "testPassword", "testEncryptedKey");
         var roomJsonRequest = JsonConvert.SerializeObject(roomRequest);
