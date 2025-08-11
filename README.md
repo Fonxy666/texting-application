@@ -3,7 +3,7 @@
 Textinger is a full-stack ASP.NET core application designed to chat with your friends in the web application in an MSSQL database with an Angular(typescript) Frontend Server.
 
 # Project Status
-ONGOING project!
+ONGOING project! The Readme currently not updated for the updated server, ongoing readme clarification...
 Feel free to fork the repository, and learn from it.
 
 # Little overview 
