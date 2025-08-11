@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { LoginRequest } from '../model/auth-requests/LoginRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { Router } from '@angular/router';
-import { LoginAuthTokenRequest } from '../model/auth-requests/LoginAuthTokenRequest';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../services/auth-service/auth.service';
+import { LoginAuthTokenRequest, LoginRequest } from '../model/auth-requests/auth-requests';
+import { ServerResponse } from '../model/responses/shared-response.model';
 
 @Component({
     selector: 'app-login',
@@ -25,7 +25,7 @@ export class LoginComponent implements OnInit {
 
     isLoading: boolean = false;
     loginStarted: boolean = false;
-    loginRequest: LoginRequest = new LoginRequest("", "", false);
+    loginRequest: LoginRequest = { userName: "", password: "", rememberMe: false };
 
     ngOnInit(): void {        
         if (this.isLoggedIn()) {
@@ -66,43 +66,28 @@ export class LoginComponent implements OnInit {
     createTask(form: LoginRequest) {
         this.isLoading = true;
         this.authService.sendLoginToken(form)
-        .subscribe((response: any) => {
-            if (response.success) {
-                this.loginRequest.username = form.username;
-                this.loginRequest.rememberme = form.rememberme;
+        .subscribe((response: ServerResponse<string>) => {
+            if (response.isSuccess) {
+                this.loginRequest.userName = form.userName;
+                this.loginRequest.rememberMe = form.rememberMe;
                 this.loginStarted = true;
                 this.isLoading = false;
             }
         }, 
         (error) => {
-            if (error.status === 400) {
-                if (!isNaN(error.error)) {
-                    console.log(error);
-                    if (error.error == 4) {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: `Only 1 more try.`
-                        });
-                    } else {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: `Invalid username or password, you have ${5-error.error} tries.`
-                        });
-                    }
+            console.log(error);
+            if (error.status === 400 || error.status === 404) {
+                this.isLoading = false;
 
-                    this.isLoading = false;
-                } else {
-                    this.isLoading = false;
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: `${error.error.split(".")[0]}. ${error.error.split(".")[1]}`
-                    });
-                }
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: `${error.error.message}`
+                });
+
             } else {
                 this.isLoading = false;
+
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
@@ -116,16 +101,15 @@ export class LoginComponent implements OnInit {
         this.isLoading = true;
         const expirationDate = new Date();
         expirationDate.setFullYear(expirationDate.getFullYear() + 10);
-        const request = new LoginAuthTokenRequest(
-            this.loginRequest.username,
-            this.loginRequest.password,
-            this.loginRequest.rememberme, token
-        );
+        const request: LoginAuthTokenRequest = {
+            userName: this.loginRequest.userName,
+            rememberMe : this.loginRequest.rememberMe,
+            token: token
+    };
 
         this.authService.login(request)
-        .subscribe((response: any) => {
-            if (response.success) {
-                console.log(response);
+        .subscribe((response: ServerResponse<string>) => {
+            if (response.isSuccess) {
                 this.loginStarted = false;
                 this.isLoading = false;
                 this.router.navigate(['/'], { queryParams: { loginSuccess: 'true' } });
@@ -137,7 +121,7 @@ export class LoginComponent implements OnInit {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: 'Wrong token.'
+                    detail: `${error.error.message}`
                 });
             } else {
                 this.messageService.add({

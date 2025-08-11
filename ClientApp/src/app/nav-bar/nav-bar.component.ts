@@ -1,13 +1,13 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { FriendService } from '../services/friend-service/friend.service';
 import { MediaService } from '../services/media-service/media.service';
-import { ChatRoomInvite } from '../model/room-requests/ChatRoomInvite';
 import { ChatService } from '../services/chat-service/chat.service';
 import { IndexedDBService } from '../services/db-service/indexed-dbservice.service';
 import { MessageService } from 'primeng/api';
+import { AuthService } from '../services/auth-service/auth.service';
+import { ChatRoomInvite } from '../model/chat-models.model';
 
 @Component({
     selector: 'app-nav-bar',
@@ -20,12 +20,12 @@ export class NavBarComponent implements OnInit {
     constructor(
         private cookieService : CookieService,
         private router: Router,
-        private http: HttpClient,
         public friendService: FriendService,
         private mediaService: MediaService,
         public chatService: ChatService,
         private dbService: IndexedDBService,
-        private messageService: MessageService
+        private messageService: MessageService,
+        private authService: AuthService
     ) { }
 
     isDropstart: boolean = true;
@@ -40,10 +40,11 @@ export class NavBarComponent implements OnInit {
     loggedIn: boolean = false;
 
     ngOnInit(): void {
-        
         this.isLoggedIn();
         this.checkScreenSize();
-        
+
+        this.roomName = sessionStorage.getItem("room")?? "";
+        this.roomId = sessionStorage.getItem("roomId")?? "";
         this.userId = this.cookieService.get("UserId");
 
         if (this.loggedIn) {
@@ -70,9 +71,9 @@ export class NavBarComponent implements OnInit {
     }
 
     logout() {
-        this.http.get(`/api/v1/Auth/Logout`, { withCredentials: true })
+        this.authService.logout()
         .subscribe((response: any) => {
-            if (response.success) {
+            if (response.isSuccess) {
                 this.dbService.clearEncryptionKey(this.userId);
                 this.loggedIn = false;
                 sessionStorage.clear();

@@ -1,6 +1,6 @@
 import { Component, ElementRef, EventEmitter, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { LoginRequest } from '../../model/auth-requests/LoginRequest';
+import { LoginRequest } from '../../model/auth-requests/auth-requests';
 
 @Component({
   selector: 'app-create-login-request',
@@ -48,11 +48,11 @@ export class CreateLoginRequestComponent implements OnInit {
     SendLoginRequest: EventEmitter<LoginRequest> = new EventEmitter<LoginRequest>();
 
     OnFormSubmit() {
-        const loginRequest = new LoginRequest(
-            this.loginRequest.get('username')?.value,
-            this.loginRequest.get('password')?.value,
-            this.loginRequest.get('rememberme')?.value
-            );
+        const loginRequest: LoginRequest = {
+            userName: this.loginRequest.get('username')?.value,
+            password: this.loginRequest.get('password')?.value,
+            rememberMe: this.loginRequest.get('rememberme')?.value
+        };
         this.SendLoginRequest.emit(loginRequest);
     }
 

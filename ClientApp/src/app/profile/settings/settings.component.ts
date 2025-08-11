@@ -17,7 +17,6 @@ export class SettingsComponent {
         private cookiesService: CookiesService
     ) {}
 
-    myImage: string = "./assets/images/chat-mountain.jpg";
     animate: boolean = (this.cookieService.get('Animation') === 'True');
     anonymous: boolean = (this.cookieService.get('Anonymous') === 'True');
 

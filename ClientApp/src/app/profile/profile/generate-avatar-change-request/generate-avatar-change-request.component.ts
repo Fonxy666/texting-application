@@ -3,8 +3,8 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MessageService } from 'primeng/api';
-import { ChangeAvatarRequest } from '../../../model/user-credential-requests/ChangeAvatarRequest';
 import { UserService } from '../../../services/user-service/user.service';
+import { ChangeAvatarRequest } from '../../../model/user-credential-requests/user-credentials-requestsmodel.';
 
 @Component({
   selector: 'app-generate-avatar-change-request',
@@ -59,13 +59,23 @@ export class GenerateAvatarChangeRequestComponent {
 
     OnFormSubmit() {
         this.userService.changeAvatar(JSON.stringify(this.profilePic))
-        .subscribe((response: any) => {
-            if (response && response.status === 'Ok') {
+        .subscribe((response) => {
+            console.log(response.isSuccess);
+            if (response.isSuccess) {
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
                 this.messageService.add({
                     severity: 'info',
                     summary: 'Info',
                     detail: 'Avatar change succeeded :)',
                     styleClass: 'ui-toast-message-info'
+                });
+            } else {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: response.error!.message
                 });
             }
         });

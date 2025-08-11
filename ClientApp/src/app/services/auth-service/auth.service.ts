@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { LoginAuthTokenRequest } from '../../model/auth-requests/LoginAuthTokenRequest';
-import { LoginRequest } from '../../model/auth-requests/LoginRequest';
-import { TokenValidatorRequest } from '../../model/auth-requests/TokenValidatorRequest';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { EmailAndUserNameRequest, EmailRequest, LoginAuthTokenRequest, LoginRequest, RegistrationRequest, TokenValidatorRequest } from '../../model/auth-requests/auth-requests';
+import { ServerResponse } from '../../model/responses/shared-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -14,27 +13,27 @@ export class AuthService {
         private http: HttpClient,
     ) { }
 
-    login(form: LoginAuthTokenRequest): Observable<any> {
-        return this.http.post("/api/v1/Auth/Login", form, { withCredentials: true})
+    login(form: LoginAuthTokenRequest): Observable<ServerResponse<string>> {
+        return this.http.post<ServerResponse<string>>("/api/v1/Auth/Login", form, { withCredentials: true})
     }
 
-    sendLoginToken(form: LoginRequest): Observable<any> {
-        return this.http.post(`/api/v1/Auth/SendLoginToken`, form, { withCredentials: true });
+    sendLoginToken(form: LoginRequest): Observable<ServerResponse<string>> {
+        return this.http.post<ServerResponse<string>>(`/api/v1/Auth/SendLoginToken`, form, { withCredentials: true });
     }
 
-    sendVerifyEmail(form: any): Observable<any> {
-        const headers = new HttpHeaders({
-            'Content-Type': 'application/json'
-        });
-
-        return this.http.post(`/api/v1/Auth/SendEmailVerificationToken`, form, { headers: headers, responseType: 'text' })
+    sendVerifyEmail(form: EmailRequest): Observable<ServerResponse<string>> {
+        return this.http.post<ServerResponse<string>>(`/api/v1/Auth/SendEmailVerificationToken`, form )
     }
 
-    examineVerifyToken(form: TokenValidatorRequest): Observable<any> {
-        return this.http.post(`/api/v1/Auth/ExamineVerifyToken`, form);
+    examineVerifyToken(form: TokenValidatorRequest): Observable<ServerResponse<string>> {
+        return this.http.post<ServerResponse<string>>(`/api/v1/Auth/ExamineVerifyToken`, form);
     }
 
-    registration(form: any): Observable<any> {
-        return this.http.post(`/api/v1/Auth/Register`, form);
+    registration(form: RegistrationRequest): Observable<ServerResponse<string>> {
+        return this.http.post<ServerResponse<string>>(`/api/v1/Auth/Register`, form);
+    }
+
+    logout() : Observable<ServerResponse<string>> {
+        return this.http.get<ServerResponse<string>>(`/api/v1/Auth/Logout`, { withCredentials: true });
     }
 }

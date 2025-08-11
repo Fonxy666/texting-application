@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+
+service GrpcUserService {
+    rpc UserExisting (UserIdRequest) returns (BoolResponseWithMessage);
+    rpc SendEncryptedRoomIdForUser (EncryptedRoomIdWithUserId) returns (BoolResponseWithMessage);
+    rpc SendUserPublicKeyAndId (UserIdRequest) returns (UserIdAndPublicKeyResponse);
+    rpc SendUserNamesAndGetIds (UserNamesRequest) returns (UsersResponse);
+}
+
+message UserIdRequest {
+    string id = 1;
+}
+
+message BoolResponseWithMessage {
+    bool success = 1;
+    google.protobuf.StringValue message = 2;
+}
+
+message EncryptedRoomIdWithUserId {
+    google.protobuf.StringValue userId = 1;
+    google.protobuf.StringValue roomId = 2;
+    google.protobuf.StringValue roomKey = 3;
+}
+
+message UserIdAndPublicKeyResponse {
+    google.protobuf.StringValue userId = 1;
+    google.protobuf.StringValue publicKey = 2;
+}
+
+message UserNamesRequest {
+    repeated string names = 1;
+}
+
+message UserIdAndName {
+    google.protobuf.StringValue name = 1;
+    google.protobuf.StringValue id = 2;
+}
+
+message UsersResponse {
+    repeated UserIdAndName users = 1;
+}

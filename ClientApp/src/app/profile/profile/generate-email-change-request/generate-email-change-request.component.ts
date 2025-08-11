@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ChangeEmailRequest } from '../../../model/user-credential-requests/ChangeEmailRequest';
 import { MessageService } from 'primeng/api';
 import { HttpClient } from '@angular/common/http';
 import { UserService } from '../../../services/user-service/user.service';
+import { ChangeEmailRequest } from '../../../model/user-credential-requests/user-credentials-requestsmodel.';
 
 @Component({
   selector: 'app-generate-email-change-request',
@@ -33,10 +33,10 @@ export class GenerateEmailChangeRequestComponent implements OnInit {
 
     OnFormSubmit() {
         if (this.changeEmailRequest.valid) {
-            const changeEmailRequest = new ChangeEmailRequest(
-                this.email,
-                this.changeEmailRequest.get('newEmail')?.value
-            );
+            const changeEmailRequest: ChangeEmailRequest = {
+                oldEmail: this.email,
+                newEmail: this.changeEmailRequest.get('newEmail')?.value
+            }
 
             if (changeEmailRequest.newEmail === changeEmailRequest.oldEmail) {
                 this.messageService.add({
@@ -48,9 +48,8 @@ export class GenerateEmailChangeRequestComponent implements OnInit {
             }
 
             this.userService.changeEmail(changeEmailRequest)
-            this.http.patch(`/api/v1/User/ChangeEmail`, changeEmailRequest, { withCredentials: true})
-            .subscribe((response: any) => {
-                if (response) {
+            .subscribe((response) => {
+                if (response.isSuccess) {
                     this.messageService.add({
                         severity: 'info',
                         summary: 'Info',
@@ -59,16 +58,20 @@ export class GenerateEmailChangeRequestComponent implements OnInit {
                     });
                     this.userService.setEmail(changeEmailRequest.newEmail);
                     this.changeEmailRequest.reset();
-                }
-            }, 
-            (error) => {
-                if (error.status === 400) {
+                } else {
                     this.messageService.add({
                         severity: 'error',
                         summary: 'Error',
-                        detail: 'This new e-mail is already in use. Try with another.'
+                        detail: response.error!.message,
                     });
                 }
+            }, 
+            (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: error.error?.message,
+                });
             })
         }
     }

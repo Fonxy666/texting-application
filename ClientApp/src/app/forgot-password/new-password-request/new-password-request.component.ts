@@ -3,8 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { passwordMatchValidator, passwordValidator } from '../../validators/ValidPasswordValidator';
-import { ResetPasswordRequest } from '../../model/user-credential-requests/ResetPasswordRequest';
 import { UserService } from '../../services/user-service/user.service';
+import { ResetPasswordRequest } from '../../model/user-credential-requests/user-credentials-requestsmodel.';
 
 @Component({
   selector: 'app-new-password-request',
@@ -91,8 +91,8 @@ export class NewPasswordRequestComponent implements OnInit {
 
     examineCode() {
         this.userService.examinePasswordResetLink(this.emailParam, this.idParam)
-        .subscribe((response: any) => {
-            if (response == true) {
+        .subscribe((response) => {
+            if (response.isSuccess) {
                 this.validCode = true;
             } else {
                 this.validCode = false;
@@ -104,16 +104,16 @@ export class NewPasswordRequestComponent implements OnInit {
     }
 
     onFormSubmit() {
-        const resetRequest = new ResetPasswordRequest(
-            this.emailParam,
-            this.idParam,
-            this.passwordReset.get('password')?.value
-        )
+        const resetRequest: ResetPasswordRequest = {
+            Email: this.emailParam,
+            ResetCode: this.idParam,
+            NewPassword: this.passwordReset.get('password')?.value
+        }
 
         this.userService.setNewPassword(this.idParam, resetRequest)
-        .subscribe((response: any) => {
+        .subscribe((response) => {
             console.log(response);
-            if (response == true) {
+            if (response.isSuccess) {
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Success',
@@ -123,6 +123,12 @@ export class NewPasswordRequestComponent implements OnInit {
                 setTimeout(() => {
                     this.router.navigate(['/']);
                 }, 2000);
+            } else {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: response.error!.message
+                });
             }
         },
         (error) => {

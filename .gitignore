@@ -477,3 +477,21 @@ $RECYCLE.BIN/
 *.lnk
 
 **/.idea/
+/Services/UserService/UserService/vault_cluster_keys.json
+/Services/UserService/UserService/.env
+/Services/UserService/UserService/Avatars/*
+/Services/UserService/UserService/pgdata
+/Services/UserService/UserService/test_pgdata
+/Services/UserService/UserService/Vault_Data
+/Services/UserService/UserService/Vault_Data/Avatars/*
+!/Services/UserService/UserService/Vault_Data/Avatars/TestUsername1.jpg
+
+/Services/UserService/UserServiceTests/user-service-test-config.json
+
+/Services/ChatService/ChatService/.env
+/Services/ChatService/ChatService/pgdata
+/Services/ChatService/ChatService/test_pgdata
+
+/Services/ChatService/ChatServiceTests/chat-service-test-config.json
+
+

@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+	<TargetFramework>net8.0</TargetFramework>
+	<Nullable>enable</Nullable>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<UserSecretsId>b0652031-1d97-4d1d-9e15-9bc050317478</UserSecretsId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Protobuf Include="../../../Protos/GrpcAuthenticationService.proto" GrpcServices="Client" />
+		<Protobuf Include="../../../Protos/GrpcUserService.proto" GrpcServices="Client" />
+	</ItemGroup>
+
+	<ItemGroup>
+	<PackageReference Include="Google.Protobuf" Version="3.30.2" />
+	<PackageReference Include="Grpc.Net.Client" Version="2.70.0" />
+	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.14" />
+	<PackageReference Include="NUnit" Version="3.13.3" />
+	<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+	<PackageReference Include="Docker.DotNet" Version="3.125.15" />
+	<PackageReference Include="DotNetEnv" Version="3.0.0" />
+	<PackageReference Include="Grpc.AspNetCore" Version="2.70.0" />
+	<PackageReference Include="Grpc.Tools" Version="2.71.0">
+		<PrivateAssets>all</PrivateAssets>
+		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	</PackageReference>
+	<PackageReference Include="Microsoft.AspNet.SignalR" Version="2.4.3" />
+	<PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.4.3" />
+	<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.1" />
+	<PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+	<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.1" />
+	<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
+	<PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.1" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.1">
+		<PrivateAssets>all</PrivateAssets>
+		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	</PackageReference>
+	<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.1" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.1" />
+	<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
+	<PackageReference Include="MockQueryable.Moq" Version="7.0.1" />
+	<PackageReference Include="Moq" Version="4.20.70" />
+	<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.1" />
+	<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\Textinger.Shared\Textinger.Shared.csproj" />
+	</ItemGroup>
+
+</Project>

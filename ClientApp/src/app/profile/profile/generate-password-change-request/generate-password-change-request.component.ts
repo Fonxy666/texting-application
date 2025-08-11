@@ -2,8 +2,9 @@ import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/co
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { passwordValidator, passwordMatchValidator } from '../../../validators/ValidPasswordValidator';
 import { MessageService } from 'primeng/api';
-import { ChangePasswordRequestForUser } from '../../../model/user-credential-requests/ChangePasswordRequestForUser';
 import { UserService } from '../../../services/user-service/user.service';
+import { ChangePasswordRequestForUser } from '../../../model/user-credential-requests/user-credentials-requestsmodel.';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-generate-password-change-request',
@@ -24,6 +25,7 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
 
     constructor(
         private fb: FormBuilder,
+        private router: Router,
         private userService: UserService,
         private messageService: MessageService,
         private renderer: Renderer2
@@ -76,30 +78,46 @@ export class GeneratePasswordChangeRequestComponent implements OnInit {
     }
 
     OnFormSubmit() {
-        const changePasswordRequest = new ChangePasswordRequestForUser(
-            this.changePasswordRequest.get('oldPassword')?.value,
-            this.changePasswordRequest.get('password')?.value
-        );
+        const changePasswordRequest: ChangePasswordRequestForUser = {
+            oldPassword: this.changePasswordRequest.get('oldPassword')?.value,
+            password: this.changePasswordRequest.get('password')?.value
+        };
 
         this.userService.changePassword(changePasswordRequest)
-        .subscribe((response: any) => {
-            if (response) {
+        .subscribe((response) => {
+            if (response.isSuccess) {
                 this.messageService.add({
                     severity: 'info',
                     summary: 'Info',
                     detail: 'Your password changed.',
                     styleClass: 'ui-toast-message-info'
                 });
-            }
-        }, 
-        (error) => {
-            if (error.status === 400) {
+
+                this.changePasswordRequest.reset();
+
+                this.showOldPassword = false;
+                this.showNewPassword = false;
+                this.showRepeatNewPassword = false;
+            } else {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: 'Unsuccessful change, wrong password(s).'
+                    detail: response.error!.message
                 });
             }
+        },
+        (error) => {
+            console.log(error)
+            if (error.error.message.includes("Account is locked")) {
+                this.router.navigate(['/'], { queryParams: { logout: 'true' } });
+                console.log("OKE");
+            }
+            console.log(error);
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: error.error.message
+            });
         });
     }
 

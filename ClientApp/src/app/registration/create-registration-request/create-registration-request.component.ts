@@ -1,11 +1,11 @@
 import { Component, ElementRef, EventEmitter, Output, Renderer2, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup,  Validators } from '@angular/forms';
-import { RegistrationRequest } from '../../model/auth-requests/RegistrationRequest';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { DomSanitizer } from '@angular/platform-browser';
 import { passwordValidator, passwordMatchValidator, decryptTokenValidator } from '../../validators/ValidPasswordValidator';
 import { Router } from '@angular/router';
 import { CryptoService } from '../../services/crypto-service/crypto.service';
+import { RegistrationRequest } from '../../model/auth-requests/auth-requests';
 
 @Component({
   selector: 'app-create-registration-request',
@@ -83,16 +83,16 @@ export class CreateRegistrationRequestComponent {
             const result = await this.cryptoService.generateKeyPair();
             const encryptedKey = await this.cryptoService.encryptPrivateKey(result.privateKey, this.registrationRequest.get("decryptToken")!.value);
             
-            const registrationRequest = new RegistrationRequest(
-                this.registrationRequest.get('email')?.value,
-                this.registrationRequest.get('username')?.value,
-                this.registrationRequest.get('password')?.value,
-                this.profilePic,
-                this.registrationRequest.get('phoneNumber')?.value,
-                result.publicKey,
-                encryptedKey.encryptedPrivateKey,
-                encryptedKey.iv
-            );
+            const registrationRequest: RegistrationRequest = {
+                email: this.registrationRequest.get('email')?.value,
+                userName: this.registrationRequest.get('username')?.value,
+                password: this.registrationRequest.get('password')?.value,
+                image: this.profilePic,
+                phoneNumber: this.registrationRequest.get('phoneNumber')?.value,
+                publicKey: result.publicKey,
+                encryptedPrivateKey: encryptedKey.encryptedPrivateKey,
+                iv: encryptedKey.iv
+            };
     
             this.SendRegistrationRequest.emit(registrationRequest);
         } catch (error) {

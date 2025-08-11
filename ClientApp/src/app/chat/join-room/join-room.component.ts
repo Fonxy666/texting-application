@@ -3,11 +3,12 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { ChatService } from '../../services/chat-service/chat.service';
-import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
 import { MessageService } from 'primeng/api';
 import { CryptoService } from '../../services/crypto-service/crypto.service';
 import { catchError, firstValueFrom, from, of } from 'rxjs';
 import { IndexedDBService } from '../../services/db-service/indexed-dbservice.service';
+import { JoinRoomRequest } from '../../model/room-requests/chat-requests.model';
+import { RoomKeyRequest } from '../../model/key-requests/key-requests.model';
 
 @Component({
   selector: 'app-join-room',
@@ -33,12 +34,11 @@ export class JoinRoomComponent implements OnInit {
 
     backgroundVideo: string = "./assets/videos/white_black_video.mp4";
     joinRoomForm!: FormGroup;
-    isSunActive: boolean = true;
-    isMoonActive: boolean = false;
     userId: string = this.cookieService.get("UserId");
     userName: string = "";
     animation: boolean = true;
     showPassword: boolean = false;
+    isLoading: boolean = false;
 
     ngOnInit() : void {
         this.animation = this.cookieService.get("Animation") == "True";
@@ -79,10 +79,6 @@ export class JoinRoomComponent implements OnInit {
             room: ['', Validators.required],
             password: ['', Validators.required]
         })
-
-        setInterval(() => {
-            this.toggleImageClasses();
-        }, 10000);
     };
 
     togglePasswordVisibility(event: Event): void {
@@ -98,31 +94,32 @@ export class JoinRoomComponent implements OnInit {
         this.renderer.addClass(this.passwordInputToggle.nativeElement, iconClassToAdd);
     }
 
-    toggleImageClasses() {
-        this.isSunActive = !this.isSunActive;
-    };
-
     createForm() {
-        return new JoinRoomRequest(
-            this.joinRoomForm.get('room')?.value,
-            this.joinRoomForm.get('password')?.value
-        )
+        const returningValue: JoinRoomRequest = {
+            roomName: this.joinRoomForm.get('room')?.value,
+            password: this.joinRoomForm.get('password')?.value
+        }
+
+        return returningValue;
     };
 
     joinRoom() {
+        this.isLoading = true;
+
         this.chatService.joinToRoom(this.createForm()).subscribe(
             async response => {
-                if (response.success) {
+                if (response.isSuccess) {
+                    const { roomId, roomName } = response.data;
                     const userId = this.cookieService.get("UserId");
-                    const usersInRoom = await this.chatService.getUsersInSpecificRoom(response.roomId);
+                    const usersInRoom = await this.chatService.getUsersInSpecificRoom(roomId);
                     const keyResponse = await firstValueFrom(
-                        this.cryptoService.getUserPrivateKeyForRoom(response.roomId)
-                            .pipe(
-                                catchError(() => {
-                                    return of(null);
-                                  })
-                            )
+                        this.cryptoService.getUserPrivateKeyForRoom(roomId).pipe(
+                            catchError(_ => {
+                                return of(null);
+                            })
+                        )
                     );
+                    
                     const awaitedUserInputKey = await firstValueFrom(
                         from(this.dbService.getEncryptionKey(userId))
                             .pipe(
@@ -137,7 +134,7 @@ export class JoinRoomComponent implements OnInit {
                             )
                     );
   
-                    if (userId && keyResponse && awaitedUserInputKey) {
+                    if (userId && keyResponse?.isSuccess && awaitedUserInputKey) {
                         if (this.chatService.userInRoom()) {
                             this.messageService.add({
                                 severity: 'error',
@@ -145,10 +142,23 @@ export class JoinRoomComponent implements OnInit {
                                 detail: 'First you need to leave the actual room.'
                             });
                         }
-                        this.chatService.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
-                    } else if (keyResponse == null && usersInRoom > 0) {
-                        this.chatService.requestSymmetricRoomKey(response.roomId, this.chatService.connection.connectionId!, response.roomName);
-                    } else if (keyResponse == null && usersInRoom === 0) {
+                        
+                        this.isLoading = false;
+                        this.chatService.setRoomCredentialsAndNavigate(roomName, roomId);
+                        
+                    } else if (!keyResponse?.isSuccess && usersInRoom > 0) {
+                        const request: RoomKeyRequest = {
+                            roomId: roomId,
+                            connectionId: this.chatService.connection.connectionId!,
+                            roomName: roomName
+                        }
+                        
+                        this.isLoading = false;
+                        await this.chatService.requestSymmetricRoomKey(request);
+                        
+                    } else if (!keyResponse?.isSuccess && usersInRoom === 0) {
+                        this.isLoading = false;
+                        
                         this.messageService.add({
                             severity: 'error',
                             summary: 'Error',
@@ -158,13 +168,12 @@ export class JoinRoomComponent implements OnInit {
                 }
             },
             error => {
-                if (error.error === 'Incorrect login credentials') {
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: 'Invalid Roomname or password.'
-                    });
-                }
+                this.isLoading = false;
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Invalid Roomname or password.'
+                });
             }
         )
     };

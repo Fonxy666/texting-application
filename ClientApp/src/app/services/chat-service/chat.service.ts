@@ -1,22 +1,21 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject, firstValueFrom, Observable, Subject } from 'rxjs';
-import { MessageRequest } from '../../model/message-requests/MessageRequest';
+import { ChangeMessageSeenHtttpRequest, ChangeMessageSeenWebSocketRequest, MessageRequest } from '../../model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
-import { ChangeMessageRequest } from '../../model/user-credential-requests/ChangeMessageRequest';
-import { ChangeMessageSeenRequest } from '../../model/message-requests/ChangeMessageSeenRequest';
-import { ConnectedUser } from '../../model/room-requests/ConnectedUser';
 import { Router } from '@angular/router';
 import { UserService } from '../user-service/user.service';
 import { FriendService } from '../friend-service/friend.service';
-import { CreateRoomRequest } from '../../model/room-requests/CreateRoomRequest';
 import { HttpClient } from '@angular/common/http';
 import { ErrorHandlerService } from '../error-handler-service/error-handler.service';
-import { JoinRoomRequest } from '../../model/room-requests/JoinRoomRequest';
-import { ChangePasswordRequestForRoom } from '../../model/room-requests/ChangePasswordRequestForRoom';
 import { CryptoService } from '../crypto-service/crypto.service';
 import { IndexedDBService } from '../db-service/indexed-dbservice.service';
-import { StoreRoomSymmetricKey } from '../../model/room-requests/StoreRoomSymmetricKey';
+import { ChangeMessageRequest } from '../../model/user-credential-requests/user-credentials-requestsmodel.';
+import { ReceiveMessageResponse, RoomIdAndRoomNameResponse, SymmetricKeyResponse } from '../../model/responses/chat-responses.model';
+import { ServerResponse } from '../../model/responses/shared-response.model';
+import { ChangePasswordForRoomRequest, CreateRoomRequest, GetMessagesRequest, JoinRoomRequest, StoreRoomSymmetricKeyRequest } from '../../model/room-requests/chat-requests.model';
+import { ConnectedUser } from '../../model/chat-models.model';
+import { GetSymmetricKeyRequest, RoomKeyRequest } from '../../model/key-requests/key-requests.model';
 @Injectable({
     providedIn: 'root'
 })
@@ -46,25 +45,37 @@ export class ChatService {
             .configureLogging(signalR.LogLevel.Critical)
             .build();
 
-        this.initializeConnection();
+        let userId = this.cookieService.get("UserId");
 
-        this.connection.on("ReceiveMessage", async (user: string, message: string, messageTime: string, userId: string, messageId: string, seenList: string[], roomId: string, iv: string) => {
+        if (userId !== "") {
+            this.initializeConnection();
+        }
+
+        this.connection.on("ReceiveMessage", async (response: ReceiveMessageResponse) => {
+            const { userName, senderId, text, sendTime, messageId, seenList, roomId, iv } = response;
+
             if (!this.messages[roomId]) {
                 this.messages[roomId] = [];
                 this.messagesInitialized$.next(roomId);
             }
-            if (userId !== this.cookieService.get("UserId")) {
-                const messageObj = { encrypted: user !== "Textinger bot", messageData: { user, message, messageTime, userId, messageId, seenList, iv } };
+
+            if (senderId !== this.cookieService.get("UserId")) {
+                const messageObj = { encrypted: senderId !== "Textinger bot", messageData: { userName, senderId, text, sendTime, userId, messageId, seenList, iv } };
+
+                if (this.messages[roomId].some(m => m.messageData.messageId === messageId)) {
+                    return;
+                }
                 this.messages[roomId].push(messageObj);
         
-                if (user === "Textinger bot") {
+                if (senderId === "Textinger bot") {
                     setTimeout(() => {
-                        this.removeBotMessage(roomId, messageId);
+                        this.removeBotMessage(roomId, messageId!);
                     }, 5000);
                 }
-              }
+            }
+
             if (this.currentRoom === roomId) {
-                this.messages$.next([...this.messages[roomId]]);
+                this.messages$.next(this.messages[roomId]);
             }
         });
 
@@ -94,21 +105,45 @@ export class ChatService {
             const cryptoKeyUserPublicKey = await this.cryptoService.importPublicKeyFromBase64(userData.publicKey);
             const userEncryptedData = await firstValueFrom(this.cryptoService.getUserPrivateKeyAndIv());
             const encryptedRoomSymmetricKey = await firstValueFrom(this.cryptoService.getUserPrivateKeyForRoom(userData.roomId));
-            const encryptedRoomSymmetricKeyToArrayBuffer = this.cryptoService.base64ToBuffer(encryptedRoomSymmetricKey.encryptedKey);
-            const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.encryptedPrivateKey, userEncryptionInput!, userEncryptedData.iv);
-            const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
-            const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
-            const keyToArrayBuffer = await this.cryptoService.exportCryptoKey(decryptedRoomKey);
-            const encryptRoomKeyForUser = await this.cryptoService.encryptSymmetricKey(keyToArrayBuffer, cryptoKeyUserPublicKey);
-            const bufferToBase64 = this.cryptoService.bufferToBase64(encryptRoomKeyForUser);
-
-            await this.sendRoomSymmetricKey(bufferToBase64, userData.connectionId, userData.roomId, userData.roomName);
+            if (encryptedRoomSymmetricKey.isSuccess && userEncryptedData.isSuccess) {
+                const encryptedRoomSymmetricKeyToArrayBuffer = this.cryptoService.base64ToBuffer(encryptedRoomSymmetricKey.data.encryptedPrivateKey);
+                const decryptedUserPrivateKey = await this.cryptoService.decryptPrivateKey(userEncryptedData.data.encryptedPrivateKey, userEncryptionInput!, userEncryptedData.data.iv);
+                const decryptedUserCryptoPrivateKey = await this.cryptoService.importPrivateKeyFromBase64(decryptedUserPrivateKey!);
+                const decryptedRoomKey = await this.cryptoService.decryptSymmetricKey(encryptedRoomSymmetricKeyToArrayBuffer, decryptedUserCryptoPrivateKey);
+                const keyToArrayBuffer = await this.cryptoService.exportCryptoKey(decryptedRoomKey);
+                const encryptRoomKeyForUser = await this.cryptoService.encryptSymmetricKey(keyToArrayBuffer, cryptoKeyUserPublicKey);
+                const bufferToBase64 = this.cryptoService.bufferToBase64(encryptRoomKeyForUser);
+                
+                const request: GetSymmetricKeyRequest = {
+                    encryptedRoomKey: bufferToBase64,
+                    connectionId: userData.connectionId,
+                    roomId: userData.roomId,
+                    roomName: userData.roomName
+                }
+                await this.sendRoomSymmetricKey(request);
+            } else if (!encryptedRoomSymmetricKey.isSuccess) {
+                console.error(encryptedRoomSymmetricKey.error?.message);
+            } else if (!userEncryptedData.isSuccess) {
+                console.error(userEncryptedData.error?.message);
+            }
         })
 
-        this.connection.on("GetSymmetricKey", async (encryptedKey: string, roomId: string, roomName: string) => {
-            this.setRoomCredentialsAndNavigate(roomName, roomId);
-            const data = new StoreRoomSymmetricKey(encryptedKey, roomId);
-            await firstValueFrom(this.cryptoService.sendEncryptedRoomKey(data));
+        this.connection.on("GetSymmetricKey", async (response: SymmetricKeyResponse) => {
+            const data: StoreRoomSymmetricKeyRequest = {
+                encryptedKey: response.encryptedRoomKey,
+                roomId: response.roomId
+            };
+
+            let result = await firstValueFrom(this.cryptoService.sendEncryptedRoomKey(data));
+            
+            if (result.isSuccess) {
+                const getKeyResult = await this.dbService.getEncryptionKey(userId);
+                this.cryptoService.getUserPrivateKeyForRoom(response.roomId).subscribe(res => {
+                    if (res.isSuccess && getKeyResult !== null) {
+                        this.setRoomCredentialsAndNavigate(response.roomName, response.roomId);
+                    }
+                });
+            }
         })
     }
 
@@ -122,6 +157,7 @@ export class ChatService {
       }
 
     public setCurrentRoom(roomId: string) {
+        this.currentRoom = null;
         this.currentRoom = roomId;
         this.messages$.next(this.messages[roomId] || []);
     }
@@ -186,17 +222,17 @@ export class ChatService {
         }
     }
 
-    public async requestSymmetricRoomKey(roomId: string, connectionId: string, roomName: string) {
+    public async requestSymmetricRoomKey(request: RoomKeyRequest) {
         try {
-            await this.connection.invoke("KeyRequest", roomId, connectionId, roomName);
+            await this.connection.invoke("KeyRequest", request);
         } catch (error) {
             console.error('Error get the symmetric key:', error);
         }
     }
 
-    public async sendRoomSymmetricKey(key: string, connectionId: string, roomId: string, roomName: string) {
+    public async sendRoomSymmetricKey(request: GetSymmetricKeyRequest) {
         try {
-            await this.connection.invoke("SendSymmetricKeyToRequestUser", key, connectionId, roomId, roomName);
+            await this.connection.invoke("SendSymmetricKeyToRequestUser", request);
         } catch (error) {
             console.error('Error get the symmetric key:', error);
         }
@@ -218,7 +254,7 @@ export class ChatService {
         }
     }
 
-    public async modifyMessageSeen(request: ChangeMessageSeenRequest) {
+    public async modifyMessageSeen(request: ChangeMessageSeenWebSocketRequest ) {
         try {
             await this.connection.invoke("ModifyMessageSeen", request);
         } catch (error) {
@@ -246,8 +282,7 @@ export class ChatService {
 
     public async leaveChat() {
         try {
-            this.removeSessionStates()
-            console.log(this.currentRoom);
+            this.removeSessionStates();
             this.messages[this.currentRoom!] = [];
             await this.connection.stop();
             console.log('Chat-SignalR connection stopped.');
@@ -304,63 +339,63 @@ export class ChatService {
         return false;
     }
 
-    registerRoom(form: CreateRoomRequest): Observable<any> {
+    registerRoom(form: CreateRoomRequest): Observable<ServerResponse<RoomIdAndRoomNameResponse>> {
         return this.errorHandler.handleErrors(
-            this.http.post(`/api/v1/Chat/RegisterRoom`, form, { withCredentials: true })
+            this.http.post<ServerResponse<RoomIdAndRoomNameResponse>>(`/api/v1/Chat/RegisterRoom`, form, { withCredentials: true })
         )
     }
 
-    joinToRoom(form: JoinRoomRequest): Observable<any> {
+    joinToRoom(form: JoinRoomRequest): Observable<ServerResponse<RoomIdAndRoomNameResponse>> {
         return this.errorHandler.handleErrors(
-            this.http.post(`/api/v1/Chat/JoinRoom`, form, { withCredentials: true })
+            this.http.post<ServerResponse<RoomIdAndRoomNameResponse>>(`/api/v1/Chat/JoinRoom`, form, { withCredentials: true })
         )
     }
 
-    saveMessage(form: MessageRequest): Observable<any> {
+    saveMessage(form: MessageRequest): Observable<ServerResponse<ReceiveMessageResponse>> {
         return this.errorHandler.handleErrors(
-            this.http.post(`api/v1/Message/SendMessage`, form, { withCredentials: true})
+            this.http.post<ServerResponse<ReceiveMessageResponse>>(`api/v1/Message/SendMessage`, form, { withCredentials: true})
         )
     }
 
-    getMessages(roomId: string): Observable<any> {
+    getMessages(form: GetMessagesRequest): Observable<ServerResponse<ReceiveMessageResponse[]>> {
         return this.errorHandler.handleErrors(
-            this.http.get(`/api/v1/Message/GetMessages/${roomId}`, { withCredentials: true })
+            this.http.get<ServerResponse<ReceiveMessageResponse[]>>(`/api/v1/Message/GetMessages/${form.roomId}/${form.index}`, { withCredentials: true })
         )
     }
 
-    editMessage(request: ChangeMessageRequest): Observable<any> {
+    editMessage(request: ChangeMessageRequest): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.patch(`/api/v1/Message/EditMessage`, request, { withCredentials: true })
+            this.http.patch<ServerResponse<void>>(`/api/v1/Message/EditMessage`, request, { withCredentials: true })
         )
     }
 
-    editMessageSeen(request: ChangeMessageSeenRequest): Observable<any> {
+    editMessageSeen(request: ChangeMessageSeenHtttpRequest): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.patch(`/api/v1/Message/EditMessageSeen`, request, { withCredentials: true })
+            this.http.patch<ServerResponse<void>>(`/api/v1/Message/EditMessageSeen`, request, { withCredentials: true })
         )
     }
 
-    messageDelete(messageId: string): Observable<any> {
+    messageDelete(messageId: string): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.delete(`/api/v1/Message/DeleteMessage?id=${messageId}`, { withCredentials: true})
+            this.http.delete<ServerResponse<void>>(`/api/v1/Message/DeleteMessage?messageId=${messageId}`, { withCredentials: true})
         )
     }
 
-    userIsTheCreator(roomId: string): Observable<any> {
+    userIsTheCreator(roomId: string): Observable<ServerResponse<boolean>> {
         return this.errorHandler.handleErrors(
-            this.http.get(`/api/v1/Chat/ExamineIfTheUserIsTheCreator?roomId=${roomId}`, { withCredentials: true})
+            this.http.get<ServerResponse<boolean>>(`/api/v1/Chat/ExamineIfTheUserIsTheCreator?roomId=${roomId}`, { withCredentials: true})
         )
     }
 
-    deleteRoomHttpRequest(roomId: string): Observable<any> {
+    deleteRoomHttpRequest(roomId: string): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.delete(`/api/v1/Chat/DeleteRoom?roomId=${roomId}`, { withCredentials: true})
+            this.http.delete<ServerResponse<void>>(`/api/v1/Chat/DeleteRoom?roomId=${roomId}`, { withCredentials: true})
         )
     }
 
-    changePasswordForRoom(form: ChangePasswordRequestForRoom): Observable<any> {
+    changePasswordForRoom(form: ChangePasswordForRoomRequest): Observable<ServerResponse<void>> {
         return this.errorHandler.handleErrors(
-            this.http.patch(`/api/v1/Chat/ChangePasswordForRoom`, form, { withCredentials: true})
+            this.http.patch<ServerResponse<void>>(`/api/v1/Chat/ChangePasswordForRoom`, form, { withCredentials: true})
         )
     }
 }
