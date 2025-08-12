@@ -1,6 +1,12 @@
 # Texting application - Full Stack Messaging Application
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Fonxy666/texting-application/main/ClientApp/src/assets/images/textinger.png" width="200" alt="Textinger logo">
+</p>
+
 Textinger is a full-stack ASP.NET core application designed to chat with your friends in the web application in an MSSQL database with an Angular(typescript) Frontend Server.
+
+https://github.com/Fonxy666/texting-application/blob/main/ClientApp/src/assets/images/textinger.png
 
 # Project Status
 ONGOING project! The Readme currently not updated for the updated server, ongoing readme clarification...
