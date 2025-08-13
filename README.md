@@ -61,7 +61,10 @@ Spin up the backend, database, and Vault with **one command**:
 
 ```bash
 git clone https://github.com/Fonxy666/texting-application.git
-cd texting-application
+cd texting-application/Services/UserService
+docker-compose up -d
+
+cd texting-application/Services/ChatService
 docker-compose up -d
 ```
 
