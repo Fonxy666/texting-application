@@ -1,78 +1,106 @@
-# Texting application - Full Stack Messaging Application
+# Textinger - Full Stack Messaging Application
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/Fonxy666/texting-application/main/ClientApp/src/assets/images/textinger.png" width="200" alt="Textinger logo">
 </p>
 
-Textinger is a full-stack ASP.NET core application designed to chat with your friends in the web application in an MSSQL database with an Angular(typescript) Frontend Server.
+Textinger is a full-stack messaging application built with **ASP.NET Core** and **Angular (TypeScript)**. It allows you to chat with friends securely in real time using a **PostgreSQL** database backend.  
 
-https://github.com/Fonxy666/texting-application/blob/main/ClientApp/src/assets/images/textinger.png
+---
 
-# Project Status
-ONGOING project! The Readme currently not updated for the updated server, ongoing readme clarification...
-Feel free to fork the repository, and learn from it.
+## Project Status
+**ONGOING** — The project is under active development. The README is being updated for clarity. Feel free to fork and explore the code.  
 
-# Little overview 
-All The "background images" below are videos, so it's animated.
-  Home page:
+---
+
+## Quick Overview
+
+- **Home Page**  
   ![Home page](https://github.com/Fonxy666/texting-application/blob/main/GithubImages/home_page_logout.jpg)
 
-  Login page:
+- **Login Page**  
   ![Login page](https://github.com/Fonxy666/texting-application/blob/main/GithubImages/login_page.jpg)
 
-  Chat page:
+- **Chat Page**  
   ![chat page](https://github.com/Fonxy666/texting-application/blob/main/GithubImages/chat_page.jpg)
 
-  Profile page:
+- **Profile Page**  
   ![profile page](https://github.com/Fonxy666/texting-application/blob/main/GithubImages/profile_page.jpg)
 
-# Backend Installation Instructions
-- Install the .NET SDK 8.0.204 (.NET 8.0.4)
-- Install dependencies.
-- Set up the database connections, and other needs through the `secrets.json` file.
+> Note: All “background images” in the app are actually videos for animated effects.
 
-# About the Application
-- Register to the application.
-- After registration, you need to log in to the application with "Username-Password" combo, with Google or with Facebook.
-- You can configure your profile if you click on your avatar in the top right corner, than under the profile menu.
-- You can disable animation/appear as an anonym person if you click on your avatar in the top right corner, than under the settings menu.
-- (ONGOING) To join or create a room, you need to give the application a 6 digit token(encryption token) which will be used to decrypt the user's private token.
-- You can register a new room, or join to an existing one under the "Connect to a room" menu.
-- In the chat room, you can delete or modify your already sent messages if you click on the '3 dot' next to your message.
-- Users can send friend request to another existing users, and other users can accept or decline it.
-- User's can invite other user's to the chatroom, if they are friends.
+---
 
-# The backend is built on the ASP.NET 8 framework, with the main goals of being/having:
-- Secure: for example: 2FA, refresh tokens
-- Transparent
-- Easy to use
-- Object-Oriented
-- MSSQL database
-- The frontend is powered by Angular using 17.0 version to provide a fast, clean and interactive user interface:
-- Also transparent
-- Secure (for example, users need to verify themself to join to a room/ chat with friends)
-- Bootstrap (for responsive view, so users can use the application in mobiles as well)
-- Easy to use: everything is easy and logical
+## Features
 
-# Security
-- The application implements secure practices such as JWT token, refresh token and hashed password storage, password confirmation, currently running dockerized MSSQL databases, and sensitive data is stored in the `secrets.json` file.
-- New feature(ONGOING): I'm still implementing the end-to-end encryption, which means all the data sent by the frontend is encrypted, so the server/database won't see any sensitive data.
-- User's asymmetric key database: The application is using a 2. database, which is a KMS(Key Management Service) developed my myself. It's not really a KMS, but i'm only storing the user's private keys encrypted here.
+- Register and log in using **username/password**, **Google**, or **Facebook**.
+- Configure your profile and privacy settings (disable animations or appear anonymous).
+- Join or create a chat room using a **6-digit encryption token**.
+- Modify or delete sent messages.
+- Send and manage **friend requests**.
+- Invite friends to chat rooms.
+- **Secure**: 2FA, refresh tokens, hashed passwords, E2E encryption.
+- **Scalable**: Microservice architecture; Redis integration planned.
+- **Fast**: Optimized database queries for minimal load.
+- **Frontend**: Angular 17, Bootstrap responsive design.
 
-# Configuration
-- On the frontend side, there is no sensitive data stored, so you don't need to specify anything by yourself.
-- update(ONGOING): the end-to-end encryption store a sensitive data in the frontend, but only which is necessary. 
+---
 
-On the backend side, sensitive data is stored in the `secrets.json` file. To set up the application, create a `secrets.json` file in the user profile directory:
-- Windows: %APPDATA%\microsoft\UserSecrets<userSecretsId>\secrets.json
-- Linux: ~/. microsoft/usersecrets//secrets.json
-- Mac: ~/. microsoft/usersecrets//secrets.json
+## Security
 
-`secrets.json` lookalike:
+- JWT token authentication, refresh tokens, and password confirmation.
+- End-to-end encryption: data is encrypted client-side.
+- **Asymmetric key vault** stored in a Dockerized **HashiCorp Vault**.
+- Sensitive data is kept in `secrets.json`.
+
+---
+
+## Quick Start (Docker)
+
+Spin up the backend, database, and Vault with **one command**:
+
+```bash
+git clone https://github.com/Fonxy666/texting-application.git
+cd texting-application
+docker-compose up -d
+```
+
+This will start:
+
+- PostgreSQL databases for UserService and ChatService
+- HashiCorp Vault for key storage
+- Backend microservices (UserService & ChatService)
+You only need to edit secrets.json if you want to customize credentials, OAuth keys, or tokens. Otherwise, default test secrets will work for local testing.
+
+---
+
+## Backend Installation (Manual)
+If you prefer to run each service manually:
+
+1. Clone the repository
+git clone https://github.com/Fonxy666/texting-application.git
+cd texting-application
+
+2. Install dependencies
+cd UserService
+dotnet restore
+
+cd ../ChatService
+dotnet restore
+
+3. Configure secrets
+
+Create secrets.json in the user profile directory:
+
+Windows: %APPDATA%\microsoft\UserSecrets\<userSecretsId>\secrets.json
+
+Linux / Mac: ~/.microsoft/usersecrets/<userSecretsId>/secrets.json
+
+Example: User Service secrets.json:
 ```
 {
   "IssueAudience": "{yourIssueAudience}",
-  "ConnectionString": "Server={yourserverip},{port};Database={database-name};User Id={your-user-id};Password={your-string-password};MultipleActiveResultSets=true;TrustServerCertificate=True;",
+  "UserDbConnectionString": "Host=localhost;Port=5432;Username=postgres;Password={your_password};Database=user_db;SSL Mode=Disable;",
   "IssueSign": "{yourIssueSign}",
   "AdminEmail": "{admin-email}",
   "AdminUserName": "{Admin}",
@@ -83,12 +111,54 @@ On the backend side, sensitive data is stored in the `secrets.json` file. To set
   "GoogleClientSecret": "after registering the application, you will be able to get the clientsecret as well}",
   "FacebookClientId": "{same as the google,you need to register the app for facebook login, but the url is: ''",
   "FacebookClientSecret": "{same as google, you will get this,too after registering the application in facebookdevs}",
-  "FrontendPort": "{your frontend port, and ip}"   // like for a localhost angular one: 'http://localhost:4200'
+  "FrontendUrlAndPort": "{your frontend port, and ip}"   // like for a localhost angular one: 'http://localhost:4200'
+  "HashiCorpToken": you need to create the hashi corp token by visiting the corp ui, see more below. ,
+  "HashiCorpAddress": example: "http://127.0.0.1:8200"
+}
+```
+Example: Chat Service secrets.json:
+```
+{
+  "ChatDbConnectionString": "Host=localhost;Port=5433;Username=postgres;Password={your_password};Database=chat_db;SSL Mode=Disable;",
+  "IssueAudience": "{yourIssueAudience}",
+  "IssueSign": "{yourIssueSign}",
+  "AdminEmail": "{admin-email}",
+  "AdminUserName": "{Admin}",
+  "AdminPassword": "{adminPassword123!!!}",
+  "DeveloperEmail": "{a hotmail email, where you want to send the e-mails for registration and verification}",
+  "DeveloperPassword": "{the e-mails password, for the the program to log in to your existing hotmail account}",
+  "DeveloperAppPassword": "{app password for secure app login}",
+  "FrontendUrlAndPort": "{your frontend port, and ip}"   // like for a localhost angular one: 'http://localhost:4200'
+  "GrpcUrl" : "the gRPC url and port for the microservice communication" // example: "https://localhost:7100"
 }
 ```
 
-# Tests
-  For testing in the backend, you need to define a `testConfiguration.json` -> root/Server/MessageAppServer/testConfiguration.json. These tests will run in a different database, not in the 'real-world' database. This file should look the same as the `secrets.json`.
+---
 
-# Archknowledge
-  A special thanks to all contributors and libraries used in this ASP.NET/Angular project.
+## Testing
+- Create user-service-test-config.json and chat-service-test-config.json in the respective service roots.
+- The configuration should mirror `secrets.json` but with Docker Compose settings.
+- Run tests using:
+```
+cd Services/UserService/UserServuceTests
+dotnet test
+
+cd Services/ChatService/ChatServiceTests
+dotnet test
+```
+
+---
+
+## Technology Stack
+
+- Backend: ASP.NET Core 8, Microservices architecture, PostgreSQL
+- Frontend: Angular 17, Bootstrap, TypeScript
+- Security: JWT, refresh tokens, E2E encryption, HashiCorp Vault
+- Deployment: Dockerized services
+
+---
+
+## Acknowledgements
+Special thanks to all contributors and libraries used in this ASP.NET / Angular project.
+
+Note: This project is a work in progress. Updates and improvements are ongoing.
