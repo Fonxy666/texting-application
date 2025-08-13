@@ -161,4 +161,4 @@ dotnet test
 ## Acknowledgements
 Special thanks to all contributors and libraries used in this ASP.NET / Angular project.
 
-Note: This project is a work in progress. Updates and improvements are ongoing.
+> Note: This project is a work in progress. Updates and improvements are ongoing.
