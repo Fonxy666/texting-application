@@ -494,4 +494,8 @@ $RECYCLE.BIN/
 
 /Services/ChatService/ChatServiceTests/chat-service-test-config.json
 
+.conda
+/ChatBot/.env
+/ChatBot/faiss_index
+
 
