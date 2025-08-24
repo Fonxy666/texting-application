@@ -20,6 +20,7 @@ import { ManageFriendRequestComponent } from './profile/profile/manage-friend-re
 import { GenerateUserKeyChangeRequestComponent } from './profile/profile/generate-user-key-change-request/generate-user-key-change-request.component';
 import { AuthGuard } from './guards/auth.guard';
 import { UserKeyGuard } from './guards/user-key.guard';
+import { AiBotComponent } from './ai-bot/ai-bot.component';
 
 const routes: Routes = [
     { path: '', component: HomeComponent, title: 'Home' },
@@ -41,6 +42,7 @@ const routes: Routes = [
     { path: 'password-reset/:id/:email', component: NewPasswordRequestComponent, title: 'Password reset' },
     { path: 'about-us', component: AboutUsPageComponent, title: 'About us' },
     { path: 'support', component: SupportPageComponent, title: 'Support' },
+    { path: 'ai-bot', component: AiBotComponent, title: 'Ai bot' }
 ];
 
 @NgModule({

@@ -1,0 +1,11 @@
+<div>
+  <input
+    placeholder="Type your message"
+    [(ngModel)]="message"
+    name="message"
+    required
+  />
+  <button (click)="sendMessage()" [disabled]="!message">
+    Send
+  </button>
+</div>

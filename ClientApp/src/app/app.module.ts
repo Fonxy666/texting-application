@@ -37,6 +37,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MessageService } from 'primeng/api';
 import { UserKeyGuard } from './guards/user-key.guard';
 import { GenerateUserKeyChangeRequestComponent } from './profile/profile/generate-user-key-change-request/generate-user-key-change-request.component';
+import { AiBotComponent } from './ai-bot/ai-bot.component';
 
 @NgModule({
   declarations: [
@@ -63,7 +64,8 @@ import { GenerateUserKeyChangeRequestComponent } from './profile/profile/generat
     AboutUsPageComponent,
     BackgroundImageComponent,
     ManageFriendRequestComponent,
-    GenerateUserKeyChangeRequestComponent
+    GenerateUserKeyChangeRequestComponent,
+    AiBotComponent
   ],
   imports: [
     MatDialogModule,

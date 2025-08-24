@@ -35,6 +35,9 @@
                     <li class="nav-item">
                         <a class="nav-link active text-white mx-4 text-style-15-px" aria-current="page" routerLink="/support">Support</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link active text-white mx-4 text-style-15-px" aria-current="page" routerLink="/ai-bot">Chat bot</a>
+                    </li>
                     <ng-container *ngIf="loggedIn">
                         <ng-container *ngIf="roomId && roomName && !isCurrentRoute('/message-room/' + roomId)">
                             <li class="nav-item">
