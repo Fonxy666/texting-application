@@ -37,6 +37,7 @@ import { MessageService } from 'primeng/api';
 import { UserKeyGuard } from './core/guards/user-key.guard';
 import { GenerateUserKeyChangeRequestComponent } from './features/profile/profile/generate-user-key-change-request/generate-user-key-change-request.component';
 import { AiBotComponent } from './features/ai-bot/ai-bot.component';
+import { RoomFormComponent } from './shared/room-form/room-form.component';
 
 @NgModule({
   declarations: [
@@ -64,7 +65,8 @@ import { AiBotComponent } from './features/ai-bot/ai-bot.component';
     BackgroundImageComponent,
     ManageFriendRequestComponent,
     GenerateUserKeyChangeRequestComponent,
-    AiBotComponent
+    AiBotComponent,
+    RoomFormComponent
   ],
   imports: [
     MatDialogModule,

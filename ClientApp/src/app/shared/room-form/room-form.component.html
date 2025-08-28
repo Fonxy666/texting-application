@@ -1,0 +1,62 @@
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card my-5">
+                <form [formGroup]="formGroup" class="card-body cardbody-color p-lg-5">
+                    <div class="text-center">
+                        <img [src]="imageSrc" class="img-fluid profile-image-pic img-thumbnail rounded-circle my-3" width="150px" alt="image"/>
+                    </div>
+
+                    <h2 class="text-center mt-3 text-style text-white">{{ title }}</h2>
+
+                    <div class="input-container center-input">
+                        <label class="text-white text-style" for="roomName">Room name</label>
+                        <div class="input-icon">
+                            <input type="text"
+                                    (keydown.enter)="onSubmit()"
+                                    formControlName="roomName"
+                                    class="form-control text-style"
+                                    id="roomName"
+                                    placeholder="Room name"/>
+
+                        </div>
+                    </div>
+
+                    <div class="input-container center-input">
+                        <label class="text-white text-style" for="password">Password</label>
+                        <div class="input-icon">
+                            <input #passwordInput
+                                (keydown.enter)="onSubmit()"
+                                type="password"
+                                formControlName="password"
+                                class="form-control text-style"
+                                id="password"
+                                placeholder="••••••••"/>
+                            <div class="input-group-addon">
+                                <a href="#" (click)="togglePasswordVisibility($event)">
+                                    <i #passwordInputToggle class="fa fa-eye-slash large-icon text-secondary eye-icon"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="container text-center mt-5">
+                        <div class="row">
+                            <div class="col">
+                                <button (click)="onSubmit()"
+                                        [disabled]="formGroup.invalid"
+                                        class="btn btn-color px-5 mb-5 w-100"
+                                        type="button">{{ submitLabel }}</button>
+                            </div>
+                            <div class="col" *ngIf="showCancel">
+                                <button (click)="onCancel()" class="btn btn-color px-5 mb-5 w-100" type="button">
+                                    {{ cancelLabel }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

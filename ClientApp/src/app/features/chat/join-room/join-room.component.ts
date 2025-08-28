@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, Renderer2, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
@@ -13,8 +13,9 @@ import { RoomKeyRequest } from '../../../shared/model/key-requests/key-requests.
 @Component({
   selector: 'app-join-room',
   templateUrl: './join-room.component.html',
-  styleUrls: ['../../../../styles.css', '../../home/home.component.css', './join-room.component.css'],
-  providers: [ MessageService ]
+  styleUrls: ['../../../../styles.css', '../../home/home.component.css','./join-room.component.css'],
+  providers: [ MessageService ],
+  encapsulation: ViewEncapsulation.None
 })
 
 export class JoinRoomComponent implements OnInit {
@@ -76,7 +77,7 @@ export class JoinRoomComponent implements OnInit {
         }, 0);
         
         this.joinRoomForm = this.fb.group({
-            room: ['', Validators.required],
+            roomName: ['', Validators.required],
             password: ['', Validators.required]
         })
     };
@@ -96,7 +97,7 @@ export class JoinRoomComponent implements OnInit {
 
     createForm() {
         const returningValue: JoinRoomRequest = {
-            roomName: this.joinRoomForm.get('room')?.value,
+            roomName: this.joinRoomForm.get('roomName')?.value,
             password: this.joinRoomForm.get('password')?.value
         }
 

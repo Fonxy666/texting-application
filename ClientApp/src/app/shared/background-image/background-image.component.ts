@@ -8,7 +8,7 @@ import { CookieService } from 'ngx-cookie-service';
 })
 export class BackgroundImageComponent implements AfterViewInit {
     @ViewChild('backgroundVideo') backgroundVideo!: ElementRef<HTMLVideoElement>;
-    @Input() backgroundVideoSrc: string = "./assets/videos/white_black_video.mp4";
+    @Input() backgroundVideoSrc: string = "../../../assets/videos/white_black_video.mp4";
     animation: boolean;
 
     constructor(private cookiesService: CookieService, private renderer: Renderer2) {

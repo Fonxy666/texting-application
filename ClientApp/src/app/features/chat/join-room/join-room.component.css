@@ -1,7 +1,0 @@
-.center-input {
-    margin: auto;
-    width: 60%;
-    @media (max-width: 600px) {
-        width: 80%;
-    }
-}

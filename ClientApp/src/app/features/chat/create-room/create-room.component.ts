@@ -26,20 +26,14 @@ export class CreateRoomComponent implements OnInit {
         private cryptoService: CryptoService
     ) { }
 
-    myImage: string = "./assets/images/backgroundpng.png";
     boyImage: string = "./assets/images/create_room_image.png"
     createRoomForm!: FormGroup;
     token: string = "";
-    animation: boolean = true;
-    isSunActive: boolean = true;
-    isMoonActive: boolean = false;
     showPassword: boolean = false;
     publicKey: string = this.cookieService.get("PublicKey");
     isLoading: boolean = false;
 
     ngOnInit(): void {
-        this.animation = this.cookieService.get("Animation") == "True";
-
         this.token = this.cookieService.get('Token') ? 
             this.cookieService.get('Token')! : sessionStorage.getItem('Token')!;
 
