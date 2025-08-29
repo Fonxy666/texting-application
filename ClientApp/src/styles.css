@@ -180,7 +180,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .input-container {
     margin: auto;
-    width: 45vw;
+    width: 25vw;
     min-height: 100px;
     @media (max-width: 1400px) {
         width: 80%;
