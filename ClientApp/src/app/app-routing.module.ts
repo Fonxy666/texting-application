@@ -26,7 +26,7 @@ const routes: Routes = [
     { path: '', component: HomeComponent, title: 'Home' },
     { path: 'login', component: LoginComponent, title: 'Login' },
     { path: 'registration', component: RegistrationComponent, title: 'Registration' },
-    { path: 'join-room', component: JoinRoomComponent, title: 'Join room' },
+    { path: 'join-room', component: JoinRoomComponent, title: 'Join room', canActivate: [AuthGuard] },
     { path: 'message-room/:id', component: ChatComponent, title: 'Chat', canActivate: [AuthGuard, UserKeyGuard] },
     { path: 'profile/profile', component: ProfileComponent, title: 'Profile', canActivate: [AuthGuard], children: [
         { path: 'emailchange', component: GenerateEmailChangeRequestComponent },
@@ -36,7 +36,7 @@ const routes: Routes = [
         { path: 'userkey', component: GenerateUserKeyChangeRequestComponent }
     ]},
     { path: 'profile/settings', component: SettingsComponent, title: 'Settings', canActivate: [AuthGuard] },
-    { path: 'create-room', component: CreateRoomComponent, title: 'Create room' },
+    { path: 'create-room', component: CreateRoomComponent, title: 'Create room', canActivate: [AuthGuard] },
     { path: 'loading', component: LoadingScreenComponent, title: 'Loading' },
     { path: 'forgot-password', component: ForgotPasswordComponent, title: 'Reset your password' },
     { path: 'password-reset/:id/:email', component: NewPasswordRequestComponent, title: 'Password reset' },
