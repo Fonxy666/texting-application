@@ -14,8 +14,7 @@ import { RoomKeyRequest } from '../../../shared/model/key-requests/key-requests.
   selector: 'app-join-room',
   templateUrl: './join-room.component.html',
   styleUrls: ['../../../../styles.css', '../../home/home.component.css','./join-room.component.css'],
-  providers: [ MessageService ],
-  encapsulation: ViewEncapsulation.None
+  providers: [ MessageService ]
 })
 
 export class JoinRoomComponent implements OnInit {
