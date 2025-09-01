@@ -11,9 +11,18 @@ export class MessageRequest {
 }
 
 export interface ChangeMessageSeenHtttpRequest {
-    messageId: string
+    messageId: string;
 }
 
 export interface ChangeMessageSeenWebSocketRequest {
-    userId: string
+    userId: string;
+}
+
+export interface ChangeMessageTextRequest {
+    messageId: string;
+    newText: string;
+}
+
+export interface DeleteMessageRequest {
+    messageId: string;
 }

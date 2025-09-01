@@ -24,8 +24,3 @@ export interface ResetPasswordRequest {
     ResetCode: string;
     NewPassword: string;
 }
-
-export interface CheckMessageSeenListRequest {
-    UserId: string;
-    Index: number;
-}

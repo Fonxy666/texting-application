@@ -7,7 +7,8 @@ import { ChatService } from '../../core/services/chat-service/chat.service';
 import { ConnectedUser } from '../model/chat-models.model';
 import { DisplayService } from '../../core/services/display-service/display.service';
 import { CookieService } from 'ngx-cookie-service';
-import { ChangeMessageRequest, CheckMessageSeenListRequest } from '../model/user-credential-requests/user-credentials-requestsmodel.';
+import { ChangeMessageRequest } from '../model/user-credential-requests/user-credentials-requestsmodel.';
+import { ChangeMessageTextRequest, DeleteMessageRequest } from '../model/message-requests/MessageRequest';
 
 @Component({
     selector: 'app-chat-form',
@@ -47,10 +48,12 @@ export class ChatFormComponent {
     @Output() handleInviteToRoom = new EventEmitter<string>();
     @Output() changePasswordForRoom = new EventEmitter<ChangePasswordForRoomRequest>();
     @Output() leaveChat = new EventEmitter<boolean>();
-    @Output() examineNextMessageSeenList = new EventEmitter<CheckMessageSeenListRequest>();
     @Output() sendMessage = new EventEmitter<string>();
     @Output() sendMessageHttpRequest = new EventEmitter<ChangeMessageRequest>();
     @Output() closeMessageModify = new EventEmitter<void>();
+    @Output() loadAvatarFromMessages = new EventEmitter<string[]>();
+    @Output() messageModify = new EventEmitter<ChangeMessageTextRequest>();
+    @Output() deleteMessage = new EventEmitter<DeleteMessageRequest>();
 
     callRoomDelete() {
         this.deleteRoom.emit();
@@ -58,14 +61,6 @@ export class ChatFormComponent {
 
     callHandleInviteToRoom(name: string) {
         this.handleInviteToRoom.emit(name);
-    }
-
-    callExamineNextMessageSeenList(userId: string, index: number) {
-        let request: CheckMessageSeenListRequest = {
-            UserId: userId,
-            Index: index
-        };
-        this.examineNextMessageSeenList.emit(request);
     }
 
     callChangePasswordForRoom() {
@@ -94,6 +89,25 @@ export class ChatFormComponent {
         this.closeMessageModify.emit();
     }
 
+    callLoadAvatarFromMessages(seenList: string[]) {
+        this.loadAvatarFromMessages.emit(seenList);
+    }
+
+    handleMessageModify(messageId: string, newText: string) {
+        const changeMessageTextRequest: ChangeMessageTextRequest = {
+            messageId: messageId,
+            newText: newText
+        };
+        this.messageModify.emit(changeMessageTextRequest);
+    }
+
+    callMessageDelete(messageId: string) {
+        var deleteMessageRequest: DeleteMessageRequest = {
+            messageId: messageId
+        }
+        this.deleteMessage.emit(deleteMessageRequest);
+    }
+
     searchInFriends() {
         if (this.searchTermForFriends.trim() === '') {
             this.friendService.onlineFriends$.subscribe(users => {
@@ -117,4 +131,33 @@ export class ChatFormComponent {
             );
         }
     };
+
+    examineIfNextMessageNotContainsUserId(userId: string, index: number) {
+        if (this.chatService.messages[this.roomId] === undefined) {
+            return;
+        }
+
+        const slicedMessages = this.chatService.messages[this.roomId].slice(index + 1);
+
+        for (const message of slicedMessages) {
+            if (message.messageData.seenList == null) {
+                continue;
+            }
+
+            if (message.messageData.seenList.includes(userId)) {
+                return false;
+            }
+        }
+
+        this.imageCount++;
+        return true;
+    };
+
+    resetImageCount() {
+        this.imageCount = 0;
+    };
+
+    toggleShowPassword() {
+        this.showPassword = !this.showPassword;
+    }
 }
