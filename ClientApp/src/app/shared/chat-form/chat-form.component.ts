@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { FriendService } from '../../core/services/friend-service/friend.service';
 import { ShowFriendRequestData } from '../model/responses/user-responses.model';
 import { FormGroup } from '@angular/forms';
@@ -8,14 +8,14 @@ import { ConnectedUser } from '../model/chat-models.model';
 import { DisplayService } from '../../core/services/display-service/display.service';
 import { CookieService } from 'ngx-cookie-service';
 import { ChangeMessageRequest } from '../model/user-credential-requests/user-credentials-requestsmodel.';
-import { ChangeMessageTextRequest, DeleteMessageRequest } from '../model/message-requests/MessageRequest';
+import { ChangeMessageTextRequest } from '../model/message-requests/MessageRequest';
 
 @Component({
     selector: 'app-chat-form',
     templateUrl: './chat-form.component.html',
     styleUrls: ['./chat-form.component.css', '../../../styles.css']
 })
-export class ChatFormComponent {
+export class ChatFormComponent implements AfterViewChecked {
 
     constructor(
         public chatService: ChatService,
@@ -51,9 +51,16 @@ export class ChatFormComponent {
     @Output() sendMessage = new EventEmitter<string>();
     @Output() sendMessageHttpRequest = new EventEmitter<ChangeMessageRequest>();
     @Output() closeMessageModify = new EventEmitter<void>();
-    @Output() loadAvatarFromMessages = new EventEmitter<string[]>();
+    @Output() loadAvatarFromMessages = new EventEmitter<string>();
     @Output() messageModify = new EventEmitter<ChangeMessageTextRequest>();
-    @Output() deleteMessage = new EventEmitter<DeleteMessageRequest>();
+    @Output() deleteMessage = new EventEmitter<string>();
+
+    @ViewChild('scrollMe') public scrollContainer!: ElementRef;
+    @ViewChild('messageInput') public inputElement!: ElementRef;
+
+    ngAfterViewChecked(): void {
+        this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
+    };
 
     callRoomDelete() {
         this.deleteRoom.emit();
@@ -89,7 +96,7 @@ export class ChatFormComponent {
         this.closeMessageModify.emit();
     }
 
-    callLoadAvatarFromMessages(seenList: string[]) {
+    callLoadAvatarFromMessages(seenList: string) {
         this.loadAvatarFromMessages.emit(seenList);
     }
 
@@ -99,13 +106,11 @@ export class ChatFormComponent {
             newText: newText
         };
         this.messageModify.emit(changeMessageTextRequest);
+        this.inputElement.nativeElement.focus();
     }
 
     callMessageDelete(messageId: string) {
-        var deleteMessageRequest: DeleteMessageRequest = {
-            messageId: messageId
-        }
-        this.deleteMessage.emit(deleteMessageRequest);
+        this.deleteMessage.emit(messageId);
     }
 
     searchInFriends() {

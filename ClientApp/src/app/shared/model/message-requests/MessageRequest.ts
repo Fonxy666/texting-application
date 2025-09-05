@@ -22,7 +22,3 @@ export interface ChangeMessageTextRequest {
     messageId: string;
     newText: string;
 }
-
-export interface DeleteMessageRequest {
-    messageId: string;
-}

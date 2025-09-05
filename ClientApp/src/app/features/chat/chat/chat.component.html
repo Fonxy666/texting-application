@@ -1,4 +1,4 @@
-<div class="cont text-style">
+<!--<div class="cont text-style">
     <app-nav-bar />
     <app-loading-screen *ngIf="isLoading"/>
     <p-toast position="top-center"></p-toast>
@@ -235,4 +235,26 @@
         </div>
     </div>
 </div>
-<app-background-image>
+<app-background-image>-->
+
+<app-chat-form
+    [isLoading]="isLoading"
+    [userIsTheCreator]="userIsTheCreator"
+    [avatars]="avatars"
+    [connectedUsers]="connectedUsers"
+    [messages]="messages"
+    [imageCount]="imageCount"
+    [messageModifyBool]="messageModifyBool"
+    [messageModifyRequest]="messageModifyRequest"
+    [showPassword]="showPassword"
+    (deleteRoom)="deleteRoom()"
+    (handleInviteToRoom)="handleInviteToRoom($event)"
+    (changePasswordForRoom)="changePasswordForRoom()"
+    (leaveChat)="leaveChat($event)"
+    (sendMessage)="sendMessage()"
+    (sendMessageHttpRequest)="sendMessageModifyHttpRequest($event)"
+    (closeMessageModify)="handleCloseMessageModify()"
+    (loadAvatarFromMessages)="loadAvatarsFromMessages($event)"
+    (messageModify)="handleMessageModify($event)"
+    (deleteMessage)="handleMessageDelete($event)"
+/>

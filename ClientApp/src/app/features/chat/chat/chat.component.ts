@@ -3,7 +3,7 @@ import { ChatService } from '../../../core/services/chat-service/chat.service';
 import { Router } from '@angular/router';
 import { firstValueFrom, forkJoin, Subscription } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
-import { ChangeMessageSeenHtttpRequest, ChangeMessageSeenWebSocketRequest, MessageRequest } from '../../../shared/model/message-requests/MessageRequest';
+import { ChangeMessageSeenHtttpRequest, ChangeMessageSeenWebSocketRequest, ChangeMessageTextRequest, MessageRequest } from '../../../shared/model/message-requests/MessageRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -30,7 +30,7 @@ import { ServerResponse } from '../../../shared/model/responses/shared-response.
   providers: [ MessageService ]
 })
 
-export class ChatComponent implements OnInit, AfterViewChecked {
+export class ChatComponent implements OnInit {
     userId: string = "";
     roomId: string = "";
     roomName: string = "";
@@ -48,9 +48,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     private subscriptions: Subscription = new Subscription();
     onlineFriends: ShowFriendRequestData[] | undefined;
     userKey: string | null = null;
-    
-    @ViewChild('scrollMe') public scrollContainer!: ElementRef;
-    @ViewChild('messageInput') public inputElement!: ElementRef;
 
     private routeSub!: Subscription;
 
@@ -218,10 +215,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         });
     };
 
-    ngAfterViewChecked(): void {
-        this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
-    };
-
     ngOnDestroy(): void {
         this.subscriptions.unsubscribe();
 
@@ -385,11 +378,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         }
     };
 
-    handleMessageModify(messageId: string, messageText: string) {
+    handleMessageModify(request: ChangeMessageTextRequest) {
         this.messageModifyBool = true;
-        this.messageModifyRequest.id = messageId;
-        this.inputMessage = messageText;
-        this.inputElement.nativeElement.focus();
+        this.messageModifyRequest.id = request.messageId;
+        this.inputMessage = request.newText;
     };
 
     async sendMessageModifyHttpRequest(request: ChangeMessageRequest) {
