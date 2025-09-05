@@ -26,7 +26,7 @@ const routes: Routes = [
     { path: '', component: HomeComponent, title: 'Home' },
     { path: 'login', component: LoginComponent, title: 'Login' },
     { path: 'registration', component: RegistrationComponent, title: 'Registration' },
-    { path: 'join-room', component: JoinRoomComponent, title: 'Join room', canActivate: [AuthGuard] },
+    { path: 'join-room', component: JoinRoomComponent, title: 'Join room', canActivate: [AuthGuard, UserKeyGuard] },
     { path: 'message-room/:id', component: ChatComponent, title: 'Chat', canActivate: [AuthGuard, UserKeyGuard] },
     { path: 'profile/profile', component: ProfileComponent, title: 'Profile', canActivate: [AuthGuard], children: [
         { path: 'emailchange', component: GenerateEmailChangeRequestComponent },
