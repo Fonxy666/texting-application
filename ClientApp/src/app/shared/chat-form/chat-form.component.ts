@@ -26,7 +26,6 @@ export class ChatFormComponent implements AfterViewChecked {
 
     searchTermForFriends: string = '';
     onlineFriends: ShowFriendRequestData[] | undefined;
-    changePasswordRequest!: FormGroup;
     searchTerm: string = '';
     userId = this.cookieService.get("UserId")?? "";
     roomId = sessionStorage.getItem("roomId")?? "";
@@ -43,6 +42,7 @@ export class ChatFormComponent implements AfterViewChecked {
     @Input() messageModifyBool: boolean = false;
     @Input() messageModifyRequest: ChangeMessageRequest = {id: "", text: "", iv: ""};
     @Input() showPassword: boolean = false;
+    @Input() changePasswordRequest!: FormGroup;
 
     @Output() deleteRoom = new EventEmitter<void>();
     @Output() handleInviteToRoom = new EventEmitter<string>();
@@ -86,10 +86,13 @@ export class ChatFormComponent implements AfterViewChecked {
 
     callSendMessage() {
         this.sendMessage.emit(this.inputMessage);
+        this.inputMessage = "";
     }
 
     callSendMessageHttpRequest() {
+        this.messageModifyRequest.text = this.inputMessage;
         this.sendMessageHttpRequest.emit(this.messageModifyRequest);
+        this.inputMessage = "";
     }
 
     callHandleCloseMessageModify() {
@@ -107,6 +110,7 @@ export class ChatFormComponent implements AfterViewChecked {
         };
         this.messageModify.emit(changeMessageTextRequest);
         this.inputElement.nativeElement.focus();
+        this.inputMessage = "";
     }
 
     callMessageDelete(messageId: string) {

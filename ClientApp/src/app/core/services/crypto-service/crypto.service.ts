@@ -235,6 +235,7 @@ export class CryptoService {
     async decryptMessage(encryptedMessage: string, symmetricKey: CryptoKey, ivBase64: string): Promise<string> {
         try {
             const iv = this.base64ToBuffer(ivBase64);
+            const cipherBytes = this.base64ToBuffer(encryptedMessage);
             const decryptedData = await window.crypto.subtle.decrypt(
                 {
                     name: "AES-GCM",

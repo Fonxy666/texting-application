@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/core';
 import { ChatService } from '../../../core/services/chat-service/chat.service';
 import { Router } from '@angular/router';
 import { firstValueFrom, forkJoin, Subscription } from 'rxjs';
@@ -34,7 +34,6 @@ export class ChatComponent implements OnInit {
     userId: string = "";
     roomId: string = "";
     roomName: string = "";
-    inputMessage: string = "";
     connectedUsers: ConnectedUser[] = [];
     searchTerm: string = '';
     searchTermForFriends: string = '';
@@ -91,7 +90,6 @@ export class ChatComponent implements OnInit {
                                 console.error("Cannot get room key.");
                                 return;
                             }
-
                             const decryptedText = await this.cryptoService.decryptMessage(
                                 message.messageData.text,
                                 decryptedRoomKey,
@@ -221,7 +219,7 @@ export class ChatComponent implements OnInit {
         if (this.routeSub) {
             this.routeSub.unsubscribe();
         }
-      };
+    };
 
     loadAvatarsFromMessages(userId : string) {
         if (userId === null || userId === undefined) {
@@ -237,33 +235,32 @@ export class ChatComponent implements OnInit {
         }
     };
 
-    async sendMessage() {
-        if (this.inputMessage.trim() === "") {
+    async sendMessage(message: string) {
+        if (message.trim() === "") {
             return;
         }
         const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!, this.roomId);
-
         if (decryptedRoomKey === null) {
             console.error("Cannot get room key.");
         }
+        
+        const encryptedMessageData = await this.cryptoService.encryptMessage(message, decryptedRoomKey!);
+        
+        let request = new MessageRequest(
+            this.roomId,
+            encryptedMessageData.encryptedMessage,
+            this.cookieService.get("Anonymous") === "True",
+            encryptedMessageData.iv
+        );
 
-        const encryptedMessageData = await this.cryptoService.encryptMessage(this.inputMessage, decryptedRoomKey!);
-                
-            let request = new MessageRequest(
-                this.roomId,
-                encryptedMessageData.encryptedMessage,
-                this.cookieService.get("Anonymous") === "True",
-                encryptedMessageData.iv
-            );
-    
-            this.saveMessage(request)
-                .then((messageId) => {
-                    request.messageId = messageId;
-                    this.chatService.sendMessage(request);
-                    this.inputMessage = "";
-                }).catch((err: any) => {
-                    console.log(err);
-                })
+        this.saveMessage(request)
+            .then((messageId) => {
+                request.messageId = messageId;
+                this.chatService.sendMessage(request);
+                message = "";
+            }).catch((err: any) => {
+                console.log(err);
+            })
     };
 
     async saveMessage(request: MessageRequest): Promise<string> {
@@ -381,17 +378,17 @@ export class ChatComponent implements OnInit {
     handleMessageModify(request: ChangeMessageTextRequest) {
         this.messageModifyBool = true;
         this.messageModifyRequest.id = request.messageId;
-        this.inputMessage = request.newText;
     };
 
     async sendMessageModifyHttpRequest(request: ChangeMessageRequest) {
         const decryptedRoomKey = await this.cryptoService.getDecryptedRoomKey(this.userKey!, this.roomId);
+        const inputText = request.text;
 
         if (decryptedRoomKey === null) {
             console.error("Cannot get room key.");
         }
 
-        const encryptedData = await this.cryptoService.encryptMessage(this.inputMessage, decryptedRoomKey!);
+        const encryptedData = await this.cryptoService.encryptMessage(request.text, decryptedRoomKey!);
         request.iv = encryptedData.iv;
         request.text = encryptedData.encryptedMessage;
 
@@ -402,9 +399,8 @@ export class ChatComponent implements OnInit {
                             if (message.messageData.messageId === request.id) {
                                 message.encrypted = false;
                                 message.messageData.iv = encryptedData.iv;
-                                message.messageData.text = this.inputMessage;
+                                message.messageData.text = inputText;
                                 this.chatService.modifyMessage(request);
-                                this.inputMessage = "";
                                 this.messageModifyBool = false;
                             }
                         })
@@ -416,7 +412,6 @@ export class ChatComponent implements OnInit {
     };
 
     handleCloseMessageModify() {
-        this.inputMessage = "";
         this.messageModifyBool = false;
     };
 
@@ -425,7 +420,6 @@ export class ChatComponent implements OnInit {
         .subscribe(_ => {
             this.chatService.messages[this.roomId].forEach((message: any) => {
                 if (message.messageId == request.messageId) {
-                    this.inputMessage = "";
                     this.messageModifyBool = false;
                 }
             })
@@ -478,31 +472,6 @@ export class ChatComponent implements OnInit {
         })
     };
 
-    examineIfNextMessageNotContainsUserId(userId: string, index: number) {
-        if (this.chatService.messages[this.roomId] === undefined) {
-            return;
-        }
-
-        const slicedMessages = this.chatService.messages[this.roomId].slice(index + 1);
-
-        for (const message of slicedMessages) {
-            if (message.messageData.seenList == null) {
-                continue;
-            }
-
-            if (message.messageData.seenList.includes(userId)) {
-                return false;
-            }
-        }
-
-        this.imageCount++;
-        return true;
-    };
-
-    resetImageCount() {
-        this.imageCount = 0;
-    };
-
     userIsTheCreatorMethod(){
         this.chatService.userIsTheCreator(this.roomId)
         .subscribe((result) => {
@@ -539,39 +508,29 @@ export class ChatComponent implements OnInit {
         })
     }
 
-    toggleShowPassword() {
-        this.showPassword = !this.showPassword;
-    }
-
-    changePasswordForRoom() {
-        const changePasswordRequest: ChangePasswordForRoomRequest = {
-            id: this.roomId,
-            oldPassword: this.changePasswordRequest.get('oldPassword')?.value,
-            password: this.changePasswordRequest.get('newPassword')?.value
-        };
-
-            this.chatService.changePasswordForRoom(changePasswordRequest)
-            .subscribe((response: any) => {
-                if (response.success) {
-                    this.messageService.add({
-                        severity: 'success',
-                        summary: 'Success',
-                        detail: 'Password successfully updated.',
-                        styleClass: 'ui-toast-message-success'
-                    });
-                }
-            },
-            (error) => {
-                if (error.status === 400) {
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: 'Wrong password.'
-                    });
-                } else {
-                    console.error("An error occurred:", error);
-                }
-            });
+    changePasswordForRoom(changePasswordRequest: ChangePasswordForRoomRequest) {
+        this.chatService.changePasswordForRoom(changePasswordRequest)
+        .subscribe((response: any) => {
+            if (response.success) {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: 'Password successfully updated.',
+                    styleClass: 'ui-toast-message-success'
+                });
+            }
+        },
+        (error) => {
+            if (error.status === 400) {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Wrong password.'
+                });
+            } else {
+                console.error("An error occurred:", error);
+            }
+        });
     }
 
     searchInFriends() {
