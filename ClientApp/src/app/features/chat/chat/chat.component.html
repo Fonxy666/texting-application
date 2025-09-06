@@ -1,0 +1,28 @@
+<div class="cont text-style">
+    <app-nav-bar />
+    <app-loading-screen *ngIf="isLoading"/>
+    <p-toast position="top-center"></p-toast>
+    <app-background-image/>
+    
+    <app-chat-form
+        [isLoading]="isLoading"
+        [userIsTheCreator]="userIsTheCreator"
+        [avatars]="avatars"
+        [connectedUsers]="connectedUsers"
+        [messages]="messages"
+        [imageCount]="imageCount"
+        [messageModifyBool]="messageModifyBool"
+        [messageModifyRequest]="messageModifyRequest"
+        [showPassword]="showPassword"
+        [changePasswordRequest]="changePasswordRequest"
+        (deleteRoom)="deleteRoom()"
+        (handleInviteToRoom)="handleInviteToRoom($event)"
+        (changePasswordForRoom)="changePasswordForRoom($event)"
+        (leaveChat)="leaveChat($event)"
+        (sendMessage)="sendMessage($event)"
+        (sendMessageHttpRequest)="sendMessageModifyHttpRequest($event)"
+        (closeMessageModify)="handleCloseMessageModify()"
+        (loadAvatarFromMessages)="loadAvatarsFromMessages($event)"
+        (deleteMessage)="handleMessageDelete($event)"
+    />
+</div>

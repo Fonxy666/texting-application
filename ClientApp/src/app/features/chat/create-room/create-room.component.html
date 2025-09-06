@@ -1,0 +1,16 @@
+<div class="cont">
+    <app-loading-screen *ngIf="isLoading"/>
+    <app-nav-bar />
+    <p-toast position="top-center"></p-toast>
+    
+    <app-room-form
+        [title]="'Create a chat room for yourself/friends, it\'s all free!'"
+        [imageSrc]="boyImage"
+        [formGroup]="createRoomForm"
+        [submitLabel]="'Create room'"
+        [cancelLabel]="'Back'"
+        (submit)="callSendcreateRoomRequest()"
+        (cancel)="handleCancel()">
+    </app-room-form>
+</div>
+<app-background-image></app-background-image>

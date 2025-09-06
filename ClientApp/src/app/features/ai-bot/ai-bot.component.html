@@ -1,0 +1,13 @@
+<div class="cont text-style">
+    <app-nav-bar />
+    <p-toast position="top-center"></p-toast>
+    <app-background-image/>
+    
+    <app-chat-form
+		[avatars]="avatars"
+		[connectedUsers]="connectedUsers"
+		[messages]="messages"
+		(leaveChat)="leaveChat($event)"
+		(sendMessage)="sendMessage($event)"
+	/>
+</div>

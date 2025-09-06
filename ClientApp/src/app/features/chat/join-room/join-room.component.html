@@ -1,0 +1,16 @@
+<div class="cont">
+    <app-loading-screen *ngIf="isLoading"/>
+    <app-nav-bar />
+    <p-toast position="top-center"></p-toast>
+    
+    <app-room-form
+        [title]="'Give your credentials to the robot, and enjoy the application!'"
+        [imageSrc]="'https://cdn.pixabay.com/photo/2023/07/24/23/30/chat-8147986_1280.jpg'"
+        [formGroup]="joinRoomForm"
+        [submitLabel]="'Join'"
+        [cancelLabel]="'Create room'"
+        (submit)="joinRoom()"
+        (cancel)="goToCreateRoom()">
+    </app-room-form>
+</div>
+<app-background-image></app-background-image>
