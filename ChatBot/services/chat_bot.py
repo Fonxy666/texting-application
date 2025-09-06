@@ -27,5 +27,6 @@ def rag_pdf_qa(pdf_path, LLM_model_path, db_path, SS_model, query):
         retriever=db.as_retriever(),
         return_source_documents=False
         )
+    
     result = qa.run(query)
     return result

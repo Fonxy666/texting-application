@@ -56,14 +56,14 @@
     </div>
 </div>
 
-<div *ngIf="isHumanChat" class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModal" data-bs-theme="dark" aria-hidden="true">
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModal" data-bs-theme="dark" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h1 class="modal-title fs-5 text-white" id="changePasswordModal">Change password</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form [formGroup]="changePasswordRequest" (ngSubmit)="callChangePasswordForRoom()">
+            <form *ngIf="isHumanChat && changePasswordRequest" [formGroup]="changePasswordRequest" (ngSubmit)="callChangePasswordForRoom()">
                 <div class="modal-body">
                     <label id="roomlabel" for="oldPassword" class="text-white"> Old password</label>
                     <input id="oldPassword" [type]="showPassword ? 'text' : 'password'" formControlName="oldPassword" class="form-control" required/>

@@ -10,7 +10,6 @@ load_dotenv()
 pdf_file = os.getenv("PDF_FILE_PATH")
 model_file = os.getenv("MODEL_FILE_PATH")
 SS_model_file = "paraphrase-multilingual-mpnet-base-v2"
-query = "does textinger a secure chat app?"
 
 origins = [
     "http://localhost:4200",
@@ -33,6 +32,7 @@ class Message(BaseModel):
 async def send_message(msg: Message):
     result = await asyncio.to_thread(
         rag_pdf_qa, pdf_file, model_file, "faiss_index", SS_model_file, msg.text
-    )
-    print(result)
-    return { "message": result }
+	)
+    split_result = result.split("\n")
+    
+    return { split_result[0] }

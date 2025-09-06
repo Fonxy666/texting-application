@@ -5,7 +5,7 @@ from typing import List, Optional
 class custom_llm(LLM):
     model: str
     verbose: bool = False
-    temperature: float = 0.3
+    temperature: float = 0.7
     top_p: float = 0.3
     top_k: int = 40
     max_tokens: int = 50
