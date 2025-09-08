@@ -1,0 +1,34 @@
+name: textinger_chat_bot
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - pip
+  - numpy=1.26
+  - pandas=2.3
+  - scikit-learn
+  - scipy
+  - faiss-gpu
+  - pytorch
+  - pytorch-cuda=12.1
+  - torchvision
+  - torchaudio
+  - transformers
+  - datasets
+  - sentence-transformers
+  - fastapi
+  - uvicorn
+  - langchain
+  - langchain-community
+  - langchain-huggingface
+  - jinja2
+  - sqlalchemy
+  - requests
+  - pyyaml
+  - tqdm
+  - pip:
+      - gpt4all==2.8.2
+      - pymupdf==1.26.3
