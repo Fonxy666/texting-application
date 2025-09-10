@@ -26,6 +26,7 @@ using UserService.Repository.BaseDbRepository;
 using UserService.Repository.FConnectionRepository;
 using UserService.Repository.KeyRepository;
 using UserService.Services.MediaService;
+using StackExchange.Redis;
 
 namespace UserService;
 
@@ -38,6 +39,7 @@ public class Startup(IConfiguration configuration)
         var issueAudience = configuration["IssueAudience"];
         var vaultAddress = configuration["HashiCorpAddress"];
         var vaultToken = configuration["HashiCorpToken"];
+        var redisHost = configuration["RedisHost"];
 
         var authMethod = new TokenAuthMethodInfo(vaultToken);
         var vaultClientSettings = new VaultClientSettings(vaultAddress, authMethod);
@@ -91,6 +93,7 @@ public class Startup(IConfiguration configuration)
         });
 
         services.AddSingleton<IJwtRefreshTokenValidator, JwtRefreshTokenValidator>();
+        services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisHost));
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IApplicationUserService, ApplicationUserService>();
